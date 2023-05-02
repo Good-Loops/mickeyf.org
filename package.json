@@ -4,13 +4,18 @@
   "description": "Entertaining and educational interactive website. ",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Michel Dias",
   "license": "CC0-1.0",
-  "repository": {},
-  "homepage": "./html/circleAnim.html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Good-Loops/mickeyf.dev",
+    "directory": "./package.json"
+  },
+  "homepage": "./html/index.html",
   "keywords": [
     "animation",
     "music",
