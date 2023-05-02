@@ -1,0 +1,10 @@
+Colors for Website:
+
+1. Light Blue: rgb(135, 206, 250)
+2. Secondary Color (Light Turquoise): rgb(64, 224, 208)
+3. Tertiary Color (Light Green): rgb(144, 238, 144)
+
+1. Soft Pink: rgb(255, 182, 193)
+2. Light Yellow: rgb(255, 255, 153)
+3. Lavender: rgb(230, 230, 250)
+4. Light Coral: rgb(240, 128, 128)

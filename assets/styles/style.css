@@ -1,0 +1,74 @@
+:root {
+    --lightblue-rgb-color: rgb(135, 206, 250);
+    --lightturquoise-rgb-color: rgb(64, 224, 208);
+    --lightgreen-rgb-color: rgb(144, 238, 144);
+
+    --softpink-rgb-color: rgb(255, 182, 193);
+    --lightyellow-rgb-color: rgb(255, 255, 153);
+    --lavender-rgb-color: rgb(230, 230, 250);
+    --lightcoral-rgb-color: rgb(240, 128, 128);
+
+    --shadow-rgba-color: rgb(230 230 250 / 30%);
+}
+
+body {
+    margin: 0;
+    background: linear-gradient(to bottom right, var(--lightblue-rgb-color) 40%, var(--lightcoral-rgb-color) 100%);
+    cursor: url("../images/normal.cur"), auto;
+}
+  
+.central {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+    vertical-align: middle;
+}
+  
+canvas {
+    border: 4pt dashed;
+    border-color: var(--lightgreen-rgb-color);
+    border-radius: 10pt;
+    width: 35%;
+    box-shadow: 8px 8px 5px var(--shadow-rgba-color);
+    margin-bottom: 15px;
+}
+  
+h1 {
+    color: var(--lightgreen-rgb-color);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 3vw;
+    text-shadow: -1px -1px 1px var(--lightblue-rgb-color), 2px 2px 12px var(--lavender-rgb-color), 1px 1px 2px var(--lightcoral-rgb-color);
+    margin: 12px 0;
+}
+
+#uploadButton {
+    display: block;
+    color: var(--lightgreen-rgb-color);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 2vw;
+    text-shadow: -1px -1px 1px var(--lightblue-rgb-color), 2px 2px 12px var(--lavender-rgb-color), 1px 1px 2px var(--lightcoral-rgb-color);
+    margin-bottom: 30px;
+    border: 2.2pt solid var(--lightgreen-rgb-color);
+    border-radius: 5pt;
+    padding: 5px;
+    padding-top: 1px;
+    box-shadow:  -1px -1px 1px var(--lightblue-rgb-color), 1px 1px 8px var(--lavender-rgb-color), 1px 1px 2px var(--lightcoral-rgb-color);
+    z-index: 100;
+    user-select: none;
+}
+
+#uploadButton:not(.playing):hover {
+    box-shadow: 8px 8px 5px var(--shadow-rgba-color) inset, -8px -8px 5px var(--shadow-rgba-color) inset;
+    cursor: url("../images/select.cur"), auto;
+}
+
+#uploadButton:not(.playing):active {
+    transform: scale(0.95);
+}
+
+input[type="file"] {
+    display: none;
+}
