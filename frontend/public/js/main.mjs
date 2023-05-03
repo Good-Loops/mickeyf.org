@@ -95,7 +95,7 @@ window.addEventListener("load", function () {
         circ = circArr[randomIndex];
 
         if (AudioHandler.playing) {
-            // console.log(AudioHandler.pitch + "Hz");
+            console.log(AudioHandler.pitch + "Hz");
 
             // if(AudioHandler.clarity < 85) {
 

@@ -4,7 +4,7 @@
   "description": "Entertaining and educational interactive website. ",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node frontend/public/dist/index.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,7 +15,7 @@
     "url": "https://github.com/Good-Loops/mickeyf.dev",
     "directory": "./package.json"
   },
-  "homepage": "./html/index.html",
+  "homepage": "../index.html",
   "keywords": [
     "animation",
     "music",

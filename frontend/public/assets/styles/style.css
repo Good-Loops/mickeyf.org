@@ -14,7 +14,7 @@
 body {
     margin: 0;
     background: linear-gradient(to bottom right, var(--lightblue-rgb-color) 40%, var(--lightcoral-rgb-color) 100%);
-    cursor: url("../images/normal.cur"), auto;
+    cursor: url("../img/normal.cur"), auto;
 }
   
 .central {
@@ -62,7 +62,7 @@ h1 {
 
 #uploadButton:not(.playing):hover {
     box-shadow: 8px 8px 5px var(--shadow-rgba-color) inset, -8px -8px 5px var(--shadow-rgba-color) inset;
-    cursor: url("../images/select.cur"), auto;
+    cursor: url("../img/select.cur"), auto;
 }
 
 #uploadButton:not(.playing):active {
