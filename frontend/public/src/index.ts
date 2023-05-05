@@ -1,6 +1,6 @@
 import "alpinejs";
 import create from  "./create";
-import { animationLoop } from "./circleAnim";
+// import { animationLoop } from "./circleAnim";
 
 declare global {
     interface Window { 
@@ -10,4 +10,4 @@ declare global {
 
 window.create = create;
 
-window.addEventListener("load", animationLoop);
+// window.addEventListener("load", animationLoop);
