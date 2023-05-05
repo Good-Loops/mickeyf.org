@@ -1,10 +1,11 @@
 import "alpinejs";
 import create from  "./create";
+import { userCreateInterface } from "../../interfaces/userCreateInterface";
 // import { animationLoop } from "./circleAnim";
 
 declare global {
     interface Window { 
-        create: any; 
+        create: () => userCreateInterface; 
     }
 }
 

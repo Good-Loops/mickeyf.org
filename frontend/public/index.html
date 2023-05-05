@@ -18,7 +18,21 @@
         <input type="file" name="fileupload" id="fileupload" accept="audio/*" /> -->
 
         <div x-data="create()">
-            <button x-on:click="create" id="create">Create</button>
+
+            <div x-show="created">Usuário cadastrado com sucesso</div>
+
+            <form x-on:submit.prevent="createUser">
+                <input type="text" name="firstName" x-model="user.firstName">
+                <span id="error-firstName"></span>
+                <input type="text" name="lastName" x-model="user.lastName">
+                <span id="error-lastName"></span>
+                <input type="text" name="email" x-model="user.email">
+                <span id="error-email"></span>
+                <input type="text" name="password" x-model="user.password">
+                <span id="error-password"></span>
+
+                <button type="submit">Create</button>
+            </form>
         </div>
 
     </div>
