@@ -1,0 +1,24 @@
+{
+   "type": "mysql",
+   "host": "localhost",
+   "port": 3306,
+   "username": "root",
+   "password": "",
+   "database": "mickeyfdev_typescript",
+   "synchronize": true,
+   "logging": false,
+   "entities": [
+      "database/src/entity/**/*.ts"
+   ],
+   "migrations": [
+      "database/src/migration/**/*.ts"
+   ],
+   "subscribers": [
+      "database/src/subscriber/**/*.ts"
+   ],
+   "cli": {
+      "entitiesDir": "database/src/entity",
+      "migrationsDir": "database/src/migration",
+      "subscribersDir": "database/src/subscriber"
+   }
+}
