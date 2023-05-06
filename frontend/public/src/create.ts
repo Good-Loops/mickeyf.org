@@ -1,11 +1,14 @@
 import { errorValidateInterface } from "../../interfaces/errorValidateInterface";
 import { userCreateInterface } from "../../interfaces/userCreateInterface";
-import { USER_CREATED } from "./helpers/constants";
+import { EMAIL_DUPLICATED, USER_CREATED } from "./helpers/constants";
 import http from "./helpers/http";
 
 function create(): userCreateInterface {
     return {
         created: false,
+        errors: {
+            email_duplicated: false,
+        },
         user: {
             firstName: "Michel",
             lastName: "Dias",
@@ -16,7 +19,7 @@ function create(): userCreateInterface {
             try {
                 const { data } = await http.post("/user/store", this.user);
 
-                if(data === USER_CREATED) {
+                if (data === USER_CREATED) {
                     this.created = true;
                     setTimeout(() => {
                         this.created = false;
@@ -37,6 +40,17 @@ function create(): userCreateInterface {
                         }, 3000);
                     });
                 }
+                else {
+                    switch(error?.response.data) {
+                        case EMAIL_DUPLICATED:
+                            this.errors.email_duplicated = true;
+                            break;
+                    }
+                }
+
+                setTimeout(() => { 
+                    this.errors.email_duplicated = false;
+                }, 3000);
             }
         },
     };
