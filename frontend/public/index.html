@@ -6,40 +6,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>mickeyf.dev</title>
-    <!-- <link rel="stylesheet" href="./assets/styles/style.css"> -->
+    <link rel="stylesheet" href="./assets/styles/style.css">
 </head>
 
-<body>
-    <audio id="music"></audio>
-    <div class="central">
-        <!-- <h1>Circle Graphics</h1>
-        <canvas id="myCanvas"></canvas>
+<body id="register-page">
+
+    <!-- <body id="dCircles-page"> -->
+    <!-- <audio id="music"></audio> -->
+
+    <div id="central-div">
+
+        <!-- <h1 id="page-title">Dancing Circles</h1>
+        <canvas id="page-canvas"></canvas>
         <label id="uploadButton" for="fileupload">Upload Music</label>
         <input type="file" name="fileupload" id="fileupload" accept="audio/*" /> -->
 
-        <div x-data="create()">
-
+        <h1 id="page-title">Register:</h1>
+        <div id="form-div" x-data="create()">
             <div x-show="created">Successfully registered user.</div>
             <div x-show="errors.email_duplicated">This email is already in use.</div>
-
             <form x-on:submit.prevent="createUser">
-                <input type="text" name="firstName" x-model="user.firstName">
-                <span id="error-firstName"></span>
-                <input type="text" name="lastName" x-model="user.lastName">
-                <span id="error-lastName"></span>
-                <input type="text" name="email" x-model="user.email">
-                <span id="error-email"></span>
-                <input type="text" name="password" x-model="user.password">
-                <span id="error-password"></span>
-
-                <button type="submit">Create</button>
+                <!-- p element functions as "\n" -->
+                <p>
+                    <input class="input" type="text" name="firstName" placeholder="First Name" x-model="user.firstName">
+                    <span id="error-firstName"></span>
+                </p>
+                <p>
+                    <input class="input" type="text" name="lastName" placeholder="Last Name" x-model="user.lastName">
+                    <span id="error-lastName"></span>
+                </p>
+                <p>
+                    <input class="input" type="text" name="email" placeholder="Email" x-model="user.email">
+                    <span id="error-email"></span>
+                </p>
+                <p>
+                    <input class="input" type="text" name="password" placeholder="New Password" x-model="user.password">
+                    <span id="error-password"></span>
+                </p>
+                <p>
+                <input class="input" id="registerButton" type="submit" name="submit" value="Sign up">
+                </p>
             </form>
         </div>
-
     </div>
-
     <script src="dist/index.js"></script>
-
 </body>
 
 </html>

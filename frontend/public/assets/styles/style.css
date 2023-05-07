@@ -1,23 +1,44 @@
 :root {
-    --lightblue-rgb-color: rgb(135, 206, 250);
-    --lightturquoise-rgb-color: rgb(64, 224, 208);
-    --lightgreen-rgb-color: rgb(144, 238, 144);
+    --lightblue-rgb: rgb(135, 206, 250);
+    --lightblue-rgba: rgb(135, 206, 250, .2);
+    --lightturquoise-rgb: rgb(64, 224, 208);
+    --lightturquoise-rgba: rgba(64, 224, 208, .3);
+    --lightgreen-rgb: rgb(144, 238, 144);
+    --lightgreen-rgba: rgba(144, 238, 144, .3);
 
-    --softpink-rgb-color: rgb(255, 182, 193);
-    --lightyellow-rgb-color: rgb(255, 255, 153);
-    --lavender-rgb-color: rgb(230, 230, 250);
-    --lightcoral-rgb-color: rgb(240, 128, 128);
+    --softpink-rgb: rgb(255, 182, 193);
+    --softpink-rgba: rgba(255, 182, 193, .3);
+    --lightyellow-rgb: rgb(255, 255, 153);
+    --lightyellow-rgba: rgba(255, 255, 153, .3);
+    --lavender-rgb: rgb(230, 230, 250);
+    --lavender-rgba: rgba(230, 230, 250, .3);
+    --lightcoral-rgb: rgb(240, 128, 128);
+    --lightcoral-rgba: rgba(240, 128, 128, .2);
 
-    --shadow-rgba-color: rgb(230 230 250 / 30%);
+    --gray-rgb: rgb(80, 80, 80);
+    --gray-rgba: rgb(80, 80, 80, .3);
+    --lightgray-rgb: rgb(200, 200, 200);
+    --lightgray-rgba: rgba(200, 200, 200, .3);
+
+    --shadow-rgba: rgba(230, 230, 250, .3);
+
+    --font: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+
+    --body-background: linear-gradient(to bottom right, var(--lightblue-rgb) 30%, var(--lightcoral-rgb) 90%);
+    --register-div-background: linear-gradient(to top left, var(--lightblue-rgba) 35%, var(--lightcoral-rgba) 70%);
+
+    --cursor: url("../img/normal.cur"), auto;
+    --hover-cursor: url("../img/select.cur"), auto;
 }
 
-body {
+/* Register Page */
+#register-page {
     margin: 0;
-    background: linear-gradient(to bottom right, var(--lightblue-rgb-color) 40%, var(--lightcoral-rgb-color) 100%);
-    cursor: url("../img/normal.cur"), auto;
+    background: var(--body-background); 
+    cursor: var(--cursor);
 }
-  
-.central {
+
+#register-page #central-div {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -26,49 +47,117 @@ body {
     height: 100vh;
     vertical-align: middle;
 }
-  
-canvas {
+
+#register-page #page-title {
+    margin: 0;
+    margin-bottom: 9.5vh;
+    margin-right: 20vh;
+    font-family: var(--font);
+    color: var(--gray-rgb);
+}
+
+#register-page #form-div {
+    width: 20vh;
+    background: var(--register-div-background);
+    border-radius: 1vh;
+    transform: scale(1.8);
+    margin-bottom: 12vh;
+}
+
+#register-page #form-div .input {
+    margin-left: 1.7vh;
+    width: 16vh;
+    background-color: hsl(210, 90%, 91%);
+    border-radius: 0.3vh;
+    border: 1px solid var(--lightgray-rgb);
+    transition: border 0.7s;
+    outline: none;
+    font-family: var(--font);
+    color: var(--gray-rgb);
+}
+
+#register-page #form-div .input:focus {
+    border: 1px solid var(--gray-rgb);
+}
+
+#register-page #form-div #registerButton {
+    border: 1px solid var(--lightgray-rgb);
+    transition: border 0.7s;
+    width: 6vh;
+    height: 2.1vh;
+    transform: scale(0.9);
+    margin-left: 7vh;
+}
+
+#register-page #form-div #registerButton:active {
+    transform: scale(0.85);
+}
+
+#register-page #form-div #registerButton:hover {
+    cursor: var(--hover-cursor);
+    border: 1px solid var(--gray-rgb);
+}
+
+/* Dancing Circles Page */
+#dCircles-page {
+    margin: 0;
+    background: var(--body-background); 
+    cursor: var(--cursor);
+}
+
+#dCircles-page #central-div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+    vertical-align: middle;
+}
+
+#dCircles-page #page-canvas {
     border: 4pt dashed;
-    border-color: var(--lightgreen-rgb-color);
+    border-color: var(--lightgreen-rgb);
     border-radius: 10pt;
     width: 35%;
-    box-shadow: 8px 8px 5px var(--shadow-rgba-color);
+    box-shadow: 8px 8px 5px var(--shadow-rgba);
     margin-bottom: 15px;
 }
-  
-h1 {
-    color: var(--lightgreen-rgb-color);
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+
+#dCircles-page #page-title {
+    color: var(--lightgreen-rgb);
+    font-family: var(--font);
     font-size: 3vw;
-    text-shadow: -1px -1px 1px var(--lightblue-rgb-color), 2px 2px 12px var(--lavender-rgb-color), 1px 1px 2px var(--lightcoral-rgb-color);
+    text-shadow: -1px -1px 1px var(--lightblue-rgb), 2px 2px 12px var(--lavender-rgb), 1px 1px 2px var(--lightcoral-rgb);
     margin: 12px 0;
 }
 
-#uploadButton {
+#dCircles-page #uploadButton {
     display: block;
-    color: var(--lightgreen-rgb-color);
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: var(--lightgreen-rgb);
+    font-family: var(--font);
     font-size: 2vw;
-    text-shadow: -1px -1px 1px var(--lightblue-rgb-color), 2px 2px 12px var(--lavender-rgb-color), 1px 1px 2px var(--lightcoral-rgb-color);
+    text-shadow: -1px -1px 1px var(--lightblue-rgb), 2px 2px 12px var(--lavender-rgb), 1px 1px 2px var(--lightcoral-rgb);
     margin-bottom: 30px;
-    border: 2.2pt solid var(--lightgreen-rgb-color);
+    border: 2.2pt solid var(--lightgreen-rgb);
     border-radius: 5pt;
     padding: 5px;
     padding-top: 1px;
-    box-shadow:  -1px -1px 1px var(--lightblue-rgb-color), 1px 1px 8px var(--lavender-rgb-color), 1px 1px 2px var(--lightcoral-rgb-color);
+    box-shadow: -1px -1px 1px var(--lightblue-rgb), 1px 1px 8px var(--lavender-rgb), 1px 1px 2px var(--lightcoral-rgb);
     z-index: 100;
     user-select: none;
 }
 
-#uploadButton:not(.playing):hover {
-    box-shadow: 8px 8px 5px var(--shadow-rgba-color) inset, -8px -8px 5px var(--shadow-rgba-color) inset;
-    cursor: url("../img/select.cur"), auto;
+#dCircles-page #uploadButton:not(.playing):hover {
+    box-shadow: 8px 8px 5px var(--shadow-rgba) inset, -8px -8px 5px var(--shadow-rgba) inset;
+    cursor: var(--hover-cursor);
 }
 
-#uploadButton:not(.playing):active {
+#dCircles-page #uploadButton:not(.playing):active {
     transform: scale(0.95);
+    transition: transform 0.5s;
 }
 
-input[type="file"] {
+#dCircles-page #fileUpload[type="file"] {
     display: none;
 }

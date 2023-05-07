@@ -2,6 +2,7 @@ import { errorValidateInterface } from "../../interfaces/errorValidateInterface"
 import { userCreateInterface } from "../../interfaces/userCreateInterface";
 import { EMAIL_DUPLICATED, USER_CREATED } from "./helpers/constants";
 import http from "./helpers/http";
+import Swal from 'sweetalert2';
 
 function create(): userCreateInterface {
     return {

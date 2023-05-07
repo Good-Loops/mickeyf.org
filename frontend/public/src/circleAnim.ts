@@ -4,7 +4,7 @@ import * as PositionHandler from "./handlers/positionHandler";
 import * as AudioHandler from "./handlers/audioHandler";
 
 // Canvas width and height
-const canvas: HTMLCanvasElement = document.getElementById("myCanvas") as HTMLCanvasElement;
+const canvas: HTMLCanvasElement = document.getElementById("page-canvas") as HTMLCanvasElement;
 canvas.width = 800;
 canvas.height = 800;
 
