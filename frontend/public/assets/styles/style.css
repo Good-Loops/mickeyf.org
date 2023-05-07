@@ -53,11 +53,13 @@
     margin-bottom: 9.5vh;
     margin-right: 20vh;
     font-family: var(--font);
+    font-size: 3.6vh;
     color: var(--gray-rgb);
 }
 
 #register-page #form-div {
     width: 20vh;
+    height: 20vh;
     background: var(--register-div-background);
     border-radius: 1vh;
     transform: scale(1.8);
@@ -66,13 +68,16 @@
 
 #register-page #form-div .input {
     margin-left: 1.7vh;
+    margin-top: 1.5vh;
     width: 16vh;
+    height: 1.8vh;
     background-color: hsl(210, 90%, 91%);
     border-radius: 0.3vh;
     border: 1px solid var(--lightgray-rgb);
     transition: border 0.7s;
     outline: none;
     font-family: var(--font);
+    font-size: 1.4vh;
     color: var(--gray-rgb);
 }
 
@@ -87,6 +92,7 @@
     height: 2.1vh;
     transform: scale(0.9);
     margin-left: 7vh;
+    padding-bottom: 2vh;
 }
 
 #register-page #form-div #registerButton:active {

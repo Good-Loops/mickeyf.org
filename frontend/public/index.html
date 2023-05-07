@@ -27,25 +27,25 @@
             <div x-show="errors.email_duplicated">This email is already in use.</div>
             <form x-on:submit.prevent="createUser">
                 <!-- p element functions as "\n" -->
-                <p>
+                <!-- <p class="gap"> -->
                     <input class="input" type="text" name="firstName" placeholder="First Name" x-model="user.firstName">
                     <span id="error-firstName"></span>
-                </p>
-                <p>
+                <!-- </p> -->
+                <!-- <p class="gap"> -->
                     <input class="input" type="text" name="lastName" placeholder="Last Name" x-model="user.lastName">
                     <span id="error-lastName"></span>
-                </p>
-                <p>
+                <!-- </p> -->
+                <!-- <p class="gap"> -->
                     <input class="input" type="text" name="email" placeholder="Email" x-model="user.email">
                     <span id="error-email"></span>
-                </p>
-                <p>
+                <!-- </p> -->
+                <!-- <p class="gap"> -->
                     <input class="input" type="text" name="password" placeholder="New Password" x-model="user.password">
                     <span id="error-password"></span>
-                </p>
-                <p>
+                <!-- </p> -->
+                <!-- <p class="gap"> -->
                 <input class="input" id="registerButton" type="submit" name="submit" value="Sign up">
-                </p>
+                <!-- </p> -->
             </form>
         </div>
     </div>
