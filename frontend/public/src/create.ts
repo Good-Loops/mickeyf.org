@@ -21,6 +21,12 @@ function create(): userCreateInterface {
                 const { data } = await http.post("/user/store", this.user);
 
                 if (data === USER_CREATED) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Successfully registered user.',
+                        icon: 'success'
+                    });
+
                     this.created = true;
                     setTimeout(() => {
                         this.created = false;
@@ -42,14 +48,19 @@ function create(): userCreateInterface {
                     });
                 }
                 else {
-                    switch(error?.response.data) {
+                    switch (error?.response.data) {
                         case EMAIL_DUPLICATED:
+                            Swal.fire({
+                                title: 'Email already in use',
+                                icon: 'warning'
+                            });
+                            
                             this.errors.email_duplicated = true;
                             break;
                     }
                 }
 
-                setTimeout(() => { 
+                setTimeout(() => {
                     this.errors.email_duplicated = false;
                 }, 3000);
             }

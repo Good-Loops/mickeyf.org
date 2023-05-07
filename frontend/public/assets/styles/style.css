@@ -36,6 +36,7 @@
     margin: 0;
     background: var(--body-background); 
     cursor: var(--cursor);
+    font-family: var(--font);
 }
 
 #register-page #central-div {
@@ -52,7 +53,6 @@
     margin: 0;
     margin-bottom: 9.5vh;
     margin-right: 20vh;
-    font-family: var(--font);
     font-size: 3.6vh;
     color: var(--gray-rgb);
 }
@@ -109,6 +109,7 @@
     margin: 0;
     background: var(--body-background); 
     cursor: var(--cursor);
+    font-family: var(--font);
 }
 
 #dCircles-page #central-div {
@@ -132,7 +133,6 @@
 
 #dCircles-page #page-title {
     color: var(--lightgreen-rgb);
-    font-family: var(--font);
     font-size: 3vw;
     text-shadow: -1px -1px 1px var(--lightblue-rgb), 2px 2px 12px var(--lavender-rgb), 1px 1px 2px var(--lightcoral-rgb);
     margin: 12px 0;
@@ -141,7 +141,6 @@
 #dCircles-page #uploadButton {
     display: block;
     color: var(--lightgreen-rgb);
-    font-family: var(--font);
     font-size: 2vw;
     text-shadow: -1px -1px 1px var(--lightblue-rgb), 2px 2px 12px var(--lavender-rgb), 1px 1px 2px var(--lightcoral-rgb);
     margin-bottom: 30px;
