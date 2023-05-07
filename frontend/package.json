@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "alpinejs": "^2.8.2",
-    "axios": "^1.4.0"
+    "axios": "^1.4.0",
+    "sweetalert2": "^11.7.5"
   }
 }
