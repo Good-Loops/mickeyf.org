@@ -1,7 +1,7 @@
 import { PitchDetector } from "pitchy";
 
-const fileInput: HTMLInputElement = document.getElementById("fileupload") as HTMLInputElement;
-const uploadButton: HTMLLabelElement = document.getElementById("uploadButton") as HTMLLabelElement;
+const fileInput: HTMLInputElement = document.getElementById("file-upload") as HTMLInputElement;
+const uploadButton: HTMLLabelElement = document.getElementById("upload-button") as HTMLLabelElement;
 let pitch: number, clarity: number, playing: boolean;
 
 // Mess with smoothingTimeConstant, Float64Array and fftSize

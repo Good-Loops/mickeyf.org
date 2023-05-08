@@ -5,12 +5,14 @@
   "main": "webpack.config.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack --progress --watch",
-    "prod": "NODE_ENV=production webpack --progress --watch"
+    "prod": "NODE_ENV=production webpack --progress --watch",
+    "server": "live-server --port=5000 --host=localhost public"
   },
   "keywords": [],
   "author": "",
   "license": "CC0-1.0",
   "devDependencies": {
+    "live-server": "^1.2.2",
     "pitchy": "^4.0.7",
     "ts-loader": "^9.4.2",
     "typescript": "^5.0.4",

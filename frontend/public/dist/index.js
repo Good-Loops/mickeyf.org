@@ -29,6 +29,50 @@ eval("/*!\n* sweetalert2 v11.7.5\n* Released under the MIT License.\n*/\n(functi
 
 /***/ }),
 
+/***/ "./components/Error404.ts":
+/*!********************************!*\
+  !*** ./components/Error404.ts ***!
+  \********************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nfunction component() {\n    const render = function () {\n        return \"Error\";\n    };\n    return {\n        render,\n    };\n}\nexports[\"default\"] = component();\n\n\n//# sourceURL=webpack://frontend/./components/Error404.ts?");
+
+/***/ }),
+
+/***/ "./components/Home.ts":
+/*!****************************!*\
+  !*** ./components/Home.ts ***!
+  \****************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nfunction component() {\n    const render = function () {\n        return \"Home\";\n    };\n    return {\n        render,\n    };\n}\nexports[\"default\"] = component();\n\n\n//# sourceURL=webpack://frontend/./components/Home.ts?");
+
+/***/ }),
+
+/***/ "./components/Register.ts":
+/*!********************************!*\
+  !*** ./components/Register.ts ***!
+  \********************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nfunction component() {\n    const render = function () {\n        return `\r\n        <h1 id=\"page-title\">Register:</h1>\r\n        <div x-data=\"create()\" x-cloak>\r\n            <div id=\"form\">\r\n                <form x-on:submit.prevent=\"createUser\">\r\n                    <input class=\"input\" type=\"text\" name=\"firstName\" placeholder=\"First Name\" x-model=\"user.firstName\">\r\n                    <span id=\"error-firstName\"></span>\r\n                    <input class=\"input\" type=\"text\" name=\"lastName\" placeholder=\"Last Name\" x-model=\"user.lastName\">\r\n                    <span id=\"error-lastName\"></span>\r\n                    <input class=\"input\" type=\"text\" name=\"email\" placeholder=\"Email\" x-model=\"user.email\">\r\n                    <span id=\"error-email\"></span>\r\n                    <input class=\"input\" type=\"text\" name=\"password\" placeholder=\"New Password\" x-model=\"user.password\">\r\n                    <span id=\"error-password\"></span>\r\n                    <input class=\"input\" id=\"registerButton\" type=\"submit\" name=\"submit\" value=\"Sign up\">\r\n                </form>\r\n            </div>\r\n        </div>\r\n        `;\n    };\n    return {\n        render,\n    };\n}\nexports[\"default\"] = component();\n\n\n//# sourceURL=webpack://frontend/./components/Register.ts?");
+
+/***/ }),
+
+/***/ "./components/User.ts":
+/*!****************************!*\
+  !*** ./components/User.ts ***!
+  \****************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nfunction component() {\n    const render = function () {\n        return \"User\";\n    };\n    return {\n        render,\n    };\n}\nexports[\"default\"] = component();\n\n\n//# sourceURL=webpack://frontend/./components/User.ts?");
+
+/***/ }),
+
 /***/ "./public/src/create.ts":
 /*!******************************!*\
   !*** ./public/src/create.ts ***!
@@ -69,7 +113,7 @@ eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
-eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\n__webpack_require__(/*! alpinejs */ \"./node_modules/alpinejs/dist/alpine.js\");\nconst create_1 = __importDefault(__webpack_require__(/*! ./create */ \"./public/src/create.ts\"));\nwindow.create = create_1.default;\n// window.addEventListener(\"load\", animationLoop);\n\n\n//# sourceURL=webpack://frontend/./public/src/index.ts?");
+eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\n__webpack_require__(/*! alpinejs */ \"./node_modules/alpinejs/dist/alpine.js\");\nconst create_1 = __importDefault(__webpack_require__(/*! ./create */ \"./public/src/create.ts\"));\nconst Home_1 = __importDefault(__webpack_require__(/*! ../../components/Home */ \"./components/Home.ts\"));\nconst Register_1 = __importDefault(__webpack_require__(/*! ../../components/Register */ \"./components/Register.ts\"));\nconst Error404_1 = __importDefault(__webpack_require__(/*! ../../components/Error404 */ \"./components/Error404.ts\"));\nconst User_1 = __importDefault(__webpack_require__(/*! ../../components/User */ \"./components/User.ts\"));\nconst routes = {\n    \"/\": Home_1.default,\n    \"/user/create\": Register_1.default,\n    \"/user/:id\": User_1.default,\n};\nfunction loadComponent() {\n    var _a;\n    const content = document.querySelector(\"#content\");\n    const hash = window.location.hash;\n    const hashSplit = hash.split(\"/\");\n    const component = hashSplit[1] ? `/${hashSplit[1]}` : \"/\";\n    const placeholder = hashSplit[2] ? \"/:id\" : \"\";\n    const uri = hash.substring(1);\n    const newUri = component + placeholder;\n    let componentHtml = (_a = routes[uri]) !== null && _a !== void 0 ? _a : routes[newUri];\n    if (!componentHtml) {\n        componentHtml = Error404_1.default;\n    }\n    if (componentHtml) {\n        content.innerHTML = componentHtml.render();\n    }\n}\nloadComponent();\nwindow.addEventListener(\"hashchange\", (event) => {\n    loadComponent();\n});\nwindow.create = create_1.default;\n// window.addEventListener(\"load\", animationLoop);\n\n\n//# sourceURL=webpack://frontend/./public/src/index.ts?");
 
 /***/ }),
 
