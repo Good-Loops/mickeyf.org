@@ -9,41 +9,37 @@
     <link rel="stylesheet" href="./assets/styles/style.css">
 </head>
 
-<body x-data="{ dCirclesPage: false }" x-init="updateScripts(dCirclesPage); $watch('dCirclesPage', value => updateScripts(value))">
+<body x-data="{ page: 'home' }" 
+    x-init="updateScripts(page); $watch('page', value => updateScripts(value));">
 
     <audio id="music"></audio>
-
     <!-- Navigation bar -->
     <div id="central">
-        <div id="header" style="font-size: 4vh; margin-right: 110vh;">
-            <ul id="nav" style="display: flex; list-style: none; padding: 0;">
-                <li style="margin-right: 2vh;"><a style="text-decoration: none; color: grey" href="/" @click="dCirclesPage=false">/</a></li>
-                <li style="margin-right: 2vh;"><a style="text-decoration: none; color: grey" href="/#/dancing-circles" @click="dCirclesPage=true">Anim</a></li>
-                <li style="margin-right: 2vh;"><a style="text-decoration: none; color: grey" href="/#/user/create" @click="dCirclesPage=false">Register</a></li>
-                <li style="margin-right: 2vh;"><a style="text-decoration: none; color: grey" href="/#/login" @click="dCirclesPage=false">Log in</a></li>
+        <div id="header">
+            <ul id="nav">
+                <li><a href="/" @click="page='home'">Home</a></li>
+                <li><a href="/#/dancing-circles" @click="page='dancing-circles'">Anim</a></li>
+                <li><a href="/#/user/create" @click="page='register'">Register</a></li>
+                <li><a href="/#/login" @click="page='login'">Log in</a></li>
             </ul>
         </div>
 
         <!-- Content from Dancing Circles Page -->
-        <template x-if="dCirclesPage">
-            <h1 id="page-title">Dancing Circles</h1>
-        </template>
-        <template x-if="dCirclesPage">
-            <canvas id="dancing-circles"></canvas>
-        </template>
-        <template x-if="dCirclesPage">
-            <label id="upload-button" for="file-upload">Upload Music</label>
-        </template>
-        <template x-if="dCirclesPage">
-            <input type="file" name="fileupload" id="file-upload" accept="audio/*" />
+        <template x-if="(page === 'dancing-circles')">
+            <div id="dc-content">
+                <h1 id="dc-title">Dancing Circles</h1>
+                <canvas id="dancing-circles"></canvas>
+                <label id="upload-button" for="file-upload">Upload Music</label>
+                <input type="file" name="fileupload" id="file-upload" accept="audio/*" />
+            </div>
         </template>
 
         <!-- Content from pages handled with index.js -->
-        <div id="content" x-show="!dCirclesPage"></div>
+        <div id="content" x-show="(page !== 'dancing-circles')"></div>
     </div>
     <!-- Dynamic scripts -->
     <script>
-         function updateScripts(dCirclesPage) {
+        function updateScripts(currentPage) {
             // Remove existing script if any
             const existingScript = document.getElementById("dynamic-script");
             if (existingScript) {
@@ -54,19 +50,20 @@
             let myCoolCode = document.createElement("script");
             myCoolCode.id = "dynamic-script";
 
-            if (dCirclesPage) {
-                myCoolCode.setAttribute("src", "dist/circleAnim.js");
-            } else {
-                myCoolCode.setAttribute("src", "dist/index.js");
-            }
+            switch (currentPage) {
+                case "dancing-circles":
+                    myCoolCode.setAttribute("src", "dist/circleAnim.js");
+                    break;
+                default:
+                    myCoolCode.setAttribute("src", "dist/index.js");
+                    break;
+        }
 
-            // Append the new script to the body
-            document.body.appendChild(myCoolCode);
+        // Append the new script to the body
+        document.body.appendChild(myCoolCode);
         }
         updateScripts();
     </script>
 </body>
-
-</html>
 
 </html>

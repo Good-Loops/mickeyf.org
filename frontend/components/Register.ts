@@ -1,7 +1,7 @@
 function component() {
     const render = function () {
         return `
-        <h1 id="page-title">Register:</h1>
+        <h1 id="register-title">Register:</h1>
         <div x-data="create()" x-cloak>
             <div id="form">
                 <form x-on:submit.prevent="createUser">
@@ -13,7 +13,7 @@ function component() {
                     <span id="error-email"></span>
                     <input class="input" type="text" name="password" placeholder="New Password" x-model="user.password">
                     <span id="error-password"></span>
-                    <input class="input" id="registerButton" type="submit" name="submit" value="Sign up">
+                    <input class="input" id="register-button" type="submit" name="submit" value="Sign up">
                 </form>
             </div>
         </div>

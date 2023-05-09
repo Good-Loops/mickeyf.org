@@ -48,14 +48,34 @@ div#central {
     vertical-align: middle;
 }
 
+div#header {
+    font-size: 4vh; 
+    margin-right: 110vh;
+}
+
+div#header ul#nav {
+    display: flex; 
+    list-style: none; 
+    padding: 0;
+}
+
+div#header ul#nav li {
+    margin-right: 2vh;
+}
+
+div#header ul#nav li a{
+    text-decoration: none; 
+    color: grey
+}
+
 div#content {
     display: contents;
 }
 
 /* Register Page */
-h1#page-title {
+h1#register-title {
     margin: 0;
-    margin-bottom: 9.5vh;
+    margin-bottom: 9vh;
     margin-right: 20vh;
     font-size: 3.6vh;
     color: var(--lightblue-rgb);
@@ -90,7 +110,7 @@ div#form .input:focus {
     border: 1px solid var(--gray-rgb);
 }
 
-div#form #registerButton {
+div#form #register-button {
     border: 1px solid var(--lightgray-rgb);
     transition: border 0.7s;
     width: 6vh;
@@ -100,16 +120,20 @@ div#form #registerButton {
     padding-bottom: 2vh;
 }
 
-div#form #registerButton:active {
+div#form #register-button:active {
     transform: scale(0.85);
 }
 
-div#form #registerButton:hover {
+div#form #register-button:hover {
     cursor: var(--hover-cursor);
     border: 1px solid var(--gray-rgb);
 }
 
 /* Dancing Circles Page */
+div#dc-content {
+    display: contents;
+}
+
 canvas#dancing-circles {
     border: 4pt dashed;
     border-color: var(--lightgreen-rgb);
@@ -119,7 +143,7 @@ canvas#dancing-circles {
     margin-bottom: 15px;
 }
 
-h1#page-title {
+h1#dc-title {
     color: var(--lightgreen-rgb);
     font-size: 3vw;
     text-shadow: -1px -1px 1px var(--lightblue-rgb), 2px 2px 12px var(--lavender-rgb), 1px 1px 2px var(--lightcoral-rgb);
