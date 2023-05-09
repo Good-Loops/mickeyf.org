@@ -11,10 +11,10 @@ function create(): userCreateInterface {
             email_duplicated: false,
         },
         user: {
-            firstName: "Michel",
-            lastName: "Dias",
-            email: "michel.sdf@gmail.com",
-            password: "123",
+            firstName: "",
+            lastName: "",
+            email: "",
+            password: "",
         },
         createUser: async function () {
             try {

@@ -4,7 +4,7 @@ import * as PositionHandler from "./handlers/positionHandler";
 import * as AudioHandler from "./handlers/audioHandler";
 
 // Canvas width and height
-const canvas: HTMLCanvasElement = document.getElementById("page-canvas") as HTMLCanvasElement;
+const canvas: HTMLCanvasElement = document.getElementById("dancing-circles") as HTMLCanvasElement;
 canvas.width = 800;
 canvas.height = 800;
 
@@ -13,11 +13,12 @@ export const CANVAS_HEIGHT: number = canvas.height;
 
 // Returns random integer between a minimum and a maximum
 export function getRandomInt(min: number, max: number): number {
+    
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // Create animation loop
-export const animationLoop = function (): void {
+const animationLoop = function (): void {
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
 
     let stop: boolean = false;
@@ -190,3 +191,5 @@ export const animationLoop = function (): void {
     // 90fps
     setInterval(step, 1000 / 90);
 }
+
+animationLoop();

@@ -9,36 +9,61 @@
     <link rel="stylesheet" href="./assets/styles/style.css">
 </head>
 
-<body id="register-page">
+<body x-data="{ page: 'home' }" 
+    x-init="updateScripts(page); $watch('page', value => updateScripts(value));">
 
-    <!-- <body id="dCircles-page"> -->
-    <!-- <audio id="music"></audio> -->
-
-    <div id="central-div">
-
-        <!-- <h1 id="page-title">Dancing Circles</h1>
-        <canvas id="page-canvas"></canvas>
-        <label id="uploadButton" for="fileupload">Upload Music</label>
-        <input type="file" name="fileupload" id="fileupload" accept="audio/*" /> -->
-
-        <h1 id="page-title">Register:</h1>
-        <div id="form-div" x-data="create()">
-            <form x-on:submit.prevent="createUser">
-                <input class="input" type="text" name="firstName" placeholder="First Name" x-model="user.firstName">
-                <span id="error-firstName"></span>
-                <input class="input" type="text" name="lastName" placeholder="Last Name" x-model="user.lastName">
-                <span id="error-lastName"></span>
-                <input class="input" type="text" name="email" placeholder="Email" x-model="user.email">
-                <span id="error-email"></span>
-                <input class="input" type="text" name="password" placeholder="New Password" x-model="user.password">
-                <span id="error-password"></span>
-                <input class="input" id="registerButton" type="submit" name="submit" value="Sign up">
-            </form>
+    <audio id="music"></audio>
+    <!-- Navigation bar -->
+    <div id="central">
+        <div id="header">
+            <ul id="nav">
+                <li><a href="/" @click="page='home'">Home</a></li>
+                <li><a href="/#/dancing-circles" @click="page='dancing-circles'">Anim</a></li>
+                <li><a href="/#/user/create" @click="page='register'">Register</a></li>
+                <li><a href="/#/login" @click="page='login'">Log in</a></li>
+            </ul>
         </div>
-    </div>
-    <script src="dist/index.js"></script>
-</body>
 
-</html>
+        <!-- Content from Dancing Circles Page -->
+        <template x-if="(page === 'dancing-circles')">
+            <div id="dc-content">
+                <h1 id="dc-title">Dancing Circles</h1>
+                <canvas id="dancing-circles"></canvas>
+                <label id="upload-button" for="file-upload">Upload Music</label>
+                <input type="file" name="fileupload" id="file-upload" accept="audio/*" />
+            </div>
+        </template>
+
+        <!-- Content from pages handled with index.js -->
+        <div id="content" x-show="(page !== 'dancing-circles')"></div>
+    </div>
+    <!-- Dynamic scripts -->
+    <script>
+        function updateScripts(currentPage) {
+            // Remove existing script if any
+            const existingScript = document.getElementById("dynamic-script");
+            if (existingScript) {
+                existingScript.remove();
+            }
+
+            // Create new script element
+            let myCoolCode = document.createElement("script");
+            myCoolCode.id = "dynamic-script";
+
+            switch (currentPage) {
+                case "dancing-circles":
+                    myCoolCode.setAttribute("src", "dist/circleAnim.js");
+                    break;
+                default:
+                    myCoolCode.setAttribute("src", "dist/index.js");
+                    break;
+        }
+
+        // Append the new script to the body
+        document.body.appendChild(myCoolCode);
+        }
+        updateScripts();
+    </script>
+</body>
 
 </html>

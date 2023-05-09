@@ -1,6 +1,6 @@
 :root {
     --lightblue-rgb: rgb(135, 206, 250);
-    --lightblue-rgba: rgb(135, 206, 250, .2);
+    --lightblue-rgba: rgb(135, 206, 250, .5);
     --lightturquoise-rgb: rgb(64, 224, 208);
     --lightturquoise-rgba: rgba(64, 224, 208, .3);
     --lightgreen-rgb: rgb(144, 238, 144);
@@ -13,7 +13,7 @@
     --lavender-rgb: rgb(230, 230, 250);
     --lavender-rgba: rgba(230, 230, 250, .3);
     --lightcoral-rgb: rgb(240, 128, 128);
-    --lightcoral-rgba: rgba(240, 128, 128, .2);
+    --lightcoral-rgba: rgba(240, 128, 128, .5);
 
     --gray-rgb: rgb(80, 80, 80);
     --gray-rgba: rgb(80, 80, 80, .3);
@@ -31,15 +31,14 @@
     --hover-cursor: url("../img/select.cur"), auto;
 }
 
-/* Register Page */
-#register-page {
+body {
     margin: 0;
-    background: var(--body-background); 
+    background: var(--body-background);
     cursor: var(--cursor);
     font-family: var(--font);
 }
 
-#register-page #central-div {
+div#central {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -49,15 +48,41 @@
     vertical-align: middle;
 }
 
-#register-page #page-title {
-    margin: 0;
-    margin-bottom: 9.5vh;
-    margin-right: 20vh;
-    font-size: 3.6vh;
-    color: var(--gray-rgb);
+div#header {
+    font-size: 4vh; 
+    margin-right: 110vh;
 }
 
-#register-page #form-div {
+div#header ul#nav {
+    display: flex; 
+    list-style: none; 
+    padding: 0;
+}
+
+div#header ul#nav li {
+    margin-right: 2vh;
+}
+
+div#header ul#nav li a{
+    text-decoration: none; 
+    color: grey
+}
+
+div#content {
+    display: contents;
+}
+
+/* Register Page */
+h1#register-title {
+    margin: 0;
+    margin-bottom: 9vh;
+    margin-right: 20vh;
+    font-size: 3.6vh;
+    color: var(--lightblue-rgb);
+    text-shadow: -1.8px -1.8px 3px var(--lightcoral-rgb), 1.5px 1.5px 3px var(--lightcoral-rgb);
+}
+
+div#form {
     width: 20vh;
     height: 20vh;
     background: var(--register-div-background);
@@ -66,7 +91,7 @@
     margin-bottom: 12vh;
 }
 
-#register-page #form-div .input {
+div#form .input {
     margin-left: 1.7vh;
     margin-top: 1.5vh;
     width: 16vh;
@@ -81,11 +106,11 @@
     color: var(--gray-rgb);
 }
 
-#register-page #form-div .input:focus {
+div#form .input:focus {
     border: 1px solid var(--gray-rgb);
 }
 
-#register-page #form-div #registerButton {
+div#form #register-button {
     border: 1px solid var(--lightgray-rgb);
     transition: border 0.7s;
     width: 6vh;
@@ -95,34 +120,21 @@
     padding-bottom: 2vh;
 }
 
-#register-page #form-div #registerButton:active {
+div#form #register-button:active {
     transform: scale(0.85);
 }
 
-#register-page #form-div #registerButton:hover {
+div#form #register-button:hover {
     cursor: var(--hover-cursor);
     border: 1px solid var(--gray-rgb);
 }
 
 /* Dancing Circles Page */
-#dCircles-page {
-    margin: 0;
-    background: var(--body-background); 
-    cursor: var(--cursor);
-    font-family: var(--font);
+div#dc-content {
+    display: contents;
 }
 
-#dCircles-page #central-div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100vh;
-    vertical-align: middle;
-}
-
-#dCircles-page #page-canvas {
+canvas#dancing-circles {
     border: 4pt dashed;
     border-color: var(--lightgreen-rgb);
     border-radius: 10pt;
@@ -131,14 +143,14 @@
     margin-bottom: 15px;
 }
 
-#dCircles-page #page-title {
+h1#dc-title {
     color: var(--lightgreen-rgb);
     font-size: 3vw;
     text-shadow: -1px -1px 1px var(--lightblue-rgb), 2px 2px 12px var(--lavender-rgb), 1px 1px 2px var(--lightcoral-rgb);
     margin: 12px 0;
 }
 
-#dCircles-page #uploadButton {
+label#upload-button {
     display: block;
     color: var(--lightgreen-rgb);
     font-size: 2vw;
@@ -153,16 +165,16 @@
     user-select: none;
 }
 
-#dCircles-page #uploadButton:not(.playing):hover {
+label#upload-button:not(.playing):hover {
     box-shadow: 8px 8px 5px var(--shadow-rgba) inset, -8px -8px 5px var(--shadow-rgba) inset;
     cursor: var(--hover-cursor);
 }
 
-#dCircles-page #uploadButton:not(.playing):active {
+label#upload-button:not(.playing):active {
     transform: scale(0.95);
     transition: transform 0.5s;
 }
 
-#dCircles-page #fileUpload[type="file"] {
+input#file-upload[type="file"] {
     display: none;
 }

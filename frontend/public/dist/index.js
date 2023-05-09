@@ -29,6 +29,72 @@ eval("/*!\n* sweetalert2 v11.7.5\n* Released under the MIT License.\n*/\n(functi
 
 /***/ }),
 
+/***/ "./components/Error404.ts":
+/*!********************************!*\
+  !*** ./components/Error404.ts ***!
+  \********************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nfunction component() {\n    const render = function () {\n        return \"Error\";\n    };\n    return {\n        render,\n    };\n}\nexports[\"default\"] = component();\n\n\n//# sourceURL=webpack://frontend/./components/Error404.ts?");
+
+/***/ }),
+
+/***/ "./components/Home.ts":
+/*!****************************!*\
+  !*** ./components/Home.ts ***!
+  \****************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nfunction component() {\n    const render = function () {\n        return \"Home\";\n    };\n    return {\n        render,\n    };\n}\nexports[\"default\"] = component();\n\n\n//# sourceURL=webpack://frontend/./components/Home.ts?");
+
+/***/ }),
+
+/***/ "./components/Register.ts":
+/*!********************************!*\
+  !*** ./components/Register.ts ***!
+  \********************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nfunction component() {\n    const render = function () {\n        return `\r\n        <h1 id=\"register-title\">Register:</h1>\r\n        <div x-data=\"create()\" x-cloak>\r\n            <div id=\"form\">\r\n                <form x-on:submit.prevent=\"createUser\">\r\n                    <input class=\"input\" type=\"text\" name=\"firstName\" placeholder=\"First Name\" x-model=\"user.firstName\">\r\n                    <span id=\"error-firstName\"></span>\r\n                    <input class=\"input\" type=\"text\" name=\"lastName\" placeholder=\"Last Name\" x-model=\"user.lastName\">\r\n                    <span id=\"error-lastName\"></span>\r\n                    <input class=\"input\" type=\"text\" name=\"email\" placeholder=\"Email\" x-model=\"user.email\">\r\n                    <span id=\"error-email\"></span>\r\n                    <input class=\"input\" type=\"text\" name=\"password\" placeholder=\"New Password\" x-model=\"user.password\">\r\n                    <span id=\"error-password\"></span>\r\n                    <input class=\"input\" id=\"register-button\" type=\"submit\" name=\"submit\" value=\"Sign up\">\r\n                </form>\r\n            </div>\r\n        </div>\r\n        `;\n    };\n    return {\n        render,\n    };\n}\nexports[\"default\"] = component();\n\n\n//# sourceURL=webpack://frontend/./components/Register.ts?");
+
+/***/ }),
+
+/***/ "./components/User.ts":
+/*!****************************!*\
+  !*** ./components/User.ts ***!
+  \****************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst hashInfo_1 = __importDefault(__webpack_require__(/*! ../helpers/hashInfo */ \"./helpers/hashInfo.ts\"));\nfunction component() {\n    const data = function () {\n        const { param } = (0, hashInfo_1.default)();\n        return param();\n    };\n    const render = function () {\n        // console.log(data());\n        return \"User\";\n    };\n    return {\n        render,\n    };\n}\nexports[\"default\"] = component();\n\n\n//# sourceURL=webpack://frontend/./components/User.ts?");
+
+/***/ }),
+
+/***/ "./helpers/hashInfo.ts":
+/*!*****************************!*\
+  !*** ./helpers/hashInfo.ts ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst hashInfo = function () {\n    const hash = window.location.hash;\n    const hashSplit = hash.split(\"/\");\n    const component = hashSplit[1] ? `/${hashSplit[1]}` : \"/\";\n    const placeholder = hashSplit[2] ? \"/:id\" : \"\";\n    const param = function (index = 2) {\n        var _a;\n        return (_a = hashSplit[index]) !== null && _a !== void 0 ? _a : \"\";\n    };\n    const uri = hash.substring(1);\n    return {\n        component,\n        placeholder,\n        uri,\n        param\n    };\n};\nexports[\"default\"] = hashInfo;\n\n\n//# sourceURL=webpack://frontend/./helpers/hashInfo.ts?");
+
+/***/ }),
+
+/***/ "./helpers/loadComponent.ts":
+/*!**********************************!*\
+  !*** ./helpers/loadComponent.ts ***!
+  \**********************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst Home_1 = __importDefault(__webpack_require__(/*! ../components/Home */ \"./components/Home.ts\"));\nconst Register_1 = __importDefault(__webpack_require__(/*! ../components/Register */ \"./components/Register.ts\"));\nconst User_1 = __importDefault(__webpack_require__(/*! ../components/User */ \"./components/User.ts\"));\nconst Error404_1 = __importDefault(__webpack_require__(/*! ../components/Error404 */ \"./components/Error404.ts\"));\nconst routes = {\n    \"/\": Home_1.default,\n    \"/user/create\": Register_1.default,\n    \"/user/:id\": User_1.default,\n};\nconst loadComponentHtml = function (component, placeholder, uri) {\n    var _a;\n    const content = document.querySelector(\"#content\");\n    const newUri = component + placeholder;\n    let componentHtml = (_a = routes[uri]) !== null && _a !== void 0 ? _a : routes[newUri];\n    if (!componentHtml) {\n        componentHtml = Error404_1.default;\n    }\n    else {\n        content.innerHTML = componentHtml.render();\n    }\n};\nexports[\"default\"] = loadComponentHtml;\n\n\n//# sourceURL=webpack://frontend/./helpers/loadComponent.ts?");
+
+/***/ }),
+
 /***/ "./public/src/create.ts":
 /*!******************************!*\
   !*** ./public/src/create.ts ***!
@@ -36,7 +102,7 @@ eval("/*!\n* sweetalert2 v11.7.5\n* Released under the MIT License.\n*/\n(functi
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
-eval("\nvar __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {\n    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }\n    return new (P || (P = Promise))(function (resolve, reject) {\n        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }\n        function rejected(value) { try { step(generator[\"throw\"](value)); } catch (e) { reject(e); } }\n        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }\n        step((generator = generator.apply(thisArg, _arguments || [])).next());\n    });\n};\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst constants_1 = __webpack_require__(/*! ./helpers/constants */ \"./public/src/helpers/constants.ts\");\nconst http_1 = __importDefault(__webpack_require__(/*! ./helpers/http */ \"./public/src/helpers/http.ts\"));\nconst sweetalert2_1 = __importDefault(__webpack_require__(/*! sweetalert2 */ \"./node_modules/sweetalert2/dist/sweetalert2.all.js\"));\nfunction create() {\n    return {\n        created: false,\n        errors: {\n            email_duplicated: false,\n        },\n        user: {\n            firstName: \"Michel\",\n            lastName: \"Dias\",\n            email: \"michel.sdf@gmail.com\",\n            password: \"123\",\n        },\n        createUser: function () {\n            var _a, _b;\n            return __awaiter(this, void 0, void 0, function* () {\n                try {\n                    const { data } = yield http_1.default.post(\"/user/store\", this.user);\n                    if (data === constants_1.USER_CREATED) {\n                        sweetalert2_1.default.fire({\n                            title: 'Success!',\n                            text: 'Successfully registered user.',\n                            icon: 'success'\n                        });\n                        this.created = true;\n                        setTimeout(() => {\n                            this.created = false;\n                        }, 3000);\n                    }\n                }\n                catch (error) {\n                    const errors = (_b = (_a = error.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.errors;\n                    if (errors) {\n                        errors.forEach((element) => {\n                            const elementValidation = document.querySelector(`#error-${element.path}`);\n                            elementValidation.innerHTML = element.msg;\n                            setTimeout(() => {\n                                elementValidation.innerHTML = \"\";\n                            }, 3000);\n                        });\n                    }\n                    else {\n                        switch (error === null || error === void 0 ? void 0 : error.response.data) {\n                            case constants_1.EMAIL_DUPLICATED:\n                                sweetalert2_1.default.fire({\n                                    title: 'Email already in use',\n                                    icon: 'warning'\n                                });\n                                this.errors.email_duplicated = true;\n                                break;\n                        }\n                    }\n                    setTimeout(() => {\n                        this.errors.email_duplicated = false;\n                    }, 3000);\n                }\n            });\n        },\n    };\n}\nexports[\"default\"] = create;\n\n\n//# sourceURL=webpack://frontend/./public/src/create.ts?");
+eval("\nvar __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {\n    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }\n    return new (P || (P = Promise))(function (resolve, reject) {\n        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }\n        function rejected(value) { try { step(generator[\"throw\"](value)); } catch (e) { reject(e); } }\n        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }\n        step((generator = generator.apply(thisArg, _arguments || [])).next());\n    });\n};\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst constants_1 = __webpack_require__(/*! ./helpers/constants */ \"./public/src/helpers/constants.ts\");\nconst http_1 = __importDefault(__webpack_require__(/*! ./helpers/http */ \"./public/src/helpers/http.ts\"));\nconst sweetalert2_1 = __importDefault(__webpack_require__(/*! sweetalert2 */ \"./node_modules/sweetalert2/dist/sweetalert2.all.js\"));\nfunction create() {\n    return {\n        created: false,\n        errors: {\n            email_duplicated: false,\n        },\n        user: {\n            firstName: \"\",\n            lastName: \"\",\n            email: \"\",\n            password: \"\",\n        },\n        createUser: function () {\n            var _a, _b;\n            return __awaiter(this, void 0, void 0, function* () {\n                try {\n                    const { data } = yield http_1.default.post(\"/user/store\", this.user);\n                    if (data === constants_1.USER_CREATED) {\n                        sweetalert2_1.default.fire({\n                            title: 'Success!',\n                            text: 'Successfully registered user.',\n                            icon: 'success'\n                        });\n                        this.created = true;\n                        setTimeout(() => {\n                            this.created = false;\n                        }, 3000);\n                    }\n                }\n                catch (error) {\n                    const errors = (_b = (_a = error.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.errors;\n                    if (errors) {\n                        errors.forEach((element) => {\n                            const elementValidation = document.querySelector(`#error-${element.path}`);\n                            elementValidation.innerHTML = element.msg;\n                            setTimeout(() => {\n                                elementValidation.innerHTML = \"\";\n                            }, 3000);\n                        });\n                    }\n                    else {\n                        switch (error === null || error === void 0 ? void 0 : error.response.data) {\n                            case constants_1.EMAIL_DUPLICATED:\n                                sweetalert2_1.default.fire({\n                                    title: 'Email already in use',\n                                    icon: 'warning'\n                                });\n                                this.errors.email_duplicated = true;\n                                break;\n                        }\n                    }\n                    setTimeout(() => {\n                        this.errors.email_duplicated = false;\n                    }, 3000);\n                }\n            });\n        },\n    };\n}\nexports[\"default\"] = create;\n\n\n//# sourceURL=webpack://frontend/./public/src/create.ts?");
 
 /***/ }),
 
@@ -69,7 +135,7 @@ eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
-eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\n__webpack_require__(/*! alpinejs */ \"./node_modules/alpinejs/dist/alpine.js\");\nconst create_1 = __importDefault(__webpack_require__(/*! ./create */ \"./public/src/create.ts\"));\nwindow.create = create_1.default;\n// window.addEventListener(\"load\", animationLoop);\n\n\n//# sourceURL=webpack://frontend/./public/src/index.ts?");
+eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\n__webpack_require__(/*! alpinejs */ \"./node_modules/alpinejs/dist/alpine.js\");\nconst create_1 = __importDefault(__webpack_require__(/*! ./create */ \"./public/src/create.ts\"));\nconst hashInfo_1 = __importDefault(__webpack_require__(/*! ../../helpers/hashInfo */ \"./helpers/hashInfo.ts\"));\nconst loadComponent_1 = __importDefault(__webpack_require__(/*! ../../helpers/loadComponent */ \"./helpers/loadComponent.ts\"));\nfunction loadComponent() {\n    const { component, placeholder, uri } = (0, hashInfo_1.default)();\n    (0, loadComponent_1.default)(component, placeholder, uri);\n}\nloadComponent();\nwindow.addEventListener(\"hashchange\", (event) => {\n    loadComponent();\n});\nwindow.create = create_1.default;\n\n\n//# sourceURL=webpack://frontend/./public/src/index.ts?");
 
 /***/ }),
 

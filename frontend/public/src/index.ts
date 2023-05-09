@@ -1,14 +1,25 @@
 import "alpinejs";
-import create from  "./create";
+import create from "./create";
 import { userCreateInterface } from "../../interfaces/userCreateInterface";
-// import { animationLoop } from "./circleAnim";
+import hashInfo from "../../helpers/hashInfo";
+import loadComponentHtml from "../../helpers/loadComponent";
+
+function loadComponent() {
+    const { component, placeholder, uri } = hashInfo();
+    
+    loadComponentHtml(component, placeholder, uri);
+}
+
+loadComponent();
+
+window.addEventListener("hashchange", (event) => {
+    loadComponent();
+});
 
 declare global {
-    interface Window { 
-        create: () => userCreateInterface; 
+    interface Window {
+        create: () => userCreateInterface;
     }
 }
 
 window.create = create;
-
-// window.addEventListener("load", animationLoop);
