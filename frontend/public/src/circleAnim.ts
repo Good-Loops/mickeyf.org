@@ -18,7 +18,7 @@ export function getRandomInt(min: number, max: number): number {
 }
 
 // Create animation loop
-export const animationLoop = function (): void {
+const animationLoop = function (): void {
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
 
     let stop: boolean = false;
@@ -191,3 +191,5 @@ export const animationLoop = function (): void {
     // 90fps
     setInterval(step, 1000 / 90);
 }
+
+animationLoop();
