@@ -13,6 +13,7 @@ export const CANVAS_HEIGHT: number = canvas.height;
 
 // Returns random integer between a minimum and a maximum
 export function getRandomInt(min: number, max: number): number {
+    
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 

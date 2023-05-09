@@ -12,6 +12,7 @@
   "author": "",
   "license": "CC0-1.0",
   "devDependencies": {
+    "@types/alpinejs": "^3.7.1",
     "live-server": "^1.2.2",
     "pitchy": "^4.0.7",
     "ts-loader": "^9.4.2",

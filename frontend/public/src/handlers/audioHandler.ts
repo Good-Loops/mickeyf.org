@@ -12,7 +12,7 @@ fileInput.addEventListener("input", function (): void {
 
     // Disable the file input element while the audio is playing
     fileInput.disabled = true;
-    uploadButton.style.cursor = "url('../public/assets/img/notallowed.cur'), auto";
+    uploadButton.style.cursor = "url('./assets/img/notallowed.cur'), auto";
 
     const files: FileList = fileInput.files as FileList;
     const file: File = files[0] as File;
@@ -29,7 +29,7 @@ fileInput.addEventListener("input", function (): void {
             playing = false;
             // Re-enable the file input element after the audio has finished playing
             fileInput.disabled = false;
-            uploadButton.style.cursor = "url('../public/assets/img/select.cur'), auto";
+            uploadButton.style.cursor = "url('./assets/img/select.cur'), auto";
             uploadButton.classList.remove("playing");
             fileInput.value = "";
             return;
