@@ -9,6 +9,7 @@ interface routerInterface<T> {
 
 interface componentInterface {
     render: () => string;
+    action?: () => void; 
 }
 
 const routes: routerInterface<componentInterface> = {
@@ -22,10 +23,12 @@ const loadComponentHtml = function (component: string, placeholder: string, uri:
     const newUri = component + placeholder;
     let componentHtml = routes[uri] ?? routes[newUri];
 
-    if (!componentHtml) {
-        componentHtml = Error404;
-    } else {
+   !componentHtml ?
+        Error404 :
         content.innerHTML = componentHtml.render();
+
+    if(componentHtml.action) {
+        componentHtml.action();
     }
 }
 
