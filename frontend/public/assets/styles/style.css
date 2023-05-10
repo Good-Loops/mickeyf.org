@@ -65,13 +65,14 @@ div#header ul#nav {
     display: flex;
     list-style: none;
     padding: .5vh;
+    padding-left: 2vh;
+    padding-right: 2vh;
     gap: 3vh;
     justify-content: space-between;
     margin-top: 2vh;
 }
 
 div#header ul#nav li {
-    display: flex;
     justify-content: center;
     align-items: center;
 }
@@ -113,7 +114,7 @@ div#form {
     background: var(--register-div-background);
     border-radius: 1vh;
     transform: scale(1.8);
-    margin-bottom: 50vh;
+    margin-bottom: 25vh;
 }
 
 div#form .input {

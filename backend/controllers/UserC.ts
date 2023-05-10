@@ -30,4 +30,19 @@ const store = async function (request: Request, response: Response) {
     }
 };
 
-export { store };
+const show = async function (request: Request, response: Response) {
+    try {
+        const repo = getRepository(User);
+        const user = await repo.findOne({
+            where: {
+                id: request.query["id"]
+            }
+        });
+        
+        response.status(200).json(user);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export { store, show };

@@ -9,8 +9,7 @@
     <link rel="stylesheet" href="./assets/styles/style.css">
 </head>
 
-<body x-data="{ page: 'home' }" 
-    x-init="updateScripts(page); $watch('page', value => updateScripts(value));">
+<body x-data="{ page: 'home' }" x-init="$watch('page', value => updateScripts(value));">
 
     <audio id="music"></audio>
 
@@ -19,8 +18,8 @@
         <ul id="nav">
             <li><a href="/" @click="page='home'" id="home">Home</a></li>
             <li><a href="/#/dancing-circles" @click="page='dancing-circles'">Animations</a></li>
-            <li><a href="/#/user/create" @click="page='register'">Register</a></li>
             <li><a href="/#/login" @click="page='login'">Log in</a></li>
+            <li><a href="/#/user/create" @click="page='register'">Register</a></li>
         </ul>
     </div>
 
@@ -52,17 +51,23 @@
             let myCoolCode = document.createElement("script");
             myCoolCode.id = "dynamic-script";
 
+            currentPage = currentPage ?? "home";
+
             switch (currentPage) {
                 case "dancing-circles":
                     myCoolCode.setAttribute("src", "dist/circleAnim.js");
                     break;
-                default:
+                case "home":
+                case "register":
+                case "login":
                     myCoolCode.setAttribute("src", "dist/index.js");
                     break;
-        }
+                default:
+                    break;
+            }
 
-        // Append the new script to the body
-        document.body.appendChild(myCoolCode);
+            // Append the new script to the body
+            document.body.appendChild(myCoolCode);
         }
         updateScripts();
     </script>
