@@ -8,9 +8,6 @@ const canvas: HTMLCanvasElement = document.getElementById("dancing-circles") as 
 canvas.width = 1920;
 canvas.height = 1080;
 
-console.log(canvas.style.width.toString());
-console.log(canvas.style.height.toString());
-
 export const CANVAS_WIDTH: number = canvas.width;
 export const CANVAS_HEIGHT: number = canvas.height;
 

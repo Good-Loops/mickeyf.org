@@ -6,7 +6,6 @@ import loadComponentHtml from "../../helpers/loadComponent";
 
 function loadComponent() {
     const { component, placeholder, uri } = hashInfo();
-    
     loadComponentHtml(component, placeholder, uri);
 }
 
