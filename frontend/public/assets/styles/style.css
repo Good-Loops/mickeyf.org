@@ -34,9 +34,7 @@
 }
 
 body {
-    overflow: auto;
     margin: 0;
-    background: var(--body-background);
     cursor: var(--cursor);
     font-family: var(--font);
 }
@@ -47,16 +45,19 @@ div#central {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100vh;
+    width: 1920px;
+    height: 1080px;
     vertical-align: middle;
+    overflow: auto;
+    background: var(--body-background);
 }
 
 div#header {
-    font-size: 4vh;
-    margin-right: 130vh;
-    margin-bottom: 92vh;
+    font-size: 3vh;
+    margin-right: 145vh;
+    margin-bottom: 105vh;
     position: absolute;
+    max-width: 100%;
 }
 
 div#header ul#nav {
@@ -77,8 +78,19 @@ div#header ul#nav li {
 
 div#header ul#nav li a {
     text-decoration: none;
-    color: var(--lavender-rgba);
+    color: rgb(230, 230, 250, .6);
     white-space: nowrap;
+    transition: text-shadow 1.5s ease-in-out, transform .5s linear;
+}
+
+div#header ul#nav li a:hover {
+    text-shadow: var(--label-text-shadow);
+    cursor: var(--hover-cursor);
+    transform: scale(1.1);
+}
+
+div#header ul#nav li a:active {
+    transform: scale(.8);
 }
 
 div#content {
@@ -101,7 +113,7 @@ div#form {
     background: var(--register-div-background);
     border-radius: 1vh;
     transform: scale(1.8);
-    margin-bottom: 12vh;
+    margin-bottom: 50vh;
 }
 
 div#form .input {
@@ -163,7 +175,7 @@ h1#dc-title {
     -webkit-text-stroke: 2px var(--lavender-rgba);
     border-top: 4px double var(--lavender-rgba);
     border-bottom: 4px double var(--lavender-rgba);
-    border-radius: 1vh;
+    border-radius: 2vh;
     padding: 1vh;
     margin: 1vh 0;
 }
@@ -173,28 +185,30 @@ label#upload-button {
     color: var(--lightblue-rgb);
     font-size: 2vw;
     text-shadow: var(--label-text-shadow);
-    margin-bottom: 30px;
+    margin-bottom: 14vh;
     border: 2.2pt solid var(--lightblue-rgb);
     border-radius: 5pt;
     padding: 5px;
     padding-top: 1px;
-    box-shadow: -1px -1px 3px var(--lightblue-rgb), 1px 1px 12px var(--lightblue-rgb), 2px 2px 3px var(--lightgreen-rgb), 
+    box-shadow: -4px -4px 12px var(--lightblue-rgb), 4px 4px 12px var(--lightblue-rgb), 4px 4px 12px var(--lightgreen-rgb), 
             0 0 0px var(--lightblue-rgba) inset,
             0 0 0px var(--lightblue-rgba) inset,
             0 0 0px var(--lightblue-rgb),
             0 0 0px var(--lightblue-rgb);
     transform: scale(1);
-    transition: box-shadow .5s linear, transform .7s linear;
+    transition: box-shadow .5s linear, transform .7s linear, text-shadow 1s ease-in-out, color 1.5s;
     z-index: 100;
     user-select: none;
 }
 
 label#upload-button:not(.playing):hover {
-    box-shadow: 0 0 0px var(--lightblue-rgb), 0 0 0px var(--lavender-rgb), 0 0 0px var(--lightgreen-rgb),
+    box-shadow: 0 0 0px var(--lightblue-rgb), 0 0 0px var(--lightblue-rgb), 0 0 0px var(--lightgreen-rgb),
             10px 10px 12px var(--lightblue-rgba) inset,
             -10px -10px 12px var(--lightblue-rgba) inset,
-            -1px -1px 6px var(--lightblue-rgb),
-            1px 1px 6px var(--lightblue-rgb);
+            -3px -3px 6px var(--lightblue-rgb),
+            3px 3px 6px var(--lightblue-rgb);
+    text-shadow: -9px -9px 12px var(--lightblue-rgb), 9px 9px 12px var(--lightblue-rgb);
+    color: var(--lavender-rgb);
     cursor: var(--hover-cursor);
 }
 
