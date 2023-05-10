@@ -1,4 +1,4 @@
-export interface userCreateInterface {
+interface userCreateInterface {
     created: boolean,
     errors: {
         email_duplicated: boolean
@@ -11,3 +11,5 @@ export interface userCreateInterface {
     };
     createUser: () => void;
 }
+
+export default userCreateInterface;

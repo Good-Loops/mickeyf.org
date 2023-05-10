@@ -8,8 +8,8 @@ interface routerInterface<T> {
 }
 
 interface componentInterface {
-    render: () => string;
-    action?: () => void; 
+    render: () => string | Promise<string>;
+    action?: () => void;
 }
 
 const routes: routerInterface<componentInterface> = {
@@ -18,16 +18,20 @@ const routes: routerInterface<componentInterface> = {
     "/user/:id": User,
 }
 
-const loadComponentHtml = function (component: string, placeholder: string, uri: string) {
+const loadComponentHtml = async function (component: string, placeholder: string, uri: string) {
     const content = document.querySelector("#content") as HTMLDivElement;
     const newUri = component + placeholder;
     let componentHtml = routes[uri] ?? routes[newUri];
 
-   !componentHtml ?
-        Error404 :
-        content.innerHTML = componentHtml.render();
+    (component.split("/")[1] === "dancing-circles") ?
+        content.style.display = "none" :
+        content.style.display = "contents";
 
-    if(componentHtml.action) {
+    if (!componentHtml) componentHtml = Error404;
+
+    content.innerHTML = await componentHtml.render();
+
+    if (componentHtml && componentHtml.action) {
         componentHtml.action();
     }
 }

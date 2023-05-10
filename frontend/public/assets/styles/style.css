@@ -37,6 +37,9 @@ body {
     margin: 0;
     cursor: var(--cursor);
     font-family: var(--font);
+    width: 100vw;
+    height: 100vh;
+    background: var(--body-background);
 }
 
 div#central {
@@ -45,19 +48,15 @@ div#central {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 1920px;
-    height: 1080px;
     vertical-align: middle;
-    overflow: auto;
-    background: var(--body-background);
+    width: 100vw;
+    height: 100vh;
 }
 
 div#header {
     font-size: 3vh;
-    margin-right: 145vh;
-    margin-bottom: 105vh;
-    position: absolute;
-    max-width: 100%;
+    margin-left: 2vw;
+    position: fixed;
 }
 
 div#header ul#nav {
@@ -66,12 +65,14 @@ div#header ul#nav {
     display: flex;
     list-style: none;
     padding: .5vh;
+    padding-left: 2vh;
+    padding-right: 2vh;
     gap: 3vh;
     justify-content: space-between;
+    margin-top: 2vh;
 }
 
 div#header ul#nav li {
-    display: flex;
     justify-content: center;
     align-items: center;
 }
@@ -113,7 +114,7 @@ div#form {
     background: var(--register-div-background);
     border-radius: 1vh;
     transform: scale(1.8);
-    margin-bottom: 50vh;
+    margin-bottom: 25vh;
 }
 
 div#form .input {
@@ -163,7 +164,7 @@ canvas#dancing-circles {
     border: 4pt solid;
     border-color: var(--lightblue-rgb);
     border-radius: 8pt;
-    width: 50%;
+    width: 50vw;
     box-shadow: 4px 4px 10px var(--lightblue-rgb), -2px -2px 10px var(--lightgreen-rgb);
     margin-bottom: 2vh;
 }
@@ -185,7 +186,7 @@ label#upload-button {
     color: var(--lightblue-rgb);
     font-size: 2vw;
     text-shadow: var(--label-text-shadow);
-    margin-bottom: 14vh;
+    margin-bottom: 1vh;
     border: 2.2pt solid var(--lightblue-rgb);
     border-radius: 5pt;
     padding: 5px;

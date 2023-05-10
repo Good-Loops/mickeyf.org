@@ -1,24 +1,50 @@
 import hashInfo from "../helpers/hashInfo";
+import http from "../public/src/helpers/http";
 
 function component() {
-    const render = function() {
-        return `
-            <form id="formCreateUser">
-                <input id="firstName"></input>
 
-                <button type="submit">Create</button>
-            </form>
+    const user = async function() {
+        try {
+            const { param } = hashInfo();
+            const id = param();
+
+            const { data } = await http.get("/user/show", {
+                params: {
+                    id
+                },
+            });
+
+            return data;
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const render = async function() {
+        const userData: {
+            id: number,
+            firstName: string,
+            lastName: string,
+            email: string,
+            password: string
+        } = await user();
+
+        user();
+
+        
+        return `
+            Hello ${userData.firstName}
         `;
     }
 
     const action = function() {
-        const btnCreate = document.querySelector("#formCreateUser") as HTMLFormElement;
-        const firstName = document.querySelector("#firstName") as HTMLInputElement;
+        // const btnCreate = document.querySelector("#formCreateUser") as HTMLFormElement;
+        // const firstName = document.querySelector("#firstName") as HTMLInputElement;
 
-        btnCreate.addEventListener("submit", (event) => {
-            event.preventDefault();
-            console.log("create", firstName.value);
-        })
+        // btnCreate.addEventListener("submit", (event) => {
+        //     event.preventDefault();
+        //     console.log("create", firstName.value);
+        // })
     }
 
     return {
