@@ -1,7 +1,7 @@
 function component() {
     const render = function () {
         return `
-        <h1 id="register-title">Register:</h1>
+        <h1 id="register-title">Register</h1>
         <div x-data="create()" x-cloak>
             <div id="form">
                 <form x-on:submit.prevent="createUser">

@@ -5,8 +5,11 @@ import * as AudioHandler from "./handlers/audioHandler";
 
 // Canvas width and height
 const canvas: HTMLCanvasElement = document.getElementById("dancing-circles") as HTMLCanvasElement;
-canvas.width = 800;
-canvas.height = 800;
+canvas.width = 1920;
+canvas.height = 1080;
+
+console.log(canvas.style.width.toString());
+console.log(canvas.style.height.toString());
 
 export const CANVAS_WIDTH: number = canvas.width;
 export const CANVAS_HEIGHT: number = canvas.height;
