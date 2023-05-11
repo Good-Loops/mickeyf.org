@@ -1,4 +1,4 @@
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../circleAnim";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../helpers/constants";
 
 // Get random x-coordinate
 function getRandomX(radius: number): number {

@@ -5,6 +5,8 @@ import hashInfo from "../../helpers/hashInfo";
 import loadComponentHtml from "../../helpers/loadComponent";
 import listUsersInterface from "../../interfaces/listUsersInterface";
 import listUsers from "./listUsers";
+import danceCirclesInterface from "../../interfaces/danceCirclesInterface";
+import danceCircles from "./danceCircles";
 
 function loadComponent() {
 
@@ -22,8 +24,10 @@ declare global {
     interface Window {
         create: () => userCreateInterface;
         listUsers: () => listUsersInterface;
+        danceCircles: () => danceCirclesInterface
     }
 }
 
 window.create = create;
 window.listUsers = listUsers;
+window.danceCircles = danceCircles;

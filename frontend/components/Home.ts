@@ -14,7 +14,7 @@ function component() {
     }
 
     return {
-        render,
+        render
     };
 }
 

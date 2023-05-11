@@ -4,7 +4,6 @@ module.exports = {
   mode: process.env.NODE_ENV,
   entry: {
     index: ["./public/src/index.ts"],
-    circleAnim: ["./public/src/circleAnim.ts"]
   },
   module: {
     rules: [
