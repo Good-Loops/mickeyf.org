@@ -1,4 +1,4 @@
-import { getRandomInt } from "../circleAnim";
+import { getRandomInt } from "../helpers/methods";
 
 // HSL Values to RGB Values
 function convertHSLtoRGB(h: number, s: number, l: number): number[] {

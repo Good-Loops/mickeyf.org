@@ -9,68 +9,23 @@
     <link rel="stylesheet" href="./assets/styles/style.css">
 </head>
 
-<body x-data="{ page: 'home' }" x-init="$watch('page', value => updateScripts(value));">
-
+<body>
+    <!-- Audio -->
     <audio id="music"></audio>
-
     <!-- Navigation bar -->
     <div id="header">
         <ul id="nav">
-            <li><a href="/" @click="page='home'" id="home">Home</a></li>
-            <li><a href="/#/dancing-circles" @click="page='dancing-circles'">Animations</a></li>
-            <li><a href="/#/login" @click="page='login'">Log in</a></li>
-            <li><a href="/#/user/create" @click="page='register'">Register</a></li>
+            <li><a href="/" id="home">Home</a></li>
+            <li><a href="/#/dancing-circles">Animations</a></li>
+            <li><a href="/#/login">Log in</a></li>
+            <li><a href="/#/user/create">Register</a></li>
         </ul>
     </div>
-
     <!-- Centralizing Div -->
     <div id="central">
-        <!-- Content from Dancing Circles Page -->
-        <template x-if="(page === 'dancing-circles')">
-            <div id="dc-content">
-                <h1 id="dc-title">Dancing Circles</h1>
-                <canvas id="dancing-circles"></canvas>
-                <label id="upload-button" for="file-upload">Upload Music</label>
-                <input type="file" name="fileupload" id="file-upload" accept="audio/*" />
-            </div>
-        </template>
-
-        <!-- Content from pages handled with index.js -->
-        <div id="content" x-show="(page !== 'dancing-circles')"></div>
+        <div id="content"></div>
     </div>
-    <!-- Dynamic scripts -->
-    <script>
-        function updateScripts(currentPage) {
-            // Remove existing script if any
-            const existingScript = document.getElementById("dynamic-script");
-            if (existingScript) {
-                existingScript.remove();
-            }
-
-            // Create new script element
-            let myCoolCode = document.createElement("script");
-            myCoolCode.id = "dynamic-script";
-
-            currentPage = currentPage ?? "home";
-
-            switch (currentPage) {
-                case "dancing-circles":
-                    myCoolCode.setAttribute("src", "dist/circleAnim.js");
-                    break;
-                case "home":
-                case "register":
-                case "login":
-                    myCoolCode.setAttribute("src", "dist/index.js");
-                    break;
-                default:
-                    break;
-            }
-
-            // Append the new script to the body
-            document.body.appendChild(myCoolCode);
-        }
-        updateScripts();
-    </script>
+    <script src="./dist/index.js"></script>
 </body>
 
 </html>
