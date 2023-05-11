@@ -1,0 +1,52 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+	// 	{
+	// 		"label": "Create terminals",
+	// 		"dependsOn": [
+	// 			"back",
+	// 			"front",
+	// 			"live-server"
+	// 		],
+	// 		// Mark as the default build task so cmd/ctrl+shift+b will create them
+	// 		"group": {
+	// 			"kind": "build",
+	// 			"isDefault": true
+	// 		},
+	// 		// Try start the task on folder open
+	// 		"runOptions": {
+	// 			"runOn": "folderOpen"
+	// 		}
+	// 	},
+	// 	{
+	// 		"label": "back",
+	// 		"type": "shell",
+	// 		"command": "/bin/bash --rcfile <(echo '. ~/.bashrc; cd backend')",
+	// 		"isBackground": true,
+	// 		"problemMatcher": [],
+	// 		"presentation": {
+	// 			"group": "my-group"
+	// 		}
+	// 	},
+	// 	{
+	// 		"label": "front",
+	// 		"type": "shell",
+	// 		"command": "/bin/bash --rcfile <(echo '. ~/.bashrc; cd frontend')",
+	// 		"isBackground": true,
+	// 		"problemMatcher": [],
+	// 		"presentation": {
+	// 			"group": "my-group"
+	// 		}
+	// 	},
+	// 	{
+	// 		"label": "live-server",
+	// 		"type": "shell",
+	// 		"command": "/bin/bash --rcfile <(echo '. ~/.bashrc; cd frontend')",
+	// 		"isBackground": true,
+	// 		"problemMatcher": [],
+	// 		"presentation": {
+	// 			"group": "my-group"
+	// 		}
+	// 	}
+	]
+}

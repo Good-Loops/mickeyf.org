@@ -8,6 +8,9 @@ import * as PositionHandler from "./handlers/positionHandler";
 function danceCircles(): danceCirclesInterface {
     return {
         animationLoop: function (): void {
+            // ColorHandler.convertHertzToHSL(220, 65, 75, 40, 60);
+
+            // Get HTML elements
             const canvas: HTMLCanvasElement = document.getElementById("dancing-circles") as HTMLCanvasElement;
             const fileInput: HTMLInputElement = document.getElementById("file-upload") as HTMLInputElement;
             const uploadButton: HTMLLabelElement = document.getElementById("upload-button") as HTMLLabelElement;
@@ -35,7 +38,8 @@ function danceCircles(): danceCirclesInterface {
             let cArrLen: number = 6;
 
             // Audio Handling
-            let pitch: number, clarity: number, playing: boolean;
+            let pitch: number, clarity: number, volume: number, playing: boolean;
+            let pitchArr: number[] = [], clarityArr: number[] = [], volumeArr: number[] = [];
             fileInput.addEventListener("input", function (): void {
                 // add "playing" class to button when audio starts playing
                 uploadButton.classList.add("playing");
@@ -47,15 +51,10 @@ function danceCircles(): danceCirclesInterface {
                 const files: FileList = fileInput.files as FileList;
                 const file: File = files[0] as File;
                 const music: HTMLAudioElement = new Audio(URL.createObjectURL(file));
-            
+                
                 function getCurrentPitch(analyserNode: AnalyserNode, detector: PitchDetector<Float32Array>, input: Float32Array, sampleRate: number) {
-                    analyserNode.getFloatTimeDomainData(input);
-                    [pitch, clarity] = detector.findPitch(input, sampleRate);
-            
-                    pitch = Math.round(pitch * 10) / 10;
-                    clarity = Math.round(clarity * 100);
-            
-                    if(music.ended) {
+                    if(music.ended || (volume < -80 && volume != -Infinity)) {
+                        volume = 0;
                         playing = false;
                         // Re-enable the file input element after the audio has finished playing
                         fileInput.disabled = false;
@@ -64,7 +63,23 @@ function danceCircles(): danceCirclesInterface {
                         fileInput.value = "";
                         return;
                     }
-                    
+                    if(playing == false) {
+                        music.pause();
+                    }
+
+                    analyserNode.getFloatTimeDomainData(input);
+                    [pitch, clarity] = detector.findPitch(input, sampleRate);
+            
+                    // Get the pitch in Hz
+                    pitch = Math.round(pitch * 10) / 10;
+                    pitchArr.push(pitch);
+                    // Round clarity to nearest whole number
+                    clarity = Math.round(clarity * 100);
+                    clarityArr.push(clarity);
+                    // Get the volume in decibels
+                    volume = Math.round(20 * Math.log10(Math.max(...input)));
+                    volumeArr.push(volume);
+
                     window.setTimeout(() => getCurrentPitch(analyserNode, detector, input, sampleRate), 1000 / 60);
                 }
             
@@ -76,6 +91,8 @@ function danceCircles(): danceCirclesInterface {
                 audioContext.createMediaElementSource(music).connect(analyser);
                 // Connect analyser to destination
                 analyser.connect(audioContext.destination);
+                // Set fftSize to 8192
+                analyser.fftSize = 8192;
             
                 music.load();
                 music.play();
@@ -142,13 +159,14 @@ function danceCircles(): danceCirclesInterface {
 
                 // Get circle at random index
                 circ = circArr[randomIndex];
-
+                
                 if (playing) {
-                    console.log(pitch + "Hz");
+                    console.log("Volume: " + volume + "dB");
+                    console.log("Pitch: " + pitch + "Hz");
+                    circ.targetColor = ColorHandler.convertHertzToHSL(Math.round(pitch), CircleHandler.minS,
+                        CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL
+                    );
 
-                    // if(AudioHandler.clarity < 85) {
-
-                    // }
                 } else {
                     // Update circle properties
                     circ.targetColor = ColorHandler.randomColor(CircleHandler.minS,
@@ -168,6 +186,7 @@ function danceCircles(): danceCirclesInterface {
             function stopAnimation(event: KeyboardEvent): void {
                 if (event.code === "ArrowUp") {
                     stop = true;
+                    playing = false
                 }
             }
             // Add the event listener for stopping the animation
