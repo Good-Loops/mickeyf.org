@@ -104,6 +104,45 @@ function convertRGBtoHSL(rgbString: string): string {
   return `hsl(${h}, ${s}%, ${Math.round(l * 100)}%)`;
 }
 
+// Hertz to HSL String
+function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: number, maxL: number): any {
+  if(hertz < 16) hertz = 16;
+  if(hertz > 7900) hertz = 7900;
+  // Hertz to Tera Hertz 
+  let hertzValues: number[] = [];
+  for (let i = 16; i <= 7900; i++) {
+    hertzValues.push(i);
+  }
+  let teraHertzValues: number[] = [];
+  for (let i = 400; i <= 750; i++) {
+    teraHertzValues.push(i);
+  }
+  let hertzToTeraHertz: Map<number, number> = new Map<number, number>();
+  let j = 0;
+  for (let i = 0; i < hertzValues.length; i++) {
+    if(j >= teraHertzValues.length) {
+      j = 0;
+    }
+    hertzToTeraHertz.set(hertzValues[i], teraHertzValues[j]);
+    j++
+  }
+  const tHertz = hertzToTeraHertz.get(hertz) as number;
+  let nm = (-1.143 * tHertz) + 1237.143;
+  if(nm > 645) nm = 645;
+
+  // nm to HSL
+  const h = Math.round((-1.132 * nm + 430) * -1);
+  // console.log("newH: " + h)
+  const randomHSL = randomColor(minS, maxS, minL, maxL, true);
+  // console.log("old: " + randomHSL);
+  const randomHSLh = randomHSL.substring(4, randomHSL.length - 1).split(",")[0];
+  // console.log("oldH: " + randomHSLh);
+  const newHSL = randomHSL.replace(randomHSLh, h.toString());
+  // console.log("new: " + newHSL);
+
+  return newHSL;
+}
+
 // Get random hsl/rgb value inside chosen spectrum
 function randomColor(minS: number, maxS: number, minL: number, maxL: number, isHsl: boolean): string {
   const h: number = (Math.random() * 360) | 0;
@@ -120,26 +159,25 @@ function randomColor(minS: number, maxS: number, minL: number, maxL: number, isH
 
 // Change color slightly in a pattern
 function lerpColor(start: string, end: string, t: number): string {
-
   // Destructuring assignment 
   const [sH, sS, sL]: number[] = start.substring(4, start.length - 1)
-                               .split(",", 3)
-                               .map(val => parseInt(val)
-  );
+    .split(",", 3)
+    .map(val => parseInt(val)
+    );
   const [eH, eS, eL]: number[] = end.substring(4, end.length - 1)
-                             .split(",", 3)
-                             .map(val => parseInt(val)
-  );
-  
+    .split(",", 3)
+    .map(val => parseInt(val)
+    );
+
   const h: number = sH * (1 - t) + eH * t;
   const s: number = sS * (1 - t) + eS * t;
   const l: number = sL * (1 - t) + eL * t;
 
   if (typeof CSS !== 'undefined' && CSS.supports('color', `hsl(${h}, ${s}%, ${l}%)`)) {
-      return `hsl(${h}, ${s}%, ${l}%)`; // use HSL
+    return `hsl(${h}, ${s}%, ${l}%)`; // use HSL
   } else {
-      const [r, g, b]: number[] = convertHSLtoRGB(h / 360, s / 100, l / 100);
-      return `rgb(${r}, ${g}, ${b})`; // use RGB fallback
+    const [r, g, b]: number[] = convertHSLtoRGB(h / 360, s / 100, l / 100);
+    return `rgb(${r}, ${g}, ${b})`; // use RGB fallback
   }
 }
 
@@ -149,5 +187,6 @@ export {
   convertHSLtoHSLA,
   convertRGBtoHSL,
   randomColor,
-  lerpColor
+  lerpColor,
+  convertHertzToHSL
 };  
