@@ -39,7 +39,7 @@ function danceCircles(): danceCirclesInterface {
             let cArrLen: number = 12;
 
             // Audio Handling
-            let pitch: number, clarity: number, volume: number, playing: boolean,
+            let pitch: number, clarity: number, volume: number, duration: number, playing: boolean,
             pitchArr: number[] = [], clarityArr: number[] = [], volumeArr: number[] = [];
             fileInput.addEventListener("input", function (): void {
                 // add "playing" class to button when audio starts playing
@@ -71,15 +71,17 @@ function danceCircles(): danceCirclesInterface {
                     analyserNode.getFloatTimeDomainData(input);
                     [pitch, clarity] = detector.findPitch(input, sampleRate);
             
-                    // Get the pitch in Hz
+                    // Get pitch in Hz
                     pitch = Math.round(pitch * 10) / 10;
                     pitchArr.push(pitch);
                     // Round clarity to nearest whole number
                     clarity = Math.round(clarity * 100);
                     clarityArr.push(clarity);
-                    // Get the volume in decibels
+                    // Get volume in decibels
                     volume = Math.round(20 * Math.log10(Math.max(...input)));
                     volumeArr.push(volume);
+                    // Get duration in seconds
+                    duration = music.duration;
 
                     window.setTimeout(() => getCurrentPitch(analyserNode, detector, input, sampleRate), 1000 / 60);
                 }
