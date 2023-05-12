@@ -161,11 +161,9 @@ div#dc-content {
 }
 
 canvas#dancing-circles {
-    border: 4pt solid;
-    border-color: var(--lightblue-rgb);
-    border-radius: 8pt;
-    width: 50vw;
-    box-shadow: 4px 4px 10px var(--lightblue-rgb), -2px -2px 10px var(--lightgreen-rgb);
+    border-radius: .2vw;
+    width: 60vw;
+    box-shadow: 8px 8px 12px var(--lightblue-rgb), -6px -6px 12px var(--lightgreen-rgb);
     margin-bottom: 2vh;
 }
 

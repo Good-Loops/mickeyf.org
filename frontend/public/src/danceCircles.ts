@@ -4,6 +4,7 @@ import { PitchDetector } from "pitchy";
 import * as ColorHandler from "./handlers/colorHandler";
 import * as CircleHandler from "./handlers/circleHandler";
 import * as PositionHandler from "./handlers/positionHandler";
+import { getRandomInt } from "./helpers/methods";
 
 function danceCircles(): danceCirclesInterface {
     return {
@@ -35,11 +36,11 @@ function danceCircles(): danceCirclesInterface {
             // Circle variable and array
             let circ: CircleHandler.Circle;
             let circArr: CircleHandler.Circle[] = [];
-            let cArrLen: number = 6;
+            let cArrLen: number = 12;
 
             // Audio Handling
-            let pitch: number, clarity: number, volume: number, playing: boolean;
-            let pitchArr: number[] = [], clarityArr: number[] = [], volumeArr: number[] = [];
+            let pitch: number, clarity: number, volume: number, playing: boolean,
+            pitchArr: number[] = [], clarityArr: number[] = [], volumeArr: number[] = [];
             fileInput.addEventListener("input", function (): void {
                 // add "playing" class to button when audio starts playing
                 uploadButton.classList.add("playing");
@@ -53,7 +54,7 @@ function danceCircles(): danceCirclesInterface {
                 const music: HTMLAudioElement = new Audio(URL.createObjectURL(file));
                 
                 function getCurrentPitch(analyserNode: AnalyserNode, detector: PitchDetector<Float32Array>, input: Float32Array, sampleRate: number) {
-                    if(music.ended || (volume < -80 && volume != -Infinity)) {
+                    if(music.ended || (volume < -100 && volume != -Infinity)) {
                         volume = 0;
                         playing = false;
                         // Re-enable the file input element after the audio has finished playing
@@ -91,8 +92,8 @@ function danceCircles(): danceCirclesInterface {
                 audioContext.createMediaElementSource(music).connect(analyser);
                 // Connect analyser to destination
                 analyser.connect(audioContext.destination);
-                // Set fftSize to 8192
-                analyser.fftSize = 8192;
+                // Set fftSize to 131072
+                analyser.fftSize = 32768;
             
                 music.load();
                 music.play();
@@ -117,9 +118,9 @@ function danceCircles(): danceCirclesInterface {
                 );
 
                 // Radius Growth Pattern
-                let prevR: number = 1.5;
-                let currentR: number = 15;
-                let adjustR: number = 0.5;
+                let currentR: number = 50;
+                let prevR: number = 8;
+                let adjustR: number = .13;
 
                 for (let i: number = 0; i < cArrLen; i++) {
                     currentR += prevR * adjustR;
@@ -149,27 +150,63 @@ function danceCircles(): danceCirclesInterface {
                 }
             }
 
-            // Updates circles
+            // Updates a circle and canvas positions and colors 
             function update(): void {
                 canvasTargetColor = ColorHandler.randomColor(canvasMinS,
                     canvasMaxS, canvasMinL, canvasMaxL, true
                 );
-                // Get a random index of the circArr array
-                const randomIndex: number = Math.floor(Math.random() * circArr.length);
+
+                // Get an array random indexes from the circArr array
+                const randomIndexArr: number[] = [];
+                for (let i: number = 0; i < circArr.length; i++) {
+                    randomIndexArr.push(getRandomInt(0, circArr.length - 1));
+                    // Check for repeats 
+                    if (randomIndexArr.length > 2) {
+                        let repeats: number = 0;
+                        for (let j: number = 0; j < randomIndexArr.length - 1; j++) {
+                            if (randomIndexArr[j] == randomIndexArr[randomIndexArr.length - 1]) {
+                                repeats++;
+                                if(repeats > 1) {
+                                    randomIndexArr.pop();
+                                    i--;
+                                    repeats = 0;
+                                }
+                            }
+                        }
+                    }
+                }
 
                 // Get circle at random index
-                circ = circArr[randomIndex];
+                circ = circArr[randomIndexArr[0]];
                 
                 if (playing) {
-                    console.log("Volume: " + volume + "dB");
-                    console.log("Pitch: " + pitch + "Hz");
-                    circ.targetColor = ColorHandler.convertHertzToHSL(Math.round(pitch), CircleHandler.minS,
-                        CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL
-                    );
+                    let goodPitch: number;
+                    if(clarity >= 60) {
+                        console.log("Volume: " + volume + "dB");
+                        console.log("Pitch: " + pitch + "Hz");
+                        console.log("Clarity: " + clarity + "%");
 
+                        goodPitch = pitch * 1000;
+
+                        // Create array of different pitches;
+
+                        console.log("Good Pitch: " + goodPitch + "Hz");
+                        // Update two circles' colors at a time based on frequencies from input audio
+                        circ.targetColor = ColorHandler.convertHertzToHSL(Math.round(goodPitch), 
+                            CircleHandler.minS, CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL
+                        );
+                        let circ2: CircleHandler.Circle = circArr[randomIndexArr[1]];
+                        circ2.targetColor = ColorHandler.convertHertzToHSL(Math.round(goodPitch), 
+                            CircleHandler.minS, CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL
+                        );
+                    }
                 } else {
-                    // Update circle properties
+                    // Update two circles' colors with random colors
                     circ.targetColor = ColorHandler.randomColor(CircleHandler.minS,
+                        CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL, true
+                    );
+                    let circ2: CircleHandler.Circle = circArr[randomIndexArr[1]];
+                    circ2.targetColor = ColorHandler.randomColor(CircleHandler.minS,
                         CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL, true
                     );
                 }
@@ -178,19 +215,9 @@ function danceCircles(): danceCirclesInterface {
                 circ.targetY = PositionHandler.getRandomY(circ.r);
 
                 // Replace the circle in the array with the updated circle
-                circArr[randomIndex] = circ;
+                circArr[randomIndexArr[0]] = circ;
 
             }
-
-            // Stops animation if key is pressed
-            function stopAnimation(event: KeyboardEvent): void {
-                if (event.code === "ArrowUp") {
-                    stop = true;
-                    playing = false
-                }
-            }
-            // Add the event listener for stopping the animation
-            document.addEventListener("keydown", stopAnimation);
 
             const draw = (): void => {
                 // Clear canvas
@@ -234,29 +261,67 @@ function danceCircles(): danceCirclesInterface {
                         elem.endAngle,
                         elem.counterclockwise
                     );
+                    ctx.shadowBlur = 50;
+                    ctx.shadowColor = "lavender";  
+                    ctx.filter = "blur(3px)";
                     ctx.fill();
                 });
             }
 
+            // Stops animation if key is pressed
+            function stopAnimation(event: KeyboardEvent): void {
+                if (event.code === "ArrowUp") {
+                    stop = true;
+                    playing = false;
+                }
+            }
+            // Add the event listener for stopping the animation
+            document.addEventListener("keydown", stopAnimation);
+
             load();
 
-            // This function will be called
-            // repeatedly
-            let frameCount = 0;
-            function step(): void {
+            let deltaTime: number = 0, 
+            lastTime: number = 0, 
+            updateTimer: number = 0, 
+            updateInterval: number = 1000, // 1.1s     
+            drawTimer: number = 0, 
+            drawInterval: number = 40; // 0.04s
+
+            // Dev-use
+            let consoleTimer: number = 0,
+            consoleInterval: number = 10000; 
+
+            // This function will be called repeatedly
+            function step(timeStamp: number): void {
                 if (stop) return;
 
-                frameCount++;
-
-                // Called every 60 frames (1 sec)
-                if (frameCount % 60 === 0) update();
-
+                deltaTime = timeStamp - lastTime;
+                lastTime = timeStamp;
+                updateTimer += deltaTime;
+                drawTimer += deltaTime;
+                // Called every 1 sec
+                if (updateTimer >= updateInterval) {
+                    update();
+                    updateTimer = 0;
+                    // console.log("Update");
+                }
                 // Called every 5 frames (0.083 sec)
-                if (frameCount % 5 === 0) draw();
-            }
+                if (drawTimer >= drawInterval) {
+                    draw();
+                    drawTimer = 0;
+                    // console.log("Draw");
+                }
 
-            // 90fps
-            setInterval(step, 1000 / 90);
+                // consoleTimer += deltaTime;
+                // // Dev-use console clear
+                // if(consoleTimer >= consoleInterval) {
+                //     console.clear();
+                //     consoleTimer = 0;
+                // }
+
+                requestAnimationFrame(step); 
+            }
+            step(0);
         },
     }
 }

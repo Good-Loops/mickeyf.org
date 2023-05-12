@@ -61,7 +61,7 @@ const minS: number = 95;
 const maxS: number = 100;
 
 // Lightness
-const minL: number = 50;
-const maxL: number = 70;
+const minL: number = 60;
+const maxL: number = 80;
 
 export { Circle, minS, maxS, minL, maxL };
