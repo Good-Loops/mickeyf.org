@@ -138,7 +138,7 @@ function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: numb
   const randomHSLh = randomHSL.substring(4, randomHSL.length - 1).split(",")[0];
   // console.log("oldH: " + randomHSLh);
   const newHSL = randomHSL.replace(randomHSLh, h.toString());
-  console.log("new: " + newHSL);
+  // console.log("new: " + newHSL);
 
   return newHSL;
 }
