@@ -35,8 +35,8 @@ function danceCircles(): danceCirclesInterface {
             const circArr: CircleHandler.Circle[] = [];
             // Do not initialize the array with "new Array(length)" because it will be filled with "undefined" values
             const circArrLen: number = 12;
-            // Circles updated per call
-            const numCircs = 2;
+            // Circles updating color per call
+            const numCircs: number = 2;
 
             // // Audio Handling
             AudioHandler.processAudio(fileInput, uploadButton);
@@ -55,19 +55,21 @@ function danceCircles(): danceCirclesInterface {
                 );
 
                 // Radius Growth Pattern
-                let currentR: number = 50;
+                let baseR: number = 50;
                 let prevR: number = 8;
                 let adjustR: number = .13;
 
                 for (let i: number = 0; i < circArrLen; i++) {
-                    currentR += prevR * adjustR;
-                    prevR = currentR;
+                    baseR += prevR * adjustR;
+                    prevR = baseR;
                     let circ = new CircleHandler.Circle(
-                        currentR,
-                        PositionHandler.getRandomX(currentR),
-                        PositionHandler.getRandomY(currentR),
-                        PositionHandler.getRandomX(currentR),
-                        PositionHandler.getRandomY(currentR),
+                        baseR,
+                        baseR,
+                        baseR,
+                        PositionHandler.getRandomX(baseR),
+                        PositionHandler.getRandomY(baseR),
+                        PositionHandler.getRandomX(baseR),
+                        PositionHandler.getRandomY(baseR),
                         ColorHandler.randomColor(CircleHandler.minS,
                             CircleHandler.maxS,
                             CircleHandler.minL,
@@ -85,6 +87,8 @@ function danceCircles(): danceCirclesInterface {
 
                     circArr.push(circ);
                 }
+                // Sort circles in order of increasing radius
+                circArr.sort((a, b) => b.currentR - a.currentR);
             }
 
             // Updates a circle and canvas positions and colors 
@@ -98,55 +102,86 @@ function danceCircles(): danceCirclesInterface {
                 for (let i: number = 0; i < numCircs; i++) {
                     // Get circle at random index
                     const circ = circArr[randomIndexArr[i]];
-                    circ.targetX = PositionHandler.getRandomX(circ.r);
-                    circ.targetY = PositionHandler.getRandomY(circ.r);
+                    circ.targetX = PositionHandler.getRandomX(circ.currentR);
+                    circ.targetY = PositionHandler.getRandomY(circ.currentR);
                     if (!AudioHandler.playing) {
+                        circ.targetR = circ.baseR;
                         // Update two circles' colors at a time based on frequencies from input audio
-                        circ.targetColor = ColorHandler.randomColor(CircleHandler.minS, 
+                        circ.targetColor = ColorHandler.randomColor(CircleHandler.minS,
                             CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL, true
                         );
                     }
                 }
             }
 
-            function updateOnPitch(numCircs: number): void {
-                // Create Musescore song with multiple instruments and implement splitting 
+            // let colorTimer = colorInterval;
+            // Radius adjust 
+            const adjustRInterval = 30;
+            let increaseRTimer = adjustRInterval;
+            let decreaseRTimer = adjustRInterval * .5;
+            let even = true;
+            function updateOnPitch(): void {
+                // Idea: Create Musescore song with multiple instruments and implement splitting 
                 // instruments and getting  pitch from each instrument, process the audio 
                 // before using the data to get accurate values for pitch. Then, if needed,
                 // work on making hertz-to-hue conversion more accurate/interesting.
+                // Idea: Use percentages and fixed values for C Db D Eb E F Gb G Ab A Bb B and compare
                 if (AudioHandler.playing) {
-                    console.log("Pitch: " + AudioHandler.pitch + "Hz");
-                    // console.log("Volume: " + volume + "dB");
-                    // console.log("Clarity: " + clarity + "%");
-
-                    // Get an array random indexes from the circArr array
+                    // console.log("Pitch: " + AudioHandler.pitch + "Hz");
+                    // console.log("Clarity: " + AudioHandler.clarity + "%");
+                    // Update color base on pitch
                     const randomIndexArr: number[] = getRandomIndexArr(circArrLen);
-                    for (let i: number = 0; i < numCircs; i++) {
+                    for (let i: number = 0; i < circArrLen; i++) {
                         // Get circle at random index
-                        const circ = circArr[randomIndexArr[i]];
-                        // Update two circles' colors at a time based on frequencies from input audio
+                        const circ: CircleHandler.Circle = circArr[randomIndexArr[i]];
                         circ.targetColor = ColorHandler.convertHertzToHSL(Math.round(AudioHandler.pitch),
                             CircleHandler.minS, CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL
                         );
                     }
 
+                    // Update radius based on volume
+                    const volumePercentage = AudioHandler.getVolumePercentage(AudioHandler.volume);
+                    // console.log("Volume Percentage: " + Math.round(volumePercentage) + "%");
+                    // console.log("Volume: " + AudioHandler.volume + "dB");
+                    if (AudioHandler.volume != -Infinity) {
+                        const ajdust = 1 + (volumePercentage * .03);
+                        if (increaseRTimer >= adjustRInterval) {
+                            circArr.forEach((circ, index) => {
+                                if (even) {
+                                    if (index % 2 == 0) circ.targetR *= (ajdust);
+                                } else {
+                                    if (index % 2 != 0) circ.targetR *= (ajdust);
+                                }
+                            });
+                            increaseRTimer = 0;
+                        } else { increaseRTimer++; }
+                        if (decreaseRTimer >= adjustRInterval) {
+                            circArr.forEach((circ, index) => {
+                                if (even) {
+                                    if (index % 2 == 0) circ.targetR = circ.baseR;
+                                } else {
+                                    if (index % 2 != 0) circ.targetR = circ.baseR;
+                                }
+                            });
+                            even = !even;
+                            decreaseRTimer = 0;
+                        } else { decreaseRTimer++; }
+                    }
                 }
             }
 
             const draw = (): void => {
                 // Clear canvas
-                ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 canvas.style.backgroundColor = ColorHandler.lerpColor(canvasBgColor,
                     canvasTargetColor, 0.02
                 );
                 canvasBgColor = ColorHandler.convertRGBtoHSL(canvas.style.backgroundColor);
 
-                // Sort circles in order of increasing radius
-                circArr.sort((a, b) => b.r - a.r);
-
                 // Draw circles
                 circArr.forEach(function (elem) {
 
+                    elem.lerpRadius(); // Lerp Radius
                     elem.lerpPosition(true); // Lerp X
                     elem.lerpPosition(false); // Lerp Y
 
@@ -170,7 +205,7 @@ function danceCircles(): danceCirclesInterface {
                     ctx.arc(
                         elem.x,
                         elem.y,
-                        elem.r,
+                        elem.currentR,
                         elem.startAngle,
                         elem.endAngle,
                         elem.counterclockwise
@@ -182,15 +217,31 @@ function danceCircles(): danceCirclesInterface {
                 });
             }
 
-            // Stops animation if key is pressed
-            function stopAnimation(event: KeyboardEvent): void {
+            function playAnimation(event: KeyboardEvent): void {
                 if (event.code === "ArrowUp") {
+                    stop = false;
+                    step(0);
+                }
+            }
+            document.addEventListener("keydown", playAnimation);
+
+            function playMusic(event: KeyboardEvent): void {
+                if (event.code === "ArrowRight") AudioHandler.playing = true;
+            }
+            document.addEventListener("keydown", playMusic);
+
+            function stopAnimation(event: KeyboardEvent): void {
+                if (event.code === "ArrowDown") {
                     stop = true;
                     AudioHandler.playing = false;
                 }
             }
-            // Add the event listener for stopping the animation
             document.addEventListener("keydown", stopAnimation);
+
+            function stopMusic(event: KeyboardEvent): void {
+                if (event.code === "ArrowLeft") AudioHandler.playing = false;
+            }
+            document.addEventListener("keydown", stopMusic);
 
             load();
 
@@ -199,7 +250,7 @@ function danceCircles(): danceCirclesInterface {
                 updateTimer: number = 0,
                 updateInterval: number = 1000, // 1.1s     
                 updateOnPitchTimer: number = 0,
-                updateOnPitchInterval: number = 50, // 0.05s
+                updateOnPitchInterval: number = 1, // 1ms
                 drawTimer: number = 0,
                 drawInterval: number = 40; // 0.04s
 
@@ -224,7 +275,7 @@ function danceCircles(): danceCirclesInterface {
                     // console.log("Update");
                 }
                 if (updateOnPitchTimer >= updateOnPitchInterval) {
-                    updateOnPitch(numCircs);
+                    updateOnPitch();
                     updateOnPitchTimer = 0;
                     // console.log("Update on Pitch");
                 }

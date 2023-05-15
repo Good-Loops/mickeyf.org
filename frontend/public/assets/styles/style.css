@@ -40,6 +40,7 @@ body {
     width: 100vw;
     height: 100vh;
     background: var(--body-background);
+    
 }
 
 div#central {
@@ -75,23 +76,26 @@ div#header ul#nav {
 div#header ul#nav li {
     justify-content: center;
     align-items: center;
+    transition: transform 1.5s linear;
+}
+
+div#header ul#nav li:hover {
+    transform: scale(1.1);
+}
+
+div#header ul#nav li:active {
+    transform: scale(.5);
 }
 
 div#header ul#nav li a {
     text-decoration: none;
     color: rgb(230, 230, 250, .6);
-    white-space: nowrap;
-    transition: text-shadow 1.5s ease-in-out, transform .5s linear;
+    transition: text-shadow 1.5s ease-in-out;
 }
 
 div#header ul#nav li a:hover {
     text-shadow: var(--label-text-shadow);
     cursor: var(--hover-cursor);
-    transform: scale(1.1);
-}
-
-div#header ul#nav li a:active {
-    transform: scale(.8);
 }
 
 div#content {
@@ -194,7 +198,6 @@ label#upload-button {
             0 0 0px var(--lightblue-rgba) inset,
             0 0 0px var(--lightblue-rgb),
             0 0 0px var(--lightblue-rgb);
-    transform: scale(1);
     transition: box-shadow .5s linear, transform .7s linear, text-shadow 1s ease-in-out, color 1.5s;
     z-index: 100;
     user-select: none;

@@ -2,10 +2,10 @@ export function getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function getRandomIndexArr(circArrLen: number): number[] {
+export function getRandomIndexArr(numCircs: number): number[] {
     let indexArr: number[] = [];
-    for (let i: number = 0; i < circArrLen; i++) {
-        indexArr.push(getRandomInt(0, circArrLen - 1));
+    for (let i: number = 0; i < numCircs; i++) {
+        indexArr.push(getRandomInt(0, numCircs - 1));
         // Check for repeats 
         if (indexArr.length > 2) {
             let repeats: number = 0;
@@ -22,4 +22,9 @@ export function getRandomIndexArr(circArrLen: number): number[] {
         }
     }
     return indexArr;
+}
+
+// Liner interpolation
+export function lerp(start: number, end: number, t: number): number {
+    return start * (1 - t) + end * t;
 }

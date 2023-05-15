@@ -8,7 +8,26 @@ class AudioHandler {
     public static playing: boolean;
     public static pitchArr: number[] = [];
     public static clarityArr: number[] = []; 
-    public static volumeArr: number[] = []; 
+    public static volumeArr: number[] = [];
+    
+    public static getVolumePercentage = (volume: number): number => {
+        const volumeMap = new Map();
+        let equivalent = 0;
+        for (let volume = -40; volume <= 20; volume++) {
+            volumeMap.set(volume, equivalent);
+            equivalent++;
+        }
+
+        let volumePercentage;
+        if(volume < -40) {
+            volumePercentage = 0;
+        } else if (volume > 20) {
+            volumePercentage = 100;
+        } else { // 100 / 60 = 1.6
+            volumePercentage = volumeMap.get(volume) * 1.6; 
+        }
+        return volumePercentage;
+    }
 
     public static processAudio(fileInput: HTMLInputElement, uploadButton: HTMLLabelElement) {
         fileInput.addEventListener("input", function (): void {
@@ -23,26 +42,28 @@ class AudioHandler {
             const file: File = files[0] as File;
             const music: HTMLAudioElement = new Audio(URL.createObjectURL(file));
 
-            function getCurrentPitch(this: any, analyserNode: AnalyserNode, detector: PitchDetector<Float32Array>, input: Float32Array, sampleRate: number) {
-                if (music.ended || (AudioHandler.volume < -100 && AudioHandler.volume != -Infinity)) {
-                    AudioHandler.volume = 0;
+            let i = 0;
+            function getCurrentPitch(analyserNode: AnalyserNode, detector: PitchDetector<Float32Array>, input: Float32Array, sampleRate: number) {
+                if (music.ended || (AudioHandler.volume < -1000 && AudioHandler.volume != -Infinity)) {
+                    AudioHandler.volume = -Infinity;
                     AudioHandler.playing = false;
                     // Re-enable the file input element after the audio has finished playing
                     fileInput.disabled = false;
                     uploadButton.style.cursor = "url('./assets/img/select.cur'), auto";
                     uploadButton.classList.remove("playing");
                     fileInput.value = "";
+                    i = 0;
                     return;
                 }
-                if (AudioHandler.playing == false) {
-                    music.pause();
-                }
+
+                if (AudioHandler.playing == false) music.pause();
+                else music.play();
 
                 analyserNode.getFloatTimeDomainData(input);
                 [AudioHandler.pitch, AudioHandler.clarity] = detector.findPitch(input, sampleRate);
 
                 // Get pitch in Hz
-                AudioHandler.pitch = Math.round(AudioHandler.pitch * 10) / 10;
+                AudioHandler.pitch = Math.round(AudioHandler.pitch * 10) * .1;
                 AudioHandler.pitchArr.push(AudioHandler.pitch);
                 // Round clarity to nearest whole number
                 AudioHandler.clarity = Math.round(AudioHandler.clarity * 100);
@@ -64,8 +85,8 @@ class AudioHandler {
             audioContext.createMediaElementSource(music).connect(analyser);
             // Connect analyser to destination
             analyser.connect(audioContext.destination);
-            // Set fftSize to 131072
-            analyser.fftSize = 32768;
+            // Set fftSize
+            analyser.fftSize = 2048;
 
             music.load();
             music.play();
