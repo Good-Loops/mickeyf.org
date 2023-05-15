@@ -1,9 +1,11 @@
+import { lerp } from "../helpers/methods";
 import * as ColorHandler from "./colorHandler";
-import { lerpPosition } from "./positionHandler";
 
 class Circle {
+    public baseR: number; 
+    public currentR: number; 
+    public targetR: number; 
     public x:number;
-    public r: number; 
     public y: number;
     public targetX: number;
     public targetY: number;
@@ -13,10 +15,12 @@ class Circle {
     public endAngle: number;
     public counterclockwise: boolean;
 
-    public constructor(r: number, x: number, y: number, tX: number,
+    public constructor(baseR: number, currentR: number, targetR: number, x: number, y: number, tX: number,
         tY: number, color: string, tColor: string,
         sAngle: number, eAngle: number, ccwise: boolean) {
-        this.r = r;
+        this.baseR = baseR;
+        this.currentR = currentR;
+        this.targetR = targetR;
         this.x = x;
         this.y = y;
         this.targetX = tX;
@@ -39,20 +43,26 @@ class Circle {
     }
 
     public lerpColor(): void {
-        this.color = ColorHandler.lerpColor(this.color, this.targetColor, 0.05);
+        const t = .03;
+        this.color = ColorHandler.lerpColor(this.color, this.targetColor, t);
     }
 
     public lerpPosition(isX: boolean): void {
-        const t: number = 0.01;
+        const t: number = .01;
         const axis: number = isX ? this.x : this.y;
         const tAxis: number = isX ? this.targetX : this.targetY;
-        const position: number = lerpPosition(axis, tAxis, t);
+        const position: number = lerp(axis, tAxis, t);
 
         if (isX) {
             this.x = position;
         } else {
             this.y = position;
         }
+    }
+
+    public lerpRadius(): void {
+        const t: number = .2;
+        this.currentR = lerp(this.currentR, this.targetR, t);
     }
 }
 

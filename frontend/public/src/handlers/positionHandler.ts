@@ -20,9 +20,4 @@ function getRandomY(radius: number): number {
     return y;
 }
 
-// Handles change in position 
-function lerpPosition(start: number, end: number, t: number): number {
-    return start * (1 - t) + end * t;
-}
-
-export { getRandomX, getRandomY, lerpPosition };
+export { getRandomX, getRandomY };

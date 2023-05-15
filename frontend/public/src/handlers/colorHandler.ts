@@ -108,6 +108,7 @@ function convertRGBtoHSL(rgbString: string): string {
 function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: number, maxL: number): any {
   if(hertz < 16) hertz = 16;
   if(hertz > 7900) hertz = 7900;
+
   // Hertz to Tera Hertz 
   let hertzValues: number[] = [];
   for (let i = 16; i <= 7900; i++) {
@@ -127,18 +128,14 @@ function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: numb
     j++
   }
   const tHertz = hertzToTeraHertz.get(hertz) as number;
-  let nm = (-1.143 * tHertz) + 1237.143;
-  if(nm > 645) nm = 645;
+  const tHertzPercentage = (tHertz - 400) * .029;
+  const h = 360 * tHertzPercentage;
 
-  // nm to HSL
-  const h = Math.round((-1.132 * nm + 430) * -1);
-  // console.log("newH: " + h)
   const randomHSL = randomColor(minS, maxS, minL, maxL, true);
   // console.log("old: " + randomHSL);
   const randomHSLh = randomHSL.substring(4, randomHSL.length - 1).split(",")[0];
   // console.log("oldH: " + randomHSLh);
   const newHSL = randomHSL.replace(randomHSLh, h.toString());
-  console.log("new: " + newHSL);
 
   return newHSL;
 }
