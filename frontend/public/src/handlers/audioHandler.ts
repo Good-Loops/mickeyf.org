@@ -91,6 +91,9 @@ class AudioHandler {
             music.load();
             music.play();
             AudioHandler.playing = true;
+            window.addEventListener("ontouchstart", () => {
+                music.play();    
+            });
 
             const detector: PitchDetector<Float32Array> = PitchDetector.forFloat32Array(analyser.fftSize);
             const input: Float32Array = new Float32Array(detector.inputLength);
