@@ -6,6 +6,7 @@ function component() {
             <canvas id="dancing-circles"></canvas>
             <label id="upload-button" for="file-upload">Upload Music</label>
             <input type="file" name="file" id="file-upload" multiple />
+            <input type="file" name="file" multiple />
         `;
     }
 
