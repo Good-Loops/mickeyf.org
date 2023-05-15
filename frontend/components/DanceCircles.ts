@@ -5,7 +5,7 @@ function component() {
             <h1 id="dc-title">Dancing Circles</h1>
             <canvas id="dancing-circles"></canvas>
             <label id="upload-button" for="file-upload">Upload Music</label>
-            <input type="file" name="fileupload" id="file-upload" accept="audio/*" />
+            <input type="file" name="fileupload" id="file-upload" multiple/>
         `;
     }
 
