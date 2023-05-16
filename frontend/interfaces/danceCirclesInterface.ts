@@ -1,5 +1,5 @@
-interface danceCirclesInterface {
-    animationLoop: () => void
-}
+// interface danceCirclesInterface {
+//     animationLoop: () => void
+// }
 
-export default danceCirclesInterface;
+// export default danceCirclesInterface;

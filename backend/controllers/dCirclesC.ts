@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
+// import { Request, Response } from "express";
 
-const index = function (request: Request, response: Response) {
-    response.send("dCircles");
-};
+// const index = function (request: Request, response: Response) {
+//     response.send("dCircles");
+// };
 
-export { index };
+// export { index };

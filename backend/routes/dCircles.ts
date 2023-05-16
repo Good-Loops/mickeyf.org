@@ -1,10 +1,10 @@
-import express from "express";
+// import express from "express";
 
-// Controllers
-import { index } from "../controllers/dCirclesC";
+// // Controllers
+// import { index } from "../controllers/dCirclesC";
 
-const router = express.Router();
+// const router = express.Router();
 
-router.get("/dancing-circles", index);
+// router.get("/dancing-circles", index);
 
-export default router;
+// export default router;
