@@ -10,7 +10,7 @@ function component() {
     }
 
     const action = function() {
-        danceCircles().animationLoop();
+        danceCircles();
     }
 
     return {
