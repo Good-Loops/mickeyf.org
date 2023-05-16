@@ -250,7 +250,7 @@ function danceCircles(): danceCirclesInterface {
                 updateTimer: number = 0,
                 updateInterval: number = 1000, // 1.1s     
                 updateOnPitchTimer: number = 0,
-                updateOnPitchInterval: number = 1, // 1ms
+                updateOnPitchInterval: number = 10, // 1ms
                 drawTimer: number = 0,
                 drawInterval: number = 40; // 0.04s
 

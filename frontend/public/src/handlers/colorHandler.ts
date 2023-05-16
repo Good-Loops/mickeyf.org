@@ -128,7 +128,7 @@ function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: numb
     j++
   }
   const tHertz = hertzToTeraHertz.get(hertz) as number;
-  const tHertzPercentage = (tHertz - 400) * .029;
+  const tHertzPercentage = (tHertz - 400) * .0264;
   const h = 360 * tHertzPercentage;
 
   const randomHSL = randomColor(minS, maxS, minL, maxL, true);
