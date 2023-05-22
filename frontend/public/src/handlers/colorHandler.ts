@@ -109,7 +109,8 @@ function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: numb
   if(hertz < 16) hertz = 16;
   if(hertz > 7900) hertz = 7900;
 
-  // Hertz to Tera Hertz 
+  // Hertz to Tera Hertz
+  // Move to constants 
   let hertzValues: number[] = [];
   for (let i = 16; i <= 7900; i++) {
     hertzValues.push(i);
@@ -129,6 +130,10 @@ function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: numb
   }
   const tHertz = hertzToTeraHertz.get(hertz) as number;
   const tHertzPercentage = (tHertz - 400) * .0264;
+
+  // const normalizedHertz = (hertz - 16) % 350;
+  // const percentage = normalizedHertz * .0264;
+
   const h = 360 * tHertzPercentage;
 
   const randomHSL = randomColor(minS, maxS, minL, maxL, true);
