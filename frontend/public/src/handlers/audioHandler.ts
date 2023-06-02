@@ -6,25 +6,13 @@ class AudioHandler {
     public static volume: number;
     public static duration: number;  
     public static playing: boolean;
-    public static pitchArr: number[] = [];
-    public static clarityArr: number[] = []; 
-    public static volumeArr: number[] = [];
     
     public static getVolumePercentage = (volume: number): number => {
-        const volumeMap = new Map();
-        let equivalent = 0;
-        for (let volume = -40; volume <= 20; volume++) {
-            volumeMap.set(volume, equivalent);
-            equivalent++;
-        }
-
-        let volumePercentage;
+        let volumePercentage = (((volume + 40) * .016) * 100); 
         if(volume < -40) {
             volumePercentage = 0;
         } else if (volume > 20) {
             volumePercentage = 100;
-        } else { // 100 / 60 = 1.6
-            volumePercentage = volumeMap.get(volume) * 1.6; 
         }
         return volumePercentage;
     }
@@ -64,13 +52,10 @@ class AudioHandler {
 
                 // Get pitch in Hz
                 AudioHandler.pitch = Math.round(AudioHandler.pitch * 10) * .1;
-                AudioHandler.pitchArr.push(AudioHandler.pitch);
                 // Round clarity to nearest whole number
                 AudioHandler.clarity = Math.round(AudioHandler.clarity * 100);
-                AudioHandler.clarityArr.push(AudioHandler.clarity);
                 // Get volume in decibels
                 AudioHandler.volume = Math.round(20 * Math.log10(Math.max(...input)));
-                AudioHandler.volumeArr.push(AudioHandler.volume);
                 // Get duration in seconds
                 AudioHandler.duration = music.duration;
 

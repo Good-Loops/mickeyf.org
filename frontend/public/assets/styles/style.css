@@ -1,221 +1,307 @@
 :root {
-    --lightblue-rgb: rgb(135, 206, 250);
-    --lightblue-rgba: rgb(135, 206, 250, .5);
-    --lightturquoise-rgb: rgb(64, 224, 208);
-    --lightturquoise-rgba: rgba(64, 224, 208, .3);
-    --lightgreen-rgb: rgb(144, 238, 144);
-    --lightgreen-rgba: rgba(144, 238, 144, .5);
+    --lightblue-hsl: hsl(203, 92%, 75%);
+    --lightblue-hsla: hsla(203, 92%, 75%, .5);
+    --lightblue1-hsl: hsl(203, 92%, 67%);
+    --lightturquoise-hsl: hsl(174, 72%, 56%);
+    --lightturquoise-hsla: hsla(174, 72%, 56%, .3);
+    --lightgreen-hsl: hsl(120, 73%, 75%);
+    --lightgreen-hsla: hsla(120, 73%, 75%, .5);
 
-    --softpink-rgb: rgb(255, 182, 193);
-    --softpink-rgba: rgba(255, 182, 193, .3);
-    --lightyellow-rgb: rgb(255, 255, 153);
-    --lightyellow-rgba: rgba(255, 255, 153, .2);
-    --lavender-rgb: rgb(230, 230, 250);
-    --lavender-rgba: rgba(230, 230, 250, .3);
-    --lightcoral-rgb: rgb(240, 128, 128);
-    --lightcoral-rgba: rgba(240, 128, 128, .5);
+    --softpink-hsl: hsl(351, 100%, 86%);
+    --softpink-hsla: hsla(351, 100%, 86%, .3);
+    --lightyellow-hsl: hsl(60, 100%, 80%);
+    --lightyellow-hsla: hsla(60, 100%, 80%, .2);
+    --lavender-hsl: hsl(240, 67%, 94%);
+    --lavender-hsla: hsla(240, 67%, 94%, .3);
+    --lightcoral-hsl: hsl(0, 79%, 72%);
+    --lightcoral-hsla: hsla(0, 79%, 72%, .5);
 
-    --gray-rgb: rgb(80, 80, 80);
-    --gray-rgba: rgb(80, 80, 80, .3);
-    --lightgray-rgb: rgb(200, 200, 200);
-    --lightgray-rgba: rgba(200, 200, 200, .8);
+    --gray-hsl: hsl(0, 0%, 31%);
+    --gray-hsla: hsla(0, 0%, 31%, .3);
+    --lightgray-hsl: hsl(0, 0%, 78%);
+    --lightgray-hsla: hsla(0, 0%, 78%, .8);
 
-    --gray-box-shadow-rgba: rgba(230, 230, 250, .3);
-    --title-text-shadow: -1px -1px 18px var(--lavender-rgb), 1px 1px 18px var(--lavender-rgb);
-    --label-text-shadow: -3px -3px 8px var(--lavender-rgb), 3px 3px 8px var(--lavender-rgb);
+    --gray-box-shadow-hsla: hsla(230, 230, 250, .3);
+    --title-text-shadow: 0 0 .15em var(--lavender-hsl);
+    --label-text-shadow: 0 0 .4em var(--lavender-hsl);
 
     --font: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 
-    --body-background: linear-gradient(to bottom right, var(--lightblue-rgb) 30%, var(--lightgreen-rgb) 90%);
-    --register-div-background: linear-gradient(to top left, var(--lightblue-rgba) 35%, var(--lightgreen-rgba) 70%);
+    --body-background: linear-gradient(to bottom right, var(--lightblue1-hsl) 30%, var(--lightgreen-hsl) 90%);
+    --register-div-background: linear-gradient(to top left, var(--lightblue-hsla) 35%, var(--lightgreen-hsla) 70%);
 
     --cursor: url("../img/normal.cur"), auto;
     --hover-cursor: url("../img/select.cur"), auto;
 }
 
-body {
-    margin: 0;
-    cursor: var(--cursor);
-    font-family: var(--font);
-    width: 100vw;
-    height: 100vh;
-    background: var(--body-background);
-    
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
 }
 
-div#central {
+.floating {
+    animation: float 3s ease-in-out infinite;
+}
+
+body {
+    min-height: 100svh;
+    margin: 0;
+
+    cursor: var(--cursor);
+
+    font-family: var(--font);
+
+    background: var(--body-background);
+}
+
+div#content {
+    display: grid;
+}
+
+.centralized {
+    min-height: 100svh;
+
     display: flex;
-    flex-wrap: wrap;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    vertical-align: middle;
-    width: 100vw;
-    height: 100vh;
 }
 
-div#header {
-    font-size: 3vh;
-    margin-left: 2vw;
+header {
+    font-size: 2rem;
+
+    margin-left: 1em;
     position: fixed;
 }
 
-div#header ul#nav {
-    border-bottom: 0.7vh solid var(--lavender-rgba);
-    border-radius: 1.4vh;
-    display: flex;
+header ul#nav {
+    border-bottom: .2em solid var(--lavender-hsla);
+    border-radius: 1em;
     list-style: none;
-    padding: .5vh;
-    padding-left: 2vh;
-    padding-right: 2vh;
-    gap: 3vh;
+
+    display: flex;
     justify-content: space-between;
-    margin-top: 2vh;
+    gap: 1em;
+
+    margin-top: .5em;
+    padding-block: .2em;
+    padding-inline: 1em;
 }
 
-div#header ul#nav li {
-    justify-content: center;
-    align-items: center;
+header ul#nav li {
     transition: transform 1.5s linear;
 }
 
-div#header ul#nav li:hover {
+header ul#nav li:hover {
     transform: scale(1.1);
 }
 
-div#header ul#nav li:active {
+header ul#nav li:active {
     transform: scale(.5);
 }
 
-div#header ul#nav li a {
+header ul#nav li a {
     text-decoration: none;
-    color: rgb(230, 230, 250, .6);
+    color: hsl(0, 80%, 95%, .6);
     transition: text-shadow 1.5s ease-in-out;
 }
 
-div#header ul#nav li a:hover {
+header ul#nav li a:hover {
     text-shadow: var(--label-text-shadow);
     cursor: var(--hover-cursor);
 }
 
-div#content {
-    display: contents;
-}
-
-/* Register Page */
+/**************************************************** Register Page ****************************************************/
 h1#register-title {
-    margin: 0;
-    margin-bottom: 9vh;
-    margin-right: 20vh;
-    font-size: 3.6vh;
-    color: var(--lightblue-rgb);
+    margin-bottom: 2.2em;
+    margin-right: 4em;
+    
+    font-size: 3.2rem;
+    color: var(--lightblue-hsl);
     text-shadow: var(--title-text-shadow);
 }
 
 div#form {
-    width: 20vh;
-    height: 20vh;
+    width: 10svw;
+    height: 20svh;
+    margin-bottom: 15em;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     background: var(--register-div-background);
-    border-radius: 1vh;
-    transform: scale(1.8);
-    margin-bottom: 25vh;
+    border-radius: 1em;
+    transform: scale(2);
 }
 
-div#form .input {
-    margin-left: 1.7vh;
-    margin-top: 1.5vh;
-    width: 16vh;
-    height: 1.8vh;
-    background-color: hsl(210, 90%, 91%);
-    border-radius: 0.3vh;
-    border: 1px solid var(--lightgray-rgb);
+div#form form {
+    padding-inline: 2em;
+
+    display: grid;
+    gap: .2em;
+    justify-content: center;
+    grid-template-areas: 
+        "name name name"
+        "error-name error-name error-name" 
+        "last-name last-name last-name"
+        "error-last-name error-last-name error-last-name" 
+        "email email email"
+        "error-email error-email error-email" 
+        "password password password" 
+        "error-password error-password error-password"
+        "register-button register-button register-button";
+}
+
+div#form input#first-name {
+    grid-area: name;
+}
+
+div#form input#error-firstName {
+    grid-area: error-name;
+}
+
+div#form input#last-name {
+    grid-area: last-name;
+}
+
+div#form input#error-lastName {
+    grid-area: error-last-name;
+}
+
+div#form input#email {
+    grid-area: email;
+}
+
+div#form input#error-email {
+    grid-area: error-email;
+}
+
+div#form input#password {
+    grid-area: password;
+}
+
+div#form input#error-password {
+    grid-area: error-password;
+}
+
+div#form input#register-button {
+    position: relative;
+    top: .7em;
+
+    grid-area: register-button;
+    border-radius: .5em;
+    grid-column: 2;
+
+    padding-block: .2em;
+
+    border: .18em solid var(--lightgray-hsl);
     transition: border 0.7s;
-    outline: none;
-    font-family: var(--font);
-    font-size: 1.4vh;
-    color: var(--gray-rgb);
-}
 
-div#form .input:focus {
-    border: 1px solid var(--gray-rgb);
-}
-
-div#form #register-button {
-    border: 1px solid var(--lightgray-rgb);
-    transition: border 0.7s;
-    width: 6vh;
-    height: 2.1vh;
-    transform: scale(0.9);
-    margin-left: 7vh;
-    padding-bottom: 2vh;
+    font-size: .7rem;
 }
 
 div#form #register-button:active {
-    transform: scale(0.85);
+    transform: scale(.85);
 }
 
 div#form #register-button:hover {
     cursor: var(--hover-cursor);
-    border: 1px solid var(--gray-rgb);
+    border: .18em solid var(--gray-hsl);
 }
 
-/* Dancing Circles Page */
-div#dc-content {
-    display: contents;
+div#form .input {
+    background-color: hsl(210, 90%, 91%);
+    border: .15em solid var(--lightgray-hsl);
+    border-radius: .4em;
+
+    transition: border 0.7s;
+    outline: none;
+
+    font-family: var(--font);
+    font-size: 1rem;
+
+    color: var(--gray-hsl);
 }
 
+div#form .input:focus {
+    border: .15em solid var(--gray-hsl);
+}
+
+/**************************************************** Dancing Circles Page ****************************************************/
 canvas#dancing-circles {
-    border-radius: .2vw;
-    width: 60vw;
-    box-shadow: 8px 8px 12px var(--lightblue-rgb), -6px -6px 12px var(--lightgreen-rgb);
-    margin-bottom: 2vh;
+    width: 60svw;
+
+    box-shadow: .3em .3em .8em var(--lightblue1-hsl), -.3em -.3em 1em var(--lightgreen-hsl);
+    border-radius: .2em;
 }
 
 h1#dc-title {
-    color: var(--lightblue-rgb);
-    font-size: 3vw;
+    padding: 1svh;
+    margin: 3svh 0;
+
+    font-size: 3.5rem;
+    color: var(--lightblue1-hsl);
     text-shadow: var(--title-text-shadow);
-    -webkit-text-stroke: 2px var(--lavender-rgba);
-    border-top: 4px double var(--lavender-rgba);
-    border-bottom: 4px double var(--lavender-rgba);
-    border-radius: 2vh;
-    padding: 1vh;
-    margin: 1vh 0;
+    -webkit-text-stroke: .05em var(--lavender-hsla);
+
+    border-top: .15em double var(--lavender-hsla);
+    border-bottom: .15em double var(--lavender-hsla);
+    border-radius: .4em;
 }
 
 label#upload-button {
-    display: block;
-    color: var(--lightblue-rgb);
-    font-size: 2vw;
+    position: relative;
+    top: 1em;
+
+    padding: .5em;
+    padding-top: .4em;
+
+    font-size: 2rem;
+    color: var(--lightblue1-hsl);
+
     text-shadow: var(--label-text-shadow);
-    margin-bottom: 1vh;
-    border: 2.2pt solid var(--lightblue-rgb);
-    border-radius: 5pt;
-    padding: 5px;
-    padding-top: 1px;
-    box-shadow: -4px -4px 12px var(--lightblue-rgb), 4px 4px 12px var(--lightblue-rgb), 4px 4px 12px var(--lightgreen-rgb), 
-            0 0 0px var(--lightblue-rgba) inset,
-            0 0 0px var(--lightblue-rgba) inset,
-            0 0 0px var(--lightblue-rgb),
-            0 0 0px var(--lightblue-rgb);
-    transition: box-shadow .5s linear, transform .7s linear, text-shadow 1s ease-in-out, color 1.5s;
-    z-index: 100;
+
+    border: .12em solid var(--lightblue1-hsl);
+    border-radius: .6em;
+    box-shadow: 0 0 .6em hsla(240, 67%, 94%, .6), 
+    0 0 0em var(--lightblue-hsla) inset,
+    0 0 0em var(--lightblue-hsl);
+
+    z-index: 2;
     user-select: none;
+
+    transition: 
+        box-shadow .5s linear, 
+        scale .7s linear, 
+        text-shadow 1s ease-in-out, 
+        color 1.5s,
+        border-color 2s;
 }
 
 label#upload-button:not(.playing):hover {
-    box-shadow: 0 0 0px var(--lightblue-rgb), 0 0 0px var(--lightblue-rgb), 0 0 0px var(--lightgreen-rgb),
-            10px 10px 12px var(--lightblue-rgba) inset,
-            -10px -10px 12px var(--lightblue-rgba) inset,
-            -3px -3px 6px var(--lightblue-rgb),
-            3px 3px 6px var(--lightblue-rgb);
-    text-shadow: -9px -9px 12px var(--lightblue-rgb), 9px 9px 12px var(--lightblue-rgb);
-    color: var(--lavender-rgb);
+    color: var(--lavender-hsl);
+    border-color: hsla(240, 67%, 94%, .3);
+    box-shadow: 0 0 0em var(--lavender-hsla),
+            0 0 5em var(--lightblue-hsla) inset,
+            0 0 .6em var(--lightblue-hsla);
+
+    text-shadow: 0 0 .12em var(--lightblue-hsl);
+
+    scale: 1.04;
+    
     cursor: var(--hover-cursor);
 }
 
 label#upload-button:not(.playing):active {
-    transform: scale(0.2);
+    scale: .2;
 }
 
 input#file-upload[type="file"] {
