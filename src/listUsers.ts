@@ -1,4 +1,4 @@
-import listUsersInterface from "../../interfaces/listUsersInterface";
+import listUsersInterface from "../interfaces/listUsersInterface";
 import http from "./helpers/http";
 
 function listUsers(): listUsersInterface {

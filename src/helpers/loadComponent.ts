@@ -1,8 +1,8 @@
-import Home from "../components/Home";
-import Register from "../components/Register";
-import User from "../components/User";
-import Error404 from "../components/Error404";
-import DanceCircles from "../components/DanceCircles";
+import Home from "../../components/Home";
+import Register from "../../components/Register";
+import User from "../../components/User";
+import Error404 from "../../components/Error404";
+import DanceCircles from "../../components/DanceCircles";
 
 interface routerInterface<T> {
     [id: string]: T;

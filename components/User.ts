@@ -1,5 +1,5 @@
-import hashInfo from "../helpers/hashInfo";
-import http from "../public/src/helpers/http";
+import hashInfo from "../src/helpers/hashInfo";
+import http from "../src/helpers/http";
 
 function component() {
 

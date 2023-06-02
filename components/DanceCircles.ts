@@ -1,4 +1,4 @@
-import danceCircles from "../public/src/danceCircles";
+import danceCircles from "../src/danceCircles";
 
 function component() {
     const render = function() {

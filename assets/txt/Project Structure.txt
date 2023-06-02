@@ -1,0 +1,53 @@
+mickeyf.dev
+|
+|-- assets
+|   |-- audio
+|   |   |-- Test Score.wav
+|   |   `-- Testing Song.wav
+|   |-- img
+|   |   |-- icon.ico
+|   |   |-- normal.cur
+|   |   |-- notallowed.cur
+|   |   `-- select.cur
+|   |-- styles
+|   |   |-- gpt.css
+|   |   `-- style.css
+|   `-- txt
+|       `-- Colors for Website.txt
+|-- components
+|   |-- DanceCircles.ts
+|   |-- Error404.ts
+|   |-- Home.ts
+|   |-- Register.ts
+|   `-- User.ts
+|-- dist
+|   `-- index.js
+|-- interfaces
+|   |-- errorValidateInterface.ts
+|   |-- listUsersInterface.ts
+|   `-- userCreateInterface.ts
+|-- node_modules
+|-- src
+|   |-- handlers
+|   |   |-- audioHandler.ts
+|   |   |-- circleHandler.ts
+|   |   |-- colorHandler.ts
+|   |   `-- positionHandler.ts
+|   |-- helpers
+|   |   |-- hashInfo.ts
+|   |   |-- loadComponent.ts
+|   |   |-- constants.ts
+|   |   |-- http.ts
+|   |   `-- methods.ts
+|   |-- create.ts
+|   |-- danceCircles.ts
+|   |-- index.ts
+|   `-- listUsers.ts
+|-- LICENSE
+|-- README.md
+|-- http.http
+|-- index.html
+|-- package-lock.json
+|-- package.json
+|-- tsconfig.json
+`-- webpack.config.js
