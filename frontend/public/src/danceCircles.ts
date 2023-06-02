@@ -111,37 +111,33 @@ function danceCircles() {
         }
     }
 
-    // let colorTimer = colorInterval;
+    // Color adjust
+    const colorInterval = 30;
+    let colorTimer = colorInterval;
     // Radius adjust 
     const adjustRInterval = 30;
     let increaseRTimer = adjustRInterval;
     let decreaseRTimer = adjustRInterval * .5;
     let even = true;
     function updateOnPitch(): void {
-        // Idea: Create Musescore song with multiple instruments and implement splitting 
-        // instruments and getting  pitch from each instrument, process the audio 
-        // before using the data to get accurate values for pitch. Then, if needed,
-        // work on making hertz-to-hue conversion more accurate/interesting.
-        // Idea: Use percentages and fixed values for C Db D Eb E F Gb G Ab A Bb B and compare
         if (AudioHandler.playing) {
-            // console.log("Pitch: " + AudioHandler.pitch + "Hz");
-            // console.log("Clarity: " + AudioHandler.clarity + "%");
             // Update color base on pitch
-            const randomIndexArr: number[] = getRandomIndexArr(circArrLen);
-            for (let i: number = 0; i < circArrLen; i++) {
-                // Get circle at random index
-                const circ: CircleHandler.Circle = circArr[randomIndexArr[i]];
-                circ.targetColor = ColorHandler.convertHertzToHSL(Math.round(AudioHandler.pitch),
-                    CircleHandler.minS, CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL
-                );
-            }
+            if (colorTimer >= colorInterval) {
+                const randomIndexArr: number[] = getRandomIndexArr(circArrLen);
+                for (let i: number = 0; i < circArrLen; i++) {
+                    // Get circle at random index
+                    const circ: CircleHandler.Circle = circArr[randomIndexArr[i]];
+                    circ.targetColor = ColorHandler.convertHertzToHSL(Math.round(AudioHandler.pitch),
+                        CircleHandler.minS, CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL
+                    );
+                }
+                colorTimer = 0;
+            } else { colorTimer++; }
 
             // Update radius based on volume
             const volumePercentage = AudioHandler.getVolumePercentage(AudioHandler.volume);
-            // console.log("Volume Percentage: " + Math.round(volumePercentage) + "%");
-            // console.log("Volume: " + AudioHandler.volume + "dB");
             if (AudioHandler.volume != -Infinity) {
-                const ajdust = 1 + (volumePercentage * .03);
+                const ajdust = 1 + (volumePercentage * .02);
                 if (increaseRTimer >= adjustRInterval) {
                     circArr.forEach((circ, index) => {
                         if (even) {
@@ -193,7 +189,7 @@ function danceCircles() {
                 elem.convColor(true, false); // Convert to RGB
             }
             else {
-                console.log(elem.color[0]);
+                // console.log(elem.color);
                 throw new Error("Browser Not Compatible");
             }
 

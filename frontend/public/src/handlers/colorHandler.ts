@@ -1,4 +1,5 @@
 import { getRandomInt } from "../helpers/methods";
+import AudioHandler from "./audioHandler";
 
 // HSL Values to RGB Values
 function convertHSLtoRGB(h: number, s: number, l: number): number[] {
@@ -106,40 +107,20 @@ function convertRGBtoHSL(rgbString: string): string {
 
 // Hertz to HSL String
 function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: number, maxL: number): any {
-  if(hertz < 16) hertz = 16;
-  if(hertz > 7900) hertz = 7900;
+  // Hearing range
+  if(hertz < 20) hertz = 20;
+  if(hertz > 20e3) hertz = 20e3;
 
-  // Hertz to Tera Hertz
-  // Move to constants 
-  let hertzValues: number[] = [];
-  for (let i = 16; i <= 7900; i++) {
-    hertzValues.push(i);
-  }
-  let teraHertzValues: number[] = [];
-  for (let i = 400; i <= 750; i++) {
-    teraHertzValues.push(i);
-  }
-  let hertzToTeraHertz: Map<number, number> = new Map<number, number>();
-  let j = 0;
-  for (let i = 0; i < hertzValues.length; i++) {
-    if(j >= teraHertzValues.length) {
-      j = 0;
-    }
-    hertzToTeraHertz.set(hertzValues[i], teraHertzValues[j]);
-    j++
-  }
-  const tHertz = hertzToTeraHertz.get(hertz) as number;
-  const tHertzPercentage = (tHertz - 400) * .0264;
+  // Visible light range
+  const tHertz = (hertz % 389) + 1;
 
-  // const normalizedHertz = (hertz - 16) % 350;
-  // const percentage = normalizedHertz * .0264;
+  const rangeAmp = 7;
+  const percentage = (tHertz * .00257) * rangeAmp;
 
-  const h = 360 * tHertzPercentage;
+  const h = 360 * percentage;
 
   const randomHSL = randomColor(minS, maxS, minL, maxL, true);
-  // console.log("old: " + randomHSL);
   const randomHSLh = randomHSL.substring(4, randomHSL.length - 1).split(",")[0];
-  // console.log("oldH: " + randomHSLh);
   const newHSL = randomHSL.replace(randomHSLh, h.toString());
 
   return newHSL;

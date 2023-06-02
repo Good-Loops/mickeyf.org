@@ -1,2 +1,49 @@
 {
+  "restoreTerminals.terminals": [
+    {
+    "splitTerminals": [
+        {
+          "name": "back",
+          "commands": [
+            "cd backend"
+          ]
+        }
+      ],
+    },
+    {
+      "splitTerminals": [
+        {
+          "name": "front",
+          "commands": [
+            "cd frontend",
+            "npm run dev"
+          ]
+        },
+      ]
+    },
+    {
+      "splitTerminals": [
+        {
+          "name": "server",
+          "commands": [
+            "cd frontend && sleep 2s",
+            "npm run server"
+          ]
+        }
+      ]
+    },
+    {
+      "splitTerminals": [
+        {
+          "name": "ui", 
+          "commands": [
+                "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
+                "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
+                "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
+                "xdotool key '^{PGUP}' && xdotool key '^{F4}'",
+            ]
+        }
+      ]
+    }
+  ]
 }
