@@ -14,7 +14,7 @@ function loadComponent() {
 
 loadComponent();
 
-window.addEventListener("hashchange", (event: Event) => {
+window.addEventListener("hashchange", () => {
     loadComponent();
 });
 

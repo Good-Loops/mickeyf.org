@@ -21,8 +21,8 @@
     --lightgray-rgba: rgba(200, 200, 200, .8);
 
     --gray-box-shadow-rgba: rgba(230, 230, 250, .3);
-    --title-text-shadow: -1px -1px 18px var(--lavender-rgb), 1px 1px 18px var(--lavender-rgb);
-    --label-text-shadow: -3px -3px 8px var(--lavender-rgb), 3px 3px 8px var(--lavender-rgb);
+    --title-text-shadow: -.1rem -.1rem 1rem var(--lavender-rgb), .1rem .1rem 1rem var(--lavender-rgb);
+    --label-text-shadow: -.3rem -.3rem .8rem var(--lavender-rgb), .3rem .3rem .8rem var(--lavender-rgb);
 
     --font: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 
@@ -34,132 +34,189 @@
 }
 
 body {
+    min-height: 100svh;
     margin: 0;
+
     cursor: var(--cursor);
+
     font-family: var(--font);
-    width: 100vw;
-    height: 100vh;
+
     background: var(--body-background);
-    
 }
 
-div#central {
+div#content {
+    display: grid;
+}
+
+.centralized {
+    min-height: 100svh;
+
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    vertical-align: middle;
-    width: 100vw;
-    height: 100vh;
 }
 
-div#header {
-    font-size: 3vh;
-    margin-left: 2vw;
+header {
+    margin-left: 2rem;
     position: fixed;
+
+    font-size: 2rem;
 }
 
-div#header ul#nav {
-    border-bottom: 0.7vh solid var(--lavender-rgba);
-    border-radius: 1.4vh;
-    display: flex;
+header ul#nav {
+    border-bottom: .4rem solid var(--lavender-rgba);
+    border-radius: 1rem;
     list-style: none;
-    padding: .5vh;
-    padding-left: 2vh;
-    padding-right: 2vh;
-    gap: 3vh;
+
+    display: flex;
     justify-content: space-between;
-    margin-top: 2vh;
+    gap: 2rem;
+
+    margin-top: 1rem;
+    padding-block: .4rem;
+    padding-inline: 2rem;
 }
 
-div#header ul#nav li {
-    justify-content: center;
-    align-items: center;
+header ul#nav li {
     transition: transform 1.5s linear;
 }
 
-div#header ul#nav li:hover {
+header ul#nav li:hover {
     transform: scale(1.1);
 }
 
-div#header ul#nav li:active {
+header ul#nav li:active {
     transform: scale(.5);
 }
 
-div#header ul#nav li a {
+header ul#nav li a {
     text-decoration: none;
     color: rgb(230, 230, 250, .6);
     transition: text-shadow 1.5s ease-in-out;
 }
 
-div#header ul#nav li a:hover {
+header ul#nav li a:hover {
     text-shadow: var(--label-text-shadow);
     cursor: var(--hover-cursor);
 }
 
-div#content {
-    display: contents;
-}
-
-/* Register Page */
+/**************************************************** Register Page ****************************************************/
 h1#register-title {
-    margin: 0;
-    margin-bottom: 9vh;
-    margin-right: 20vh;
-    font-size: 3.6vh;
+    margin-bottom: 2.2em;
+    margin-right: 4em;
+    
+    font-size: 3.2rem;
     color: var(--lightblue-rgb);
     text-shadow: var(--title-text-shadow);
 }
 
 div#form {
-    width: 20vh;
-    height: 20vh;
+    width: 10svw;
+    height: 20svh;
+    margin-bottom: 15em;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     background: var(--register-div-background);
-    border-radius: 1vh;
-    transform: scale(1.8);
-    margin-bottom: 25vh;
+    border-radius: 1em;
+    transform: scale(2);
 }
 
-div#form .input {
-    margin-left: 1.7vh;
-    margin-top: 1.5vh;
-    width: 16vh;
-    height: 1.8vh;
-    background-color: hsl(210, 90%, 91%);
-    border-radius: 0.3vh;
-    border: 1px solid var(--lightgray-rgb);
+div#form form {
+    padding-inline: 2em;
+
+    display: grid;
+    gap: .2em;
+    justify-content: center;
+    grid-template-areas: 
+        "name name name"
+        "error-name error-name error-name" 
+        "last-name last-name last-name"
+        "error-last-name error-last-name error-last-name" 
+        "email email email"
+        "error-email error-email error-email" 
+        "password password password" 
+        "error-password error-password error-password"
+        "register-button register-button register-button";
+}
+
+div#form input#first-name {
+    grid-area: name;
+}
+
+div#form input#error-firstName {
+    grid-area: error-name;
+}
+
+div#form input#last-name {
+    grid-area: last-name;
+}
+
+div#form input#error-lastName {
+    grid-area: error-last-name;
+}
+
+div#form input#email {
+    grid-area: email;
+}
+
+div#form input#error-email {
+    grid-area: error-email;
+}
+
+div#form input#password {
+    grid-area: password;
+}
+
+div#form input#error-password {
+    grid-area: error-password;
+}
+
+div#form input#register-button {
+    grid-area: register-button;
+    border-radius: .5em;
+    grid-column: 2;
+
+    padding-block: .2em;
+
+    border: .18em solid var(--lightgray-rgb);
     transition: border 0.7s;
-    outline: none;
-    font-family: var(--font);
-    font-size: 1.4vh;
-    color: var(--gray-rgb);
-}
 
-div#form .input:focus {
-    border: 1px solid var(--gray-rgb);
-}
-
-div#form #register-button {
-    border: 1px solid var(--lightgray-rgb);
-    transition: border 0.7s;
-    width: 6vh;
-    height: 2.1vh;
-    transform: scale(0.9);
-    margin-left: 7vh;
-    padding-bottom: 2vh;
+    font-size: .7rem;
 }
 
 div#form #register-button:active {
-    transform: scale(0.85);
+    transform: scale(.85);
 }
 
 div#form #register-button:hover {
     cursor: var(--hover-cursor);
-    border: 1px solid var(--gray-rgb);
+    border: .18em solid var(--gray-rgb);
 }
 
-/* Dancing Circles Page */
+div#form .input {
+    background-color: hsl(210, 90%, 91%);
+    border: .15em solid var(--lightgray-rgb);
+    border-radius: .4em;
+
+    transition: border 0.7s;
+    outline: none;
+
+    font-family: var(--font);
+    font-size: 1rem;
+
+    color: var(--gray-rgb);
+}
+
+div#form .input:focus {
+    border: .15em solid var(--gray-rgb);
+}
+
+/**************************************************** Dancing Circles Page ****************************************************/
 div#dc-content {
     display: contents;
 }
@@ -167,7 +224,7 @@ div#dc-content {
 canvas#dancing-circles {
     border-radius: .2vw;
     width: 60vw;
-    box-shadow: 8px 8px 12px var(--lightblue-rgb), -6px -6px 12px var(--lightgreen-rgb);
+    box-shadow: 8rem 8rem 12rem var(--lightblue-rgb), -6rem -6rem 12rem var(--lightgreen-rgb);
     margin-bottom: 2vh;
 }
 
@@ -175,9 +232,9 @@ h1#dc-title {
     color: var(--lightblue-rgb);
     font-size: 3vw;
     text-shadow: var(--title-text-shadow);
-    -webkit-text-stroke: 2px var(--lavender-rgba);
-    border-top: 4px double var(--lavender-rgba);
-    border-bottom: 4px double var(--lavender-rgba);
+    -webkit-text-stroke: 2rem var(--lavender-rgba);
+    border-top: 4rem double var(--lavender-rgba);
+    border-bottom: 4rem double var(--lavender-rgba);
     border-radius: 2vh;
     padding: 1vh;
     margin: 1vh 0;
@@ -191,25 +248,25 @@ label#upload-button {
     margin-bottom: 1vh;
     border: 2.2pt solid var(--lightblue-rgb);
     border-radius: 5pt;
-    padding: 5px;
-    padding-top: 1px;
-    box-shadow: -4px -4px 12px var(--lightblue-rgb), 4px 4px 12px var(--lightblue-rgb), 4px 4px 12px var(--lightgreen-rgb), 
-            0 0 0px var(--lightblue-rgba) inset,
-            0 0 0px var(--lightblue-rgba) inset,
-            0 0 0px var(--lightblue-rgb),
-            0 0 0px var(--lightblue-rgb);
+    padding: 5rem;
+    padding-top: 1rem;
+    box-shadow: -4rem -4rem 12rem var(--lightblue-rgb), 4rem 4rem 12rem var(--lightblue-rgb), 4rem 4rem 12rem var(--lightgreen-rgb), 
+            0 0 0rem var(--lightblue-rgba) inset,
+            0 0 0rem var(--lightblue-rgba) inset,
+            0 0 0rem var(--lightblue-rgb),
+            0 0 0rem var(--lightblue-rgb);
     transition: box-shadow .5s linear, transform .7s linear, text-shadow 1s ease-in-out, color 1.5s;
     z-index: 100;
     user-select: none;
 }
 
 label#upload-button:not(.playing):hover {
-    box-shadow: 0 0 0px var(--lightblue-rgb), 0 0 0px var(--lightblue-rgb), 0 0 0px var(--lightgreen-rgb),
-            10px 10px 12px var(--lightblue-rgba) inset,
-            -10px -10px 12px var(--lightblue-rgba) inset,
-            -3px -3px 6px var(--lightblue-rgb),
-            3px 3px 6px var(--lightblue-rgb);
-    text-shadow: -9px -9px 12px var(--lightblue-rgb), 9px 9px 12px var(--lightblue-rgb);
+    box-shadow: 0 0 0rem var(--lightblue-rgb), 0 0 0rem var(--lightblue-rgb), 0 0 0rem var(--lightgreen-rgb),
+            10rem 10rem 12rem var(--lightblue-rgba) inset,
+            -10rem -10rem 12rem var(--lightblue-rgba) inset,
+            -3rem -3rem 6rem var(--lightblue-rgb),
+            3rem 3rem 6rem var(--lightblue-rgb);
+    text-shadow: -9rem -9rem 12rem var(--lightblue-rgb), 9rem 9rem 12rem var(--lightblue-rgb);
     color: var(--lavender-rgb);
     cursor: var(--hover-cursor);
 }

@@ -1,6 +1,8 @@
 function component() {
     const render = function() {
-        return "Error";
+        return /*html*/`
+            <h1 class="centralized">Error</h1>   
+        `
     }
 
     return {

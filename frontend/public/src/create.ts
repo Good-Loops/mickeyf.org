@@ -35,6 +35,7 @@ function create(): userCreateInterface {
 
             } catch (error: any) {
                 const errors = error.response?.data?.errors;
+                console.log(errors);
                 if (errors) {
                     errors.forEach((element: errorValidateInterface) => {
                         const elementValidation = document.querySelector(
