@@ -265,7 +265,6 @@ label#upload-button {
     padding-top: .4em;
 
     font-size: 2rem;
-    font-weight: bold;
     color: var(--lightblue1-hsl);
 
     text-shadow: var(--label-text-shadow);
