@@ -177,6 +177,9 @@ div#form input#error-password {
 }
 
 div#form input#register-button {
+    position: relative;
+    top: .7em;
+
     grid-area: register-button;
     border-radius: .5em;
     grid-column: 2;
@@ -217,57 +220,60 @@ div#form .input:focus {
 }
 
 /**************************************************** Dancing Circles Page ****************************************************/
-div#dc-content {
-    display: contents;
-}
-
 canvas#dancing-circles {
-    border-radius: .2vw;
-    width: 60vw;
-    box-shadow: 8rem 8rem 12rem var(--lightblue-rgb), -6rem -6rem 12rem var(--lightgreen-rgb);
-    margin-bottom: 2vh;
+    width: 60svw;
+
+    box-shadow: .3em .3em .8em var(--lightblue-rgb), -.3em -.3em 1em var(--lightgreen-rgb);
+    border-radius: .2em;
 }
 
 h1#dc-title {
+    padding: 1svh;
+    margin: 3svh 0;
+
+    font-size: 3.5rem;
     color: var(--lightblue-rgb);
-    font-size: 3vw;
     text-shadow: var(--title-text-shadow);
-    -webkit-text-stroke: 2rem var(--lavender-rgba);
-    border-top: 4rem double var(--lavender-rgba);
-    border-bottom: 4rem double var(--lavender-rgba);
-    border-radius: 2vh;
-    padding: 1vh;
-    margin: 1vh 0;
+    -webkit-text-stroke: .06em var(--lavender-rgba);
+
+    border-top: .15em double var(--lavender-rgba);
+    border-bottom: .15em double var(--lavender-rgba);
+    border-radius: .4em;
 }
 
 label#upload-button {
-    display: block;
+    position: relative;
+    top: 1em;
+
+    padding: .5em;
+    padding-top: .4em;
+
+    font-size: 2rem;
     color: var(--lightblue-rgb);
-    font-size: 2vw;
+
     text-shadow: var(--label-text-shadow);
-    margin-bottom: 1vh;
-    border: 2.2pt solid var(--lightblue-rgb);
-    border-radius: 5pt;
-    padding: 5rem;
-    padding-top: 1rem;
-    box-shadow: -4rem -4rem 12rem var(--lightblue-rgb), 4rem 4rem 12rem var(--lightblue-rgb), 4rem 4rem 12rem var(--lightgreen-rgb), 
-            0 0 0rem var(--lightblue-rgba) inset,
-            0 0 0rem var(--lightblue-rgba) inset,
-            0 0 0rem var(--lightblue-rgb),
-            0 0 0rem var(--lightblue-rgb);
-    transition: box-shadow .5s linear, transform .7s linear, text-shadow 1s ease-in-out, color 1.5s;
-    z-index: 100;
+    border: .16em solid var(--lightblue-rgb);
+    border-radius: .6em;
+    box-shadow: 0 0 .4em var(--lightblue-rgb), .4em .4em 2em var(--lightgreen-rgb), 
+    0 0 0em var(--lightblue-rgba) inset,
+    0 0 0em var(--lightblue-rgb);
+
+    z-index: 2;
     user-select: none;
+
+    transition: box-shadow .5s linear, transform .7s linear, text-shadow 1s ease-in-out, color 1.5s;
 }
 
 label#upload-button:not(.playing):hover {
-    box-shadow: 0 0 0rem var(--lightblue-rgb), 0 0 0rem var(--lightblue-rgb), 0 0 0rem var(--lightgreen-rgb),
-            10rem 10rem 12rem var(--lightblue-rgba) inset,
-            -10rem -10rem 12rem var(--lightblue-rgba) inset,
-            -3rem -3rem 6rem var(--lightblue-rgb),
-            3rem 3rem 6rem var(--lightblue-rgb);
-    text-shadow: -9rem -9rem 12rem var(--lightblue-rgb), 9rem 9rem 12rem var(--lightblue-rgb);
     color: var(--lavender-rgb);
+    box-shadow: 0 0 0em var(--lightblue-rgb), 0 0 0em var(--lightgreen-rgb),
+            0 0 .12em var(--lightblue-rgba) inset,
+            0 0 .6em var(--lightblue-rgb);
+
+    text-shadow: 0 0 .12em var(--lightblue-rgb);
+
+    transform: scale(1.04);
+    
     cursor: var(--hover-cursor);
 }
 
