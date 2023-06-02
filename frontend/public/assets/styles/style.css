@@ -1,36 +1,53 @@
 :root {
-    --lightblue-rgb: rgb(135, 206, 250);
-    --lightblue-rgba: rgb(135, 206, 250, .5);
-    --lightturquoise-rgb: rgb(64, 224, 208);
-    --lightturquoise-rgba: rgba(64, 224, 208, .3);
-    --lightgreen-rgb: rgb(144, 238, 144);
-    --lightgreen-rgba: rgba(144, 238, 144, .5);
+    --lightblue-hsl: hsl(203, 92%, 75%);
+    --lightblue-hsla: hsla(203, 92%, 75%, .5);
+    --lightblue1-hsl: hsl(203, 92%, 67%);
+    --lightturquoise-hsl: hsl(174, 72%, 56%);
+    --lightturquoise-hsla: hsla(174, 72%, 56%, .3);
+    --lightgreen-hsl: hsl(120, 73%, 75%);
+    --lightgreen-hsla: hsla(120, 73%, 75%, .5);
 
-    --softpink-rgb: rgb(255, 182, 193);
-    --softpink-rgba: rgba(255, 182, 193, .3);
-    --lightyellow-rgb: rgb(255, 255, 153);
-    --lightyellow-rgba: rgba(255, 255, 153, .2);
-    --lavender-rgb: rgb(230, 230, 250);
-    --lavender-rgba: rgba(230, 230, 250, .3);
-    --lightcoral-rgb: rgb(240, 128, 128);
-    --lightcoral-rgba: rgba(240, 128, 128, .5);
+    --softpink-hsl: hsl(351, 100%, 86%);
+    --softpink-hsla: hsla(351, 100%, 86%, .3);
+    --lightyellow-hsl: hsl(60, 100%, 80%);
+    --lightyellow-hsla: hsla(60, 100%, 80%, .2);
+    --lavender-hsl: hsl(240, 67%, 94%);
+    --lavender-hsla: hsla(240, 67%, 94%, .3);
+    --lightcoral-hsl: hsl(0, 79%, 72%);
+    --lightcoral-hsla: hsla(0, 79%, 72%, .5);
 
-    --gray-rgb: rgb(80, 80, 80);
-    --gray-rgba: rgb(80, 80, 80, .3);
-    --lightgray-rgb: rgb(200, 200, 200);
-    --lightgray-rgba: rgba(200, 200, 200, .8);
+    --gray-hsl: hsl(0, 0%, 31%);
+    --gray-hsla: hsla(0, 0%, 31%, .3);
+    --lightgray-hsl: hsl(0, 0%, 78%);
+    --lightgray-hsla: hsla(0, 0%, 78%, .8);
 
-    --gray-box-shadow-rgba: rgba(230, 230, 250, .3);
-    --title-text-shadow: -.1rem -.1rem 1rem var(--lavender-rgb), .1rem .1rem 1rem var(--lavender-rgb);
-    --label-text-shadow: -.3rem -.3rem .8rem var(--lavender-rgb), .3rem .3rem .8rem var(--lavender-rgb);
+    --gray-box-shadow-hsla: hsla(230, 230, 250, .3);
+    --title-text-shadow: 0 0 .15em var(--lavender-hsl);
+    --label-text-shadow: 0 0 .4em var(--lavender-hsl);
 
     --font: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 
-    --body-background: linear-gradient(to bottom right, var(--lightblue-rgb) 30%, var(--lightgreen-rgb) 90%);
-    --register-div-background: linear-gradient(to top left, var(--lightblue-rgba) 35%, var(--lightgreen-rgba) 70%);
+    --body-background: linear-gradient(to bottom right, var(--lightblue1-hsl) 30%, var(--lightgreen-hsl) 90%);
+    --register-div-background: linear-gradient(to top left, var(--lightblue-hsla) 35%, var(--lightgreen-hsla) 70%);
 
     --cursor: url("../img/normal.cur"), auto;
     --hover-cursor: url("../img/select.cur"), auto;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.floating {
+    animation: float 3s ease-in-out infinite;
 }
 
 body {
@@ -65,7 +82,7 @@ header {
 }
 
 header ul#nav {
-    border-bottom: .2em solid var(--lavender-rgba);
+    border-bottom: .2em solid var(--lavender-hsla);
     border-radius: 1em;
     list-style: none;
 
@@ -92,7 +109,7 @@ header ul#nav li:active {
 
 header ul#nav li a {
     text-decoration: none;
-    color: rgb(230, 230, 250, .6);
+    color: hsl(0, 80%, 95%, .6);
     transition: text-shadow 1.5s ease-in-out;
 }
 
@@ -107,7 +124,7 @@ h1#register-title {
     margin-right: 4em;
     
     font-size: 3.2rem;
-    color: var(--lightblue-rgb);
+    color: var(--lightblue-hsl);
     text-shadow: var(--title-text-shadow);
 }
 
@@ -185,7 +202,7 @@ div#form input#register-button {
 
     padding-block: .2em;
 
-    border: .18em solid var(--lightgray-rgb);
+    border: .18em solid var(--lightgray-hsl);
     transition: border 0.7s;
 
     font-size: .7rem;
@@ -197,12 +214,12 @@ div#form #register-button:active {
 
 div#form #register-button:hover {
     cursor: var(--hover-cursor);
-    border: .18em solid var(--gray-rgb);
+    border: .18em solid var(--gray-hsl);
 }
 
 div#form .input {
     background-color: hsl(210, 90%, 91%);
-    border: .15em solid var(--lightgray-rgb);
+    border: .15em solid var(--lightgray-hsl);
     border-radius: .4em;
 
     transition: border 0.7s;
@@ -211,18 +228,18 @@ div#form .input {
     font-family: var(--font);
     font-size: 1rem;
 
-    color: var(--gray-rgb);
+    color: var(--gray-hsl);
 }
 
 div#form .input:focus {
-    border: .15em solid var(--gray-rgb);
+    border: .15em solid var(--gray-hsl);
 }
 
 /**************************************************** Dancing Circles Page ****************************************************/
 canvas#dancing-circles {
     width: 60svw;
 
-    box-shadow: .3em .3em .8em var(--lightblue-rgb), -.3em -.3em 1em var(--lightgreen-rgb);
+    box-shadow: .3em .3em .8em var(--lightblue1-hsl), -.3em -.3em 1em var(--lightgreen-hsl);
     border-radius: .2em;
 }
 
@@ -231,12 +248,12 @@ h1#dc-title {
     margin: 3svh 0;
 
     font-size: 3.5rem;
-    color: var(--lightblue-rgb);
+    color: var(--lightblue1-hsl);
     text-shadow: var(--title-text-shadow);
-    -webkit-text-stroke: .06em var(--lavender-rgba);
+    -webkit-text-stroke: .05em var(--lavender-hsla);
 
-    border-top: .15em double var(--lavender-rgba);
-    border-bottom: .15em double var(--lavender-rgba);
+    border-top: .15em double var(--lavender-hsla);
+    border-bottom: .15em double var(--lavender-hsla);
     border-radius: .4em;
 }
 
@@ -248,36 +265,44 @@ label#upload-button {
     padding-top: .4em;
 
     font-size: 2rem;
-    color: var(--lightblue-rgb);
+    font-weight: bold;
+    color: var(--lightblue1-hsl);
 
     text-shadow: var(--label-text-shadow);
-    border: .16em solid var(--lightblue-rgb);
+
+    border: .12em solid var(--lightblue1-hsl);
     border-radius: .6em;
-    box-shadow: 0 0 .4em var(--lightblue-rgb), .4em .4em 2em var(--lightgreen-rgb), 
-    0 0 0em var(--lightblue-rgba) inset,
-    0 0 0em var(--lightblue-rgb);
+    box-shadow: 0 0 .6em hsla(240, 67%, 94%, .6), 
+    0 0 0em var(--lightblue-hsla) inset,
+    0 0 0em var(--lightblue-hsl);
 
     z-index: 2;
     user-select: none;
 
-    transition: box-shadow .5s linear, transform .7s linear, text-shadow 1s ease-in-out, color 1.5s;
+    transition: 
+        box-shadow .5s linear, 
+        scale .7s linear, 
+        text-shadow 1s ease-in-out, 
+        color 1.5s,
+        border-color 2s;
 }
 
 label#upload-button:not(.playing):hover {
-    color: var(--lavender-rgb);
-    box-shadow: 0 0 0em var(--lightblue-rgb), 0 0 0em var(--lightgreen-rgb),
-            0 0 .12em var(--lightblue-rgba) inset,
-            0 0 .6em var(--lightblue-rgb);
+    color: var(--lavender-hsl);
+    border-color: hsla(240, 67%, 94%, .3);
+    box-shadow: 0 0 0em var(--lavender-hsla),
+            0 0 5em var(--lightblue-hsla) inset,
+            0 0 .6em var(--lightblue-hsla);
 
-    text-shadow: 0 0 .12em var(--lightblue-rgb);
+    text-shadow: 0 0 .12em var(--lightblue-hsl);
 
-    transform: scale(1.04);
+    scale: 1.04;
     
     cursor: var(--hover-cursor);
 }
 
 label#upload-button:not(.playing):active {
-    transform: scale(0.2);
+    scale: .2;
 }
 
 input#file-upload[type="file"] {

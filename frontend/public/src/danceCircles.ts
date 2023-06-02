@@ -205,7 +205,7 @@ function danceCircles() {
             );
             ctx.shadowBlur = 50;
             ctx.shadowColor = "lavender";
-            ctx.filter = "blur(3px)";
+            ctx.filter = "blur(1px)";
             ctx.fill();
         });
     }
