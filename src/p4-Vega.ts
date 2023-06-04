@@ -1,6 +1,7 @@
 import { getRandomX, getRandomY } from "./handlers/positionHandler";
 import { getRandomBoolean, getRandomInt } from "./helpers/methods";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./helpers/constants";
+import sprites from "./helpers/loadSprites";
 
 export default function p4Vega() {
     let gameLive: boolean = true;
@@ -85,15 +86,6 @@ export default function p4Vega() {
     let inactiveEnemies: enemy[] = [];
     let activeEnemies: enemy[] = [];
 
-
-    // Adding sprites
-    interface sprites {
-        p4: HTMLImageElement,
-        water: HTMLImageElement,
-        enemy: HTMLImageElement
-    }
-    let sprites: sprites;
-
     const checkCollision = (rect1: enemy | water | p4, rect2: enemy | water | p4): boolean => {
         return rect1.x + rect1.width > rect2.x &&
             rect1.x < rect2.x + rect2.width &&
@@ -105,25 +97,6 @@ export default function p4Vega() {
     // var hitSound = {};
 
     const load = (): void => {
-        sprites = {
-            p4: new Image(),
-            water: new Image(),
-            enemy: new Image()
-        };
-
-        sprites.p4.src = "../assets/sprites/player.png";
-        sprites.water.src = "../assets/sprites/water.png";
-        sprites.enemy.src = "../assets/sprites/enemy.png";
-
-        sprites.p4.width = 70;
-        sprites.p4.height = 73;
-
-        sprites.water.width = 28;
-        sprites.water.height = 46;
-        
-        sprites.enemy.width = 90;
-        sprites.enemy.height = 72;
-
         // hitSound = new Audio();
         // hitSound.src = "./dist/assets/hit-sound.wav";
 

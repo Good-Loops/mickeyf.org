@@ -5,12 +5,12 @@ import hashInfo from "../src/helpers/hashInfo";
 import loadComponentHtml from "../src/helpers/loadComponent";
 import listUsersInterface from "../interfaces/listUsersInterface";
 import listUsers from "./listUsers";
+import loadSprites from "./helpers/loadSprites";
 
-function loadComponent() {
+function loadComponent(): void {
     const { component, placeholder, uri } = hashInfo();
     loadComponentHtml(component, placeholder, uri);
 }
-
 loadComponent();
 
 window.addEventListener("hashchange", () => {
