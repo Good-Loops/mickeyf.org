@@ -96,7 +96,7 @@ header ul#nav {
 }
 
 header ul#nav li {
-    transition: transform 1.5s linear;
+    transition: transform .5s ease-in-out;
 }
 
 header ul#nav li:hover {
@@ -140,6 +140,24 @@ div#form {
     background: var(--register-div-background);
     border-radius: 1em;
     transform: scale(2);
+}
+
+div#form .input {
+    background-color: hsl(210, 90%, 91%);
+    border: .15em solid var(--lightgray-hsl);
+    border-radius: .4em;
+
+    transition: border 0.7s;
+    outline: none;
+
+    font-family: var(--font);
+    font-size: 1rem;
+
+    color: var(--gray-hsl);
+}
+
+div#form .input:focus {
+    border: .15em solid var(--gray-hsl);
 }
 
 div#form form {
@@ -190,24 +208,6 @@ div#form #register-button:active {
 div#form #register-button:hover {
     cursor: var(--hover-cursor);
     border: .18em solid var(--gray-hsl);
-}
-
-div#form .input {
-    background-color: hsl(210, 90%, 91%);
-    border: .15em solid var(--lightgray-hsl);
-    border-radius: .4em;
-
-    transition: border 0.7s;
-    outline: none;
-
-    font-family: var(--font);
-    font-size: 1rem;
-
-    color: var(--gray-hsl);
-}
-
-div#form .input:focus {
-    border: .15em solid var(--gray-hsl);
 }
 
 /**************************************************** Dancing Circles Page ****************************************************/

@@ -6,9 +6,9 @@ function component() {
                 <div x-data="create()" x-cloak>
                     <div id="form">
                         <form x-on:submit.prevent="createUser">
-                            <input id="user-name" class="input" type="text" name="userName" placeholder="Username" x-model="user.firstName">
-                            <input id="email" class="input" type="text" name="email" placeholder="Email" x-model="user.email">
-                            <input id="password" class="input" type="text" name="password" placeholder="New Password" x-model="user.password">
+                            <input id="user-name" class="input" type="text" name="userName" placeholder="Username">
+                            <input id="email" class="input" type="text" name="email" placeholder="Email">
+                            <input id="password" class="input" type="text" name="password" placeholder="Password">
                             <input id="register-button" class="input" type="submit" name="submit" value="Sign up">
                         </form>
                     </div>
