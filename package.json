@@ -1,7 +1,7 @@
 {
   "name": "mickeyf.dev",
   "version": "1.0.0",
-  "description": "frontend of website",
+  "description": "entertaining and educational website",
   "main": "webpack.config.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack --progress --watch",

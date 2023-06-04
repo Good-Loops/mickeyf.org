@@ -3,6 +3,7 @@ import Register from "../../components/Register";
 import User from "../../components/User";
 import Error404 from "../../components/Error404";
 import DanceCircles from "../../components/DanceCircles";
+import P4Vega from "../../components/P4Vega";
 
 interface routerInterface<T> {
     [id: string]: T;
@@ -18,6 +19,7 @@ const routes: routerInterface<componentInterface> = {
     "/user/register": Register,
     "/user/:id": User,
     "/dancing-circles": DanceCircles,
+    "/p4-Vega": P4Vega,
     "/error": Error404
 }
 

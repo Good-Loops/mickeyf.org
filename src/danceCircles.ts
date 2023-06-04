@@ -5,7 +5,7 @@ import * as PositionHandler from "./handlers/positionHandler";
 import AudioHandler from "./handlers/audioHandler";
 import { getRandomIndexArr } from "./helpers/methods";
 
-function danceCircles() {
+export default function danceCircles() {
     // Canvas
     const canvas: HTMLCanvasElement = document.getElementById("dancing-circles") as HTMLCanvasElement;
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -41,13 +41,13 @@ function danceCircles() {
     // Fills circle array
     // Defines starting random bg-color for canvas
     const load = (): void => {
-        canvas.style.backgroundColor = ColorHandler.randomColor(canvasMinS,
+        canvas.style.backgroundColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
         canvasBgColor = ColorHandler.convertRGBtoHSL(
             canvas.style.backgroundColor
         );
-        canvasTargetColor = ColorHandler.randomColor(canvasMinS,
+        canvasTargetColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
 
@@ -67,12 +67,12 @@ function danceCircles() {
                 PositionHandler.getRandomY(baseR),
                 PositionHandler.getRandomX(baseR),
                 PositionHandler.getRandomY(baseR),
-                ColorHandler.randomColor(CircleHandler.minS,
+                ColorHandler.getRandomColor(CircleHandler.minS,
                     CircleHandler.maxS,
                     CircleHandler.minL,
                     CircleHandler.maxL,
                     true),
-                ColorHandler.randomColor(CircleHandler.minS,
+                ColorHandler.getRandomColor(CircleHandler.minS,
                     CircleHandler.maxS,
                     CircleHandler.minL,
                     CircleHandler.maxL,
@@ -90,7 +90,7 @@ function danceCircles() {
 
     // Updates a circle and canvas positions and colors 
     function update(numCircs: number): void {
-        canvasTargetColor = ColorHandler.randomColor(canvasMinS,
+        canvasTargetColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
 
@@ -104,7 +104,7 @@ function danceCircles() {
             if (!AudioHandler.playing) {
                 circ.targetR = circ.baseR;
                 // Update two circles' colors at a time based on frequencies from input audio
-                circ.targetColor = ColorHandler.randomColor(CircleHandler.minS,
+                circ.targetColor = ColorHandler.getRandomColor(CircleHandler.minS,
                     CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL, true
                 );
             }
@@ -289,5 +289,3 @@ function danceCircles() {
     }
     step(0);
 }
-
-export default danceCircles;

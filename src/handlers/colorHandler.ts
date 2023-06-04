@@ -1,8 +1,7 @@
 import { getRandomInt } from "../helpers/methods";
-import AudioHandler from "./audioHandler";
 
 // HSL Values to RGB Values
-function convertHSLtoRGB(h: number, s: number, l: number): number[] {
+export function convertHSLtoRGB(h: number, s: number, l: number): number[] {
   let r: number, g: number, b: number;
 
   if (s === 0) {
@@ -28,7 +27,7 @@ function convertHSLtoRGB(h: number, s: number, l: number): number[] {
 }
 
 // HSL String to RGB String
-function convertHSLStrToRGBStr(hslStr: string): string {
+export function convertHSLStrToRGBStr(hslStr: string): string {
   // Parse the HSL string
   const hslRegex: RegExp = /^hsl\((\d{1,3}),\s*(\d{1,3})%,\s*(\d{1,3})%\)$/i;
   const match: RegExpMatchArray = hslStr.match(hslRegex) as RegExpExecArray;
@@ -53,12 +52,12 @@ function convertHSLStrToRGBStr(hslStr: string): string {
 }
 
 // HSL String to HSLA String
-function convertHSLtoHSLA(hsl: string, alpha: number): string {
+export function convertHSLtoHSLA(hsl: string, alpha: number): string {
   return hsl.replace("(", "a(").replace(")", `, ${alpha})`);
 }
 
 // RGB String to HSL String
-function convertRGBtoHSL(rgbString: string): string {
+export function convertRGBtoHSL(rgbString: string): string {
   // Extract the r, g, b values from the rgb string
   const rgbArray: number[] = rgbString.substring(4, rgbString.length - 1).split(",").map(x => parseInt(x.trim()));
 
@@ -106,7 +105,7 @@ function convertRGBtoHSL(rgbString: string): string {
 }
 
 // Hertz to HSL String
-function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: number, maxL: number): any {
+export function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: number, maxL: number): any {
   // Hearing range
   if(hertz < 20) hertz = 20;
   if(hertz > 20e3) hertz = 20e3;
@@ -119,7 +118,7 @@ function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: numb
 
   const h = 360 * percentage;
 
-  const randomHSL = randomColor(minS, maxS, minL, maxL, true);
+  const randomHSL = getRandomColor(minS, maxS, minL, maxL, true);
   const randomHSLh = randomHSL.substring(4, randomHSL.length - 1).split(",")[0];
   const newHSL = randomHSL.replace(randomHSLh, h.toString());
 
@@ -127,7 +126,7 @@ function convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: numb
 }
 
 // Get random hsl/rgb value inside chosen spectrum
-function randomColor(minS: number, maxS: number, minL: number, maxL: number, isHsl: boolean): string {
+export function getRandomColor(minS: number = 0, maxS: number = 100, minL: number = 0, maxL: number = 100, isHsl: boolean = true): string {
   const h: number = (Math.random() * 360) | 0;
   const s: number = getRandomInt(minS, maxS);
   const l: number = getRandomInt(minL, maxL);
@@ -141,7 +140,7 @@ function randomColor(minS: number, maxS: number, minL: number, maxL: number, isH
 }
 
 // Change color slightly in a pattern
-function lerpColor(start: string, end: string, t: number): string {
+export function lerpColor(start: string, end: string, t: number): string {
   // Destructuring assignment 
   const [sH, sS, sL]: number[] = start.substring(4, start.length - 1)
     .split(",", 3)
@@ -163,13 +162,3 @@ function lerpColor(start: string, end: string, t: number): string {
     return `rgb(${r}, ${g}, ${b})`; // use RGB fallback
   }
 }
-
-export {
-  convertHSLtoRGB,
-  convertHSLStrToRGBStr,
-  convertHSLtoHSLA,
-  convertRGBtoHSL,
-  randomColor,
-  lerpColor,
-  convertHertzToHSL
-};  

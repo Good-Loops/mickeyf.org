@@ -1,6 +1,6 @@
 import { PitchDetector } from "pitchy";
 
-class AudioHandler {
+export default class AudioHandler {
     public static pitch: number;
     public static clarity: number; 
     public static volume: number;
@@ -83,5 +83,3 @@ class AudioHandler {
         });
     }
 }
-
-export default AudioHandler;

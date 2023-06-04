@@ -7,14 +7,18 @@ export async function getUserData() {
     }
 }
 
+export function getRandomBoolean(): boolean {
+    return Math.random() >= 0.5;
+}
+
 export function getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function getRandomIndexArr(numCircs: number): number[] {
+export function getRandomIndexArr(arrayLength: number): number[] {
     let indexArr: number[] = [];
-    for (let i: number = 0; i < numCircs; i++) {
-        indexArr.push(getRandomInt(0, numCircs - 1));
+    for (let i: number = 0; i < arrayLength; i++) {
+        indexArr.push(getRandomInt(0, arrayLength - 1));
         // Check for repeats 
         if (indexArr.length > 2) {
             let repeats: number = 0;

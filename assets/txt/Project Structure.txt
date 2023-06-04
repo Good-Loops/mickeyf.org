@@ -13,7 +13,11 @@ mickeyf.dev
 |   |   |-- gpt.css
 |   |   `-- style.css
 |   `-- txt
-|       `-- Colors for Website.txt
+|       |-- Colors for Website.txt
+|       `-- Project Structure.txt
+|-- backend
+|   |-- db_connect.php
+|   `-- index.php
 |-- components
 |   |-- DanceCircles.ts
 |   |-- Error404.ts
@@ -23,7 +27,6 @@ mickeyf.dev
 |-- dist
 |   `-- index.js
 |-- interfaces
-|   |-- errorValidateInterface.ts
 |   |-- listUsersInterface.ts
 |   `-- userCreateInterface.ts
 |-- node_modules
@@ -34,10 +37,9 @@ mickeyf.dev
 |   |   |-- colorHandler.ts
 |   |   `-- positionHandler.ts
 |   |-- helpers
+|   |   |-- constants.ts
 |   |   |-- hashInfo.ts
 |   |   |-- loadComponent.ts
-|   |   |-- constants.ts
-|   |   |-- http.ts
 |   |   `-- methods.ts
 |   |-- create.ts
 |   |-- danceCircles.ts
@@ -45,7 +47,6 @@ mickeyf.dev
 |   `-- listUsers.ts
 |-- LICENSE
 |-- README.md
-|-- http.http
 |-- index.html
 |-- package-lock.json
 |-- package.json

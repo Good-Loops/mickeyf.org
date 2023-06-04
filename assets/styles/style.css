@@ -282,3 +282,17 @@ label#upload-button:not(.playing):active {
 input#file-upload[type="file"] {
     display: none;
 }
+
+/**************************************************** p4-Vega Page ****************************************************/
+canvas#p4-Vega {
+    width: 60svw;
+    border: .4em solid var(--lavender-hsl);
+    border-radius: .8em;
+    background-color: hsl(255, 100%, 10%);
+}
+
+h1#p4-title {
+    font-size: 3rem;
+    color: var(--lavender-hsl);
+    -webkit-text-stroke: .04em black;
+}
