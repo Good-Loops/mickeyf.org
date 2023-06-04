@@ -12,8 +12,8 @@ function component() {
             return data;
         });
 
-        const user = data.find((user: { userId: string; }) => user.userId === id);
-
+        const user = data.find((user: { userId: string; }) => user.userId === id) ?? "";
+        
         return user;
     }
 
@@ -24,7 +24,11 @@ function component() {
             email: string;
             password: string;
         } = await user();
-
+        
+        if (!userData) {
+            window.location.hash = "#/error";
+        }
+        
         return /*html*/`
             <div class="centralized">
                 Hello ${userData.userName}

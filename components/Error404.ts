@@ -1,7 +1,7 @@
 function component() {
     const render = function() {
         return /*html*/`
-            <h1 class="centralized">Error</h1>   
+            <h1 class="centralized">Error 404: Page not found</h1>   
         `
     }
 

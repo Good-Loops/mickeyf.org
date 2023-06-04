@@ -15,9 +15,10 @@ interface componentInterface {
 
 const routes: routerInterface<componentInterface> = {
     "/": Home,
-    "/user/create": Register,
+    "/user/register": Register,
     "/user/:id": User,
-    "/dancing-circles": DanceCircles
+    "/dancing-circles": DanceCircles,
+    "/error": Error404
 }
 
 const loadComponentHtml = async function (component: string, placeholder: string, uri: string) {
