@@ -54,8 +54,8 @@ function create(): userCreateInterface {
                 }
             } else {
                 Swal.fire({
-                    title: 'Success!',
-                    text: 'Successfully registered user.',
+                    title: 'Welcome, go break some records!',
+                    text: 'Successfully registered user',
                     icon: 'success'
                 });
             }
