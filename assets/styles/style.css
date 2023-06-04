@@ -150,46 +150,21 @@ div#form form {
     justify-content: center;
     grid-template-areas: 
         "name name name"
-        "error-name error-name error-name" 
-        "last-name last-name last-name"
-        "error-last-name error-last-name error-last-name" 
         "email email email"
-        "error-email error-email error-email" 
         "password password password" 
-        "error-password error-password error-password"
         "register-button register-button register-button";
 }
 
-div#form input#first-name {
+div#form input#user-name {
     grid-area: name;
-}
-
-div#form input#error-firstName {
-    grid-area: error-name;
-}
-
-div#form input#last-name {
-    grid-area: last-name;
-}
-
-div#form input#error-lastName {
-    grid-area: error-last-name;
 }
 
 div#form input#email {
     grid-area: email;
 }
 
-div#form input#error-email {
-    grid-area: error-email;
-}
-
 div#form input#password {
     grid-area: password;
-}
-
-div#form input#error-password {
-    grid-area: error-password;
 }
 
 div#form input#register-button {

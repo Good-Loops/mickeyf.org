@@ -1,13 +1,14 @@
 import listUsersInterface from "../interfaces/listUsersInterface";
-import http from "./helpers/http";
+import { getUserData } from "./helpers/methods";
 
 function listUsers(): listUsersInterface {
     return {
-        data: [], // this.data
-        list: async function () {
+        data: [], 
+        list: function () {
             try {
-                const { data } = await http.get("/users");
-                this.data = data;
+                getUserData().then(data => {
+                    this.data = data;
+                });
             } catch (error) {
                 console.log(error);
             }

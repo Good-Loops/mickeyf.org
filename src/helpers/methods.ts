@@ -1,3 +1,12 @@
+export async function getUserData() {
+    try {
+        const response = await fetch('http://localhost:3000/index.php');
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 export function getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }

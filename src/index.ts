@@ -7,7 +7,6 @@ import listUsersInterface from "../interfaces/listUsersInterface";
 import listUsers from "./listUsers";
 
 function loadComponent() {
-
     const { component, placeholder, uri } = hashInfo();
     loadComponentHtml(component, placeholder, uri);
 }
