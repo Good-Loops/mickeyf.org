@@ -1,6 +1,4 @@
-import { checkCollision, getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../helpers/methods";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../helpers/constants";
-import GameElement from "./classes/GameElement";
 import P4 from "./classes/P4";
 import Water from "./classes/Water";
 import Enemy from "./classes/Enemy";
