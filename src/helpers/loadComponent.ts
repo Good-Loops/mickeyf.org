@@ -2,8 +2,8 @@ import Home from "../../components/Home";
 import Register from "../../components/Register";
 import User from "../../components/User";
 import Error404 from "../../components/Error404";
-import DanceCircles from "../../components/DanceCircles";
-import P4Vega from "../../components/P4Vega";
+import DanceCircles from "../../components/animations/DanceCircles";
+import P4Vega from "../../components/games/P4Vega";
 
 interface routerInterface<T> {
     [id: string]: T;

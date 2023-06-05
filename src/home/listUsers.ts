@@ -1,7 +1,7 @@
-import listUsersInterface from "../interfaces/listUsersInterface";
-import { getUserData } from "./helpers/methods";
+import { getUserData } from "../helpers/methods";
+import ListUsersInterface from "./interfaces/ListUsersInterface";
 
-function listUsers(): listUsersInterface {
+export default function listUsers(): ListUsersInterface {
     return {
         data: [], 
         list: function () {
@@ -15,5 +15,3 @@ function listUsers(): listUsersInterface {
         }
     }
 }
-
-export default listUsers;

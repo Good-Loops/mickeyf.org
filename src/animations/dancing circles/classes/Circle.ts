@@ -1,7 +1,7 @@
-import { lerp } from "../helpers/methods";
-import * as ColorHandler from "./colorHandler";
+import { lerp } from "../../../helpers/methods";
+import ColorHandler from "./ColorHandler";
 
-class Circle {
+export default class Circle {
     public baseR: number; 
     public currentR: number; 
     public targetR: number; 
@@ -14,6 +14,11 @@ class Circle {
     public startAngle: number;
     public endAngle: number;
     public counterclockwise: boolean;
+
+    public static minS: number = 95;
+    public static maxS: number = 100;
+    public static minL: number = 60;
+    public static maxL: number = 80;
 
     public constructor(baseR: number, currentR: number, targetR: number, x: number, y: number, tX: number,
         tY: number, color: string, tColor: string,
@@ -65,13 +70,3 @@ class Circle {
         this.currentR = lerp(this.currentR, this.targetR, t);
     }
 }
-
-// Saturation
-const minS: number = 95;
-const maxS: number = 100;
-
-// Lightness
-const minL: number = 60;
-const maxL: number = 80;
-
-export { Circle, minS, maxS, minL, maxL };

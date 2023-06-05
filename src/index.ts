@@ -1,11 +1,10 @@
 import "alpinejs";
-import create from "./create";
-import userCreateInterface from "../interfaces/userCreateInterface";
+import create from "./register/create";
 import hashInfo from "../src/helpers/hashInfo";
 import loadComponentHtml from "../src/helpers/loadComponent";
-import listUsersInterface from "../interfaces/listUsersInterface";
-import listUsers from "./listUsers";
-import loadSprites from "./helpers/loadSprites";
+import listUsers from "./home/listUsers";
+import UserCreateInterface from "./register/interfaces/UserCreateInterface";
+import ListUsersInterface from "./home/interfaces/ListUsersInterface";
 
 function loadComponent(): void {
     const { component, placeholder, uri } = hashInfo();
@@ -19,8 +18,8 @@ window.addEventListener("hashchange", () => {
 
 declare global {
     interface Window {
-        create: () => userCreateInterface;
-        listUsers: () => listUsersInterface;
+        create: () => UserCreateInterface;
+        listUsers: () => ListUsersInterface;
     }
 }
 

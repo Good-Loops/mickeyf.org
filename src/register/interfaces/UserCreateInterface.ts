@@ -1,4 +1,4 @@
-interface userCreateInterface {
+export default interface UserCreateInterface {
     user: {
         userName: string;
         email: string;
@@ -6,5 +6,3 @@ interface userCreateInterface {
     };
     createUser: () => void;
 }
-
-export default userCreateInterface;

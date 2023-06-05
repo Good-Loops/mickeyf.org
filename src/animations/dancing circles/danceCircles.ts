@@ -1,9 +1,8 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./helpers/constants";
-import * as ColorHandler from "./handlers/colorHandler";
-import * as CircleHandler from "./handlers/circleHandler";
-import * as PositionHandler from "./handlers/positionHandler";
-import AudioHandler from "./handlers/audioHandler";
-import { getRandomIndexArr } from "./helpers/methods";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../helpers/constants";
+import { getRandomIndexArr, getRandomX, getRandomY } from "../../helpers/methods";
+import ColorHandler from "./classes/ColorHandler";
+import Circle from "./classes/Circle";
+import AudioHandler from "./classes/AudioHandler";
 
 export default function danceCircles() {
     // Canvas
@@ -29,11 +28,13 @@ export default function danceCircles() {
     const uploadButton: HTMLLabelElement = document.getElementById("upload-button") as HTMLLabelElement;
 
     // Circle variable and array
-    const circArr: CircleHandler.Circle[] = [];
+    const circArr: Circle[] = [];
     // Do not initialize the array with "new Array(length)" because it will be filled with "undefined" values
     const circArrLen: number = 12;
     // Circles updating color per call
     const numCircs: number = 2;
+    // Gap
+    const gap: number = 2;
 
     // // Audio Handling
     AudioHandler.processAudio(fileInput, uploadButton);
@@ -59,23 +60,23 @@ export default function danceCircles() {
         for (let i: number = 0; i < circArrLen; i++) {
             baseR += prevR * adjustR;
             prevR = baseR;
-            let circ = new CircleHandler.Circle(
+            let circ = new Circle(
                 baseR,
                 baseR,
                 baseR,
-                PositionHandler.getRandomX(baseR),
-                PositionHandler.getRandomY(baseR),
-                PositionHandler.getRandomX(baseR),
-                PositionHandler.getRandomY(baseR),
-                ColorHandler.getRandomColor(CircleHandler.minS,
-                    CircleHandler.maxS,
-                    CircleHandler.minL,
-                    CircleHandler.maxL,
+                getRandomX(baseR, gap),
+                getRandomY(baseR, gap),
+                getRandomX(baseR, gap),
+                getRandomY(baseR, gap),
+                ColorHandler.getRandomColor(Circle.minS,
+                    Circle.maxS,
+                    Circle.minL,
+                    Circle.maxL,
                     true),
-                ColorHandler.getRandomColor(CircleHandler.minS,
-                    CircleHandler.maxS,
-                    CircleHandler.minL,
-                    CircleHandler.maxL,
+                ColorHandler.getRandomColor(Circle.minS,
+                    Circle.maxS,
+                    Circle.minL,
+                    Circle.maxL,
                     true),
                 0,
                 2 * Math.PI,
@@ -99,13 +100,13 @@ export default function danceCircles() {
         for (let i: number = 0; i < numCircs; i++) {
             // Get circle at random index
             const circ = circArr[randomIndexArr[i]];
-            circ.targetX = PositionHandler.getRandomX(circ.currentR);
-            circ.targetY = PositionHandler.getRandomY(circ.currentR);
+            circ.targetX = getRandomX(circ.currentR, gap);
+            circ.targetY = getRandomY(circ.currentR, gap);
             if (!AudioHandler.playing) {
                 circ.targetR = circ.baseR;
                 // Update two circles' colors at a time based on frequencies from input audio
-                circ.targetColor = ColorHandler.getRandomColor(CircleHandler.minS,
-                    CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL, true
+                circ.targetColor = ColorHandler.getRandomColor(Circle.minS,
+                    Circle.maxS, Circle.minL, Circle.maxL, true
                 );
             }
         }
@@ -126,9 +127,9 @@ export default function danceCircles() {
                 const randomIndexArr: number[] = getRandomIndexArr(circArrLen);
                 for (let i: number = 0; i < circArrLen; i++) {
                     // Get circle at random index
-                    const circ: CircleHandler.Circle = circArr[randomIndexArr[i]];
+                    const circ: Circle = circArr[randomIndexArr[i]];
                     circ.targetColor = ColorHandler.convertHertzToHSL(Math.round(AudioHandler.pitch),
-                        CircleHandler.minS, CircleHandler.maxS, CircleHandler.minL, CircleHandler.maxL
+                        Circle.minS, Circle.maxS, Circle.minL, Circle.maxL
                     );
                 }
                 colorTimer = 0;

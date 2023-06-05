@@ -1,8 +1,7 @@
-import userCreateInterface from "../interfaces/userCreateInterface";
-import { INVALID_EMAIL, INVALID_PASSWORD, EMPTY_FIELDS, DUPLICATE_USER } from "./helpers/constants";
+import { INVALID_EMAIL, INVALID_PASSWORD, EMPTY_FIELDS, DUPLICATE_USER } from "../helpers/constants";
 import Swal from 'sweetalert2';
 
-function create(): userCreateInterface {
+function create(): UserCreateInterface {
     return {
         user: {
             userName: "",

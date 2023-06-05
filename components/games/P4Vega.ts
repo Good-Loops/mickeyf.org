@@ -1,4 +1,4 @@
-import p4Vega from "../src/p4-Vega";
+import p4Vega from "../../src/games/p4-Vega/p4-Vega";
 
 function component() {
     const render = function() {
