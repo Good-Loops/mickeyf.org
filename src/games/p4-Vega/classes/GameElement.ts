@@ -7,6 +7,8 @@ export default abstract class GameElement implements GameElementInterface {
     abstract height: number;
     abstract x: number;
     abstract y: number;
+    
+    public gap: number = 50;
 
     public static gap: number = 15;
     public static hitBoxAdjust: number = 15;

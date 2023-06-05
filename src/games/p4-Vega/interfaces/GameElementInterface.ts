@@ -6,6 +6,7 @@ export default interface GameElementInterface {
     height: number;
     x: number;
     y: number;
+    gap?: number;
 
     draw(context: CanvasRenderingContext2D): void;
     update(p4?: P4, gameLive?: boolean): any;

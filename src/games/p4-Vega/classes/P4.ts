@@ -2,19 +2,26 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../helpers/constants"
 import GameElement from "./GameElement"
 
 export default class P4 extends GameElement {
-    public startX: number
-    public startY: number
-    public x: number
-    public y: number
-    public speed: number;
-    public width: number;
-    public height: number;
-    public totalWater: number;
-    public isMovingRight: boolean;
-    public isMovingLeft: boolean;
-    public isMovingUp: boolean;
-    public isMovingDown: boolean;
+    private startX: number = GameElement.gap;
+    private startY: number  = CANVAS_HEIGHT * .5;
+    private speed: number = 10;
+
     public sprite: HTMLImageElement = new Image(70, 73);
+    public width: number = this.sprite.width - GameElement.hitBoxAdjust;
+    public height: number = this.sprite.height - GameElement.hitBoxAdjust;
+    public x: number = this.startX;
+    public y: number = this.startY;
+   
+    public totalWater: number = 0;
+    public isMovingRight: boolean = false;
+    public isMovingLeft: boolean = false;
+    public isMovingUp: boolean = false;
+    public isMovingDown: boolean= false;
+
+    constructor() {
+        super();
+        this.sprite.src = "./assets/sprites/player.png";
+    }
 
     public update(): void {
         if (this.isMovingRight) {
@@ -43,22 +50,5 @@ export default class P4 extends GameElement {
         if (this.y < 0) {
             this.y += this.speed;
         }
-    }
-
-    constructor() {
-        super();
-        this.sprite.src = "./assets/sprites/player.png";
-        this.startX = GameElement.gap;
-        this.startY = CANVAS_HEIGHT * .5;
-        this.x = this.startX;
-        this.y = this.startY;
-        this.speed = 10;
-        this.width = this.sprite.width - GameElement.hitBoxAdjust;
-        this.height = this.sprite.height - GameElement.hitBoxAdjust;
-        this.totalWater = 0;
-        this.isMovingRight = false;
-        this.isMovingLeft = false;
-        this.isMovingUp = false;
-        this.isMovingDown = false;
     }
 }

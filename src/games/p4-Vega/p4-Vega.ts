@@ -18,7 +18,6 @@ export default function p4Vega() {
     let sky: Sky;
     let p4: P4;
     let water: Water;
-    let enemy: Enemy;
 
     // Game loop
     const load = (): void => {
@@ -26,30 +25,12 @@ export default function p4Vega() {
         sky = new Sky(canvas);
         p4 = new P4();
         water = new Water();
-
-        // Enemy Object and Array
-        for (var i = 0; i < 100; i++) {
-            enemy = new Enemy();
-
-            // Check if first enenmy is too close to player
-            if (i === 0) {
-                while ((enemy.x >= p4.x - GameElement.gap - enemy.gap && enemy.x <= p4.x + p4.width + GameElement.gap + enemy.gap)
-                    || (enemy.y >= p4.y - GameElement.gap - enemy.gap && enemy.y <= p4.y + p4.height + GameElement.gap + enemy.gap)) {
-                    enemy.x = getRandomX(enemy.sprite.width);
-                    enemy.y = getRandomY(enemy.height);
-                }
-            }
-
-            Enemy.inactives.push(enemy);
-        }
-        Enemy.currentIndex = Enemy.inactives.length - 1;
-        Enemy.actives.push(Enemy.inactives[Enemy.currentIndex]);
+        Enemy.actives.push(new Enemy(p4));
     }
 
     const update = (): void => {
         p4.update();
         water.update(p4);
-
         Enemy.actives.forEach(function (enemy: Enemy) {
             gameLive = enemy.update(p4, gameLive);
         });
@@ -59,12 +40,13 @@ export default function p4Vega() {
         // Clear canvas
         ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+        // Draw background
         ctx.fillStyle = 'white';
         sky.handleStars(ctx);
         
+        // Draw game elements
         p4.draw(ctx);
         water.draw(ctx);
-
         Enemy.actives.forEach(function (enemy: Enemy) {
             enemy.draw(ctx);
         });
@@ -92,6 +74,15 @@ export default function p4Vega() {
     load();
     step();
 
+    // Restart game
+    const restart = (): void => {
+        if (!gameLive) {
+            Enemy.actives = [];
+            load();
+            step();
+        }
+    }
+
     // User input
     const handleKeydown = (key: KeyboardEvent): void => {
         switch (key.code) {
@@ -110,12 +101,7 @@ export default function p4Vega() {
                 break;
             // Restart game
             case "Space":
-                if (!gameLive) {
-                    Enemy.inactives = [];
-                    Enemy.actives = [];
-                    load();
-                    step();
-                }
+                restart();
                 break;
             default:
                 break;

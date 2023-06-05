@@ -4,55 +4,42 @@ import GameElement from "./GameElement";
 import P4 from "./P4";
 
 export default class Enemy extends GameElement {
-    public width: number;
-    public height: number;
-    public x: number;
-    public y: number;
-    public speedX: number;
-    public speedY: number;
-    public hue: number;
-    public gap: number;
-    public sprite: HTMLImageElement = new Image(90, 72);
+    private hue: number = getRandomInt(0, 360);
+    private minDistance: number = (GameElement.gap + this.gap) * 2;
+    private vX?: number;
+    private vY?: number; 
 
-    public static currentIndex: number;
-    public static inactives: Enemy[] = [];
+    public sprite: HTMLImageElement = new Image(90, 72);
+    public width: number = this.sprite.width - GameElement.hitBoxAdjust;
+    public height: number  = this.sprite.height - GameElement.hitBoxAdjust;
+    public x: number = getRandomX(this.sprite.width);
+    public y: number = getRandomY(this.sprite.height);
+
     public static actives: Enemy[] = [];
 
-    constructor() {
+    constructor(p4: P4) {
         super();
         this.sprite.src = "./assets/sprites/enemy.png";
-        this.width = this.sprite.width - GameElement.hitBoxAdjust;
-        this.height = this.sprite.height - GameElement.hitBoxAdjust;
-        this.gap = 50;
+        this.determineDirection();
+        this.checkDistance(p4);
+    }
 
+    private checkDistance(p4: P4): void {
+        while (Math.hypot(this.x - p4.x, this.y - p4.y) < this.minDistance) {
+            this.x = getRandomX(this.sprite.width);
+            this.y = getRandomY(this.sprite.height);
+        }
+    }
+
+    private determineDirection(): void {
         if (getRandomBoolean()) {
-            this.speedX = (Math.random() * 5) + 3;
-            this.speedY = 0;
+            this.vX = (Math.random() * 5) + 2.5;
+            this.vY = 0;
         }
         else {
-            this.speedY = (Math.random() * 5) + 3;
-            this.speedX = 0;
+            this.vY = (Math.random() * 5) + 2.5;
+            this.vX = 0;
         }
-
-        if(this.speedY == 0) {
-            if(getRandomBoolean()) {
-                this.x = this.width + GameElement.gap + this.gap;
-            }
-            else {
-                this.x = CANVAS_WIDTH - this.width - GameElement.gap - this.gap;
-            }
-            this.y = getRandomY(this.sprite.height);
-        } else {
-            if(getRandomBoolean()) {
-                this.y = this.height + GameElement.gap + this.gap;
-            }
-            else {
-                this.y = CANVAS_HEIGHT - this.height - GameElement.gap - this.gap;
-            }
-            this.x = getRandomX(this.sprite.width);
-        }
-
-        this.hue = getRandomInt(0, 360);
     }
 
     public draw(context: CanvasRenderingContext2D): void {
@@ -66,15 +53,15 @@ export default class Enemy extends GameElement {
             gameLive = false;
         }
 
-        this.y += this.speedY;
-        this.x += this.speedX;
+        this.y += <number>this.vY;
+        this.x += <number>this.vX;
 
-        if (this.y + this.height >= CANVAS_HEIGHT - 3 || this.y <= 5) {
-            this.speedY *= -1;
+        if (this.y + this.height >= CANVAS_HEIGHT || this.y <= 0) {
+            (<number>this.vY) *= -1;
             this.hue = getRandomInt(0, 360);
         }
-        if (this.x + this.width >= CANVAS_WIDTH - 3 || this.x <= 5) {
-            this.speedX *= -1;
+        if (this.x + this.width >= CANVAS_WIDTH || this.x <= 0) {
+            (<number>this.vX) *= -1;
             this.hue = getRandomInt(0, 360);
         }
 
