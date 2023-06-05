@@ -1,40 +1,41 @@
-import { lerp } from "../../../helpers/methods";
+import { getRandomX, getRandomY, lerp } from "../../../helpers/methods";
 import ColorHandler from "./ColorHandler";
 
 export default class Circle {
-    public baseR: number; 
-    public currentR: number; 
-    public targetR: number; 
-    public x:number;
-    public y: number;
-    public targetX: number;
-    public targetY: number;
-    public color: string;
-    public targetColor: string;
-    public startAngle: number;
-    public endAngle: number;
-    public counterclockwise: boolean;
+    public baseR: number = this.getBaseR(); 
+    public currentR: number = this.baseR; 
+    public targetR: number = this.baseR; 
+    public x: number = getRandomX(this.baseR, Circle.gap);
+    public y: number = getRandomY(this.baseR, Circle.gap);
+    public targetX: number = getRandomX(this.baseR, Circle.gap);
+    public targetY: number = getRandomY(this.baseR, Circle.gap);
+    public color: string = ColorHandler.getRandomColor(Circle.minS, Circle.maxS, Circle.minL, Circle.maxL, true);
+    public targetColor: string = ColorHandler.getRandomColor(Circle.minS, Circle.maxS, Circle.minL, Circle.maxL, true);
+    public startAngle: number = 0;
+    public endAngle: number = 2 * Math.PI;
+    public counterclockwise: boolean = false;
 
     public static minS: number = 95;
     public static maxS: number = 100;
     public static minL: number = 60;
     public static maxL: number = 80;
 
-    public constructor(baseR: number, currentR: number, targetR: number, x: number, y: number, tX: number,
-        tY: number, color: string, tColor: string,
-        sAngle: number, eAngle: number, ccwise: boolean) {
-        this.baseR = baseR;
-        this.currentR = currentR;
-        this.targetR = targetR;
-        this.x = x;
-        this.y = y;
-        this.targetX = tX;
-        this.targetY = tY;
-        this.color = color;
-        this.targetColor = tColor;
-        this.startAngle = sAngle;
-        this.endAngle = eAngle;
-        this.counterclockwise = ccwise;
+    public static circles: Circle[] = [];
+    public static circlesLength: number = 12;
+    public static gap: number = 2;
+
+    private static startingBaseR: number = 50;
+    private static prevR: number = 8;
+    private static adjustR: number = .13;
+
+    constructor() {
+        Circle.circles.push(this);
+    }
+
+    private getBaseR(): number {
+        Circle.startingBaseR += Circle.prevR * Circle.adjustR;
+        Circle.prevR = Circle.startingBaseR;
+        return Circle.startingBaseR;
     }
 
     public convColor(isTColor: boolean, isRtoH: boolean): void {
