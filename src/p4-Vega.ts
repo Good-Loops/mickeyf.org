@@ -139,8 +139,10 @@ export default function p4Vega() {
                 hue: getRandomInt(0, 360)
             }
 
+            // Check if first enemy is spawned on top of player
             if(i == 0) {
-                while(enemy.x == p4.x || enemy.y == p4.y) {
+                while((enemy.x >= p4.x - gap && enemy.x <= p4.x + p4.width + gap) 
+                || (enemy.y >= p4.y - gap && enemy.y <= p4.y + p4.height + gap)) {
                     enemy.x = getRandomX(sprites.enemy.width);
                     enemy.y = getRandomY(sprites.enemy.height);
                 }
@@ -232,9 +234,75 @@ export default function p4Vega() {
         });
     }
 
+    class Particle {
+        private effect: Effect;
+        private x: number;
+        private y: number;
+        private radius: number;
+
+        constructor(effect: Effect) {
+            this.effect = effect;
+            this.x = Math.random() * this.effect.width;
+            this.y = Math.random() * this.effect.height;
+            this.radius = Math.random() + 1;
+        }
+        
+        draw(context: CanvasRenderingContext2D) {
+            context.beginPath();
+            context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            context.fill();            
+        }
+
+        update() {
+            this.x += Math.random() * .4 - .2;
+            this.y += Math.random() * .4 - .2;
+            this.radius += Math.random() * .2 - .1;
+            if (this.radius < 0) {
+                this.radius *= -1;
+            }
+            else if (this.radius > 3) {
+                this.radius -= 0.5;
+            }
+        }
+    }
+
+    class Effect {
+        public width: number;
+        public height: number;
+        private canvas: HTMLCanvasElement;
+        private particles: Particle[] = [];
+        private numberOfParticles: number;
+
+        public handleParticles(context: CanvasRenderingContext2D): void {
+            this.particles.forEach((particle: Particle) => {
+                particle.draw(context);
+                particle.update();
+            });
+        }
+
+        private createParticles(): void {
+            for (let i = 0; i < this.numberOfParticles; i++) {
+                this.particles.push(new Particle(this));
+            }
+        }
+
+        constructor(canvas: HTMLCanvasElement) {
+            this.width = canvas.width;
+            this.height = canvas.height;
+            this.canvas = canvas;
+            this.particles = [];
+            this.numberOfParticles = 80;    
+            this.createParticles();
+        }
+    }
+    const effect = new Effect(canvas);
+
     const draw = (): void => {
         // Clear canvas
         ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        ctx.fillStyle = 'white';
+        effect.handleParticles(ctx);
 
         // Draw player (p4)
         ctx.drawImage(sprites.p4, p4.x, p4.y);
