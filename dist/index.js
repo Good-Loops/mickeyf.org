@@ -212,7 +212,7 @@ eval("\nvar __awaiter = (this && this.__awaiter) || function (thisArg, _argument
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
-eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst sprites = {\n    p4: new Image(70, 73),\n    water: new Image(28, 46),\n    enemy: new Image(90, 72)\n};\nsprites.p4.src = \"../assets/sprites/player.png\";\nsprites.water.src = \"../assets/sprites/water.png\";\nsprites.enemy.src = \"../assets/sprites/enemy.png\";\nexports[\"default\"] = sprites;\n\n\n//# sourceURL=webpack://mickeyf.dev/./src/helpers/loadSprites.ts?");
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst sprites = {\n    p4: new Image(70, 73),\n    water: new Image(28, 46),\n    enemy: new Image(90, 72)\n};\nsprites.p4.src = \"./assets/sprites/player.png\";\nsprites.water.src = \"./assets/sprites/water.png\";\nsprites.enemy.src = \"./assets/sprites/enemy.png\";\nexports[\"default\"] = sprites;\n\n\n//# sourceURL=webpack://mickeyf.dev/./src/helpers/loadSprites.ts?");
 
 /***/ }),
 
