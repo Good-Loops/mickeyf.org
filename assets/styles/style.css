@@ -298,3 +298,7 @@ h1#p4-title {
     color: var(--lavender-hsl);
     -webkit-text-stroke: .04em black;
 }
+
+div#p4-wrapper img {
+    display: none;
+}

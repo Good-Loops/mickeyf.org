@@ -1,12 +1,11 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../helpers/constants"
-import GameElement from "./GameElement"
+import GameElement from "../../classes/GameElement"
 
 export default class P4 extends GameElement {
     private startX: number = GameElement.gap;
     private startY: number  = CANVAS_HEIGHT * .5;
     private speed: number = 10;
 
-    public sprite: HTMLImageElement = new Image(70, 73);
     public width: number = this.sprite.width - GameElement.hitBoxAdjust;
     public height: number = this.sprite.height - GameElement.hitBoxAdjust;
     public x: number = this.startX;
@@ -19,8 +18,7 @@ export default class P4 extends GameElement {
     public isMovingDown: boolean= false;
 
     constructor() {
-        super();
-        this.sprite.src = "./assets/sprites/player.png";
+        super("p4");
     }
 
     public update(): void {

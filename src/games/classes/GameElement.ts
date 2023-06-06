@@ -1,19 +1,25 @@
 import GameElementInterface from "../interfaces/GameElementInterface";
-import P4 from "./P4";
 
 export default abstract class GameElement implements GameElementInterface {
-    abstract sprite: HTMLImageElement;
     abstract width: number;
     abstract height: number;
     abstract x: number;
     abstract y: number;
-    
-    public gap: number = 50;
+
+    public sprite: HTMLImageElement;
+    public id: string;
+    public gap: number;
 
     public static gap: number = 15;
     public static hitBoxAdjust: number = 15;
 
-    abstract update(p4?: P4, gameLive?: boolean): any;
+    constructor(id: string, gap: number = 0) {
+        this.gap = gap;
+        this.id = id;
+        this.sprite = document.getElementById(`${this.id}`) as HTMLImageElement;
+    }
+
+    abstract update(GameElement?: GameElement, gameLive?: boolean): any;
 
     public draw(context: CanvasRenderingContext2D): void {
         context.drawImage(this.sprite, this.x, this.y);

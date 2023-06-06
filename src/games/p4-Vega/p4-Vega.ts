@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../helpers/constants";
 import P4 from "./classes/P4";
 import Water from "./classes/Water";
-import Enemy from "./classes/Enemy";
+import BlackHole from "./classes/BlackHole";
 import Sky from "./classes/Sky";
 
 export default function p4Vega() {
@@ -23,13 +23,13 @@ export default function p4Vega() {
         sky = new Sky(canvas);
         p4 = new P4();
         water = new Water();
-        Enemy.actives.push(new Enemy(p4));
+        BlackHole.actives.push(new BlackHole(p4));
     }
 
     const update = (): void => {
         p4.update();
         water.update(p4);
-        Enemy.actives.forEach(function (enemy: Enemy) {
+        BlackHole.actives.forEach(function (enemy: BlackHole) {
             gameLive = enemy.update(p4, gameLive);
         });
     }
@@ -45,7 +45,7 @@ export default function p4Vega() {
         // Draw game elements
         p4.draw(ctx);
         water.draw(ctx);
-        Enemy.actives.forEach(function (enemy: Enemy) {
+        BlackHole.actives.forEach(function (enemy: BlackHole) {
             enemy.draw(ctx);
         });
 
@@ -75,7 +75,7 @@ export default function p4Vega() {
     // Restart game
     const restart = (): void => {
         if (!gameLive) {
-            Enemy.actives = [];
+            BlackHole.actives = [];
             load();
             step();
         }

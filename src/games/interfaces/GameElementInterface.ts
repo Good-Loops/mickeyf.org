@@ -1,4 +1,4 @@
-import P4 from "../classes/P4";
+import GameElement from "../classes/GameElement";
 
 export default interface GameElementInterface {
     sprite: HTMLImageElement;
@@ -9,5 +9,5 @@ export default interface GameElementInterface {
     gap?: number;
 
     draw(context: CanvasRenderingContext2D): void;
-    update(p4?: P4, gameLive?: boolean): any;
+    update(GameElement?: GameElement, gameLive?: boolean): any;
 }
