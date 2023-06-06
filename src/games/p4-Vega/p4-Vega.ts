@@ -12,10 +12,7 @@ export default function p4Vega() {
     canvas.height = CANVAS_HEIGHT;
 
     // Globals
-    let gameLive: boolean;
-    let sky: Sky;
-    let p4: P4;
-    let water: Water;
+    let gameLive: boolean, sky: Sky, p4: P4, water: Water;
 
     // Game loop
     const load = (): void => {
@@ -23,19 +20,25 @@ export default function p4Vega() {
         sky = new Sky(canvas);
         p4 = new P4();
         water = new Water();
-        for(let i = 0; i < BlackHole.poolSize; i++) {
-            BlackHole.pool.push(new BlackHole());
+
+        BlackHole.poolSize = 15;
+        BlackHole.freeElements = 0;
+        BlackHole.pool = new Array(BlackHole.poolSize).fill(0);
+        for(let i = 0; i < BlackHole.poolSize; i++) { 
+            BlackHole.pool[i] = new BlackHole(); 
         }
-        BlackHole.checkDistance(p4);
+        BlackHole.nextFree = BlackHole.pool[0];
+        BlackHole.release(p4);
     }
 
     const update = (): void => {
         p4.update();
         water.update(p4);
-        BlackHole.setCurrentActive();
-        BlackHole.pool.forEach((blackHole: BlackHole): void => {
-                gameLive = blackHole.update(p4, gameLive);
-        });
+        for(let i = 0; i < BlackHole.freeElements; i++) {
+            const blackHole = BlackHole.pool[i];
+            blackHole.free = true;
+            gameLive = blackHole.update(p4, gameLive);
+        }
     }
 
     const draw = (): void => {
@@ -49,9 +52,10 @@ export default function p4Vega() {
         // Draw game elements
         p4.draw(ctx);
         water.draw(ctx);
-        BlackHole.pool.forEach((blackHole: BlackHole): void => {
+        for(let i = 0; i < BlackHole.freeElements; i++) {
+            const blackHole = BlackHole.pool[i];
             blackHole.draw(ctx);
-        });
+        }
 
         // Game over
         if (!gameLive) {
@@ -79,7 +83,6 @@ export default function p4Vega() {
     // Restart game
     const restart = (): void => {
         if (!gameLive) {
-            BlackHole.pool = [];
             load();
             step();
         }

@@ -19,9 +19,7 @@ export default class Water extends GameElement {
             this.x = getRandomX(this.width + GameElement.gap + this.gap);
             this.y = getRandomY(this.height + GameElement.gap + this.gap);
             p4.totalWater += 10;
-            
-            BlackHole.numActives++;
-            BlackHole.checkDistance(p4);
+            BlackHole.release(p4);
         }
     }
 }

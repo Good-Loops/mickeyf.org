@@ -12,31 +12,71 @@ export default class BlackHole extends GameElement {
     public height: number  = this.sprite.height;
     public x: number = getRandomX(this.sprite.width);
     public y: number = getRandomY(this.sprite.height);
-    public active: boolean = false;
+    public free: boolean = false;
 
-    public static pool: BlackHole[] = [];
-    public static poolSize: number = 30;
-    public static numActives: number = 1;
+    public static poolSize: number;
+    public static pool: BlackHole[];
+    public static freeElements: number;
+
+    private static increasePercent: number = 50;
+    private static maxPercentFree: number = 80;
+
+    public static nextFree: BlackHole | null = null;
+    private static lastFree: BlackHole | null = null;
+    private previousElement: BlackHole | null = null;
+    private nextElement: BlackHole | null = null;
 
     constructor() {
         super("blackhole", 50);
         this.determineDirection();
-    }
-
-    public static checkDistance(p4: GameElement): void {
-        const current = BlackHole.getCurrentActive()
-        while (Math.hypot(current.x - p4.x, current.y - p4.y) < current.minDistance) {
-            current.x = getRandomX(current.sprite.width);
-            current.y = getRandomY(current.sprite.height);
+        if(!BlackHole.lastFree) {
+            BlackHole.lastFree = this;
+        } else {
+            BlackHole.linkElement(this);
         }
     }
 
-    public static setCurrentActive(): void {
-        BlackHole.getCurrentActive().active = true;
+    private static linkElement(blackHole: BlackHole): void {
+        blackHole.previousElement = this.lastFree;
+        this.lastFree!.nextElement = blackHole;
+        this.lastFree = blackHole;
     }
 
-    private static getCurrentActive(): BlackHole {
-        return BlackHole.pool[BlackHole.poolSize - BlackHole.numActives];
+    private static unlinkFirstElement(blackHole: BlackHole): void {
+        this.nextFree = blackHole.nextElement;
+        this.nextFree!.previousElement = null;
+        blackHole.nextElement = blackHole.previousElement = null;
+    }
+
+    private static checkNumberOfFree(): void {
+        if(this.freeElements / this.poolSize > this.maxPercentFree * .01) {
+            const increaseSize = ~~(this.poolSize * this.increasePercent * .01);
+            for(let i = 0; i < increaseSize; i++) {
+                this.pool.push(new BlackHole());
+            }
+            this.poolSize += increaseSize;
+        }
+    }
+
+    public static getElement(): BlackHole {
+        const availableElement = this.nextFree;
+        this.unlinkFirstElement(availableElement!);
+        this.checkNumberOfFree();
+        return availableElement!;
+    }
+
+    public static release(p4: GameElement): void {
+        const blackHole: BlackHole = this.getElement();
+        this.freeElements++;
+        this.linkElement(blackHole);
+        blackHole.checkDistance(p4);
+    }
+
+    private checkDistance(p4: GameElement): void {
+        while (Math.hypot(this.x - p4.x, this.y - p4.y) < this.minDistance) {
+            this.x = getRandomX(this.sprite.width);
+            this.y = getRandomY(this.sprite.height);
+        }
     }
 
     private determineDirection(): void {
@@ -51,30 +91,26 @@ export default class BlackHole extends GameElement {
     }
 
     public draw(context: CanvasRenderingContext2D): void {
-        if(this.active) {
-            context.filter = `sepia(100%) saturate(600%) hue-rotate(${this.hue}deg)`;
-            context.drawImage(this.sprite, this.x, this.y);
-            context.filter = "none";
-        }
+        context.filter = `sepia(100%) saturate(600%) hue-rotate(${this.hue}deg)`;
+        context.drawImage(this.sprite, this.x, this.y);
+        context.filter = "none";
     }
 
     public update(p4: GameElement, gameLive: boolean): boolean {
-        if(this.active) {
-            if (checkCollision(p4, this)) {
-                gameLive = false;
-            }
+        if (checkCollision(p4, this)) {
+            gameLive = false;
+        }
 
-            this.y += <number>this.vY;
-            this.x += <number>this.vX;
+        this.y += this.vY!;
+        this.x += this.vX!;
 
-            if (this.y + this.height >= CANVAS_HEIGHT || this.y <= 0) {
-                (<number>this.vY) *= -1;
-                this.hue = getRandomInt(0, 360);
-            }
-            if (this.x + this.width >= CANVAS_WIDTH || this.x <= 0) {
-                (<number>this.vX) *= -1;
-                this.hue = getRandomInt(0, 360);
-            }
+        if (this.y + this.height >= CANVAS_HEIGHT || this.y <= 0) {
+            this.vY! *= -1;
+            this.hue = getRandomInt(0, 360);
+        }
+        if (this.x + this.width >= CANVAS_WIDTH || this.x <= 0) {
+            this.vX! *= -1;
+            this.hue = getRandomInt(0, 360);
         }
 
         return gameLive;
