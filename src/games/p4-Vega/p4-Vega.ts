@@ -23,14 +23,18 @@ export default function p4Vega() {
         sky = new Sky(canvas);
         p4 = new P4();
         water = new Water();
-        BlackHole.actives.push(new BlackHole(p4));
+        for(let i = 0; i < BlackHole.poolSize; i++) {
+            BlackHole.pool.push(new BlackHole());
+        }
+        BlackHole.checkDistance(p4);
     }
 
     const update = (): void => {
         p4.update();
         water.update(p4);
-        BlackHole.actives.forEach(function (enemy: BlackHole) {
-            gameLive = enemy.update(p4, gameLive);
+        BlackHole.setCurrentActive();
+        BlackHole.pool.forEach((blackHole: BlackHole): void => {
+                gameLive = blackHole.update(p4, gameLive);
         });
     }
 
@@ -45,8 +49,8 @@ export default function p4Vega() {
         // Draw game elements
         p4.draw(ctx);
         water.draw(ctx);
-        BlackHole.actives.forEach(function (enemy: BlackHole) {
-            enemy.draw(ctx);
+        BlackHole.pool.forEach((blackHole: BlackHole): void => {
+            blackHole.draw(ctx);
         });
 
         // Game over
@@ -75,7 +79,7 @@ export default function p4Vega() {
     // Restart game
     const restart = (): void => {
         if (!gameLive) {
-            BlackHole.actives = [];
+            BlackHole.pool = [];
             load();
             step();
         }

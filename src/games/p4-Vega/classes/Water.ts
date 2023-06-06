@@ -5,9 +5,9 @@ import GameElement from "../../classes/GameElement";
 import P4 from "./P4";
 
 export default class Water extends GameElement {
-    public width: number = this.sprite.width - GameElement.hitBoxAdjust;;
-    public height: number = this.sprite.height - GameElement.hitBoxAdjust;;
-    public x: number = CANVAS_WIDTH - this.sprite.width - GameElement.gap;;
+    public width: number = this.sprite.width;
+    public height: number = this.sprite.height;
+    public x: number = CANVAS_WIDTH - this.sprite.width - GameElement.gap;
     public y: number = CANVAS_HEIGHT * .5;;
 
     constructor() {
@@ -19,7 +19,9 @@ export default class Water extends GameElement {
             this.x = getRandomX(this.width + GameElement.gap + this.gap);
             this.y = getRandomY(this.height + GameElement.gap + this.gap);
             p4.totalWater += 10;
-            BlackHole.actives.push(new BlackHole(p4));
+            
+            BlackHole.numActives++;
+            BlackHole.checkDistance(p4);
         }
     }
 }

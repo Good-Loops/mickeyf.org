@@ -6,8 +6,8 @@ export default class P4 extends GameElement {
     private startY: number  = CANVAS_HEIGHT * .5;
     private speed: number = 10;
 
-    public width: number = this.sprite.width - GameElement.hitBoxAdjust;
-    public height: number = this.sprite.height - GameElement.hitBoxAdjust;
+    public width: number = this.sprite.width;
+    public height: number = this.sprite.height;
     public x: number = this.startX;
     public y: number = this.startY;
    
@@ -36,13 +36,13 @@ export default class P4 extends GameElement {
         }
 
         // World bounds
-        if (this.x + this.width > CANVAS_WIDTH - GameElement.gap) {
+        if (this.x + this.width * .8 > CANVAS_WIDTH - GameElement.gap) {
             this.x -= this.speed;
         }
         if (this.x < 0) {
             this.x += this.speed;
         }
-        if (this.y + this.height > CANVAS_HEIGHT - GameElement.gap) {
+        if (this.y + this.height  * .8 > CANVAS_HEIGHT - GameElement.gap) {
             this.y -= this.speed;
         }
         if (this.y < 0) {
