@@ -175,32 +175,6 @@ export default function danceCircles() {
         });
     }
 
-    function playAnimation(event: KeyboardEvent): void {
-        if (event.code === "ArrowUp") {
-            stop = false;
-            step(0);
-        }
-    }
-    document.addEventListener("keydown", playAnimation);
-
-    function playMusic(event: KeyboardEvent): void {
-        if (event.code === "ArrowRight") AudioHandler.playing = true;
-    }
-    document.addEventListener("keydown", playMusic);
-
-    function stopAnimation(event: KeyboardEvent): void {
-        if (event.code === "ArrowDown") {
-            stop = true;
-            AudioHandler.playing = false;
-        }
-    }
-    document.addEventListener("keydown", stopAnimation);
-
-    function stopMusic(event: KeyboardEvent): void {
-        if (event.code === "ArrowLeft") AudioHandler.playing = false;
-    }
-    document.addEventListener("keydown", stopMusic);
-
     load();
 
     let deltaTime: number = 0,
@@ -211,12 +185,7 @@ export default function danceCircles() {
         updateOnPitchInterval: number = 10, // 1ms
         drawTimer: number = 0,
         drawInterval: number = 40; // 0.04s
-
-    // Dev-use
-    // let consoleTimer: number = 0,
-    //     consoleInterval: number = 10000;
-
-    // This function will be called repeatedly
+        
     function step(timeStamp: number): void {
         if (stop) return;
 
@@ -230,27 +199,39 @@ export default function danceCircles() {
         if (updateTimer >= updateInterval) {
             update(numCircs);
             updateTimer = 0;
-            // console.log("Update");
         }
         if (updateOnPitchTimer >= updateOnPitchInterval) {
             updateOnPitch();
             updateOnPitchTimer = 0;
-            // console.log("Update on Pitch");
         }
         if (drawTimer >= drawInterval) {
             draw();
             drawTimer = 0;
-            // console.log("Draw");
         }
-
-        // Dev-use console clear
-        // consoleTimer += deltaTime;
-        // if(consoleTimer >= consoleInterval) {
-        //     console.clear();
-        //     consoleTimer = 0;
-        // }
 
         requestAnimationFrame(step);
     }
     step(0);
+
+    function handleKeydown(keyPressed: KeyboardEvent): void {
+        switch (keyPressed.code) {
+            case "ArrowUp":
+                stop = false;
+                step(0);
+                break;
+            case "ArrowRight":
+                AudioHandler.playing = true;
+                break;
+            case "ArrowDown":
+                stop = true;
+                AudioHandler.playing = false;
+                break;
+            case "ArrowLeft":
+                AudioHandler.playing = false;
+                break;
+            default:
+                break;
+        }
+    }
+    document.addEventListener("keydown", handleKeydown);
 }
