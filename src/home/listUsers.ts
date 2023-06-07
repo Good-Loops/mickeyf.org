@@ -1,7 +1,7 @@
 import { getUserData } from "../helpers/methods";
-import ListUsersInterface from "./interfaces/ListUsersInterface";
+import IListUsers from "./interfaces/IListUsers";
 
-export default function listUsers(): ListUsersInterface {
+export default function listUsers(): IListUsers {
     return {
         data: [], 
         list: function () {

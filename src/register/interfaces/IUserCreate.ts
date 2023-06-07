@@ -1,4 +1,4 @@
-export default interface UserCreateInterface {
+export default interface IUserCreate {
     user: {
         userName: string;
         email: string;

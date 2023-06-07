@@ -1,6 +1,6 @@
-import GameElementInterface from "../interfaces/GameElementInterface";
+import IGameElement from "../interfaces/IGameElement";
 
-export default abstract class GameElement implements GameElementInterface {
+export default abstract class GameElement implements IGameElement {
     abstract width: number;
     abstract height: number;
     abstract x: number;
@@ -18,8 +18,6 @@ export default abstract class GameElement implements GameElementInterface {
         this.id = id;
         this.sprite = document.getElementById(`${this.id}`) as HTMLImageElement;
     }
-
-    abstract update(deltaTime?: number, GameElement?: GameElement, gameLive?: boolean): any;
 
     public draw(context: CanvasRenderingContext2D): void {
         context.drawImage(this.sprite, this.x, this.y);

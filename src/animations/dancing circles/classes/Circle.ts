@@ -20,13 +20,13 @@ export default class Circle {
     public static minL: number = 60;
     public static maxL: number = 80;
 
-    public static circles: Circle[] = [];
+    public static circles: Circle[];
     public static circlesLength: number = 12;
     public static gap: number = 2;
 
-    private static startingBaseR: number = 50;
-    private static prevR: number = 8;
-    private static adjustR: number = .13;
+    public static startingBaseR: number;
+    public static prevR: number;
+    public static adjustR: number = .13;
 
     constructor() {
         Circle.circles.push(this);

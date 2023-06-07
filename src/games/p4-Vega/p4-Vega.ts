@@ -78,7 +78,7 @@ export default function p4Vega() {
         if (gameLive) {
             update();
             draw();
-            window.requestAnimationFrame(step);
+            window.p4AnimationID = requestAnimationFrame(step);
         }
     }
 
@@ -95,8 +95,8 @@ export default function p4Vega() {
     }
 
     // User input
-    const handleKeydown = (key: KeyboardEvent): void => {
-        switch (key.code) {
+    const handleKeydown = (key: Event): void => {
+        switch ((<KeyboardEvent>key).code) {
             // Player movement
             case "ArrowRight":
                 p4.isMovingRight = true;
@@ -118,8 +118,8 @@ export default function p4Vega() {
                 break;
         }
     }
-    const handleKeyup = (key: KeyboardEvent): void => {
-        switch (key.code) {
+    const handleKeyup = (key: Event): void => {
+        switch ((<KeyboardEvent>key).code) {
 
             case "ArrowRight":
                 p4.isMovingRight = false;
@@ -139,4 +139,9 @@ export default function p4Vega() {
     }
     document.addEventListener("keyup", handleKeyup);
     document.addEventListener("keydown", handleKeydown);
+
+    let componentId = "p4-wrapper";
+    if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = [];}
+    window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
+    window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
 }

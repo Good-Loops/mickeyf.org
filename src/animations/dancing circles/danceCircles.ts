@@ -21,7 +21,7 @@ export default function danceCircles() {
     const canvasMaxL: number = 60;
 
     // Stop animation
-    let stop: boolean = false;
+    let stop: boolean = true;
 
     // For input audio
     const fileInput: HTMLInputElement = document.getElementById("file-upload") as HTMLInputElement;
@@ -33,9 +33,16 @@ export default function danceCircles() {
     // // Audio Handling
     AudioHandler.processAudio(fileInput, uploadButton);
 
+    let deltaTime: number, lastTime: number, 
+        updateTimer: number, updateInterval: number,     
+        updateOnPitchTimer: number, updateOnPitchInterval: number, 
+        drawTimer: number, drawInterval: number;
+
     // Fills circle array
     // Defines starting random bg-color for canvas
     const load = (): void => {
+        stop = false;
+
         canvas.style.backgroundColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
@@ -45,7 +52,10 @@ export default function danceCircles() {
         canvasTargetColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
-
+        
+        Circle.startingBaseR = 50;
+        Circle.prevR = 8;
+        Circle.circles = [];
         for (let i: number = 0; i < Circle.circlesLength; i++) {
             new Circle();
         }
@@ -128,6 +138,10 @@ export default function danceCircles() {
         }
     }
 
+    deltaTime = 0, lastTime = 0, 
+    updateTimer = 0, updateInterval = 1000,     
+    updateOnPitchTimer = 0, updateOnPitchInterval = 10, 
+    drawTimer = 0, drawInterval = 40;
     const draw = (): void => {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -177,15 +191,6 @@ export default function danceCircles() {
 
     load();
 
-    let deltaTime: number = 0,
-        lastTime: number = 0,
-        updateTimer: number = 0,
-        updateInterval: number = 1000, // 1.1s     
-        updateOnPitchTimer: number = 0,
-        updateOnPitchInterval: number = 10, // 1ms
-        drawTimer: number = 0,
-        drawInterval: number = 40; // 0.04s
-        
     function step(timeStamp: number): void {
         if (stop) return;
 
@@ -209,29 +214,7 @@ export default function danceCircles() {
             drawTimer = 0;
         }
 
-        requestAnimationFrame(step);
+        window.dcAnimationID = requestAnimationFrame(step);
     }
     step(0);
-
-    function handleKeydown(keyPressed: KeyboardEvent): void {
-        switch (keyPressed.code) {
-            case "ArrowUp":
-                stop = false;
-                step(0);
-                break;
-            case "ArrowRight":
-                AudioHandler.playing = true;
-                break;
-            case "ArrowDown":
-                stop = true;
-                AudioHandler.playing = false;
-                break;
-            case "ArrowLeft":
-                AudioHandler.playing = false;
-                break;
-            default:
-                break;
-        }
-    }
-    document.addEventListener("keydown", handleKeydown);
 }

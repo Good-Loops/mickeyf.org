@@ -90,12 +90,6 @@ export default class BlackHole extends GameElement {
         }
     }
 
-    public draw(context: CanvasRenderingContext2D): void {
-        context.filter = `sepia(100%) saturate(600%) hue-rotate(${this.hue}deg)`;
-        context.drawImage(this.sprite, this.x, this.y);
-        context.filter = "none";
-    }
-
     public update(p4: GameElement, gameLive: boolean): boolean {
         if (checkCollision(p4, this)) {
             gameLive = false;
@@ -113,6 +107,12 @@ export default class BlackHole extends GameElement {
             this.hue = getRandomInt(0, 360);
         }
 
-        return gameLive;
+        return gameLive!;
+    }
+
+    public draw(context: CanvasRenderingContext2D): void {
+        context.filter = `sepia(100%) saturate(600%) hue-rotate(${this.hue}deg)`;
+        context.drawImage(this.sprite, this.x, this.y);
+        context.filter = "none";
     }
 }
