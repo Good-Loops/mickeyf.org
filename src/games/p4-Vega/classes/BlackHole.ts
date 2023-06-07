@@ -4,7 +4,7 @@ import GameElement from "../../classes/GameElement";
 
 export default class BlackHole extends GameElement {
     private hue: number = getRandomInt(0, 360);
-    private minDistance: number = (GameElement.gap + this.gap) * 2;
+    private minDistance: number = 200;
     private vX?: number;
     private vY?: number; 
 
