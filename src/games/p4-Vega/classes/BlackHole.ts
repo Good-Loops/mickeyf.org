@@ -66,8 +66,8 @@ export default class BlackHole extends GameElement {
     }
 
     public static release(p4: GameElement): void {
-        const blackHole: BlackHole = this.getElement();
         this.freeElements++;
+        const blackHole: BlackHole = this.getElement();
         this.linkElement(blackHole);
         blackHole.checkDistance(p4);
     }

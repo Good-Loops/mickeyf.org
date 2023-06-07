@@ -12,7 +12,7 @@ export default function p4Vega() {
     canvas.height = CANVAS_HEIGHT;
 
     // Globals
-    let gameLive: boolean, sky: Sky, p4: P4, water: Water;
+    let gameLive: boolean, sky: Sky, p4: P4, water: Water, deltaTime: number, lastTime: number;
 
     // Game loop
     const load = (): void => {
@@ -32,7 +32,7 @@ export default function p4Vega() {
     }
 
     const update = (): void => {
-        p4.update();
+        p4.update(deltaTime);
         water.update(p4);
         for(let i = 0; i < BlackHole.freeElements; i++) {
             const blackHole = BlackHole.pool[i];
@@ -64,11 +64,17 @@ export default function p4Vega() {
             ctx.fillStyle = "rgb(200,0,0)";
             ctx.fillText("GAME OVER", CANVAS_WIDTH * .5, CANVAS_HEIGHT * .5 - 20);
             ctx.fillStyle = "cyan";
-            ctx.fillText("Total Water: " + p4.totalWater, CANVAS_WIDTH * .5, CANVAS_HEIGHT * .5 + 50);
+            ctx.fillText("Total Water: " + p4.totalWater, CANVAS_WIDTH * .5, CANVAS_HEIGHT * .5 + 60);
+            ctx.font = "30px Arial";
+            ctx.fillText("Press space to try again", CANVAS_WIDTH * .5, CANVAS_HEIGHT * .5 + 100);
         }
     }
 
-    const step = (): void => {
+    deltaTime = 0; 
+    lastTime = 0;
+    const step = (timeStamp: number): void => {
+        deltaTime = timeStamp - lastTime;
+        lastTime = timeStamp;
         if (gameLive) {
             update();
             draw();
@@ -78,13 +84,13 @@ export default function p4Vega() {
 
     // Start game
     load();
-    step();
+    step(0);
 
     // Restart game
     const restart = (): void => {
         if (!gameLive) {
             load();
-            step();
+            step(0);
         }
     }
 

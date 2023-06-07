@@ -9,5 +9,5 @@ export default interface GameElementInterface {
     gap?: number;
 
     draw(context: CanvasRenderingContext2D): void;
-    update(GameElement?: GameElement, gameLive?: boolean): any;
+    update(deltaTime?: number, GameElement?: GameElement, gameLive?: boolean): any;
 }

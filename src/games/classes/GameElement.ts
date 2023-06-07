@@ -19,7 +19,7 @@ export default abstract class GameElement implements GameElementInterface {
         this.sprite = document.getElementById(`${this.id}`) as HTMLImageElement;
     }
 
-    abstract update(GameElement?: GameElement, gameLive?: boolean): any;
+    abstract update(deltaTime?: number, GameElement?: GameElement, gameLive?: boolean): any;
 
     public draw(context: CanvasRenderingContext2D): void {
         context.drawImage(this.sprite, this.x, this.y);
