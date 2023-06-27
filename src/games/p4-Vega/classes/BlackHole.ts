@@ -1,8 +1,8 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../helpers/constants";
 import { checkCollision, getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../helpers/methods";
-import GameElement from "../../classes/GameElement";
+import Entity from "../../classes/Entity";
 
-export default class BlackHole extends GameElement {
+export default class BlackHole extends Entity {
     private hue: number = getRandomInt(0, 360);
     private minDistance: number = 200;
     private vX?: number;
@@ -65,14 +65,14 @@ export default class BlackHole extends GameElement {
         return availableElement!;
     }
 
-    public static release(p4: GameElement): void {
+    public static release(p4: Entity): void {
         this.freeElements++;
         const blackHole: BlackHole = this.getElement();
         this.linkElement(blackHole);
         blackHole.checkDistance(p4);
     }
 
-    private checkDistance(p4: GameElement): void {
+    private checkDistance(p4: Entity): void {
         while (Math.hypot(this.x - p4.x, this.y - p4.y) < this.minDistance) {
             this.x = getRandomX(this.sprite.width);
             this.y = getRandomY(this.sprite.height);
@@ -90,7 +90,7 @@ export default class BlackHole extends GameElement {
         }
     }
 
-    public update(p4: GameElement, gameLive: boolean): boolean {
+    public update(p4: Entity, gameLive: boolean): boolean {
         if (checkCollision(p4, this)) {
             gameLive = false;
         }

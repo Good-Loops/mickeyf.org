@@ -1,4 +1,4 @@
-import GameElement from "../games/classes/GameElement";
+import Entity from "../games/classes/Entity";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
 export async function getUserData(): Promise<any> {
@@ -62,9 +62,9 @@ export function lerp(start: number, end: number, t: number): number {
 
 export function checkCollision(rect1: any, rect2: any): boolean {
     return (
-        (rect1.x + rect1.width - GameElement.hitBoxAdjust > rect2.x) &&
-        (rect1.x < rect2.x + rect2.width - GameElement.hitBoxAdjust) &&
-        (rect1.y + rect1.height - GameElement.hitBoxAdjust > rect2.y) &&
-        (rect1.y < rect2.y + rect2.height - GameElement.hitBoxAdjust)
+        (rect1.x + rect1.width - Entity.hitBoxAdjust > rect2.x) &&
+        (rect1.x < rect2.x + rect2.width - Entity.hitBoxAdjust) &&
+        (rect1.y + rect1.height - Entity.hitBoxAdjust > rect2.y) &&
+        (rect1.y < rect2.y + rect2.height - Entity.hitBoxAdjust)
     );
 }

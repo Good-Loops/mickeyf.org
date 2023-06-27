@@ -1,8 +1,8 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../helpers/constants"
-import GameElement from "../../classes/GameElement"
+import Entity from "../../classes/Entity"
 
-export default class P4 extends GameElement {
-    private startX: number = GameElement.gap;
+export default class P4 extends Entity {
+    private startX: number = Entity.gap;
     private startY: number  = CANVAS_HEIGHT * .5;
     private speed: number = 10;
 
@@ -39,13 +39,13 @@ export default class P4 extends GameElement {
         }
 
         // World bounds
-        if (this.x + this.width * .8 > CANVAS_WIDTH - GameElement.gap) {
+        if (this.x + this.width * .8 > CANVAS_WIDTH - Entity.gap) {
             this.x -= this.speed;
         }
         if (this.x < 0) {
             this.x += this.speed;
         }
-        if (this.y + this.height  * .8 > CANVAS_HEIGHT - GameElement.gap) {
+        if (this.y + this.height  * .8 > CANVAS_HEIGHT - Entity.gap) {
             this.y -= this.speed;
         }
         if (this.y < 0) {

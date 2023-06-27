@@ -1,6 +1,6 @@
-import IGameElement from "../interfaces/IGameElement";
+import IEntity from "../interfaces/IEntity";
 
-export default abstract class GameElement implements IGameElement {
+export default abstract class Entity implements IEntity {
     abstract width: number;
     abstract height: number;
     abstract x: number;

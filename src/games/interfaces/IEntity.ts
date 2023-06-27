@@ -1,4 +1,4 @@
-export default interface IGameElement {
+export default interface IEntity {
     sprite: HTMLImageElement;
     width: number;
     height: number;
