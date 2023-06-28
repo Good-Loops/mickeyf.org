@@ -1,6 +1,6 @@
 import { INVALID_EMAIL, INVALID_PASSWORD, EMPTY_FIELDS, DUPLICATE_USER } from "../helpers/constants";
-import Swal from 'sweetalert2';
 import IUserCreate from "./interfaces/IUserCreate";
+import Swal from 'sweetalert2';
 
 function create(): IUserCreate {
     return {
