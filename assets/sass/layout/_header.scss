@@ -1,0 +1,52 @@
+@use '../abstracts' as *;
+
+.header {
+    &__nav {
+        font-size: 2.6rem;
+
+        margin-left: 1em;
+        margin-top: .2em;
+
+        position: fixed;
+
+        &__list {
+            display: flex;
+            justify-content: space-between;
+            gap: 1em;
+
+            list-style: none;
+
+            border-bottom: .2em solid rgba($white, .3);
+            border-radius: 1em;
+
+            padding: .2em 1em;
+        }
+
+        &__item {
+            transition: transform .5s ease-in-out;
+
+            &:hover,
+            &:focus {
+                transform: scale(1.1);
+            }
+
+            &:active {
+                transform: scale(.5);
+            }
+        }
+
+        &__link {
+            text-decoration: none;
+
+            color: rgba($gray-light, .8);
+
+            transition: text-shadow 1.5s ease-in-out;
+
+            &:hover,
+            &:focus {
+                text-shadow: $label-text-shadow;
+                cursor: $cursor-hover;
+            }
+        }
+    }
+}

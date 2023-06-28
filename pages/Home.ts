@@ -1,7 +1,7 @@
 function component() {
     const render = function() {
         return /*html*/`
-            <div class="centralized" x-data="listUsers()" x-init="list">
+            <div x-data="listUsers()" x-init="list">
                 <ul>
                     <template x-for="(user, index) in data" :key="index">
                         <li>

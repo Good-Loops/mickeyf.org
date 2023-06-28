@@ -30,7 +30,7 @@ function component() {
         }
         
         return /*html*/`
-            <div class="centralized">
+            <div>
                 Hello ${userData.userName}
             </div>
         `;

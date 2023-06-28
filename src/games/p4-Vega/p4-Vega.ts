@@ -6,7 +6,7 @@ import Sky from "./classes/Sky";
 
 export default function p4Vega() {
     // Canvas
-    const canvas: HTMLCanvasElement = document.getElementById("p4-Vega") as HTMLCanvasElement;
+    const canvas: HTMLCanvasElement = document.getElementById("p4-canvas") as HTMLCanvasElement;
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;

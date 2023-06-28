@@ -1,19 +1,19 @@
 import "alpinejs";
 import create from "./register/create";
 import hashInfo from "../src/helpers/hashInfo";
-import loadComponentHtml from "../src/helpers/loadComponent";
+import loadPageHtml from "./helpers/loadPage";
 import listUsers from "./home/listUsers";
 import IUserCreate from "./register/interfaces/IUserCreate";
 import IListUsers from "./home/interfaces/IListUsers";
 
-const loadComponent = (): void => {
+const loadPage = (): void => {
     const { component, placeholder, uri } = hashInfo();
-    loadComponentHtml(component, placeholder, uri);
+    loadPageHtml(component, placeholder, uri);
 }
-loadComponent();
+loadPage();
 
 window.addEventListener("hashchange", () => {
-    loadComponent();
+    loadPage();
 });
 
 type EventListenerRecord = {
@@ -36,23 +36,23 @@ window.eventListeners = {};
 window.create = create;
 window.listUsers = listUsers;
 
-// Reset component state when component is removed from DOM
+// Reset page state when page is removed from DOM
 const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
         if (mutation.removedNodes) {
             const content = document.getElementById("content");
             mutation.removedNodes.forEach((node) => {
-                if(mutation.target === content && (<Element>node).id) {
+                if (mutation.target === content && (<Element>node).id) {
                     const componentId = (<Element>node).id;
-                    switch(componentId) {
-                        case "d-circles-wrapper":
+                    switch (componentId) {
+                        case "dancing-circles":
                             stopAnimation(window.dcAnimationID);
                             break;
-                        case "p4-wrapper":
+                        case "p4-vega":
                             stopAnimation(window.p4AnimationID);
                             break;
                     }
-                    if(window.eventListeners[componentId]) {
+                    if (window.eventListeners[componentId]) {
                         window.eventListeners[componentId].forEach(({ element, event, handler }) => {
                             element.removeEventListener(event, handler);
                         });

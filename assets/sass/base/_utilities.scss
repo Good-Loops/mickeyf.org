@@ -1,0 +1,13 @@
+@use '../abstracts' as *;
+
+.u-canvas-title {
+    justify-self: center;
+
+    padding: 1vh;
+
+    @include title-coloring;
+
+    border-top: .15em double rgba($white, .3);
+    border-bottom: .15em double rgba($white, .3);
+    border-radius: .4em;
+}

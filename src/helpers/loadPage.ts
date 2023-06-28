@@ -1,9 +1,9 @@
-import Home from "../../components/Home";
-import Register from "../../components/Register";
-import User from "../../components/User";
-import Error404 from "../../components/Error404";
-import DanceCircles from "../../components/animations/DanceCircles";
-import P4Vega from "../../components/games/P4Vega";
+import Home from "../../pages/Home";
+import Register from "../../pages/Register";
+import User from "../../pages/User";
+import Error404 from "../../pages/Error404";
+import DanceCircles from "../../pages/animations/DanceCircles";
+import P4Vega from "../../pages/games/P4Vega";
 
 interface routerInterface<T> {
     [id: string]: T;
@@ -23,7 +23,7 @@ const routes: routerInterface<componentInterface> = {
     "/error": Error404
 }
 
-const loadComponentHtml = async function (component: string, placeholder: string, uri: string) {
+const loadPageHtml = async function (component: string, placeholder: string, uri: string) {
     const content = document.querySelector("#content") as HTMLDivElement;
     const newUri = component + placeholder;
     let componentHtml = routes[uri] ?? routes[newUri];
@@ -37,4 +37,4 @@ const loadComponentHtml = async function (component: string, placeholder: string
     }
 }
 
-export default loadComponentHtml;
+export default loadPageHtml;

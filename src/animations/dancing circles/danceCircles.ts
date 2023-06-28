@@ -6,7 +6,7 @@ import AudioHandler from "./classes/AudioHandler";
 
 export default function danceCircles() {
     // Canvas
-    const canvas: HTMLCanvasElement = document.getElementById("dancing-circles") as HTMLCanvasElement;
+    const canvas: HTMLCanvasElement = document.getElementById("dc-canvas") as HTMLCanvasElement;
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;

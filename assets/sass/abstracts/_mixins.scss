@@ -1,0 +1,8 @@
+@use 'colors' as *;
+@use 'shadows' as *;
+
+@mixin title-coloring {
+    color: $primary-dark;
+    -webkit-text-stroke: .05em rgba($white, .3);
+    text-shadow: $title-text-shadow;
+}
