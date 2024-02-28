@@ -8,7 +8,7 @@ function component() {
                 <canvas class="p4-vega__canvas" id="p4-canvas"></canvas>
                 <img class="p4-vega__img" id="p4" width="560" height="66" src="./assets/sprites/p4.png" alt="p4">
                 <img class="p4-vega__img" id="water" width="28" height="46" src="./assets/sprites/water.png" alt="water">
-                <img class="p4-vega__img" id="blackhole" width="90" height="72" src="./assets/sprites/blackhole.png" alt="blackhole">
+                <img class="p4-vega__img" id="blackhole" width="90" height="72" src="./assets/sprites/bhBlue.png" alt="blackhole">
             </section>   
         `;
     }
