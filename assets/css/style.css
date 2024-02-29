@@ -54,7 +54,6 @@ body {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   background-image: -webkit-gradient(linear, left top, right bottom, color-stop(30%, hsl(203, 92%, 65%)), color-stop(90%, hsl(120, 73%, 75%)));
-  background-image: -o-linear-gradient(top left, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
   background-image: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
   cursor: url("../img/normal.cur"), auto;
 }
@@ -108,7 +107,6 @@ h1 {
 .header__nav__item {
   -webkit-transition: -webkit-transform 0.5s ease-in-out;
   transition: -webkit-transform 0.5s ease-in-out;
-  -o-transition: transform 0.5s ease-in-out;
   transition: transform 0.5s ease-in-out;
   transition: transform 0.5s ease-in-out, -webkit-transform 0.5s ease-in-out;
 }
@@ -126,7 +124,6 @@ h1 {
   text-decoration: none;
   color: rgba(204, 204, 204, 0.8);
   -webkit-transition: text-shadow 1.5s ease-in-out;
-  -o-transition: text-shadow 1.5s ease-in-out;
   transition: text-shadow 1.5s ease-in-out;
 }
 .header__nav__link:hover, .header__nav__link:focus {
@@ -180,7 +177,6 @@ h1 {
           user-select: none;
   -webkit-transition: scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s, -webkit-box-shadow 0.5s linear;
   transition: scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s, -webkit-box-shadow 0.5s linear;
-  -o-transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s;
   transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s;
   transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s, -webkit-box-shadow 0.5s linear;
 }
@@ -228,7 +224,6 @@ h1 {
 }
 .registration__form-wrapper {
   background: -webkit-gradient(linear, right bottom, left top, color-stop(35%, rgba(133, 205, 250, 0.5)), color-stop(70%, rgba(145, 238, 145, 0.5)));
-  background: -o-linear-gradient(bottom right, rgba(133, 205, 250, 0.5) 35%, rgba(145, 238, 145, 0.5) 70%);
   background: linear-gradient(to top left, rgba(133, 205, 250, 0.5) 35%, rgba(145, 238, 145, 0.5) 70%);
   border-radius: 1.5em;
   padding-block: 4em;
@@ -246,7 +241,6 @@ h1 {
   border: 0.15em solid hsl(0, 0%, 80%);
   border-radius: 0.4em;
   -webkit-transition: border 0.7s;
-  -o-transition: border 0.7s;
   transition: border 0.7s;
   outline: none;
   font-family: var(--font);
@@ -278,7 +272,6 @@ h1 {
   border: 0.18em solid hsl(0, 0%, 80%);
   border-radius: 0.5em;
   -webkit-transition: border 0.7s;
-  -o-transition: border 0.7s;
   transition: border 0.7s;
 }
 .registration__input--btn:active {

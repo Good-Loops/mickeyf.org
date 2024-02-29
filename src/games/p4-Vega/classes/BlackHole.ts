@@ -27,7 +27,7 @@ export default class BlackHole extends Entity {
     private nextElement: BlackHole | null = null;
 
     constructor() {
-        super("blackhole", 50);
+        super(BlackHole.getRandomSprite(), 50);
         this.determineDirection();
         if(!BlackHole.lastFree) {
             BlackHole.lastFree = this;
@@ -88,6 +88,11 @@ export default class BlackHole extends Entity {
             this.vY = Math.random() * 5 + 2.5;
             this.vX = 0;
         }
+    }
+
+    private static getRandomSprite(): string {
+        const sprites = ["blackholeBlue", "blackholeRed", "blackholeYellow"];
+        return sprites[getRandomInt(0, 2)];
     }
 
     public update(p4: Entity, gameLive: boolean): boolean {
