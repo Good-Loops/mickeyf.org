@@ -14,12 +14,22 @@ export default class Water extends Entity {
         super("water", 50);
     }
 
-    public update(p4: P4): void {
+    protected totalFrames(): number {
+        return 7;
+    }
+
+    public update(deltaTime: number, p4: P4): void {
+        super.update(deltaTime);
+
         if (checkCollision(p4, this)) {
             this.x = getRandomX(this.width + Entity.gap + this.gap);
             this.y = getRandomY(this.height + Entity.gap + this.gap);
             p4.totalWater += 10;
             BlackHole.release(p4);
         }
+    }
+
+    public draw(context: CanvasRenderingContext2D): void {
+        context.drawImage(this.sprite, this.x, this.y);
     }
 }
