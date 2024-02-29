@@ -25,6 +25,7 @@ export default class P4 extends Entity {
     }
 
     public update(deltaTime: number): void {
+        // Movement
         if (this.isMovingRight) {
             this.x += this.speed;
         }
@@ -52,6 +53,7 @@ export default class P4 extends Entity {
             this.y += this.speed;
         }
 
+        // Animation
         if(this.animationTimer > this.animationInterval) {
             this.frame = (this.frame + 1) % 8;
             this.animationTimer = 0;
