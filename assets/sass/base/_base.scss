@@ -1,0 +1,27 @@
+@use '../abstracts' as *;
+
+*, 
+*::before, 
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: inherit;
+}
+
+html {
+    font-size: 62.5%;
+    scroll-behavior: smooth;
+}
+
+body {
+    box-sizing: border-box;
+    
+    background-image: $page-bg-gradient;
+    cursor: $cursor;
+}
+
+canvas {
+    width: 60vw;
+    box-sizing: content-box;
+    border-radius: .8em;
+}

@@ -1,48 +1,62 @@
 {
-  "restoreTerminals.terminals": [
-    {
-      "splitTerminals": [
+    "restoreTerminals.terminals": [
         {
-          "name": "back",
-          "commands": [
-            "npm run back"
-          ]
+            "splitTerminals": [
+                {
+                    "name": "back",
+                    "commands": [
+                        "npm run back"
+                    ]
+                },
+            ]
         },
-      ]
-    },
-    {
-      "splitTerminals": [
         {
-          "name": "compiler",
-          "commands": [
-            "npm run dev"
-          ]
+            "splitTerminals": [
+                {
+                    "name": "compiler",
+                    "commands": [
+                        "npm run dev"
+                    ]
+                },
+            ]
         },
-      ]
-    },
-    {
-      "splitTerminals": [
         {
-          "name": "server",
-          "commands": [
-            "sleep 4s && npm run server"
-          ]
-        }
-      ]
-    },
-    {
-      "splitTerminals": [
+            "splitTerminals": [
+                {
+                    "name": "server",
+                    "commands": [
+                        "sleep 4s && npm run server"
+                    ]
+                }
+            ]
+        },
         {
-          "name": "bash", 
-          "commands": [
-                "xdotool key '^+j' && xdotool key 'white~'",
-                "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
-                "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
-                "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
-                "sleep 2s && xdotool key '{F12}' && clear",
+            "splitTerminals": [
+                {
+                    "name": "bash",
+                    "commands": [
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
+                        "sleep 2s && xdotool key '{F12}' && clear",
+                    ]
+                }
             ]
         }
-      ]
-    }
-  ]
+    ],
+    "liveSassCompile.settings.formats": [
+        {
+            "format": "expanded",
+            "extensionName": ".css",
+            "savePath": "/assets/css",
+        },
+        {
+            "format": "compressed",
+            "extensionName": ".min.css",
+            "savePath": "/assets/css",
+        }
+    ],
+    "liveSassCompile.settings.includeItems": [
+        "/assets/sass/style.scss"
+    ]
 }

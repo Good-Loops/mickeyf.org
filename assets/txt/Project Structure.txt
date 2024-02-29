@@ -9,42 +9,68 @@ mickeyf.dev
 |   |   |-- normal.cur
 |   |   |-- notallowed.cur
 |   |   `-- select.cur
+|   |-- sprites
+|   |   |-- blackhole.png
+|   |   |-- p4.png
+|   |   `-- water.png
 |   |-- styles
-|   |   |-- gpt.css
 |   |   `-- style.css
 |   `-- txt
 |       |-- Colors for Website.txt
 |       `-- Project Structure.txt
 |-- backend
+|   |-- php
 |   |-- db_connect.php
 |   `-- index.php
 |-- components
-|   |-- DanceCircles.ts
+|   |-- animations
+|   |   `-- DanceCircles.ts
+|   |-- games
+|   |   `-- P4Vega.ts
 |   |-- Error404.ts
 |   |-- Home.ts
 |   |-- Register.ts
 |   `-- User.ts
 |-- dist
 |   `-- index.js
-|-- interfaces
-|   |-- listUsersInterface.ts
-|   `-- userCreateInterface.ts
 |-- node_modules
 |-- src
-|   |-- handlers
-|   |   |-- audioHandler.ts
-|   |   |-- circleHandler.ts
-|   |   |-- colorHandler.ts
-|   |   `-- positionHandler.ts
+|   |-- animations
+|   |   |-- dancing circles
+|   |   |   |-- classes
+|   |   |   |   |-- AudioHandler.ts
+|   |   |   |   |-- Circle.ts
+|   |   |   |   `-- ColorHandler.ts
+|   |   |   `-- danceCircles.ts
+|   |   `-- dancing fractals
+|   |-- games
+|   |   |-- Three Bosses
+|   |   |-- classes
+|   |   |   `-- GameElement.ts
+|   |   |-- interfaces
+|   |   |   `-- IGameElement.ts
+|   |   `-- p4-Vega
+|   |       |-- classes
+|   |       |   |-- BlackHole.ts
+|   |       |   |-- P4.ts
+|   |       |   |-- Sky.ts
+|   |       |   |-- Star.ts
+|   |       |   `-- Water.ts
+|   |       `-- p4-Vega.ts
 |   |-- helpers
 |   |   |-- constants.ts
 |   |   |-- hashInfo.ts
 |   |   |-- loadComponent.ts
 |   |   `-- methods.ts
-|   |-- create.ts
-|   |-- danceCircles.ts
-|   |-- index.ts
-|   `-- listUsers.ts
+|   |-- home
+|   |   |-- interfaces
+|   |   |   `-- IListUsers.ts
+|   |   `-- listUsers.ts
+|   |-- register
+|   |   |-- interfaces
+|   |   |   `-- IUserCreate.ts
+|   |   `-- create.ts
+|   `-- index.ts
 |-- LICENSE
 |-- README.md
 |-- index.html

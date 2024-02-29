@@ -7,30 +7,32 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>mickeyf.dev (local)</title>
     <link rel="icon" type="image/x-icon" href="./assets/img/icon.ico">
-    <link rel="stylesheet" type="text/css" href="./assets/styles/style.css">
+    <link rel="stylesheet" type="text/css" href="./assets/css/style.min.css">
 </head>
 
 <body>
     <audio id="music"></audio>
 
-    <header>
-        <ul id="nav">
-            <li><a href="/">Home</a></li>
-            <li><a href="/#/dancing-circles">Animations</a></li>
-            <li><a href="/#/p4-Vega">Games</a></li>
-            <li><a href="/#/login">Log in</a></li>
-            <li><a href="/#/user/register">Register</a></li>
-        </ul>
+    <header class="header">
+        <nav class="header__nav">
+            <ul class="header__nav__list">
+                <li class="header__nav__item"><a class="header__nav__link" href="/">Home</a></li>
+                <li class="header__nav__item"><a class="header__nav__link" href="/#/dancing-circles">Animations</a></li>
+                <li class="header__nav__item"><a class="header__nav__link" href="/#/p4-Vega">Games</a></li>
+                <li class="header__nav__item"><a class="header__nav__link" href="/#/login">Log in</a></li>
+                <li class="header__nav__item"><a class="header__nav__link" href="/#/user/register">Register</a></li>
+            </ul>
+        </nav>
     </header>
 
-    <main>
-        <div id="content"></div>
+    <main class="main">
+        <div class="main__content" id="content"></div>
     </main>
 
-    <footer>
+    <footer class="footer">
     </footer>
 
-    <script src="./dist/index.js"></script>
+    <script src="./dist/index.min.js"></script>
 </body>
 
 </html>

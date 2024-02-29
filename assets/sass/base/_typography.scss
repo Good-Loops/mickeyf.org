@@ -1,0 +1,10 @@
+@use '../abstracts' as *;
+
+body {
+    font-family: $paragraph-font;
+}
+
+h1 {
+    font-family: $heading-font;
+    font-size: 5rem;
+}

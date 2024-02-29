@@ -18,7 +18,7 @@ module.exports = {
     extensions: [".tsx", ".ts", ".js"],
   },
   output: {
-    filename: "[name].js",
+    filename: "[name].min.js",
     path: path.resolve(__dirname, "dist"),
   },
 };

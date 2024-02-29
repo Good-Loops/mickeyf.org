@@ -1,0 +1,17 @@
+@use '../abstracts' as *;
+
+.p4-vega {
+    margin-bottom: 7rem;
+
+    display: grid;
+    gap: 2rem;
+
+    &__canvas {
+        background-color: $space-blue;
+        box-shadow: 0 0 2em rgba(hsl(0, 0%, 15%), .6);
+    }
+
+    &__img {
+        display: none;
+    }
+}
