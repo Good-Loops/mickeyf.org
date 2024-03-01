@@ -5,8 +5,8 @@ import Entity from "../../classes/Entity";
 import P4 from "./P4";
 
 export default class Water extends Entity {
-    public width: number = this.sprite.width;
-    public height: number = this.sprite.height;
+    public width: number = 28;
+    public height: number = 46;
     public x: number = CANVAS_WIDTH - this.sprite.width - Entity.gap;
     public y: number = CANVAS_HEIGHT * .5;;
 
@@ -15,7 +15,7 @@ export default class Water extends Entity {
     }
 
     protected totalFrames(): number {
-        return 7;
+        return 5;
     }
 
     public update(deltaTime: number, p4: P4): void {
@@ -27,9 +27,5 @@ export default class Water extends Entity {
             p4.totalWater += 10;
             BlackHole.release(p4);
         }
-    }
-
-    public draw(context: CanvasRenderingContext2D): void {
-        context.drawImage(this.sprite, this.x, this.y);
     }
 }

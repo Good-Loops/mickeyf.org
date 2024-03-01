@@ -123,7 +123,7 @@ export default class BlackHole extends Entity {
     }
 
     public draw(context: CanvasRenderingContext2D): void {
-        context.filter = `sepia(100%) saturate(200%) hue-rotate(${this.hue}deg)`;
+        context.filter = `sepia(100%) saturate(600%) hue-rotate(${this.hue}deg)`;
         super.draw(context);
         context.filter = "none";
     }
