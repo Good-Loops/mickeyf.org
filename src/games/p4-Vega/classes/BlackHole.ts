@@ -9,8 +9,8 @@ export default class BlackHole extends Entity {
     private vX?: number;
     private vY?: number; 
 
-    public width: number = this.sprite.width;
-    public height: number  = this.sprite.height;
+    public width: number = 90;
+    public height: number  = 90;
     public x: number = getRandomX(this.sprite.width);
     public y: number = getRandomY(this.sprite.height);
     public free: boolean = false;
@@ -122,9 +122,9 @@ export default class BlackHole extends Entity {
         return gameLive!;
     }
 
-    // public draw(context: CanvasRenderingContext2D): void {
-    //     context.filter = `sepia(100%) saturate(600%) hue-rotate(${this.hue}deg)`;
-    //     context.drawImage(this.sprite, this.x, this.y);
-    //     context.filter = "none";
-    // }
+    public draw(context: CanvasRenderingContext2D): void {
+        context.filter = `sepia(100%) saturate(200%) hue-rotate(${this.hue}deg)`;
+        super.draw(context);
+        context.filter = "none";
+    }
 }
