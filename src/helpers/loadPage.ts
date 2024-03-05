@@ -1,6 +1,7 @@
 import Home from "../../pages/Home";
 import Register from "../../pages/Register";
 import User from "../../pages/User";
+import Games from "../../pages/Games";
 import Error404 from "../../pages/Error404";
 import DanceCircles from "../../pages/animations/DanceCircles";
 import P4Vega from "../../pages/games/P4Vega";
@@ -18,6 +19,7 @@ const routes: routerInterface<componentInterface> = {
     "/": Home,
     "/user/register": Register,
     "/user/:id": User,
+    "/games": Games,
     "/dancing-circles": DanceCircles,
     "/p4-Vega": P4Vega,
     "/error": Error404

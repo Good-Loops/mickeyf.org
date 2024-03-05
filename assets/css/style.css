@@ -65,6 +65,11 @@ canvas {
   border-radius: 0.8em;
 }
 
+a {
+  text-decoration: none;
+  cursor: url("../img/select.cur"), auto;
+}
+
 body {
   font-family: "Space Grotesk", sans-serif;
 }
@@ -83,6 +88,24 @@ h1 {
   border-top: 0.15em double rgba(234, 234, 251, 0.3);
   border-bottom: 0.15em double rgba(234, 234, 251, 0.3);
   border-radius: 0.4em;
+}
+
+.u-label {
+  text-shadow: 0 0 0.4em hsl(240, 67%, 95%);
+  color: hsl(203, 92%, 65%);
+  border: 0.12em solid hsl(203, 92%, 65%);
+  border-radius: 0.6em;
+  -webkit-box-shadow: 0 0 0.6em rgba(234, 234, 251, 0.6), 0 0 0em rgba(133, 205, 250, 0.5) inset, 0 0 0em hsl(203, 92%, 75%);
+          box-shadow: 0 0 0.6em rgba(234, 234, 251, 0.6), 0 0 0em rgba(133, 205, 250, 0.5) inset, 0 0 0em hsl(203, 92%, 75%);
+  -webkit-transition: scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s, -webkit-box-shadow 0.5s linear;
+  transition: scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s, -webkit-box-shadow 0.5s linear;
+  transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s;
+  transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s, -webkit-box-shadow 0.5s linear;
+  z-index: 2;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 }
 
 .header__nav {
@@ -128,7 +151,6 @@ h1 {
 }
 .header__nav__link:hover, .header__nav__link:focus {
   text-shadow: 0 0 0.4em hsl(240, 67%, 95%);
-  cursor: url("../img/select.cur"), auto;
 }
 
 .main {
@@ -164,21 +186,6 @@ h1 {
   padding: 0.5em;
   padding-top: 0.4em;
   font-size: 2rem;
-  color: hsl(203, 92%, 65%);
-  text-shadow: 0 0 0.4em hsl(240, 67%, 95%);
-  border: 0.12em solid hsl(203, 92%, 65%);
-  border-radius: 0.6em;
-  -webkit-box-shadow: 0 0 0.6em rgba(234, 234, 251, 0.6), 0 0 0em rgba(133, 205, 250, 0.5) inset, 0 0 0em hsl(203, 92%, 75%);
-          box-shadow: 0 0 0.6em rgba(234, 234, 251, 0.6), 0 0 0em rgba(133, 205, 250, 0.5) inset, 0 0 0em hsl(203, 92%, 75%);
-  z-index: 2;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-  -webkit-transition: scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s, -webkit-box-shadow 0.5s linear;
-  transition: scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s, -webkit-box-shadow 0.5s linear;
-  transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s;
-  transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s, -webkit-box-shadow 0.5s linear;
 }
 .dancing-circles__label:not(.playing):hover, .dancing-circles__label:not(.playing):focus {
   color: hsl(240, 67%, 95%);
@@ -282,4 +289,21 @@ h1 {
 .registration__input--btn:hover {
   cursor: url("../img/select.cur"), auto;
   border: 0.18em solid hsl(0, 0%, 30%);
+}
+
+.games {
+  margin-bottom: 15rem;
+  display: grid;
+  row-gap: 10rem;
+  justify-items: center;
+}
+.games__title {
+  color: hsl(203, 92%, 65%);
+  -webkit-text-stroke: 0.05em rgba(234, 234, 251, 0.3);
+  text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
+  font-size: 10rem;
+  letter-spacing: 2rem;
+}
+.games__grid-item {
+  font-size: 2rem;
 }

@@ -15,25 +15,6 @@
         padding-top: .4em;
 
         font-size: 2rem;
-        color: $primary-dark;
-
-        text-shadow: $label-text-shadow;
-
-        border: .12em solid $primary-dark;
-        border-radius: .6em;
-        box-shadow: 0 0 .6em rgba($white, .6),
-            0 0 0em rgba($primary, .5) inset,
-            0 0 0em $primary;
-
-        z-index: 2;
-        user-select: none;
-
-        transition:
-            box-shadow .5s linear,
-            scale .7s linear,
-            text-shadow 1s ease-in-out,
-            color 1.5s,
-            border-color 2s;
 
         &:not(.playing):hover,
         &:not(.playing):focus {

@@ -25,3 +25,8 @@ canvas {
     box-sizing: content-box;
     border-radius: .8em;
 }
+
+a {
+    text-decoration: none;
+    cursor: $cursor-hover;
+}

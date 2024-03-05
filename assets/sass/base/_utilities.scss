@@ -11,3 +11,26 @@
     border-bottom: .15em double rgba($white, .3);
     border-radius: .4em;
 }
+
+.u-label {
+    text-shadow: $label-text-shadow;
+    color: $primary-dark;
+
+    border: .12em solid $primary-dark;
+    border-radius: .6em;
+    
+    box-shadow: 
+        0 0 .6em rgba($white, .6),
+        0 0 0em rgba($primary, .5) inset,
+        0 0 0em $primary;
+
+    transition:
+        box-shadow .5s linear,
+        scale .7s linear,
+        text-shadow 1s ease-in-out,
+        color 1.5s,
+        border-color 2s;
+
+    z-index: 2;
+    user-select: none;
+}
