@@ -6,7 +6,7 @@ function component() {
             <section class="dancing-circles" id="dancing-circles">
                 <h1 class="u-canvas-title">Dancing Circles</h1>
                 <canvas class="dancing-circles__canvas" id="dc-canvas"></canvas>
-                <label class="dancing-circles__label floating u-label" id="upload-button" for="file-upload">Upload Music</label>
+                <label class="dancing-circles__label floating" id="upload-button" for="file-upload">Upload Music</label>
                 <input class="dancing-circles__input" type="file" name="fileupload" id="file-upload" accept="audio/*"/>
             </section>   
         `;
