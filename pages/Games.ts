@@ -6,7 +6,7 @@ function component() {
                 <div class="games__grid">
                     <div class="games__grid-item">
                         <a href="/#/p4-Vega">
-                            <h3 class=games__grid-item--p4 floating">p4-Vega</h3>
+                            <h3 class="games__grid-item--p4 floating">p4-Vega</h3>
                         </a>
                     </div>
                 </div>

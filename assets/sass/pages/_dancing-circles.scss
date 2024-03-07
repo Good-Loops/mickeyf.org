@@ -8,52 +8,18 @@
         box-shadow: .3em .3em .8em $primary-dark, -.3em -.3em 1em $secondary;
     }
 
-    &__label {
+    &__upload-btn {
         justify-self: center;
 
-        padding: .5em;
-        padding-top: .4em;
-
-        font-size: 2rem;
-
-        text-shadow: $label-text-shadow;
-        color: $primary-dark;
-    
-        border: .12em solid $primary-dark;
-        border-radius: .6em;
-    
-        box-shadow:
-            0 0 .6em rgba($white, .6),
-            0 0 0em rgba($primary, .5) inset,
-            0 0 0em $primary;
-    
-        transition:
-            box-shadow .5s linear,
-            scale .7s linear,
-            text-shadow 1s ease-in-out,
-            color 1.5s,
-            border-color 2s;
-    
-        z-index: 2;
-        user-select: none;
+        @include default-btn;
 
         &:not(.playing):hover,
         &:not(.playing):focus {
-            color: $white;
-            border-color: rgba($white, .3);
-            box-shadow: 0 0 0em rgba($white, .3),
-                0 0 5em rgba($primary, .5) inset,
-                0 0 .6em rgba($primary, .5);
-
-            text-shadow: 0 0 .12em $primary;
-
-            scale: 1.04;
-
-            cursor: $cursor-hover;
+            @include default-btn-hover;
         }
 
         &:not(.playing):active {
-            scale: .2;
+            @include default-btn-active;
         }
     }
 

@@ -1,6 +1,6 @@
 @use '../abstracts' as *;
 
-.games {
+.animations {
     margin-bottom: 15rem;
 
     display: grid;
@@ -21,7 +21,7 @@
     &__grid-item {
         font-size: 2rem;
 
-        &--p4 {
+        &--dancing-circles {
             @include default-btn;
 
             &:hover {
