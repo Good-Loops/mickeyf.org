@@ -1,6 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../helpers/constants";
 import { checkCollision, getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../helpers/methods";
 import Entity from "../../classes/Entity";
+import P4 from "./P4";
 
 export default class BlackHole extends Entity {
     private hue: number = getRandomInt(0, 360);
@@ -8,8 +9,8 @@ export default class BlackHole extends Entity {
     private vX?: number;
     private vY?: number; 
 
-    public width: number = this.sprite.width;
-    public height: number  = this.sprite.height;
+    public width: number = 90;
+    public height: number  = 90;
     public x: number = getRandomX(this.sprite.width);
     public y: number = getRandomY(this.sprite.height);
     public free: boolean = false;
@@ -34,6 +35,10 @@ export default class BlackHole extends Entity {
         } else {
             BlackHole.linkElement(this);
         }
+    }
+
+    protected totalFrames(): number {
+        return 7;
     }
 
     private static linkElement(blackHole: BlackHole): void {
@@ -95,7 +100,9 @@ export default class BlackHole extends Entity {
         return sprites[getRandomInt(0, 2)];
     }
 
-    public update(p4: Entity, gameLive: boolean): boolean {
+    public update(deltaTime: number, p4: P4, gameLive: boolean): boolean {
+        super.update(deltaTime);
+
         if (checkCollision(p4, this)) {
             gameLive = false;
         }
@@ -117,7 +124,7 @@ export default class BlackHole extends Entity {
 
     public draw(context: CanvasRenderingContext2D): void {
         context.filter = `sepia(100%) saturate(600%) hue-rotate(${this.hue}deg)`;
-        context.drawImage(this.sprite, this.x, this.y);
+        super.draw(context);
         context.filter = "none";
     }
 }

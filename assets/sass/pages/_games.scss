@@ -1,0 +1,37 @@
+@use '../abstracts' as *;
+
+.games {
+    margin-bottom: 15rem;
+
+    display: grid;
+    row-gap: 10rem;
+
+    justify-items: center;
+
+    &__title {
+        @include title-coloring;
+        font-size: 10rem;
+        letter-spacing: 2rem;
+    }
+
+    // &__grid {
+
+    // }
+
+    &__grid-item {
+        font-size: 2rem;
+
+        &--p4 {
+            @include default-btn;
+
+            &:hover {
+                @include default-btn-hover;
+            }
+
+            &:active {
+                @include default-btn-active;
+            }
+
+        }
+    }
+}

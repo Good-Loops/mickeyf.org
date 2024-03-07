@@ -5,8 +5,8 @@ import Entity from "../../classes/Entity";
 import P4 from "./P4";
 
 export default class Water extends Entity {
-    public width: number = this.sprite.width;
-    public height: number = this.sprite.height;
+    public width: number = 28;
+    public height: number = 46;
     public x: number = CANVAS_WIDTH - this.sprite.width - Entity.gap;
     public y: number = CANVAS_HEIGHT * .5;;
 
@@ -14,7 +14,13 @@ export default class Water extends Entity {
         super("water", 50);
     }
 
-    public update(p4: P4): void {
+    protected totalFrames(): number {
+        return 5;
+    }
+
+    public update(deltaTime: number, p4: P4): void {
+        super.update(deltaTime);
+
         if (checkCollision(p4, this)) {
             this.x = getRandomX(this.width + Entity.gap + this.gap);
             this.y = getRandomY(this.height + Entity.gap + this.gap);

@@ -1,8 +1,55 @@
 @use 'colors' as *;
 @use 'shadows' as *;
+@use 'variables' as *;
 
 @mixin title-coloring {
     color: $primary-dark;
     -webkit-text-stroke: .05em rgba($white, .3);
     text-shadow: $title-text-shadow;
+}
+
+@mixin default-btn {
+    padding: .5em;
+    padding-top: .4em;
+
+    font-size: 2rem;
+
+    text-shadow: $label-text-shadow;
+    color: $primary-dark;
+
+    border: .12em solid $primary-dark;
+    border-radius: .6em;
+
+    box-shadow:
+        0 0 .6em rgba($white, .6),
+        0 0 0em rgba($primary, .5) inset,
+        0 0 0em $primary;
+
+    transition:
+        box-shadow .5s linear,
+        scale .7s linear,
+        text-shadow 1s ease-in-out,
+        color 1.5s,
+        border-color 2s;
+
+    z-index: 2;
+    user-select: none;
+}
+
+@mixin default-btn-hover {
+    color: $white;
+    border-color: rgba($white, .3);
+    box-shadow: 0 0 0em rgba($white, .3),
+        0 0 5em rgba($primary, .5) inset,
+        0 0 .6em rgba($primary, .5);
+
+    text-shadow: 0 0 .12em $primary;
+
+    scale: 1.04;
+
+    cursor: $cursor-hover;
+}
+
+@mixin default-btn-active {
+    scale: .2;
 }

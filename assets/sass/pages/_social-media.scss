@@ -1,0 +1,62 @@
+@use '../abstracts' as *;
+
+.social-media {
+    margin-bottom: 15rem;
+
+    display: grid;
+    row-gap: 10rem;
+
+    justify-items: center;
+
+    &__title {
+        @include title-coloring;
+        font-size: 10rem;
+        letter-spacing: 2rem;
+    }
+
+    &__grid {
+        display: grid;
+
+        grid-auto-flow: column;
+        column-gap: 10rem;
+
+        &-item {
+            &--tiktok {
+                @include default-btn;
+
+                &:hover {
+                    @include default-btn-hover;
+                }
+
+                &:active {
+                    @include default-btn-active;
+                }
+            }
+
+            &--instagram {
+                @include default-btn;
+
+                &:hover {
+                    @include default-btn-hover;
+                }
+
+                &:active {
+                    @include default-btn-active;
+                }
+            }
+
+            &--youtube {
+                @include default-btn;
+
+                &:hover {
+                    @include default-btn-hover;
+                }
+
+                &:active {
+                    @include default-btn-active;
+                }
+
+            }
+        }
+    }
+}

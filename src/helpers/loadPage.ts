@@ -1,9 +1,12 @@
 import Home from "../../pages/Home";
-import Register from "../../pages/Register";
 import User from "../../pages/User";
-import Error404 from "../../pages/Error404";
+import Games from "../../pages/Games";
+import Animations from "../../pages/Animations";
+import SocialMedia from "../../pages/SocialMedia";
+import Register from "../../pages/Register";
 import DanceCircles from "../../pages/animations/DanceCircles";
 import P4Vega from "../../pages/games/P4Vega";
+import Error404 from "../../pages/Error404";
 
 interface routerInterface<T> {
     [id: string]: T;
@@ -16,8 +19,11 @@ interface componentInterface {
 
 const routes: routerInterface<componentInterface> = {
     "/": Home,
-    "/user/register": Register,
+    "/user/signup": Register,
     "/user/:id": User,
+    "/games": Games,
+    "/animations": Animations,
+    "/socialmedia": SocialMedia,
     "/dancing-circles": DanceCircles,
     "/p4-Vega": P4Vega,
     "/error": Error404

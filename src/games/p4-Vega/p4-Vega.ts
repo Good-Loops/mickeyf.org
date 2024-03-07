@@ -33,11 +33,11 @@ export default function p4Vega() {
 
     const update = (): void => {
         p4.update(deltaTime);
-        water.update(p4);
+        water.update(deltaTime, p4);
         for(let i = 0; i < BlackHole.freeElements; i++) {
             const blackHole = BlackHole.pool[i];
             blackHole.free = true;
-            gameLive = blackHole.update(p4, gameLive);
+            gameLive = blackHole.update(deltaTime, p4, gameLive);
         }
     }
 
