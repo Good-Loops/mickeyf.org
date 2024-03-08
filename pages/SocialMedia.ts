@@ -5,20 +5,21 @@ function component() {
                 <h1 class="social-media__title">Social Media</h1>
                 <div class="social-media__grid">
                     <a href="https://www.tiktok.com/@mickeyf.plays" target="_blank">
-                        <svg class="social-media__grid-item--tiktok floating">
-                            <use xlink:href="../../assets/img/sprite.svg#tiktok"></use>
-                        </svg>
+                        <h3 class="social-media__grid-item--instagram floating">TikTok</h3>
+                        <!-- <svg class="social-media__grid-item--tiktok floating">
+                            <use xlink:href="../../assets/img/sprite.svg#tiktok"></use> -->
+                        <!-- </svg> -->
                     </a>
                     <a href="https://www.instagram.com/mickeyf.plays/" target="_blank">
-                        <!-- <h3 class="social-media__grid-item--instagram floating">Instagram</h3> -->
+                        <h3 class="social-media__grid-item--instagram floating">Instagram</h3>
 
                     </a>
                     
                     <a href="https://www.youtube.com/@mickeyfplays" target="_blank">
-                        <!-- <h3 class="social-media__grid-item--youtube floating">Youtube</h3> -->
-                        <svg class="social-media__grid-item--youtube floating">
+                        <h3 class="social-media__grid-item--youtube floating">Youtube</h3>
+                        <!-- <svg class="social-media__grid-item--youtube floating">
                             <use xlink:href="../../assets/img/sprite.svg#youtube"></use>
-                        </svg>
+                        </svg> -->
                     </a>
                 </div>
             </section>
