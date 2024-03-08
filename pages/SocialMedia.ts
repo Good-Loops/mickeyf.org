@@ -11,10 +11,9 @@ function component() {
                     </a>
                     <a href="https://www.instagram.com/mickeyf.plays/" target="_blank">
                         <!-- <h3 class="social-media__grid-item--instagram floating">Instagram</h3> -->
-                        <svg class="social-media__grid-item--instagram floating">
-                            <use xlink:href="../../assets/img/sprite.svg#instagram"></use>
-                        </svg>
+
                     </a>
+                    
                     <a href="https://www.youtube.com/@mickeyfplays" target="_blank">
                         <!-- <h3 class="social-media__grid-item--youtube floating">Youtube</h3> -->
                         <svg class="social-media__grid-item--youtube floating">
