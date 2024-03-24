@@ -1,6 +1,6 @@
 export default interface IUserCreate {
     user: {
-        userName: string;
+        user_name: string;
         email: string;
         password: string;
     };

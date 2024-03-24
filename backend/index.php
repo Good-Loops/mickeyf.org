@@ -1,11 +1,9 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:5000");
-header("Access-Control-Allow-Headers: Content-Type");
 
 include 'db_connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-  $sql = "SELECT userId, userName, email FROM Users";
+  $sql = "SELECT user_id, user_name, email FROM User";
   $result = $conn->query($sql);
 
   $rows = array();
@@ -25,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
   $data = json_decode(file_get_contents('php://input'), true);
 
   // Validate the data
-  if (empty($data['userName']) || empty($data['email']) || empty($data['password'])) {
+  if (empty($data['user_name']) || empty($data['email']) || empty($data['password'])) {
     header('Content-Type: application/json');
     die(json_encode(['error' => 'EMPTY_FIELDS']));
   }
@@ -35,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     die(json_encode(['error' => 'INVALID_PASSWORD']));
   }
 
-  $userName = filter_var($data['userName'], FILTER_SANITIZE_STRING);
   $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
   $password = $data['password'];
 
@@ -45,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
   }
 
 // Prepare a SELECT statement to check if the username or email already exists
-$stmt = $conn->prepare("SELECT userId FROM Users WHERE userName = ? OR email = ?");
-$stmt->bind_param("ss", $userName, $email);
+$stmt = $conn->prepare("SELECT user_id FROM User WHERE user_name = ? OR email = ?");
+$stmt->bind_param("ss", $user_name, $email);
 
 // Execute the statement
 $stmt->execute();
@@ -66,8 +63,8 @@ $stmt->close();
   $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
   // Prepare and bind
-  $stmt = $conn->prepare("INSERT INTO Users (userName, email, password) VALUES (?, ?, ?)");
-  $stmt->bind_param("sss", $userName, $email, $hashedPassword);
+  $stmt = $conn->prepare("INSERT INTO Users (user_name, email, password) VALUES (?, ?, ?)");
+  $stmt->bind_param("sss", $user_name, $email, $hashedPassword);
 
   // Execute the statement
   $stmt->execute();
@@ -78,4 +75,3 @@ $stmt->close();
 }
 
 $conn->close();
-?>
