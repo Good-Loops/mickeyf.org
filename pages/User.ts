@@ -12,15 +12,15 @@ function component() {
             return data;
         });
 
-        const user = data.find((user: { userId: string; }) => user.userId === id) ?? "";
+        const user = data.find((user: { user_id: string; }) => user.user_id === id) ?? "";
         
         return user;
     }
 
     const render = async function() {
         const userData: {
-            userId: string;
-            userName: string;
+            user_id: string;
+            user_name: string;
             email: string;
             password: string;
         } = await user();
@@ -31,7 +31,7 @@ function component() {
         
         return /*html*/`
             <div>
-                Hello ${userData.userName}
+                Hello ${userData.user_name}
             </div>
         `;
     }

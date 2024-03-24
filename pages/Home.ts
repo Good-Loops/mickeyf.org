@@ -5,7 +5,7 @@ function component() {
                 <ul>
                     <template x-for="(user, index) in data" :key="index">
                         <li>
-                            <span x-text="user.userName"></span> <a x-bind:href="'/#/user/' + user.userId">Click here</a>
+                            <span x-text="user.user_name"></span> <a x-bind:href="'/#/user/' + user.user_id">Click here</a>
                         </li>
                     </template>
                 </ul>

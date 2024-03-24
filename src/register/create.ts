@@ -25,7 +25,10 @@ function create(): IUserCreate {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return response.json();
+                return response.text();
+            })
+            .then(data => {
+                return JSON.parse(data);  // Parse the response as JSON
             })
             .then(data => {
                 if (data.error) {
