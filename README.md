@@ -1,2 +1,2 @@
-# mickeyf.dev
+# mickeyf.org
 Website for entertaiment and education.
