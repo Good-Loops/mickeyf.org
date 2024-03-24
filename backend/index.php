@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $rows[] = $row;
         }
     } else {
-        echo "0 results\n";
+        $rows = [];
     }
 
     // Output the JSON data
