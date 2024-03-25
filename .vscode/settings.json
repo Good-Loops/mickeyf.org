@@ -3,17 +3,7 @@
         {
             "splitTerminals": [
                 {
-                    "name": "back",
-                    "commands": [
-                        "npm run back"
-                    ]
-                },
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
-                    "name": "compiler",
+                    "name": "dev-compiler",
                     "commands": [
                         "npm run dev"
                     ]
@@ -23,7 +13,7 @@
         {
             "splitTerminals": [
                 {
-                    "name": "server",
+                    "name": "live-server",
                     "commands": [
                         "sleep 4s && npm run server"
                     ]
@@ -33,12 +23,11 @@
         {
             "splitTerminals": [
                 {
-                    "name": "bash",
+                    "name": "temp-bash",
                     "commands": [
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
-                        "sleep 2s && xdotool key '{F12}' && clear",
+                        "exit",
                     ]
                 }
             ]

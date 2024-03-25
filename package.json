@@ -1,13 +1,12 @@
 {
-  "name": "mickeyf.dev",
+  "name": "mickeyf.org",
   "version": "1.0.0",
-  "description": "entertaining and educational website",
+  "description": "Entertaining and educational website.",
   "main": "webpack.config.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack --progress --watch",
     "prod": "NODE_ENV=production webpack --progress --watch",
-    "server": "live-server --port=5000 --host=localhost",
-    "back": "cd backend && php -S localhost:3000"
+    "server": "live-server --port=5000 --host=localhost"
   },
   "keywords": [],
   "author": "",

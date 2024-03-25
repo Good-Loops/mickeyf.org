@@ -269,9 +269,9 @@ h1 {
 .social-media__grid {
   display: grid;
   grid-auto-flow: column;
-  -webkit-column-gap: 10rem;
-     -moz-column-gap: 10rem;
-          column-gap: 10rem;
+  -webkit-column-gap: 8rem;
+     -moz-column-gap: 8rem;
+          column-gap: 8rem;
 }
 .social-media__grid-item--tiktok {
   padding: 0.5em;
@@ -292,6 +292,8 @@ h1 {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  padding-block: 5rem;
+  padding-inline: 0.05rem;
 }
 .social-media__grid-item--tiktok:hover {
   color: hsl(240, 67%, 95%);
@@ -324,6 +326,8 @@ h1 {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  padding-block: 5rem;
+  padding-inline: 0.05rem;
 }
 .social-media__grid-item--instagram:hover {
   color: hsl(240, 67%, 95%);
@@ -356,6 +360,8 @@ h1 {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  padding-block: 5rem;
+  padding-inline: 0.05rem;
 }
 .social-media__grid-item--youtube:hover {
   color: hsl(240, 67%, 95%);

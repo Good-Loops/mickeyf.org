@@ -3,8 +3,13 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
 export async function getUserData(): Promise<any> {
     try {
-        const response = await fetch('http://localhost:3000/index.php');
-        return await response.json();
+        const response = await fetch('http://localhost');
+        if (!response.ok) {
+            const message = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${message}`);
+        }
+        const data = await response.json();
+        return data;
     } catch (error) {
         console.error('Error:', error);
     }
