@@ -1,2 +1,2 @@
 # mickeyf.org
-Entertaining and educational website.
+Website for entertaiment and education.
