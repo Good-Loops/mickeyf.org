@@ -1,7 +1,7 @@
 <?php
-$servername = "localhost";
-$username = "cms_mickeyf";
-$password = ".4gUR)uzKK]1E!Xw";
-$dbname = "cms";
+$db_host = "localhost";
+$db_name = "cms";
+$db_user = "cms_mickeyf";
+$db_pass = ".4gUR)uzKK]1E!Xw";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
