@@ -1,3 +1,4 @@
+logsBucket: 'gs://mickeyf.org'
 steps:
   # Install dependencies
   - name: 'gcr.io/cloud-builders/npm'
