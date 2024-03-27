@@ -1,0 +1,26 @@
+steps:
+  # Install dependencies
+  - name: 'gcr.io/cloud-builders/npm'
+    entrypoint: 'npm'
+    args: ['install']
+
+  # Compile SASS to CSS
+  - name: 'gcr.io/cloud-builders/npm'
+    entrypoint: 'npm'
+    args: ['run', 'sass'] # Assumes you have a "sass" script in your package.json
+
+  # Compile TypeScript to JavaScript
+  - name: 'gcr.io/cloud-builders/npm'
+    entrypoint: 'npm'
+    args: ['run', 'tsc'] # Assumes you have a "tsc" script in your package.json
+
+  # Deploy to App Engine
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['app', 'deploy']
+
+# Specify the images to be built
+images:
+  - gcr.io/$PROJECT_ID/my-app-image
+
+# Specify timeout
+timeout: '1600s'
