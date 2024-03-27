@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development webpack --progress --watch",
     "prod": "NODE_ENV=production webpack --progress --watch",
-    "server": "live-server --port=5000 --host=localhost"
+    "server": "live-server --port=7777 --host=localhost"
   },
   "keywords": [],
   "author": "",
