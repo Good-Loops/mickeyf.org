@@ -7,91 +7,103 @@
     // Include the database connection file
     include 'db_connect.php';
 
-    // Check if the request method is GET or POST
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        // Prepare a SELECT statement to get all the users
-        $sql = "SELECT user_id, user_name, email FROM User";
-        $result = $conn->query($sql);
-
-        $rows = array();
-
-        // If there's at least one row in the result, then fetch the rows
-        if ($result->num_rows > 0) {
-            // Output data of each row
-            while ($row = $result->fetch_assoc()) {
-                $rows[] = $row;
+    switch ($_SERVER['REQUEST_METHOD']) {
+        case 'GET':
+            // Check the 'type' query parameter
+            switch ($_GET['type']) {
+                case 'scores':
+                    // Prepare a SELECT statement to get the top 10 scores
+                    $sql = "SELECT user_name, p4_score FROM User ORDER BY p4_score DESC LIMIT 10";
+                    break;
+                case 'users':
+                default:
+                    // Prepare a SELECT statement to get all the users
+                    $sql = "SELECT user_id, user_name, email FROM User";
+                    break;
             }
-        } else {
-            $rows = [];
-        }
 
-        // Output the JSON data
-        header('Content-Type: application/json');
-        echo json_encode($rows);
+            $result = $conn->query($sql);
 
-    } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Get the raw POST data
-        $data = json_decode(file_get_contents('php://input'), true);
+            $rows = array();
 
-        // Check if the user_name, email, and password fields are not empty
-        if (empty($data['user_name']) || empty($data['email']) || empty($data['password'])) {
+            // If there's at least one row in the result, then fetch the rows
+            if ($result->num_rows > 0) {
+                // Output data of each row
+                while ($row = $result->fetch_assoc()) {
+                    $rows[] = $row;
+                }
+            } else {
+                $rows = [];
+            }
+
+            // Output the JSON data
             header('Content-Type: application/json');
-            die(json_encode(['error' => 'EMPTY_FIELDS']));
-        }
+            echo json_encode($rows);
+            break;
 
-        // Validate the password length (8-16 characters)
-        if (strlen($data['password']) < 8 || strlen($data['password']) > 16) {
-            header('Content-Type: application/json');
-            die(json_encode(['error' => 'INVALID_PASSWORD']));
-        }
+        case 'POST':
+            // Get the raw POST data
+            $data = json_decode(file_get_contents('php://input'), true);
 
-        // Get the user_name, email, and password from the POST data
-        $user_name = $data['user_name'];  
-        $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
-        $password = $data['password'];
+            // Check if the user_name, email, and password fields are not empty
+            if (empty($data['user_name']) || empty($data['email']) || empty($data['password'])) {
+                header('Content-Type: application/json');
+                die(json_encode(['error' => 'EMPTY_FIELDS']));
+            }
 
-        // Validate the email
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            header('Content-Type: application/json');
-            die(json_encode(['error' => 'INVALID_EMAIL']));
-        }
+            // Validate the password length (8-16 characters)
+            if (strlen($data['password']) < 8 || strlen($data['password']) > 16) {
+                header('Content-Type: application/json');
+                die(json_encode(['error' => 'INVALID_PASSWORD']));
+            }
 
-        // Prepare a SELECT statement to check if the username or email already exists
-        $stmt = $conn->prepare("SELECT user_id FROM User WHERE user_name = ? OR email = ?");
-        $stmt->bind_param("ss", $user_name, $email);
+            // Get the user_name, email, and password from the POST data
+            $user_name = $data['user_name'];  
+            $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
+            $password = $data['password'];
 
-        // Execute the statement
-        $stmt->execute();
+            // Validate the email
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                header('Content-Type: application/json');
+                die(json_encode(['error' => 'INVALID_EMAIL']));
+            }
 
-        // Get the result
-        $result = $stmt->get_result();
+            // Prepare a SELECT statement to check if the username or email already exists
+            $stmt = $conn->prepare("SELECT user_id FROM User WHERE user_name = ? OR email = ?");
+            $stmt->bind_param("ss", $user_name, $email);
 
-        // If there's at least one row in the result, then the username or email is already registered
-        if ($result->num_rows > 0) {
-            header('Content-Type: application/json');
-            die(json_encode(['error' => 'DUPLICATE_USER']));
-        }
+            // Execute the statement
+            $stmt->execute();
 
-        // Close the statement
-        $stmt->close();
+            // Get the result
+            $result = $stmt->get_result();
 
-        // Hash the password
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            // If there's at least one row in the result, then the username or email is already registered
+            if ($result->num_rows > 0) {
+                header('Content-Type: application/json');
+                die(json_encode(['error' => 'DUPLICATE_USER']));
+            }
 
-        // Prepare and bind
-        // VALUES (?, ?, ?) are placeholders for the user_name, email, and password
-        $stmt = $conn->prepare("INSERT INTO User (user_name, email, password) VALUES (?, ?, ?)");
-        // "sss" means that the parameters are strings
-        $stmt->bind_param("sss", $user_name, $email, $hashedPassword);
+            // Close the statement
+            $stmt->close();
 
-        // Execute the statement
-        $stmt->execute();
+            // Hash the password
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        // Output the JSON data
-        echo json_encode(['status' => 'success']);
+            // Prepare and bind
+            // VALUES (?, ?, ?) are placeholders for the user_name, email, and password
+            $stmt = $conn->prepare("INSERT INTO User (user_name, email, password) VALUES (?, ?, ?)");
+            // "sss" means that the parameters are strings
+            $stmt->bind_param("sss", $user_name, $email, $hashedPassword);
 
-        // Close the statement
-        $stmt->close();
+            // Execute the statement
+            $stmt->execute();
+
+            // Output the JSON data
+            echo json_encode(['status' => 'success']);
+
+            // Close the statement
+            $stmt->close();
     }
     // Close the connection
     $conn->close();
