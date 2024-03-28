@@ -5,7 +5,6 @@ steps:
     entrypoint: 'npm'
     args: ['install']
 
-  # Step 2: Copy files to the Google Cloud Storage bucket
   - name: "gcr.io/cloud-builders/gcloud"
     args: ["app", "deploy"]
     timeout: "1600s"
