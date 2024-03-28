@@ -1,3 +1,4 @@
+logsBucket: 'gs://mickeyf-logs'
 steps:
 # Step to copy files to the Cloud Storage bucket
 - name: 'gcr.io/cloud-builders/gsutil'
