@@ -1,8 +1,4 @@
 steps:
-# Example step that generates static files into ./public/
-- name: 'gcr.io/cloud-builders/npm'
-  args: ['run', 'build'] # This should output files to ./public/
-
 # Step to copy files to the Cloud Storage bucket
 - name: 'gcr.io/cloud-builders/gsutil'
   args: ['-m', 'cp', '-r', './public/*', 'gs://www.mickey.org']
