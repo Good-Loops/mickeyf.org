@@ -1,18 +1,8 @@
-options:
-  logging: CLOUD_LOGGING_ONLY
-
 steps:
-# Step 1: Build your application (Node.js example)
-- name: 'node'
-  entrypoint: 'npm'
-  args: ['install']
+# Example step that generates static files into ./public/
+- name: 'gcr.io/cloud-builders/npm'
+  args: ['run', 'build'] # This should output files to ./public/
 
-# Step 2: (Optional) Store build artifacts in a Cloud Storage bucket
-# This step assumes you have build artifacts to store; adjust paths as necessary
+# Step to copy files to the Cloud Storage bucket
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['cp', './build/*', 'gs://mickeyf_bucket/build-artifacts/']
-
-# Step 3: Deploy to App Engine
-- name: 'gcr.io/cloud-builders/gcloud'
-  args: ['app', 'deploy']
-timeout: '1600s'  # Adjust based on your needs
+  args: ['-m', 'cp', '-r', './public/*', 'gs://www.mickey.org']
