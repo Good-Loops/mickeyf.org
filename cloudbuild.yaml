@@ -1,6 +1,15 @@
-options:
-  logging: CLOUD_LOGGING_ONLY
 steps:
-  - name: "gcr.io/cloud-builders/gcloud"
-    args: ["app", "deploy"]
-    timeout: "1600s"
+# Step 1: Build your application (Node.js example)
+- name: 'node'
+  entrypoint: 'npm'
+  args: ['install']
+
+# Step 2: (Optional) Store build artifacts in a Cloud Storage bucket
+# This step assumes you have build artifacts to store; adjust paths as necessary
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', './build/*', 'gs://mickeyf_bucket/build-artifacts/']
+
+# Step 3: Deploy to App Engine
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['app', 'deploy']
+timeout: '1600s'  # Adjust based on your needs
