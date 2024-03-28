@@ -1,6 +1,6 @@
 <?php
 // For Cloud SQL MySQL
-$db_host = 'localhost'; // Use the Cloud SQL proxy address or public IP when not running on App Engine
+$db_host = '35.192.95.138';
 $db_name = 'cms';
 $db_user = 'cms_mickeyf';
 $db_pass = '.4gUR)uzKK]1E!Xw';
@@ -8,7 +8,7 @@ $db_pass = '.4gUR)uzKK]1E!Xw';
 // When deployed on Google App Engine, use the instance connection name.
 if (getenv('GAE_ENV') === 'standard') {
     // Format: <PROJECT-ID>:<REGION>:<INSTANCE-ID>
-    $db_host = ':/cloudsql/your-instance-connection-name';
+    $db_host = ':/cloudsql/noted-reef-387021:us-central1:cms-mickeyf';
 }
 
 // Use MySQLi to connect to Cloud SQL
