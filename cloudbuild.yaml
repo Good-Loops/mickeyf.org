@@ -1,3 +1,6 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
 steps:
 # Step 1: Build your application (Node.js example)
 - name: 'node'
