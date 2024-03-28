@@ -1,6 +1,6 @@
 <?php
 // For Cloud SQL MySQL
-$db_host = '35.192.95.138';
+$db_host = 'localhost';
 $db_name = 'cms';
 $db_user = 'cms_mickeyf';
 $db_pass = '.4gUR)uzKK]1E!Xw';
