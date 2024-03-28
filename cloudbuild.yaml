@@ -8,6 +8,4 @@ steps:
   # Step 2: Copy files to the Google Cloud Storage bucket
   - name: 'gcr.io/cloud-builders/gsutil'
     args: ['-m', 'cp', '-r', './public/*', 'gs://mickeyf.org']
-
-  # Specify timeout
-  - timeout: '1600s'
+    timeout: '1600s'  # Specify timeout for this step
