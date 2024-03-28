@@ -1,4 +1,4 @@
-logsBucket: 'gs://mickeyf.org'
+logsBucket: 'gs://www.mickeyf.org'
 steps:
   # Install dependencies
   - name: 'gcr.io/cloud-builders/npm'
@@ -7,5 +7,5 @@ steps:
 
   # Step 2: Copy files to the Google Cloud Storage bucket
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['-m', 'cp', '-r', '.', 'gs://mickeyf.org']
+    args: ['-m', 'cp', '-r', '.', 'gs://www.mickeyf.org']
     timeout: '1600s'  # Specify timeout for this step
