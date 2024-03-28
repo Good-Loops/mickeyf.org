@@ -1,3 +1,5 @@
+options:
+  logging: NONE
 steps:
   # Install dependencies
   - name: 'gcr.io/cloud-builders/npm'
