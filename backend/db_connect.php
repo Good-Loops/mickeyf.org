@@ -1,20 +1,28 @@
 <?php
-// For Cloud SQL MySQL
-$db_host = 'localhost';
-$db_name = 'cms';
-$db_user = 'cms_mickeyf';
-$db_pass = '.4gUR)uzKK]1E!Xw';
+// Environment variables for Cloud SQL connection.
+$cloud_sql_connection_name = getenv('CLOUD_SQL_CONNECTION_NAME');
+$db_user = getenv('MYSQL_USER');
+$db_pass = getenv('MYSQL_PASSWORD');
+$db_name = getenv('MYSQL_DATABASE'); 
 
-// When deployed on Google App Engine, use the instance connection name.
+// For Google App Engine deployment, use the instance connection name.
 if (getenv('GAE_ENV') === 'standard') {
-    // Format: <PROJECT-ID>:<REGION>:<INSTANCE-ID>
-    $db_host = ':/cloudsql/noted-reef-387021:us-central1:cms-mickeyf';
+    $dsn = sprintf(
+        'mysql:dbname=%s;unix_socket=/cloudsql/%s',
+        $db_name,
+        $cloud_sql_connection_name
+    );
+} else {
+    // Fallback for local development (assuming MySQL is running on localhost)
+    $dsn = sprintf('mysql:dbname=%s;host=127.0.0.1', $db_name);
 }
 
-// Use MySQLi to connect to Cloud SQL
-$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-
-if (mysqli_connect_error()) {
-    echo mysqli_connect_error();
+try {
+    $db = new PDO($dsn, $db_user, $db_pass);
+    // Set error mode to exception to catch any errors
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    echo "Connected successfully";
+} catch (PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
     exit;
 }
