@@ -1,0 +1,6 @@
+node_modules/
+.cloudbuild.yaml
+.gcloudignore
+.git/
+.gitignore
+README.md
