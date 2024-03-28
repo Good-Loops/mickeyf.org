@@ -10,4 +10,4 @@ steps:
     args: ['-m', 'cp', '-r', './public/*', 'gs://mickeyf.org']
 
   # Specify timeout
-  timeout: '1600s'
+  - timeout: '1600s'
