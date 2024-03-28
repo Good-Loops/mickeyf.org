@@ -1,6 +1,6 @@
 runtime: php80
 env: standard
-entrypoint: backend/index.php 
+entrypoint: ./backend/index.php 
 
 # Environment variables:
 env_variables:
