@@ -1,11 +1,12 @@
 runtime: php80
 env: standard
+entrypoint: ./backend/index.php 
 
 # Environment variables:
 env_variables:
-  MYSQL_DSN: mysql:dbname=cms;unix_socket=/cloudsql/noted-reef-387021:us-central1:cms-mickeyf
-  MYSQL_USER: cms_mickeyf
-  MYSQL_PASSWORD: *<HLecm?,el(S>@H
+  MYSQL_DSN: "mysql:dbname=cms;unix_socket=/cloudsql/noted-reef-387021:us-central1:cms-mickeyf"
+  MYSQL_USER: "cms_mickeyf"
+  MYSQL_PASSWORD: "*<HLecm?,el(S>@H"
 
 # Handlers define how to respond to HTTP requests
 handlers:
