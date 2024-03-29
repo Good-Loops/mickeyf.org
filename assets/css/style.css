@@ -48,11 +48,11 @@
 html {
   font-size: 62.5%;
   scroll-behavior: smooth;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
 }
 
 body {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
   background-image: -webkit-gradient(linear, left top, right bottom, color-stop(30%, hsl(203, 92%, 65%)), color-stop(90%, hsl(120, 73%, 75%)));
   background-image: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
   cursor: url("../img/normal.cur"), auto;
@@ -68,6 +68,29 @@ canvas {
 a {
   text-decoration: none;
   cursor: url("../img/select.cur"), auto;
+}
+
+.mobile-warning {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  text-align: center;
+  padding-top: 50vh;
+  z-index: 9999;
+}
+@media only screen and (max-width: 1919px) {
+  .mobile-warning {
+    display: block;
+  }
+}
+.mobile-warning a {
+  color: #fff;
+  text-decoration: underline;
 }
 
 body {
