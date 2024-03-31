@@ -14,7 +14,7 @@ function create(): IUserCreate {
             const email = (<HTMLInputElement>document.getElementById('email')).value;
             const password = (<HTMLInputElement>document.getElementById('password')).value;
 
-            fetch('http://www.mickeyf.org', {
+            fetch('https://mickeyf.org', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
