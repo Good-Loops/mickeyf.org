@@ -3,7 +3,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
 export async function getUserData(): Promise<any> {
     try {
-        const response = await fetch('http://www.mickeyf.org');
+        const response = await fetch('https://mickeyf.org');
         if (!response.ok) {
             const message = await response.text();
             throw new Error(`HTTP error! status: ${response.status}, message: ${message}`);
