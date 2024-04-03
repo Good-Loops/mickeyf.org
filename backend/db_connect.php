@@ -18,3 +18,19 @@ if (mysqli_connect_error()) {
     echo mysqli_connect_error();
     exit;
 }
+
+// Execute a SQL query
+$result = $conn->query('SELECT * FROM your_table');
+
+// Check if the query was successful
+if (!$result) {
+    echo $conn->error;
+    exit;
+}
+
+// Fetch all rows as an associative array
+$data = $result->fetch_all(MYSQLI_ASSOC);
+
+// Send the data as a JSON response
+header('Content-Type: application/json');
+echo json_encode($data);

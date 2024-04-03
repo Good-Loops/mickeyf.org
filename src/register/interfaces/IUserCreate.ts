@@ -2,7 +2,7 @@ export default interface IUserCreate {
     user: {
         user_name: string;
         email: string;
-        password: string;
+        user_password: string;
     };
     createUser: () => void;
 }
