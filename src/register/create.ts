@@ -7,19 +7,20 @@ function create(): IUserCreate {
         user: {
             user_name: "",
             email: "",
-            password: ""
+            user_password: ""
         },
         createUser: function () {
             const user_name = (<HTMLInputElement>document.getElementById('user-name')).value;
             const email = (<HTMLInputElement>document.getElementById('email')).value;
-            const password = (<HTMLInputElement>document.getElementById('password')).value;
+            const user_password = (<HTMLInputElement>document.getElementById('user_password')).value;
 
-            fetch('https://mickeyf.org', {
+            fetch('http://localhost:7777/backend/index.php', {
+            // fetch('https://mickeyf.org/backend/index.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ user_name: user_name, email: email, password: password }),
+                body: JSON.stringify({ user_name: user_name, email: email, user_password: user_password }),
             })
             .then(response => {
                 if (!response.ok) {

@@ -1,6 +1,7 @@
 <?php
     // Set the headers to allow cross-origin requests (CORS)
-    header("Access-Control-Allow-Origin: https://mickey.org");
+    // header("Access-Control-Allow-Origin: https://mickey.org");
+    header("Access-Control-Allow-Origin: http://localhost:7777");
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
     header("Access-Control-Allow-Headers: Content-Type");
 
@@ -46,13 +47,13 @@
             $data = json_decode(file_get_contents('php://input'), true);
 
             // Check if the user_name, email, and password fields are not empty
-            if (empty($data['user_name']) || empty($data['email']) || empty($data['password'])) {
+            if (empty($data['user_name']) || empty($data['email']) || empty($data['user_password'])) {
                 header('Content-Type: application/json');
                 die(json_encode(['error' => 'EMPTY_FIELDS']));
             }
 
             // Validate the password length (8-16 characters)
-            if (strlen($data['password']) < 8 || strlen($data['password']) > 16) {
+            if (strlen($data['password']) < 8 || strlen($data['user_password']) > 16) {
                 header('Content-Type: application/json');
                 die(json_encode(['error' => 'INVALID_PASSWORD']));
             }
@@ -60,7 +61,7 @@
             // Get the user_name, email, and password from the POST data
             $user_name = $data['user_name'];  
             $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
-            $password = $data['password'];
+            $password = $data['user_password'];
 
             // Validate the email
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -92,7 +93,7 @@
 
             // Prepare and bind
             // VALUES (?, ?, ?) are placeholders for the user_name, email, and password
-            $stmt = $conn->prepare("INSERT INTO User (user_name, email, password) VALUES (?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO User (user_name, email, user_password) VALUES (?, ?, ?)");
             // "sss" means that the parameters are strings
             $stmt->bind_param("sss", $user_name, $email, $hashedPassword);
 
