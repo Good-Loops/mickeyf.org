@@ -15,6 +15,7 @@ function create(): IUserCreate {
             const user_password = (<HTMLInputElement>document.getElementById('user_password')).value;
 
             // fetch('http://localhost:7777/backend/index.php', {
+                // Test Push
             fetch('https://mickeyf.org/backend/index.php', {
                 method: 'POST',
                 headers: {
