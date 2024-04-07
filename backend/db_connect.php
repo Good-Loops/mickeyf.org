@@ -1,9 +1,9 @@
 <?php
 // For Cloud SQL MySQL
-$db_host = 'localhost';
-$db_name = 'cms';
-$db_user = 'cms_mickeyf';
-$db_pass = '.4gUR)uzKK]1E!Xw';
+$db_host = getenv('DB_HOST');
+$db_name = getenv('DB_NAME');
+$db_user = getenv('DB_USER');
+$db_pass = getenv('DB_PASS');
 
 // When deployed on Google App Engine, use the instance connection name.
 if (getenv('GAE_ENV') === 'standard') {
