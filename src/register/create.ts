@@ -12,7 +12,7 @@ function create(): IUserCreate {
         createUser: function () {
             const user_name = (<HTMLInputElement>document.getElementById('user-name')).value;
             const email = (<HTMLInputElement>document.getElementById('email')).value;
-            const user_password = (<HTMLInputElement>document.getElementById('user_password')).value;
+            const user_password = (<HTMLInputElement>document.getElementById('password')).value;
 
             fetch('${process.env.API_URL}', {
                 method: 'POST',
