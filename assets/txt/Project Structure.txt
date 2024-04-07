@@ -4,36 +4,82 @@ mickeyf.org
 |   |-- audio
 |   |   |-- Test Score.wav
 |   |   `-- Testing Song.wav
+|   |-- css
+|   |   |-- style.css
+|   |   `-- style.min.css
 |   |-- img
+|   |   |-- SVG
+|   |   |   |-- instagram.svg
+|   |   |   |-- tiktok.svg
+|   |   |   `-- youtube.svg
 |   |   |-- icon.ico
 |   |   |-- normal.cur
 |   |   |-- notallowed.cur
-|   |   `-- select.cur
+|   |   |-- select.cur
+|   |   `-- sprite.svg
+|   |-- sass
+|   |   |-- abstracts
+|   |   |   |-- _colors.scss
+|   |   |   |-- _fonts.scss
+|   |   |   |-- _functions.scss
+|   |   |   |-- _index.scss
+|   |   |   |-- _mixins.scss
+|   |   |   |-- _shadows.scss
+|   |   |   `-- _variables.scss
+|   |   |-- base
+|   |   |   |-- _animations.scss
+|   |   |   |-- _base.scss
+|   |   |   |-- _index.scss
+|   |   |   |-- _typography.scss
+|   |   |   `-- _utilities.scss
+|   |   |-- components
+|   |   |   `-- _index.scss
+|   |   |-- layout
+|   |   |   |-- _footer.scss
+|   |   |   |-- _header.scss
+|   |   |   |-- _index.scss
+|   |   |   `-- _main.scss
+|   |   |-- pages
+|   |   |   |-- _animations.scss
+|   |   |   |-- _dancing-circles.scss
+|   |   |   |-- _games.scss
+|   |   |   |-- _index.scss
+|   |   |   |-- _p4-vega.scss
+|   |   |   |-- _registration.scss
+|   |   |   `-- _social-media.scss
+|   |   |-- themes
+|   |   |   `-- _index.scss
+|   |   `-- style.scss
 |   |-- sprites
-|   |   |-- blackhole.png
+|   |   |-- blackholeBlue.png
+|   |   |-- blackholeRed.png
+|   |   |-- blackholeYellow.png
 |   |   |-- p4.png
 |   |   `-- water.png
-|   |-- styles
-|   |   `-- style.css
 |   `-- txt
 |       |-- Colors for Website.txt
 |       `-- Project Structure.txt
 |-- backend
-|   |-- php
 |   |-- db_connect.php
-|   `-- index.php
-|-- components
+|   |-- index.php
+|   `-- server.ts
+|-- dist
+|   |-- index.min.js
+|   |-- server.min.js
+|   `-- server.min.js.LICENSE.txt
+|-- node_modules [277 entries exceeds filelimit, not opening dir]
+|-- pages
 |   |-- animations
 |   |   `-- DanceCircles.ts
 |   |-- games
 |   |   `-- P4Vega.ts
+|   |-- Animations.ts
 |   |-- Error404.ts
+|   |-- Games.ts
 |   |-- Home.ts
 |   |-- Register.ts
+|   |-- SocialMedia.ts
 |   `-- User.ts
-|-- dist
-|   `-- index.js
-|-- node_modules
 |-- src
 |   |-- animations
 |   |   |-- dancing circles
@@ -46,9 +92,9 @@ mickeyf.org
 |   |-- games
 |   |   |-- Three Bosses
 |   |   |-- classes
-|   |   |   `-- GameElement.ts
+|   |   |   `-- Entity.ts
 |   |   |-- interfaces
-|   |   |   `-- IGameElement.ts
+|   |   |   `-- IEntity.ts
 |   |   `-- p4-Vega
 |   |       |-- classes
 |   |       |   |-- BlackHole.ts
@@ -60,7 +106,7 @@ mickeyf.org
 |   |-- helpers
 |   |   |-- constants.ts
 |   |   |-- hashInfo.ts
-|   |   |-- loadComponent.ts
+|   |   |-- loadPage.ts
 |   |   `-- methods.ts
 |   |-- home
 |   |   |-- interfaces
@@ -71,9 +117,13 @@ mickeyf.org
 |   |   |   `-- IUserCreate.ts
 |   |   `-- create.ts
 |   `-- index.ts
+|-- 404.html
+|-- Dockerfile
 |-- LICENSE
 |-- README.md
+|-- cloudbuild.yaml
 |-- index.html
+|-- install-scout.sh
 |-- package-lock.json
 |-- package.json
 |-- tsconfig.json

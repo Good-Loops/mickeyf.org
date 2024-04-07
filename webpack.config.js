@@ -2,10 +2,12 @@ const path = require("path");
 
 module.exports = [
     {
+        // Set the mode to development or production
         mode: process.env.NODE_ENV,
         entry: {
             index: ["./src/index.ts"],
         },
+        // Enable sourcemaps for debugging webpack's output.
         module: {
             rules: [
                 {
@@ -15,9 +17,11 @@ module.exports = [
                 },
             ],
         },
+        // When importing a module whose path matches one of the following, just
         resolve: {
             extensions: [".tsx", ".ts", ".js"],
         },
+        // Tell webpack to minimize the bundle using the TerserPlugin.
         output: {
             filename: "[name].min.js",
             path: path.resolve(__dirname, "dist"),
@@ -44,6 +48,9 @@ module.exports = [
         output: {
             filename: "[name].min.js",
             path: path.resolve(__dirname, "dist"),
+        },
+        externals: {
+            express: 'commonjs express', // Exclude express from bundling
         },
     },
 ];
