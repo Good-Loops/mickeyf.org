@@ -44,4 +44,8 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
+app.get('/', (req, res) => {
+    res.send('Welcome to my backend server!');
+});
+
 export default app;
