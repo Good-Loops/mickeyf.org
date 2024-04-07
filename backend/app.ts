@@ -1,8 +1,20 @@
 import express from 'express';
+import helmet from 'helmet';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes';
 
 const app = express();
+
+// Helmet CSP configuration
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: ["'none'"], // Sets the default source to 'none'
+            imgSrc: ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"], // Allows images from this domain
+            scriptSrc: ["'self'"], // Allows scripts from the same origin
+        }
+    })
+);
 
 app.use(express.json());
 
@@ -25,5 +37,11 @@ app.use(cors(
 
 // Use userRoutes for all user-related endpoints
 app.use('/api', userRoutes);
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
 
 export default app;

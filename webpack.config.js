@@ -30,7 +30,7 @@ module.exports = [
     {
         mode: process.env.NODE_ENV,
         entry: {
-            server: ["./backend/server.ts"],
+            server: ["./backend/app.ts"],
         },
         target: 'node',
         module: {
