@@ -3,9 +3,9 @@
         {
             "splitTerminals": [
                 {
-                    "name": "dev-compiler",
+                    "name": "prod-compiler",
                     "commands": [
-                        "npm run dev"
+                        "npm run prod"
                     ]
                 },
             ]
