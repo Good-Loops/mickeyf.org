@@ -21,7 +21,7 @@ RUN npm install --only=production
 COPY . .
 
 # Run the web service on container startup.
-CMD [ "npm", "start" ]
+CMD [ "npm", "dist/server.min.js" ]
 
 # Create a new group and user 'nodeuser'
 RUN addgroup -S nodeuser && adduser -S nodeuser -G nodeuser
