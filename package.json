@@ -1,27 +1,30 @@
 {
-  "name": "mickeyf.org",
-  "version": "1.0.0",
-  "description": "Entertaining and educational website.",
-  "main": "webpack.config.js",
-  "scripts": {
-    "dev": "NODE_ENV=development webpack --progress --watch",
-    "prod": "NODE_ENV=production webpack --progress --watch",
-    "server": "live-server --port=7777 --host=localhost"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "CC0-1.0",
-  "devDependencies": {
-    "@types/alpinejs": "^3.7.1",
-    "live-server": "^1.2.2",
-    "pitchy": "^4.0.7",
-    "ts-loader": "^9.4.2",
-    "typescript": "^5.0.4",
-    "webpack": "^5.81.0",
-    "webpack-cli": "^5.0.2"
-  },
-  "dependencies": {
-    "alpinejs": "^2.8.2",
-    "sweetalert2": "^11.7.5"
-  }
+    "name": "mickeyf.org",
+    "version": "0.0.2",
+    "description": "Website for entertainment and education.",
+    "main": "webpack.config.js",
+    "scripts": {
+        "dev": "cross-env NODE_ENV=development webpack --progress --watch",
+        "prod": "cross-env NODE_ENV=production webpack --progress --watch",
+        "server": "live-server --port=7777 --host=localhost"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "CC0-1.0",
+    "devDependencies": {
+        "@types/alpinejs": "^3.7.1",
+        "@types/express": "^4.17.21",
+        "cross-env": "^7.0.3",
+        "live-server": "^1.1.0",
+        "pitchy": "^4.0.7",
+        "ts-loader": "^9.4.2",
+        "typescript": "^5.0.4",
+        "webpack": "^5.81.0",
+        "webpack-cli": "^5.0.2"
+    },
+    "dependencies": {
+        "alpinejs": "^2.8.2",
+        "express": "^4.19.2",
+        "sweetalert2": "^11.6.13"
+    }
 }
