@@ -1,6 +1,10 @@
-# Use the official lightweight Node.js 16 image.
-# https://hub.docker.com/_/node
-FROM node:16-slim
+# Specifying the base image
+FROM node:21.7.2-alpine
+
+# Update and upgrade the system packages, and remove unnecessary cache and temporary files
+RUN apk update && \
+    apk upgrade && \
+    rm -rf /var/cache/apk/*
 
 # Create and change to the app directory.
 WORKDIR /usr/src/app
@@ -18,3 +22,9 @@ COPY . .
 
 # Run the web service on container startup.
 CMD [ "npm", "start" ]
+
+# Create a new group and user 'nodeuser'
+RUN addgroup -S nodeuser && adduser -S nodeuser -G nodeuser
+
+# Change to the 'nodeuser' user
+USER nodeuser
