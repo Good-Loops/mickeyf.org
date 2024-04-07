@@ -4,4 +4,4 @@ steps:
   args: ['-m', 'cp', '-r', '.', 'gs://www.mickeyf.org']
 
 options:
-  logging: NONE
+  logging: CLOUD_LOGGING_ONLY
