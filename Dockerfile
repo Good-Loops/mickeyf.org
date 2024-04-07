@@ -20,11 +20,14 @@ RUN npm install --only=production
 # Copy local code to the container image.
 COPY . .
 
-# Run the web service on container startup.
-CMD [ "npm", "dist/server.min.js" ]
-
 # Create a new group and user 'nodeuser'
 RUN addgroup -S nodeuser && adduser -S nodeuser -G nodeuser
 
 # Change to the 'nodeuser' user
 USER nodeuser
+
+# Inform Docker that the container is listening on the specified port at runtime.
+EXPOSE 8080
+
+# Run the web service on container startup.
+CMD [ "node", "dist/server.min.js" ]
