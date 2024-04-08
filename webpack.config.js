@@ -1,6 +1,14 @@
 const path = require("path");
+const webpack = require('webpack');
 
 module.exports = [
+    {
+        plugins: [
+            new webpack.DefinePlugin({
+                'process.env.API_URL': JSON.stringify(process.env.API_URL),
+            }),
+        ],
+    },
     {
         // Set the mode to development or production
         mode: process.env.NODE_ENV,
