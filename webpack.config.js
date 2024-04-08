@@ -4,6 +4,7 @@ module.exports = [
     {
         // Set the mode to development or production
         mode: process.env.NODE_ENV,
+        devtool: 'source-map',
         entry: {
             index: ["./src/index.ts"],
         },
@@ -29,6 +30,7 @@ module.exports = [
     },
     {
         mode: process.env.NODE_ENV,
+        devtool: 'source-map',
         entry: {
             server: ["./backend/app.ts"],
         },

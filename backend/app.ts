@@ -5,6 +5,9 @@ import userRoutes from './routes/userRoutes';
 
 const app = express();
 
+// Serve static files from assets
+app.use(express.static('assets'));
+
 // Helmet CSP configuration
 app.use(
     helmet.contentSecurityPolicy({
@@ -18,8 +21,7 @@ app.use(
 
 app.use(express.json());
 
-// CORS configuration for development
-// Remove or restrict origins in production!
+// CORS configuration for DEVELOPMENT
 app.use(cors(
     {
         origin: 'http://localhost:7777',
@@ -28,7 +30,7 @@ app.use(cors(
     }
 ));
 
-// CORS configuration for production
+// CORS configuration for PRODUCTION
 // app.use(cors({
 //     origin: ['https://mickeyf.org'], // Array of allowed origins
 //     methods: ['GET', 'POST'], // Allowed HTTP methods
@@ -44,6 +46,7 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
+// Serve the root page
 app.get('/', (req, res) => {
     res.send('Welcome to my backend server!');
 });
