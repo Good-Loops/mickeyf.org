@@ -14,7 +14,7 @@ function create(): IUserCreate {
             const email = (<HTMLInputElement>document.getElementById('email')).value;
             const user_password = (<HTMLInputElement>document.getElementById('password')).value;
 
-            fetch('${process.env.API_URL}', {
+            fetch('https://mickeyf-org-j7yuum4tiq-uc.a.run.app/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

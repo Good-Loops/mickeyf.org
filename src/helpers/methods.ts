@@ -3,7 +3,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
 export async function getUserData(): Promise<any> {
     try {
-        const response = await fetch('${process.env.API_URL}');
+        const response = await fetch('https://mickeyf-org-j7yuum4tiq-uc.a.run.app/api/users');
         if (!response.ok) {
             const message = await response.text();
             throw new Error(`HTTP error! status: ${response.status}, message: ${message}`);
