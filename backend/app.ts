@@ -22,20 +22,20 @@ app.use(
 app.use(express.json());
 
 // CORS configuration for DEVELOPMENT
-// app.use(cors(
-//     {
-//         origin: 'http://localhost:7777',
-//         methods: ['GET', 'POST'], // Allowed HTTP methods
-//         allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
-//     }
-// ));
+app.use(cors(
+    {
+        origin: 'http://localhost:7777',
+        methods: ['GET', 'POST'], // Allowed HTTP methods
+        allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+    }
+));
 
 // CORS configuration for PRODUCTION
-app.use(cors({
-    origin: ['https://mickeyf.org'], // Array of allowed origins
-    methods: ['GET', 'POST'], // Allowed HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
-}));
+// app.use(cors({
+//     origin: ['https://mickeyf.org'], // Array of allowed origins
+//     methods: ['GET', 'POST'], // Allowed HTTP methods
+//     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+// }));
 
 // Use userRoutes for all user-related endpoints
 app.use('/api', userRoutes);
