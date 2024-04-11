@@ -18,10 +18,15 @@ export default abstract class Entity implements IEntity {
     protected animationTimer: number = 0;
     protected animationInterval: number = 150;
 
+    private imageLoaded: boolean = false;
+
     constructor(id: string, gap: number = 0) {
         this.gap = gap;
         this.id = id;
         this.sprite = document.getElementById(`${this.id}`) as HTMLImageElement;
+        this.sprite.onload = () => {
+            this.imageLoaded = true;
+        };
     }
 
     // Abstract method to be implemented by subclasses specifying the total number of frames
@@ -38,10 +43,12 @@ export default abstract class Entity implements IEntity {
     }
 
     public draw(context: CanvasRenderingContext2D): void {
-        context.drawImage(this.sprite,
-            this.sprite.width / this.totalFrames() * this.frame, 0,
-            this.sprite.width / this.totalFrames(), this.sprite.height,
-            this.x, this.y,
-            this.sprite.width / this.totalFrames(), this.sprite.height);
+        if (this.imageLoaded) {
+            context.drawImage(this.sprite,
+                this.sprite.width / this.totalFrames() * this.frame, 0,
+                this.sprite.width / this.totalFrames(), this.sprite.height,
+                this.x, this.y,
+                this.sprite.width / this.totalFrames(), this.sprite.height);
+        }
     }
 }
