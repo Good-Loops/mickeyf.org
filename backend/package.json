@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "webpack --mode development --watch",
         "prod": "webpack --mode production",
-        "serve": "node dist/server.min.js"
+        "server": "node dist/server.min.js"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",

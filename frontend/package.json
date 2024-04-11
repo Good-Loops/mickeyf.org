@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "webpack --mode development --watch",
         "prod": "webpack --mode production",
-        "serve": "live-server --port=7777 --host=localhost"
+        "server": "live-server --port=7777 --host=localhost"
     },
     "dependencies": {
         "sweetalert2": "^11.6.13"

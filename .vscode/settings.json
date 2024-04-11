@@ -1,17 +1,10 @@
 {
     "restoreTerminals.terminals": [
         {
-            "splitTerminals": [
-                {
-                    "name": "prod-compiler",
-                },
-            ]
-        },
-        {
             
             "splitTerminals": [
                 {
-                    "name": "dev-compiler",
+                    "name": "front-compiler",
                     "commands": [
                         "npm run dev"
                     ]
@@ -21,7 +14,27 @@
         {
             "splitTerminals": [
                 {
-                    "name": "live-server",
+                    "name": "front-server",
+                    "commands": [
+                        "sleep 4s && npm run server"
+                    ]
+                }
+            ]
+        },
+        {
+            "splitTerminals": [
+                {
+                    "name": "back-compiler",
+                    "commands": [
+                        "npm run dev"
+                    ]
+                },
+            ]
+        },
+        {
+            "splitTerminals": [
+                {
+                    "name": "back-server",
                     "commands": [
                         "sleep 4s && npm run server"
                     ]
@@ -35,7 +48,8 @@
                     "commands": [
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'blue~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
                         "exit",
                     ]
                 }
