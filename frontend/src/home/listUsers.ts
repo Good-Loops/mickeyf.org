@@ -1,4 +1,4 @@
-import { getUserData } from "../helpers/methods";
+import { getUserData } from "../utils/methods";
 import IListUsers from "./interfaces/IListUsers";
 
 export default function listUsers(): IListUsers {

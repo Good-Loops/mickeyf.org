@@ -1,4 +1,4 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../helpers/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
 import P4 from "./classes/P4";
 import Water from "./classes/Water";
 import BlackHole from "./classes/BlackHole";

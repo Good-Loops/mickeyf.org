@@ -1,4 +1,4 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../helpers/constants"
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants"
 import Entity from "../../classes/Entity"
 
 export default class P4 extends Entity {

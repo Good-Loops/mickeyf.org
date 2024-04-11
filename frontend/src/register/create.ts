@@ -1,4 +1,4 @@
-import { INVALID_EMAIL, INVALID_PASSWORD, EMPTY_FIELDS, DUPLICATE_USER } from "../helpers/constants";
+import { INVALID_EMAIL, INVALID_PASSWORD, EMPTY_FIELDS, DUPLICATE_USER } from "../utils/constants";
 import IUserCreate from "./interfaces/IUserCreate";
 import Swal from 'sweetalert2';
 

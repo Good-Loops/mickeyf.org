@@ -1,5 +1,5 @@
-import hashInfo from "../src/helpers/hashInfo";
-import { getUserData } from "../src/helpers/methods";
+import hashInfo from "../src/utils/hashInfo";
+import { getUserData } from "../src/utils/methods";
 
 function component() {
 

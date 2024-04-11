@@ -1,12 +1,12 @@
 const path = require('path');
-const webpack = require('webpack');
 
 module.exports = {
     mode: process.env.NODE_ENV,
     devtool: 'source-map',
     entry: {
-        index: ['./src/index.ts'],
+        server: ['./app.ts'],
     },
+    target: 'node',
     module: {
         rules: [
             {
@@ -23,9 +23,7 @@ module.exports = {
         filename: '[name].min.js',
         path: path.resolve(__dirname, 'dist'),
     },
-    plugins: [
-        new webpack.DefinePlugin({
-            'process.env.API_URL': JSON.stringify(process.env.API_URL),
-        }),
-    ],
+    externals: {
+        express: 'commonjs express', // Exclude express from bundling
+    },
 };

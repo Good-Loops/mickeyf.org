@@ -1,4 +1,4 @@
-import { getRandomX, getRandomY, lerp } from "../../../helpers/methods";
+import { getRandomX, getRandomY, lerp } from "../../../utils/methods";
 import ColorHandler from "./ColorHandler";
 
 export default class Circle {
