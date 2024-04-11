@@ -33,9 +33,9 @@
                 {
                     "name": "temp-bash",
                     "commands": [
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'blue~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'blue~'",
                         "exit",
                     ]
                 }
