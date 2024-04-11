@@ -4,9 +4,9 @@
     "description": "Backend server for mickeyf.org",
     "main": "app.ts",
     "scripts": {
-        "prod": "webpack --mode production",
         "dev": "webpack --mode development --watch",
-        "start": "node dist/server.min.js"
+        "prod": "webpack --mode production",
+        "serve": "node dist/server.min.js"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
