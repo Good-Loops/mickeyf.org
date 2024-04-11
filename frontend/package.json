@@ -5,7 +5,7 @@
     "main": "src/index.ts",
     "scripts": {
         "dev": "webpack --mode development --watch",
-        "prod": "webpack --mode production --watch",
+        "prod": "webpack --mode production",
         "serve": "live-server --port=7777 --host=localhost"
     },
     "dependencies": {
