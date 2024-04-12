@@ -10,7 +10,7 @@ const rootPath = path.resolve(__dirname, '../');
 
 // Enable CORS for specific origin
 app.use(cors({
-    origin: ['http://localhost', 'https://mickeyf.org']
+    origin: ['http://localhost:7777', 'https://mickeyf.org']
 }));
 
 
