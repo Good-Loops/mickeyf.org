@@ -5,6 +5,9 @@ const cors = require('cors');
 
 const app = express();
 
+// Define the absolute path to the root of your project
+const rootPath = path.resolve(__dirname, '../');
+
 // Enable CORS for specific origin
 app.use(cors({
     origin: ['http://localhost', 'https://mickeyf.org']
@@ -12,7 +15,7 @@ app.use(cors({
 
 
 // Serve static files from the root of the project
-app.use(serveStatic(path.join(__dirname, '../')));
+app.use(serveStatic(rootPath));
 
 const port = process.env.PORT || 7777;
 app.listen(port, () => {
