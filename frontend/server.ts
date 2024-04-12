@@ -1,16 +1,20 @@
 const express = require('express');
 const path = require('path');
 const serveStatic = require('serve-static');
-const cors = require('cors');
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const app = express();
 
 // Define the absolute path to the root of your project
 const rootPath = path.resolve(__dirname, '../');
 
-// Enable CORS for specific origin
-app.use(cors({
-    origin: ['http://localhost:7777', 'https://mickeyf.org']
+// Proxy API requests to Backend
+app.use('/api', createProxyMiddleware({
+    target: 'http://localhost:3000',
+    changeOrigin: true,
+    pathRewrite: {
+        '^/api': '', // optionally strip the /api prefix if needed
+    },
 }));
 
 

@@ -26,7 +26,7 @@ app.use(express.json());
 // CORS configuration
 app.use(cors(
     {
-        origin: ['http://localhost:7777', 'https://mickeyf.org'], // Only allow requests from these domains
+        origin: ['http://localhost:7777', 'http://localhost:3000', 'https://mickeyf.org'], // Only allow requests from these domains
         methods: ['GET', 'POST'], // Allowed HTTP methods
         allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
     }
