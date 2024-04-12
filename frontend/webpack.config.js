@@ -29,11 +29,13 @@ module.exports = {
         }),
     ],
     devServer: {
-        contentBase: path.join(__dirname, 'dist'),
+        static: {
+            directory: path.join(__dirname, 'dist'),
+        },
         compress: true,
         port: 7777,
         open: true,
         hot: true,
-        watchContentBase: true,
+        watchFiles: ['src/**/*'],
     },
 };
