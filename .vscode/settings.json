@@ -3,9 +3,19 @@
         {
             "splitTerminals": [
                 {
-                    "name": "front-comp/server",
+                    "name": "front-compiler",
                     "commands": [
-                        "cd frontend && sleep 4s && npm run dev"
+                        "cd frontend && sleep 4s && npm run build"
+                    ]
+                }
+            ]
+        },
+        {
+            "splitTerminals": [
+                {
+                    "name": "front-server",
+                    "commands": [
+                        "cd frontend && sleep 4s && npm run serve"
                     ]
                 }
             ]
@@ -37,6 +47,7 @@
                     "commands": [
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
                         "exit",
                     ]
