@@ -23,16 +23,20 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const addUser = async (req: Request, res: Response) => {
     // Destructure the request body
-    const { username, email, password } = req.body as IUser;
+    console.log(req.body);
+    const { user_name, email, user_password } = req.body as IUser;
+    if (!user_password) {
+        return res.status(400).send('Password is required');
+    }
     // Hash password
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(user_password, saltRounds);
 
     try {
         // Insert user into database
         const [result] = await pool.query(
-            'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-            [username, email, hashedPassword]
+            'INSERT INTO users (user_name, email, user_password) VALUES (?, ?, ?)',
+            [user_name, email, hashedPassword]
         );
         res.json({ success: true, message: "User added successfully!" });
     } catch (error) {
