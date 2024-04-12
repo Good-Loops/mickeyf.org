@@ -15,7 +15,7 @@
                 {
                     "name": "back-compiler",
                     "commands": [
-                        "cd backend && npm run dev"
+                        "cd backend && sleep 4s && npm run dev"
                     ]
                 },
             ]
@@ -57,6 +57,6 @@
         }
     ],
     "liveSassCompile.settings.includeItems": [
-        "/assets/sass/style.scss"
+        "/frontend/public/assets/sass/style.scss"
     ]
 }
