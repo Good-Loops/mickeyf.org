@@ -28,4 +28,12 @@ module.exports = {
             'process.env.API_URL': JSON.stringify(process.env.API_URL),
         }),
     ],
+    devServer: {
+        contentBase: path.join(__dirname, 'dist'),
+        compress: true,
+        port: 7777,
+        open: true,
+        hot: true,
+        watchContentBase: true,
+    },
 };
