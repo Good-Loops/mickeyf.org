@@ -13,8 +13,8 @@ interface routerInterface<T> {
 }
 
 interface componentInterface {
-    render: () => string | Promise<string>;
-    action?: () => void;
+    render: (params?: any) => string | Promise<string>;
+    action?: (params?: any) => void;
 }
 
 const routes: routerInterface<componentInterface> = {

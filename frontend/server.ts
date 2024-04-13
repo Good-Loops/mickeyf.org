@@ -17,7 +17,6 @@ app.use('/api', createProxyMiddleware({
     },
 }));
 
-
 // Serve static files from the root of the project
 app.use(serveStatic(rootPath, { 'index': ['index.html', 'index.htm'] }));
 
