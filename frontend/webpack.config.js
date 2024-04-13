@@ -1,8 +1,9 @@
 const path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     mode: process.env.NODE_ENV,
-    devtool: 'source-map',
+    devtool: process.env.NODE_ENV === 'development' ? 'eval-source-map' : 'source-map',
     entry: {
         index: ['./src/index.ts'],
     },
@@ -22,6 +23,9 @@ module.exports = {
         filename: '[name].min.js',
         path: path.resolve(__dirname, 'dist'),
     },
+    plugins: [
+        new CleanWebpackPlugin(),
+    ],
     devServer: {
         static: {
             directory: path.join(__dirname, '../'),
