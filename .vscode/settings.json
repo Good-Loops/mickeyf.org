@@ -5,7 +5,7 @@
                 {
                     "name": "front-compiler",
                     "commands": [
-                        "cd frontend && sleep 4s && npm run build"
+                        "cd frontend && npm run build"
                     ]
                 }
             ]
@@ -15,7 +15,7 @@
                 {
                     "name": "front-server",
                     "commands": [
-                        "cd frontend && sleep 4s && npm run serve"
+                        "cd frontend && npm run serve"
                     ]
                 }
             ]
@@ -25,7 +25,7 @@
                 {
                     "name": "back-compiler",
                     "commands": [
-                        "cd backend && sleep 4s && npm run dev"
+                        "cd backend && npm run dev"
                     ]
                 },
             ]
@@ -35,7 +35,7 @@
                 {
                     "name": "back-server",
                     "commands": [
-                        "cd backend && sleep 4s && npm run server"
+                        "cd backend && npm run server"
                     ]
                 }
             ]
