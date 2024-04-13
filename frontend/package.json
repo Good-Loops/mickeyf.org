@@ -4,7 +4,7 @@
     "description": "Frontend for mickeyf.org",
     "main": "src/index.ts",
     "scripts": {
-        "dev": "webpack serve --mode development --open",
+        "server": "webpack serve --mode development --open",
         "prod": "webpack --mode production"
     },
     "dependencies": {
@@ -22,7 +22,6 @@
         "@types/page": "^1.11.9",
         "@types/serve-static": "^1.15.7",
         "alpinejs": "^3.13.8",
-        "clean-webpack-plugin": "^4.0.0",
         "cross-env": "^7.0.3",
         "pitchy": "^4.0.7",
         "ts-loader": "^9.4.2",

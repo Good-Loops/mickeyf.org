@@ -5,7 +5,7 @@
                 {
                     "name": "front-server/compiler",
                     "commands": [
-                        "cd frontend && npm run dev"
+                        "cd frontend && npm run server"
                     ]
                 }
             ]

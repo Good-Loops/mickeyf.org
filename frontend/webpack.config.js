@@ -1,5 +1,4 @@
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     mode: process.env.NODE_ENV,
@@ -23,9 +22,6 @@ module.exports = {
         filename: '[name].min.js',
         path: path.resolve(__dirname, 'dist'),
     },
-    plugins: [
-        new CleanWebpackPlugin(),
-    ],
     devServer: {
         static: {
             directory: path.join(__dirname, '../'),
@@ -35,5 +31,6 @@ module.exports = {
         open: true,
         hot: true,
         watchFiles: ['src/**/*'],
+        historyApiFallback: true, // Properly handle SPA routing
     },
 };
