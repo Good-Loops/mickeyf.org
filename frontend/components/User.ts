@@ -4,8 +4,13 @@ function component() {
     const user = async function(id: string) {
         
         const data = await getUserData();
+        
+        const numericId = parseInt(id, 10);
+        if (isNaN(numericId)) {
+            throw new Error('Invalid id');
+        }
 
-        const userData = data.find((user: { user_id: string; }) => user.user_id === id);
+        const userData = data.find((user: { user_id: number; }) => user.user_id === numericId);
 
         if (!userData) {
             throw new Error('User not found');
