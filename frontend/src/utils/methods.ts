@@ -8,7 +8,6 @@ export async function getUserData(): Promise<any> {
             const message = await response.text();
             throw new Error(`HTTP error! status: ${response.status}, message: ${message}`);
         }
-        console.log(await response.clone().text());
         const data = await response.json();
         return data;
     } catch (error) {

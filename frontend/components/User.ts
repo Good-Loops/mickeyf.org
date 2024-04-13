@@ -6,7 +6,6 @@ function component() {
     const user = async function() {
         
         const { queryParameters } = hashInfo();
-        console.log(queryParameters);
         const id = queryParameters.get('user_id');
 
         const data = await getUserData().then(data => {
