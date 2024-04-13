@@ -19,7 +19,12 @@ app.use('/api', createProxyMiddleware({
 
 
 // Serve static files from the root of the project
-app.use(serveStatic(rootPath));
+app.use(serveStatic(rootPath, { 'index': ['index.html', 'index.htm'] }));
+
+// This route will handle all other get requests to give control to the SPA
+app.get('*', function (req, res) {
+    res.sendFile('index.html', { root: rootPath });
+});
 
 const port = process.env.PORT || 7777;
 app.listen(port, () => {

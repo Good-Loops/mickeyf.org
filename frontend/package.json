@@ -4,8 +4,7 @@
     "description": "Frontend for mickeyf.org",
     "main": "src/index.ts",
     "scripts": {
-        "build": "webpack --mode development --watch",
-        "serve": "webpack serve --mode development --open",
+        "dev": "webpack serve --mode development --open",
         "prod": "webpack --mode production"
     },
     "dependencies": {

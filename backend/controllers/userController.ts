@@ -23,7 +23,6 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const addUser = async (req: Request, res: Response) => {
     // Destructure the request body
-    console.log(req.body);
     const { user_name, email, user_password } = req.body as IUser;
     if (!user_password) {
         return res.status(400).send('Password is required');
