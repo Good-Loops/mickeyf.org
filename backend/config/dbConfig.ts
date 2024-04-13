@@ -1,12 +1,22 @@
 import { createPool } from 'mysql2/promise';
 
-console.log(process.env.DB_HOST);
+// For production
+// export const pool = createPool({
+//     host: process.env.DB_HOST,
+//     user: process.env.DB_USER,
+//     database: process.env.DB_NAME,
+//     password: process.env.DB_PASS,
+//     waitForConnections: true,
+//     connectionLimit: 10,
+//     queueLimit: 0
+// });
 
+// For development
 export const pool = createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASS,
+    host: 'localhost',
+    user: 'cms_mickeyf',
+    password: '*<HLecm?,el(S>@H',
+    database: 'cms',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
