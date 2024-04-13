@@ -25,24 +25,39 @@ const routes: Record<string, ComponentInterface> = {
     "/error": Error404
 }
 
-// Function to load and render the component based on the route
-export const loadComponent = async (route: string, params?: any): Promise<void> => {
-    const content = document.querySelector("#content") as HTMLDivElement;
-    const component = routes[route] || routes["/error"];
+// Utility function to match dynamic routes
+function matchRoute(requestedRoute: string) {
+    for (const route in routes) {
+        if (route.includes(':')) {
+            const baseRoute = route.split('/:')[0];
+            if (requestedRoute.startsWith(baseRoute)) {
+                return route;
+            }
+        } else if (route === requestedRoute) {
+            return route;
+        }
+    }
+    return "/error"; // default to error route if no match found
+}
 
-    if (!component) {
-        console.error("No component found for the route:", route);
+export const loadComponent = async (requestedRoute: string, params?: any): Promise<void> => {
+    const content = document.querySelector("#content") as HTMLDivElement;
+
+    if (!content) {
+        console.error("The #content element does not exist in your HTML.");
         return;
     }
 
-    // Render the component HTML and apply any actions
+    const route = matchRoute(requestedRoute);
+    const component = routes[route];
+
     try {
+        content.innerHTML = '<div>Loading...</div>'; // Optional: display a loading indicator
         content.innerHTML = await component.render(params);
-        if (component.action) {
-            component.action(params);
-        }
+        component.action?.(params);
     } catch (error) {
         console.error("Error rendering the component:", error);
-        content.innerHTML = await Error404.render();
+        content.innerHTML = '<div>Error loading page. Please try again.</div>'; // Friendly error message
+        content.innerHTML = await Error404.render(); // Optionally render a full error component
     }
 };
