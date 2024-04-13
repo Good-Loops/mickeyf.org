@@ -8,16 +8,12 @@ import DanceCircles from "../../components/animations/DanceCircles";
 import P4Vega from "../../components/games/P4Vega";
 import Error404 from "../../components/Error404";
 
-interface routerInterface<T> {
-    [id: string]: T;
-}
-
-interface componentInterface {
+interface ComponentInterface {
     render: (params?: any) => string | Promise<string>;
     action?: (params?: any) => void;
 }
 
-const routes: routerInterface<componentInterface> = {
+const routes: Record<string, ComponentInterface> = {
     "/": Home,
     "/user/signup": Register,
     "/user/:id": User,
@@ -29,18 +25,24 @@ const routes: routerInterface<componentInterface> = {
     "/error": Error404
 }
 
-const loadPageHtml = async function (component: string, placeholder: string, uri: string) {
+// Function to load and render the component based on the route
+export const loadComponent = async (route: string, params?: any): Promise<void> => {
     const content = document.querySelector("#content") as HTMLDivElement;
-    const newUri = component + placeholder;
-    let componentHtml = routes[uri] ?? routes[newUri];
+    const component = routes[route] || routes["/error"];
 
-    if (!componentHtml) componentHtml = Error404;
-
-    content.innerHTML = await componentHtml.render();
-
-    if (componentHtml && componentHtml.action) {
-        componentHtml.action();
+    if (!component) {
+        console.error("No component found for the route:", route);
+        return;
     }
-}
 
-export default loadPageHtml;
+    // Render the component HTML and apply any actions
+    try {
+        content.innerHTML = await component.render(params);
+        if (component.action) {
+            component.action(params);
+        }
+    } catch (error) {
+        console.error("Error rendering the component:", error);
+        content.innerHTML = await Error404.render();
+    }
+};

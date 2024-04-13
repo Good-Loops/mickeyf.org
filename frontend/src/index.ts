@@ -1,10 +1,10 @@
 import create from "./register/create";
-import hashInfo from "./utils/hashInfo";
-import loadPageHtml from "./utils/loadPage";
 import listUsers from "./home/listUsers";
 import IUserCreate from "./register/interfaces/IUserCreate";
 import IListUsers from "./home/interfaces/IListUsers";
 import Alpine from "alpinejs";
+import page from "page";
+import { loadComponent } from './utils/loadPage';
 
 type EventListenerRecord = {
     element: Document | Element,
@@ -12,14 +12,15 @@ type EventListenerRecord = {
     handler: (event: Event) => void,
 };
 
-// Page loading
-const loadPage = (): void => {
-    const { component, placeholder, uri } = hashInfo();
-    loadPageHtml(component, placeholder, uri);
-}
-loadPage();
+// Define routes using Page.js
+page('/', () => loadComponent('/'));
+page('/user/signup', () => loadComponent('/user/signup'));
+page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
+page('/games', () => loadComponent('/games'));
+page('*', () => loadComponent('/error'));
 
-window.onhashchange = (): void => loadPage();
+// Start the Page.js router
+page.start();
 
 // Global variables
 declare global {
