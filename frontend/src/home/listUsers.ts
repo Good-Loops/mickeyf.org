@@ -1,6 +1,5 @@
 import { getUserData } from "../utils/methods";
 import IListUsers from "./interfaces/IListUsers";
-import page from "page";
 
 export default function listUsers(): IListUsers {
     return {

@@ -23,9 +23,6 @@ page('/dancing-circles', () => loadComponent('/dancing-circles'));
 page('/p4-vega', () => loadComponent('/p4-vega'));
 page('*', () => loadComponent('/error'));
 
-// Start the Page.js router
-page.start();
-
 // Global variables
 declare global {
     interface Window {
@@ -39,7 +36,9 @@ declare global {
         eventListeners: Record<string, EventListenerRecord[]>;
     }
 }
-
+// Page.js
+window.page = page;
+page.start();
 // Alpine.js
 window.Alpine = Alpine;
 Alpine.start();
