@@ -40,6 +40,7 @@ function matchRoute(requestedRoute: string) {
     return "/error"; // default to error route if no match found
 }
 
+// Load the component based on the requested route
 export const loadComponent = async (requestedRoute: string, params?: any): Promise<void> => {
     const content = document.querySelector("#content") as HTMLDivElement;
 
@@ -48,6 +49,7 @@ export const loadComponent = async (requestedRoute: string, params?: any): Promi
         return;
     }
 
+    // Match the requested route to the correct route
     const route = matchRoute(requestedRoute);
     const component = routes[route];
 
@@ -58,6 +60,6 @@ export const loadComponent = async (requestedRoute: string, params?: any): Promi
     } catch (error) {
         console.error("Error rendering the component:", error);
         content.innerHTML = '<div>Error loading page. Please try again.</div>'; // Friendly error message
-        content.innerHTML = await Error404.render(); // Optionally render a full error component
+        content.innerHTML = await Error404.render(); // Render a full error component
     }
 };
