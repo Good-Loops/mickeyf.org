@@ -11,6 +11,7 @@
         "cors": "^2.8.5",
         "express": "^4.19.2",
         "http-proxy-middleware": "^3.0.0",
+        "page": "^1.11.6",
         "serve-static": "^1.15.0",
         "sweetalert2": "^11.6.13"
     },

@@ -1,12 +1,12 @@
-import Home from "../../pages/Home";
-import User from "../../pages/User";
-import Games from "../../pages/Games";
-import Animations from "../../pages/Animations";
-import SocialMedia from "../../pages/SocialMedia";
-import Register from "../../pages/Register";
-import DanceCircles from "../../pages/animations/DanceCircles";
-import P4Vega from "../../pages/games/P4Vega";
-import Error404 from "../../pages/Error404";
+import Home from "../../components/Home";
+import User from "../../components/User";
+import Games from "../../components/Games";
+import Animations from "../../components/Animations";
+import SocialMedia from "../../components/SocialMedia";
+import Register from "../../components/Register";
+import DanceCircles from "../../components/animations/DanceCircles";
+import P4Vega from "../../components/games/P4Vega";
+import Error404 from "../../components/Error404";
 
 interface routerInterface<T> {
     [id: string]: T;
