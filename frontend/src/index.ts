@@ -17,6 +17,10 @@ page('/', () => loadComponent('/'));
 page('/user/signup', () => loadComponent('/user/signup'));
 page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
 page('/games', () => loadComponent('/games'));
+page('/animations', () => loadComponent('/animations'));
+page('/socialmedia', () => loadComponent('/socialmedia'));
+page('/dancing-circles', () => loadComponent('/dancing-circles'));
+page('/p4-vega', () => loadComponent('/p4-vega'));
 page('*', () => loadComponent('/error'));
 
 // Start the Page.js router
@@ -36,7 +40,7 @@ declare global {
     }
 }
 
-// Libraries
+// Alpine.js
 window.Alpine = Alpine;
 Alpine.start();
 // Event listeners
@@ -46,7 +50,7 @@ window.create = create;
 // List registered users
 window.listUsers = listUsers;
 
-// Stop animation
+// Stop animation function
 const stopAnimation = (animationId: number | null): void => {
     if (animationId !== null) {
         cancelAnimationFrame(animationId);
