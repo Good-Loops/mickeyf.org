@@ -3,9 +3,29 @@
         {
             "splitTerminals": [
                 {
-                    "name": "prod-compiler",
+                    "name": "front-compiler",
                     "commands": [
-                        "npm run prod"
+                        "cd frontend && npm run build"
+                    ]
+                }
+            ]
+        },
+        {
+            "splitTerminals": [
+                {
+                    "name": "front-server",
+                    "commands": [
+                        "cd frontend && npm run serve"
+                    ]
+                }
+            ]
+        },
+        {
+            "splitTerminals": [
+                {
+                    "name": "back-compiler",
+                    "commands": [
+                        "cd backend && npm run dev"
                     ]
                 },
             ]
@@ -13,9 +33,9 @@
         {
             "splitTerminals": [
                 {
-                    "name": "live-server",
+                    "name": "back-server",
                     "commands": [
-                        "sleep 4s && npm run server"
+                        "cd backend && npm run server"
                     ]
                 }
             ]
@@ -25,6 +45,8 @@
                 {
                     "name": "temp-bash",
                     "commands": [
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
                         "exit",
@@ -37,15 +59,15 @@
         {
             "format": "expanded",
             "extensionName": ".css",
-            "savePath": "/assets/css",
+            "savePath": "/frontend/public/assets/css",
         },
         {
             "format": "compressed",
             "extensionName": ".min.css",
-            "savePath": "/assets/css",
+            "savePath": "/frontend/public/assets/css",
         }
     ],
     "liveSassCompile.settings.includeItems": [
-        "/assets/sass/style.scss"
+        "/frontend/public/assets/sass/style.scss"
     ]
 }

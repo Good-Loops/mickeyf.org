@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -13,7 +15,7 @@ app.use(
     helmet.contentSecurityPolicy({
         directives: {
             defaultSrc: ["'none'"], // Sets the default source to 'none'
-            imgSrc: ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"], // Allows images from this domain
+            imgSrc: ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app", "http://localhost:3000"], // Allows images from both domains
             scriptSrc: ["'self'"], // Allows scripts from the same origin
         }
     })
@@ -21,21 +23,15 @@ app.use(
 
 app.use(express.json());
 
-// CORS configuration for DEVELOPMENT
-// app.use(cors(
-//     {
-//         origin: 'http://localhost:7777',
-//         methods: ['GET', 'POST'], // Allowed HTTP methods
-//         allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
-//     }
-// ));
+// CORS configuration
+app.use(cors(
+    {
+        origin: ['http://localhost:7777', 'http://localhost:3000', 'https://mickeyf.org'], // Only allow requests from these domains
+        methods: ['GET', 'POST'], // Allowed HTTP methods
+        allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+    }
+));
 
-// CORS configuration for PRODUCTION
-app.use(cors({
-    origin: ['https://mickeyf.org'], // Array of allowed origins
-    methods: ['GET', 'POST'], // Allowed HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
-}));
 
 // Use userRoutes for all user-related endpoints
 app.use('/api', userRoutes);
