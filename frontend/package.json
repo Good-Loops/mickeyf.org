@@ -5,6 +5,7 @@
     "main": "src/index.ts",
     "scripts": {
         "server": "webpack serve --mode development --open",
+        "dev": "webpack --mode development --watch",
         "prod": "webpack --mode production"
     },
     "dependencies": {
