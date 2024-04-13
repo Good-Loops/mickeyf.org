@@ -22,7 +22,7 @@ function component() {
             user_id: string;
             user_name: string;
             email: string;
-            password: string;
+            user_password: string;
         } = await user();
         
         if (!userData) {
