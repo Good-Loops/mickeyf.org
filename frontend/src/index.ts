@@ -2,7 +2,7 @@ import create from "./register/create";
 import listUsers from "./home/listUsers";
 import IUserCreate from "./register/interfaces/IUserCreate";
 import IListUsers from "./home/interfaces/IListUsers";
-import { loadComponent } from './utils/loadPage';
+import { loadComponent } from './utils/loadComponent';
 import Alpine from "alpinejs";
 import page from "page";
 

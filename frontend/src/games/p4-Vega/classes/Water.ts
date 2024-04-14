@@ -1,5 +1,6 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
-import { checkCollision, getRandomX, getRandomY } from "../../../utils/methods";
+import { getRandomX, getRandomY } from "../../../utils/random";
+import checkCollision from "../../../utils/checkCollision";
 import BlackHole from "./BlackHole";
 import Entity from "../../classes/Entity";
 import P4 from "./P4";

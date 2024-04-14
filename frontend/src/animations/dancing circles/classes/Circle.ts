@@ -1,10 +1,11 @@
-import { getRandomX, getRandomY, lerp } from "../../../utils/methods";
+import { getRandomX, getRandomY } from "../../../utils/random"; 
+import lerp from "../../../utils/lerp";
 import ColorHandler from "./ColorHandler";
 
 export default class Circle {
-    public baseR: number = this.getBaseR(); 
-    public currentR: number = this.baseR; 
-    public targetR: number = this.baseR; 
+    public baseR: number = this.getBaseR();
+    public currentR: number = this.baseR;
+    public targetR: number = this.baseR;
     public x: number = getRandomX(this.baseR, Circle.gap);
     public y: number = getRandomY(this.baseR, Circle.gap);
     public targetX: number = getRandomX(this.baseR, Circle.gap);
