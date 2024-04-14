@@ -406,7 +406,7 @@ h1 {
   justify-items: center;
 }
 .registration__title {
-  font-size: 10rem;
+  font-size: 8rem;
   color: hsl(203, 92%, 65%);
   -webkit-text-stroke: 0.05em rgba(234, 234, 251, 0.3);
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);

@@ -29,8 +29,8 @@ module.exports = {
         compress: true,
         port: 7777,
         open: true,
-        hot: true,
-        watchFiles: ['src/**/*'],
+        liveReload: true,
+        watchFiles: ['**/*'],
         historyApiFallback: true, // Properly handle SPA routing
     },
 };
