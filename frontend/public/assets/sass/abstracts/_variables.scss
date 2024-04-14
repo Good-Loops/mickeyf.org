@@ -2,9 +2,12 @@
 $cursor: url("../img/normal.cur"), auto;
 $cursor-hover: url("../img/select.cur"), auto;
 
-// Breakpoints
-$bp-largest: 75em; // 1200px
-$bp-large: 68.75em; // 1100px
-$bp-medium: 56.25em; // 900px
-$bp-small: 37.5em; // 600px
-$bp-smallest: 31.25em; // 500px
+// Breakpoints for Sign Up Page
+$bp-signup-xl: 52.5em; // 840px
+
+// Reference
+// $bp-largest: 75em; // 1200px
+// $bp-large: 68.75em; // 1100px
+// $bp-medium: 56.25em; // 900px
+// $bp-small: 37.5em; // 600px
+// $bp-smallest: 31.25em; // 500px
