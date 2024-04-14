@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
     mode: process.env.NODE_ENV,
-    devtool: 'source-map',
+    devtool: process.env.NODE_ENV === 'development' ? 'eval-source-map' : 'source-map',
     entry: {
         index: ['./src/index.ts'],
     },
@@ -31,5 +31,6 @@ module.exports = {
         open: true,
         hot: true,
         watchFiles: ['src/**/*'],
+        historyApiFallback: true, // Properly handle SPA routing
     },
 };

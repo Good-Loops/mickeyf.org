@@ -1,10 +1,10 @@
 import create from "./register/create";
-import hashInfo from "./utils/hashInfo";
-import loadPageHtml from "./utils/loadPage";
 import listUsers from "./home/listUsers";
 import IUserCreate from "./register/interfaces/IUserCreate";
 import IListUsers from "./home/interfaces/IListUsers";
+import { loadComponent } from './utils/loadPage';
 import Alpine from "alpinejs";
+import page from "page";
 
 type EventListenerRecord = {
     element: Document | Element,
@@ -12,14 +12,16 @@ type EventListenerRecord = {
     handler: (event: Event) => void,
 };
 
-// Page loading
-const loadPage = (): void => {
-    const { component, placeholder, uri } = hashInfo();
-    loadPageHtml(component, placeholder, uri);
-}
-loadPage();
-
-window.onhashchange = (): void => loadPage();
+// Define routes using Page.js
+page('/', () => loadComponent('/'));
+page('/user/signup', () => loadComponent('/user/signup'));
+page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
+page('/games', () => loadComponent('/games'));
+page('/animations', () => loadComponent('/animations'));
+page('/socialmedia', () => loadComponent('/socialmedia'));
+page('/dancing-circles', () => loadComponent('/dancing-circles'));
+page('/p4-Vega', () => loadComponent('/p4-Vega'));
+page('*', () => loadComponent('/error'));
 
 // Global variables
 declare global {
@@ -34,8 +36,10 @@ declare global {
         eventListeners: Record<string, EventListenerRecord[]>;
     }
 }
-
-// Libraries
+// Page.js
+window.page = page;
+page.start();
+// Alpine.js
 window.Alpine = Alpine;
 Alpine.start();
 // Event listeners
@@ -45,7 +49,7 @@ window.create = create;
 // List registered users
 window.listUsers = listUsers;
 
-// Stop animation
+// Stop animation function
 const stopAnimation = (animationId: number | null): void => {
     if (animationId !== null) {
         cancelAnimationFrame(animationId);
