@@ -21,8 +21,13 @@ app.use('/api', createProxyMiddleware({
 app.use(serveStatic(publicPath, { 'index': ['index.html', 'index.htm'] }));
 
 // This route will handle all other get requests to give control to the SPA
-app.get('*', function (req, res) {
+app.get('*', function (_req: any, res: { sendFile: (arg0: string, arg1: { root: any; }) => void; }) {
     res.sendFile('index.html', { root: publicPath });
+});
+
+// 404 handling
+app.use(function (_req: any, res: { status: (arg0: number) => { (): any; new(): any; sendFile: { (arg0: string, arg1: { root: any; }): void; new(): any; }; }; }, _next: any) {
+    res.status(404).sendFile('404.html', { root: publicPath });
 });
 
 const port = process.env.PORT || 7777;
