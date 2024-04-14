@@ -6,7 +6,7 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 const app = express();
 
 // Define the absolute path to the root of your project
-const rootPath = path.resolve(__dirname, '../');
+const publicPath = path.resolve(__dirname, 'public');
 
 // Proxy API requests to Backend
 app.use('/api', createProxyMiddleware({
@@ -18,11 +18,11 @@ app.use('/api', createProxyMiddleware({
 }));
 
 // Serve static files from the root of the project
-app.use(serveStatic(rootPath, { 'index': ['index.html', 'index.htm'] }));
+app.use(serveStatic(publicPath, { 'index': ['index.html', 'index.htm'] }));
 
 // This route will handle all other get requests to give control to the SPA
 app.get('*', function (req, res) {
-    res.sendFile('index.html', { root: rootPath });
+    res.sendFile('index.html', { root: publicPath });
 });
 
 const port = process.env.PORT || 7777;
