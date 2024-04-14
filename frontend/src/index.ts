@@ -20,7 +20,7 @@ page('/games', () => loadComponent('/games'));
 page('/animations', () => loadComponent('/animations'));
 page('/socialmedia', () => loadComponent('/socialmedia'));
 page('/dancing-circles', () => loadComponent('/dancing-circles'));
-page('/p4-vega', () => loadComponent('/p4-vega'));
+page('/p4-Vega', () => loadComponent('/p4-Vega'));
 page('*', () => loadComponent('/error'));
 
 // Global variables
