@@ -2,9 +2,9 @@ import create from "./register/create";
 import listUsers from "./home/listUsers";
 import IUserCreate from "./register/interfaces/IUserCreate";
 import IListUsers from "./home/interfaces/IListUsers";
+import { loadComponent } from './utils/loadPage';
 import Alpine from "alpinejs";
 import page from "page";
-import { loadComponent } from './utils/loadPage';
 
 type EventListenerRecord = {
     element: Document | Element,
