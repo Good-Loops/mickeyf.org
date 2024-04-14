@@ -1,7 +1,15 @@
 steps:
-# Step to copy files to the Cloud Storage bucket
-- name: 'gcr.io/cloud-builders/gsutil'
-  args: ['-m', 'cp', '-r', '.', 'gs://www.mickeyf.org']
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/${_GCP_PROJECT_ID}/${_APP_NAME}:${COMMIT_SHA}', '.']
+
+  # Push the Docker image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/${_GCP_PROJECT_ID}/${_APP_NAME}:${COMMIT_SHA}']
+
+substitutions:
+  _GCP_PROJECT_ID: 'noted-reef-387021'
+  _APP_NAME: 'mickeyf-org' 
 
 options:
   logging: CLOUD_LOGGING_ONLY

@@ -3,9 +3,10 @@ function component() {
         return /*html*/`
             <div x-data="listUsers()" x-init="list">
                 <ul>
-                    <template x-for="(users, index) in data" :key="index">
+                    <template x-for="user in data" :key="user.user_id">
                         <li>
-                            <span x-text="users.user_name"></span> <a x-bind:href="'/#/user/' + users.user_id">Click here</a>
+                            <span x-text="user.user_name"></span>
+                            <a href="javascript:void(0);" x-bind:data-user-id="user.user_id" x-on:click="navigateToUser">Click here</a>
                         </li>
                     </template>
                 </ul>

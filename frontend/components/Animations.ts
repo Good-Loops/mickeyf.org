@@ -5,7 +5,7 @@ function component() {
                 <h1 class="animations__title">Animations</h1>
                 <div class="animations__grid">
                     <div class="animations__grid-item">
-                        <a href="/#/dancing-circles">
+                        <a href="/dancing-circles" x-on:click.prevent="page('/dancing-circles')">
                             <h3 class="animations__grid-item--dancing-circles floating">Dancing Circles</h3>
                         </a>
                     </div>

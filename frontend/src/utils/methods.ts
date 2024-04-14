@@ -1,6 +1,7 @@
 import Entity from "../games/classes/Entity";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
+// Backend related methods
 export async function getUserData(): Promise<any> {
     try {
         const response = await fetch('http://localhost:3000/api/users');
@@ -8,7 +9,6 @@ export async function getUserData(): Promise<any> {
             const message = await response.text();
             throw new Error(`HTTP error! status: ${response.status}, message: ${message}`);
         }
-        console.log(await response.clone().text());
         const data = await response.json();
         return data;
     } catch (error) {
@@ -16,6 +16,7 @@ export async function getUserData(): Promise<any> {
     }
 }
 
+// Frontend related methods
 export function getRandomBoolean(): boolean {
     return Math.random() >= 0.5;
 }

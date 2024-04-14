@@ -1,23 +1,19 @@
-import Home from "../../pages/Home";
-import User from "../../pages/User";
-import Games from "../../pages/Games";
-import Animations from "../../pages/Animations";
-import SocialMedia from "../../pages/SocialMedia";
-import Register from "../../pages/Register";
-import DanceCircles from "../../pages/animations/DanceCircles";
-import P4Vega from "../../pages/games/P4Vega";
-import Error404 from "../../pages/Error404";
+import Home from "../../components/Home";
+import User from "../../components/User";
+import Games from "../../components/Games";
+import Animations from "../../components/Animations";
+import SocialMedia from "../../components/SocialMedia";
+import Register from "../../components/Register";
+import DanceCircles from "../../components/animations/DanceCircles";
+import P4Vega from "../../components/games/P4Vega";
+import Error404 from "../../components/Error404";
 
-interface routerInterface<T> {
-    [id: string]: T;
+interface ComponentInterface {
+    render: (params?: any) => string | Promise<string>;
+    action?: (params?: any) => void;
 }
 
-interface componentInterface {
-    render: () => string | Promise<string>;
-    action?: () => void;
-}
-
-const routes: routerInterface<componentInterface> = {
+const routes: Record<string, ComponentInterface> = {
     "/": Home,
     "/user/signup": Register,
     "/user/:id": User,
@@ -29,18 +25,41 @@ const routes: routerInterface<componentInterface> = {
     "/error": Error404
 }
 
-const loadPageHtml = async function (component: string, placeholder: string, uri: string) {
-    const content = document.querySelector("#content") as HTMLDivElement;
-    const newUri = component + placeholder;
-    let componentHtml = routes[uri] ?? routes[newUri];
-
-    if (!componentHtml) componentHtml = Error404;
-
-    content.innerHTML = await componentHtml.render();
-
-    if (componentHtml && componentHtml.action) {
-        componentHtml.action();
+// Utility function to match dynamic routes
+function matchRoute(requestedRoute: string) {
+    for (const route in routes) {
+        if (route.includes(':')) {
+            const baseRoute = route.split('/:')[0];
+            if (requestedRoute.startsWith(baseRoute)) {
+                return route;
+            }
+        } else if (route === requestedRoute) {
+            return route;
+        }
     }
+    return "/error"; // default to error route if no match found
 }
 
-export default loadPageHtml;
+// Load the component based on the requested route
+export const loadComponent = async (requestedRoute: string, params?: any): Promise<void> => {
+    const content = document.querySelector("#content") as HTMLDivElement;
+
+    if (!content) {
+        console.error("The #content element does not exist in your HTML.");
+        return;
+    }
+
+    // Match the requested route to the correct route
+    const route = matchRoute(requestedRoute);
+    const component = routes[route];
+
+    try {
+        content.innerHTML = '<div>Loading...</div>'; // Optional: display a loading indicator
+        content.innerHTML = await component.render(params);
+        component.action?.(params);
+    } catch (error) {
+        console.error("Error rendering the component:", error);
+        content.innerHTML = '<div>Error loading page. Please try again.</div>'; // Friendly error message
+        content.innerHTML = await Error404.render(); // Render a full error component
+    }
+};
