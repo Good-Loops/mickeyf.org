@@ -1,9 +1,12 @@
 import { loadComponent } from '../utils/loadComponent';
 
+// The Page interface is used to define the page 
+// function that is used to set up routes for the application. 
 interface Page {
     (path: string, callback: (ctx?: any) => void): void;
 }
 
+// The setUpRoutes function is used to set up the routes for the application.
 const setUpRoutes = (page: Page) => {
     page('/', () => loadComponent('/'));
 
@@ -11,7 +14,7 @@ const setUpRoutes = (page: Page) => {
         document.body.className = 'signup-page';
         loadComponent('/user/signup');
     });
-    
+
     page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
     page('/games', () => loadComponent('/games'));
     page('/animations', () => loadComponent('/animations'));
