@@ -2,7 +2,7 @@ function component() {
     const render = function () {
         return /*html*/`
             <section class="registration">
-                <h1 class="registration__title">Sign Up (Coming soon)</h1>
+                <h1 class="registration__title">Sign up</h1>
                 <div class="registration__form-wrapper" x-data="create()" x-cloak>
                     <form class="registration__form" x-on:submit.prevent="createUser">
                         <input class="registration__input registration__input--username" id="user-name" type="text" name="user-name" placeholder="Username" required>
