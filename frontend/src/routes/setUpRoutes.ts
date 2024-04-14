@@ -5,14 +5,13 @@ interface Page {
 }
 
 const setUpRoutes = (page: Page) => {
-    page('/', () => {
-        document.body.className = 'home-page';
-        loadComponent('/');
-    });
+    page('/', () => loadComponent('/'));
+
     page('/user/signup', () => {
-        document.body.className = 'sign-up-page';
+        document.body.className = 'signup-page';
         loadComponent('/user/signup');
     });
+    
     page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
     page('/games', () => loadComponent('/games'));
     page('/animations', () => loadComponent('/animations'));
