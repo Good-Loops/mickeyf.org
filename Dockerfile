@@ -33,8 +33,5 @@ USER nodeuser
 # Inform Docker that the container is listening on the specified port at runtime.
 EXPOSE 8080
 
-# Set the directory where your index.html is located as a volume
-VOLUME ["/usr/src/app/frontend/public"]
-
 # Command to start the backend server
 CMD ["node", "/usr/src/app/backend/dist/server.min.js"]
