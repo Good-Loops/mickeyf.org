@@ -1,6 +1,5 @@
 # Ignore editor and IDE files
 .vscode/
-.eslintrc.json
 
 # Ignore build artifacts and dependencies
 node_modules/
@@ -16,11 +15,4 @@ frontend/dist/
 # Ignore configuration files
 backend/.env
 cloudbuild.yaml
-intall-scout.sh
-LICENSE
-README.md
-
-# Ignore ignore files
-.gitignore
-.gcloudignore
-.dockerignore
+install-scout.sh
