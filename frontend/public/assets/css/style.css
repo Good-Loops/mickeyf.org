@@ -92,17 +92,17 @@ h1 {
 
 .header__nav {
   font-size: 2.6rem;
-  margin-left: 1em;
-  margin-top: 0.2em;
   position: fixed;
+  top: 0.3em;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+      -ms-transform: translateX(-50%);
+          transform: translateX(-50%);
 }
 .header__nav__list {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
   gap: 1em;
   list-style: none;
   border-bottom: 0.2em solid rgba(234, 234, 251, 0.3);
@@ -114,6 +114,8 @@ h1 {
   transition: -webkit-transform 0.5s ease-in-out;
   transition: transform 0.5s ease-in-out;
   transition: transform 0.5s ease-in-out, -webkit-transform 0.5s ease-in-out;
+  padding-inline: 0.5em;
+  white-space: nowrap;
 }
 .header__nav__item:hover, .header__nav__item:focus {
   -webkit-transform: scale(1.1);
@@ -133,6 +135,35 @@ h1 {
 }
 .header__nav__link:hover, .header__nav__link:focus {
   text-shadow: 0 0 0.4em hsl(240, 67%, 95%);
+}
+
+@media (max-width: 100em) {
+  body.signup-page .header__nav {
+    font-size: 2.2rem;
+  }
+  body.signup-page .header__nav__list {
+    padding: 0.2em;
+  }
+}
+@media (max-width: 68.125em) {
+  body.signup-page .header__nav {
+    font-size: 1.8rem;
+  }
+  body.signup-page .header__nav__list {
+    padding: 0.1em;
+  }
+}
+@media (max-width: 42.5em) {
+  body.signup-page .header__nav {
+    font-size: 2rem;
+  }
+  body.signup-page .header__nav__list {
+    padding: 0.1em;
+    gap: 0.2em;
+  }
+  body.signup-page .header__nav__item {
+    padding-inline: 0.3em;
+  }
 }
 
 .main {

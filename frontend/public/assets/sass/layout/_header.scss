@@ -4,14 +4,13 @@
     &__nav {
         font-size: 2.6rem;
 
-        margin-left: 1em;
-        margin-top: .2em;
-
         position: fixed;
+        top: .3em;
+        left: 50%;
+        transform: translateX(-50%);
 
         &__list {
             display: flex;
-            justify-content: space-between;
             gap: 1em;
 
             list-style: none;
@@ -24,6 +23,10 @@
 
         &__item {
             transition: transform .5s ease-in-out;
+
+            padding-inline: .5em;
+
+            white-space: nowrap;
 
             &:hover,
             &:focus {
@@ -45,6 +48,49 @@
             &:hover,
             &:focus {
                 text-shadow: $label-text-shadow;
+            }
+        }
+    }
+}
+
+body.signup-page {
+    @media (max-width: $bp-signup-xl) {
+        .header {
+            &__nav {
+                font-size: 2.2rem;
+
+                &__list {
+                    padding: .2em;
+                }
+            }
+        }
+    }
+
+    @media (max-width: $bp-signup-l) {
+        .header {
+            &__nav {
+                font-size: 1.8rem;
+
+                &__list {
+                    padding: .1em;
+                }
+            }
+        }
+    }
+
+    @media (max-width: $bp-signup-m) {
+        .header {
+            &__nav {
+                font-size: 2rem;
+
+                &__list {
+                    padding: .1em;
+                    gap: .2em;
+                }
+
+                &__item {
+                    padding-inline: .3em;
+                }
             }
         }
     }
