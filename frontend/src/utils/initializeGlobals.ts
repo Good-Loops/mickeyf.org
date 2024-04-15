@@ -1,6 +1,7 @@
 import create from "../register/create";
 import listUsers from "../home/listUsers";
 import Alpine from "alpinejs";
+import page from "page";
 
 // Global variables
 const initializeGlobals = () => {
