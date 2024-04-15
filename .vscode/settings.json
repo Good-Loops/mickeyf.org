@@ -5,7 +5,7 @@
                 {
                     "name": "front-compiler",
                     "commands": [
-                        // "cd frontend && npm run dev"
+                        "cd frontend && npm run dev"
                     ]
                 }
             ]
@@ -15,7 +15,7 @@
                 {
                     "name": "front-server",
                     "commands": [
-                        // "cd frontend && npm run server"
+                        "cd frontend" // && npm run server"
                     ]
                 }
             ]
@@ -25,7 +25,7 @@
                 {
                     "name": "back-compiler",
                     "commands": [
-                        // "cd backend && npm run dev"
+                        "cd backend" // && npm run dev"
                     ]
                 },
             ]
@@ -35,7 +35,7 @@
                 {
                     "name": "back-server",
                     "commands": [
-                        // "cd backend && npm run server"
+                        "cd backend" // && npm run server"
                     ]
                 }
             ]
@@ -45,11 +45,11 @@
                 {
                     "name": "temp-bash",
                     "commands": [
-                        // "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
-                        // "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
-                        // "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
-                        // "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
-                        // "exit",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
+                        "exit",
                     ]
                 }
             ]
