@@ -8,40 +8,6 @@
     align-items: center;
     justify-content: center;
 
-    &__sidebar {
-        display: none;
-
-        font-size: 3rem;
-
-        position: fixed;
-        inset: 0;
-        top: .7em;
-        left: .7em;
-
-        &__list {
-            display: grid;
-            grid-auto-rows: max-content;
-
-            height: max-content;
-
-            list-style: none;
-
-            background-color: rgba($primary, .9);
-            border: .15em solid rgba($white, .3);
-            border-radius: .7em;
-        }
-
-        &__item {
-            @include nav-item;
-
-            padding-block: .35em;
-        }
-
-        &__link {
-            @include nav-link;
-        }
-    }
-
     &__content {
         display: grid;
     }

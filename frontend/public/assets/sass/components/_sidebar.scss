@@ -1,0 +1,54 @@
+@use '../abstracts' as *;
+
+.sidebar {
+    display: none;
+
+    font-size: 5rem;
+
+    position: absolute;
+
+    // &__btn {
+        
+    // }
+
+    &__nav {
+        &__list {
+            display: grid;
+            justify-items: center;
+            align-items: center;
+
+            width: 98vw;
+            height: 98vh;
+
+            list-style: none;
+
+            background-color: rgba($primary-dark, .95);
+            border: .13em solid rgba($white, .3);
+            border-radius: .7em;
+        }
+
+        &__item {
+            @include nav-item;
+
+            padding-bottom: .1em;
+
+            border-bottom: .1em solid rgba($white, .3);
+            border-radius: 1em;
+        }
+
+        &__link {
+            @include nav-link;
+        }
+    }
+}
+
+// Responsiveness for smaller screens navigation sidebar
+@each $bp, $styles in $bps-nav { // Iterate over each breakpoint
+    @media only screen and (max-width: map-get($styles, 'width')) { // Media query
+        .sidebar {
+            &__btn {
+                display: map-get($styles, 'sidebar__btn-display');
+            }
+        }
+    }
+}

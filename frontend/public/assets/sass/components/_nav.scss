@@ -1,0 +1,44 @@
+@use '../abstracts' as *;
+
+.nav {
+    font-size: 2.6rem;
+
+    position: fixed;
+    top: .3em;
+    left: 50%;
+    transform: translateX(-50%);
+
+    &__list {
+        display: flex;
+        gap: 1em;
+
+        list-style: none;
+
+        border-bottom: .2em solid rgba($white, .3);
+        border-radius: 1em;
+
+        padding: .2em 1em;
+    }
+
+    &__item {
+        @include nav-item;
+    }
+
+    &__link {
+        @include nav-link;
+    }
+}
+
+// Responsiveness for bigger screens navigation bar
+@each $bp, $styles in $bps-nav { // Iterate over each breakpoint
+    @media only screen and (max-width: map-get($styles, 'width')) { // Media query
+        .nav {
+            font-size: map-get($styles, 'nav-font-size');
+            display: map-get($styles, 'nav-display');
+
+            &__item {
+                padding-inline: map-get($styles, 'nav-padding-inline');
+            }
+        }
+    }
+}

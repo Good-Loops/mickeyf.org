@@ -2,8 +2,8 @@
 $cursor: url("../img/normal.cur"), auto;
 $cursor-hover: url("../img/select.cur"), auto;
 
-// Breakpoints for Sign Up Page
-$bps-signup: (
+// Breakpoints for Navigation 
+$bps-nav: (
     'xl': (
         'width': 61.25em, // 980px
         'nav-font-size': 2.3rem,
@@ -14,8 +14,8 @@ $bps-signup: (
     ), 
     'm': (
         'width': 48.75em, // 780px
-        'nav-display': none,
-        'sidebar-display': flex,
+        'nav-display': none, // Remove nav for bigger screens
+        'sidebar__btn-display': grid,
     ), 
     's': (
         // 'width': ,
