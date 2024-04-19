@@ -2,6 +2,12 @@
 
 .sidebar-btn {
     display: none;
+
+    position: fixed;
+    top: 1em;
+    left: .5em;
+
+    transform: scale(.6);
 }
 
 @include generate-media-queries($bps-sidebar);
