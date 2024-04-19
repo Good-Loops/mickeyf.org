@@ -201,8 +201,12 @@ h1 {
   text-shadow: 0 0 0.4em hsl(240, 67%, 95%);
 }
 
+.sidebar-btn {
+  display: none;
+}
+
 @media only screen and (max-width: 48.75em) {
-  .sidebar__btn {
+  .sidebar-btn {
     display: grid;
   }
 }
