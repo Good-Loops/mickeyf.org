@@ -11,7 +11,7 @@ const setUpRoutes = (page: Page) => {
     page('/', () => loadComponent('/'));
 
     page('/user/signup', () => {
-        document.body.className = 'signup-page';
+        document.body.className = 'registration-page';
         loadComponent('/user/signup');
     });
 

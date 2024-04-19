@@ -1,3 +1,9 @@
 Desktop: 1920×1080, 1366×768, 1280×1024, 1024×768
 Mobile: 375×667, 414×736, 360×800, 390×844
 Tablet: 768×1024, 1024×768, 601×962
+
+Smallest Height: 667px
+Largest Height: 1080px
+
+Smallest Width: 360px
+Largest Width: 1920px

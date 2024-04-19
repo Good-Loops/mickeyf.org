@@ -22,76 +22,11 @@
         }
 
         &__item {
-            transition: transform .5s ease-in-out;
-
-            padding-inline: .5em;
-
-            white-space: nowrap;
-
-            &:hover,
-            &:focus {
-                transform: scale(1.1);
-            }
-
-            &:active {
-                transform: scale(.5);
-            }
+            @include nav-item;
         }
 
         &__link {
-            text-decoration: none;
-
-            color: rgba($gray-light, .8);
-
-            transition: text-shadow 1.5s ease-in-out;
-
-            &:hover,
-            &:focus {
-                text-shadow: $label-text-shadow;
-            }
-        }
-    }
-}
-
-body.signup-page {
-    @media (max-width: $bp-signup-xl) {
-        .header {
-            &__nav {
-                font-size: 2.2rem;
-
-                &__list {
-                    padding: .2em;
-                }
-            }
-        }
-    }
-
-    @media (max-width: $bp-signup-l) {
-        .header {
-            &__nav {
-                font-size: 1.8rem;
-
-                &__list {
-                    padding: .1em;
-                }
-            }
-        }
-    }
-
-    @media (max-width: $bp-signup-m) {
-        .header {
-            &__nav {
-                font-size: 2rem;
-
-                &__list {
-                    padding: .1em;
-                    gap: .2em;
-                }
-
-                &__item {
-                    padding-inline: .3em;
-                }
-            }
+            @include nav-link;
         }
     }
 }

@@ -1,12 +1,13 @@
 @use '../abstracts' as *;
 
 .registration {
-    margin-bottom: 15rem; 
 
     display: grid;
     row-gap: 3rem;
 
     justify-items: center;
+
+    margin-bottom: 10svh;
 
     &__title {
         font-size: 7rem;
@@ -83,6 +84,30 @@
             &:hover {
                 cursor: $cursor-hover;
                 border: .18em solid $gray;
+            }
+        }
+    }
+}
+
+// Responsiveness for Registration Page
+body.registration-page {
+    @each $bp, $styles in $bps-signup { // Iterate over each breakpoint
+        @media only screen and (max-width: map-get($styles, 'width')) {
+            .header {
+                &__nav {
+                    font-size: map-get($styles, 'nav-font-size');
+                    display: map-get($styles, 'nav-display');
+
+                    &__item {
+                        padding-inline: map-get($styles, 'nav-padding-inline');
+                    }
+                }
+            }
+
+            .main {
+                &__sidebar {
+                    display: map-get($styles, 'sidebar-display');
+                }
             }
         }
     }
