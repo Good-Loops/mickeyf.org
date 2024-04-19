@@ -4,11 +4,4 @@
     display: none;
 }
 
-// Responsiveness for navigation sidebar button
-@each $bp, $styles in $bps-nav { // Iterate over each breakpoint
-    @media only screen and (max-width: map-get($styles, 'width')) { // Media query
-        .sidebar-btn { 
-            display: map-get($styles, 'sidebar-btn-display');
-        }
-    }
-}
+@include generate-media-queries($bps-sidebar);

@@ -2,22 +2,47 @@
 $cursor: url("../img/normal.cur"), auto;
 $cursor-hover: url("../img/select.cur"), auto;
 
-// Breakpoints for Navigation 
+// Breakpoints for Navigation
+$bp-nav-xl: 61.25em; // 980px
+$bp-nav-l: 55em; // 880px
+$bp-nav-m: 48.75em; // 780px
+
+// Breakpoint Map for Navigation 
 $bps-nav: (
     'xl': (
-        'width': 61.25em, // 980px
-        'nav-font-size': 2.3rem,
+        'width': $bp-nav-xl,
+        'selectors': (
+            '.nav': (
+                'font-size': 2.3rem,
+            ),
+        )
     ), 
     'l': (
-        'width':  55em, // 880x
-        'nav-padding-inline': .1em,
+        'width':  $bp-nav-l,
+        'selectors': ( 
+            '.nav__item': (
+                'padding-inline': .1em,
+            ),
+        )
     ), 
     'm': (
-        'width': 48.75em, // 780px
-        'nav-display': none, // Remove nav for bigger screens
-        'sidebar-btn-display': grid,
+        'width': $bp-nav-m,
+        'selectors': ( 
+            '.nav': (
+                'display': none,
+            ),
+        )
     ), 
-    's': (
-        // 'width': ,
+);
+
+// Breakpoints for Sidebar
+$bps-sidebar: (
+    'm': (
+        'width': $bp-nav-m,
+        'selectors': (
+            '.sidebar-btn': (
+                'display': grid,
+            ),
+        )
     ),
-); 
+)

@@ -100,3 +100,19 @@
         transform: scale(.5);
     }
 }
+
+// This mixin generates media queries for the given map
+// Maps are defined in the variables file
+@mixin generate-media-queries($map) {
+    @each $bp, $bp-info in $map { // Loop through the breakpoints
+        @media only screen and (max-width: map-get($bp-info, 'width')) { // Generate media queries
+            @each $selector, $properties in map-get($bp-info, 'selectors') { // Loop through the selectors
+                #{$selector} { // Generate the selector
+                    @each $property, $value in $properties { // Loop through the properties
+                        #{$property}: $value; // Generate the property
+                    }
+                }
+            }
+        }
+    }
+}

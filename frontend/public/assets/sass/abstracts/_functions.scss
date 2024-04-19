@@ -1,8 +1,0 @@
-// Function for looping through breakpoints to generate media queries
-@function generate-media-queries($map) {
-    @each $bp, $styles in $map { // Iterate over each breakpoint
-        @media only screen and (max-width: map-get($styles, 'width')) { // Media query
-            @content; // Content to be included in media query
-        }
-    }
-}
