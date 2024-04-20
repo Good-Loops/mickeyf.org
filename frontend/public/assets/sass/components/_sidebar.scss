@@ -48,9 +48,9 @@
     }
 }
 
-@include generate-media-queries($bps-sidebar);
-
 .sidebar.is-visible {
     visibility: visible;
     opacity: 1;
 }
+
+@include generate-media-queries($bps-sidebar);
