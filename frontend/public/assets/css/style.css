@@ -125,6 +125,9 @@ h1 {
   font-size: 5rem;
   position: fixed;
   inset: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.5s, visibility 0.5s;
 }
 .sidebar__nav__list {
   display: grid;
@@ -165,6 +168,11 @@ h1 {
     display: block;
   }
 }
+.sidebar.is-visible {
+  visibility: visible;
+  opacity: 1;
+}
+
 .sidebar-btn {
   background: none;
   border: none;

@@ -9,7 +9,14 @@
 
     position: fixed;
     inset: 0;
-    
+
+    // Initial invisible state
+    visibility: hidden;
+    opacity: 0;
+
+    // Transition for opacity and visibility
+    transition: opacity 0.5s, visibility 0.5s;
+
     &__nav {
         &__list {
             display: grid;
@@ -42,3 +49,8 @@
 }
 
 @include generate-media-queries($bps-sidebar);
+
+.sidebar.is-visible {
+    visibility: visible;
+    opacity: 1;
+}
