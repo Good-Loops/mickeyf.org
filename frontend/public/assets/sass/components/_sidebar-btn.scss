@@ -5,11 +5,9 @@
 
     position: fixed;
     top: 0;
-    left: 0;
+    left: -7em;
 
     transform: scale(.6);
-    width: min-content;
-
 }
 
 @include generate-media-queries($bps-sidebar);
