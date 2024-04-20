@@ -4,10 +4,12 @@
     display: none;
 
     position: fixed;
-    top: 1em;
-    left: .5em;
+    top: 0;
+    left: 0;
 
     transform: scale(.6);
+    width: min-content;
+
 }
 
 @include generate-media-queries($bps-sidebar);
