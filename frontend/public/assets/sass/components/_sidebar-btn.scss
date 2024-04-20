@@ -3,11 +3,18 @@
 .sidebar-btn {
     display: none;
 
+    background: none;
+    border: none;
+
     position: fixed;
-    top: 0;
-    left: -7em;
+    top: -.5em;
+    left: -6.5em;
 
     transform: scale(.6);
+
+    &:hover {
+        cursor: $cursor-hover;
+    }
 }
 
 @include generate-media-queries($bps-sidebar);

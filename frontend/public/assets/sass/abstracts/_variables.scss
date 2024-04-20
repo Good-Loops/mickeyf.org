@@ -41,7 +41,7 @@ $bps-sidebar: (
         'width': $bp-nav-m,
         'selectors': (
             '.sidebar-btn': (
-                'display': grid,
+                'display': block,
             ),
         )
     ),
