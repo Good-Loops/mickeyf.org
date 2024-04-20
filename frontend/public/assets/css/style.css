@@ -119,9 +119,9 @@ h1 {
   }
 }
 .sidebar {
-  display: none;
   font-size: 5rem;
   position: absolute;
+  opacity: 0;
 }
 .sidebar__nav__list {
   display: grid;

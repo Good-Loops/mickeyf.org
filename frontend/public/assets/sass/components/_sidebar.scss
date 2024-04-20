@@ -1,11 +1,11 @@
 @use '../abstracts' as *;
 
 .sidebar {
-    display: none;
-
     font-size: 5rem;
 
     position: absolute;
+       
+    opacity: 0;
 
     &__nav {
         &__list {
