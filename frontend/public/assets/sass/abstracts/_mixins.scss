@@ -2,12 +2,15 @@
 @use 'shadows' as *;
 @use 'variables' as *;
 
+// Main title coloring
 @mixin title-coloring {
     color: $primary-dark;
     -webkit-text-stroke: .05em rgba($white, .3);
     text-shadow: $title-text-shadow;
 }
 
+//////////////////////// Buttons ////////////////////////
+// Default button styling
 @mixin default-btn {
     padding: .5em;
     padding-top: .4em;
@@ -32,27 +35,11 @@
         color 1.5s,
         border-color 2s;
 
-    z-index: 2;
+    z-index: $back-2;
     user-select: none;
 }
 
-@mixin box-shadow-effect {
-    box-shadow:
-            0 0 .6em rgba($white, .6),
-            0 0 0em rgba($primary, .5) inset,
-            0 0 0em $primary;
-    
-    transition:
-        box-shadow .5s linear,
-        scale .7s linear,
-        text-shadow 1s ease-in-out,
-        color 1.5s,
-        border-color 2s;
-
-    z-index: 2;
-    user-select: none;
-}
-
+// Default button hover effect
 @mixin default-btn-hover {
     color: $white;
     border-color: rgba($white, .3);
@@ -67,10 +54,46 @@
     cursor: $cursor-hover;
 }
 
+// Default button active effect
 @mixin default-btn-active {
     scale: .2;
 }
 
+// Sidebar button defaults
+@mixin sidebar-btns-defaults {
+    display: none;
+    
+    background: none;
+    border: none;
+
+    position: fixed;
+    top: -.5em;
+    left: -6.5em;
+    
+    transform: scale(.6);
+}
+
+//////////////////////// Shadows ////////////////////////
+// Box shadow effect
+@mixin box-shadow-effect {
+    box-shadow:
+            0 0 .6em rgba($white, .6),
+            0 0 0em rgba($primary, .5) inset,
+            0 0 0em $primary;
+    
+    transition:
+        box-shadow .5s linear,
+        scale .7s linear,
+        text-shadow 1s ease-in-out,
+        color 1.5s,
+        border-color 2s;
+
+    z-index: $back-2;
+    user-select: none;
+}
+
+//////////////////////// Navigation ////////////////////////
+// Default nav link styling
 @mixin nav-link {
     text-decoration: none;
     
@@ -84,6 +107,7 @@
     }
 }
 
+// Default nav item styling
 @mixin nav-item {
     transition: transform .5s ease-in-out;
     
@@ -105,7 +129,7 @@
 // Maps are defined in the variables file
 @mixin generate-media-queries($map) {
     @each $bp, $bp-info in $map { // Loop through the breakpoints
-        @media only screen and (max-width: map-get($bp-info, 'width')) { // Generate media queries
+        @media only screen and (max-width: map-get($bp-info, 'width')) { // Generate media queries for each breakpoint
             @each $selector, $properties in map-get($bp-info, 'selectors') { // Loop through the selectors
                 #{$selector} { // Generate the selector
                     @each $property, $value in $properties { // Loop through the properties

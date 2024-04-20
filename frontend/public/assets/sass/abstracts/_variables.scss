@@ -2,11 +2,25 @@
 $cursor: url("../img/normal.cur"), auto;
 $cursor-hover: url("../img/select.cur"), auto;
 
+///////////////////// Z-Index Values //////////////////////
+$front: 10;
+$front-9: 9;
+$front-9: 8;
+$front-7: 7;
+$front-6: 6;
+$mid: 5;
+$back-4: 4;
+$back-3: 3;
+$back-2: 2;
+$back: 1;
+
+///////////////////// Breakpoints Values //////////////////////
 // Breakpoints for Navigation
 $bp-nav-xl: 61.25em; // 980px
 $bp-nav-l: 55em; // 880px
 $bp-nav-m: 48.75em; // 780px
 
+///////////////////// Breakpoint Maps //////////////////////
 // Breakpoint Map for Navigation 
 $bps-nav: (
     'xl': (

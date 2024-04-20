@@ -17,6 +17,13 @@
     // Transition for opacity and visibility
     transition: opacity 0.5s, visibility 0.5s;
 
+    // This class will make the sidebar visible
+    // when the sidebar-btn is clicked
+    &.is-visible {
+        visibility: visible;
+        opacity: 1;
+    }
+
     &__nav {
         &__list {
             display: grid;
@@ -46,11 +53,6 @@
             @include nav-link;
         }
     }
-}
-
-.sidebar.is-visible {
-    visibility: visible;
-    opacity: 1;
 }
 
 @include generate-media-queries($bps-sidebar);

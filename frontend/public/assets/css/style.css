@@ -170,6 +170,10 @@ h1 {
   -webkit-transition: opacity 0.5s, visibility 0.5s;
   transition: opacity 0.5s, visibility 0.5s;
 }
+.sidebar.is-visible {
+  visibility: visible;
+  opacity: 1;
+}
 .sidebar__nav__list {
   display: grid;
   justify-items: center;
@@ -214,11 +218,6 @@ h1 {
   text-shadow: 0 0 0.4em hsl(240, 67%, 95%);
 }
 
-.sidebar.is-visible {
-  visibility: visible;
-  opacity: 1;
-}
-
 @media only screen and (max-width: 48.75em) {
   .sidebar-btn {
     display: block;
@@ -234,9 +233,17 @@ h1 {
   -webkit-transform: scale(0.6);
       -ms-transform: scale(0.6);
           transform: scale(0.6);
+  visibility: visible;
+  opacity: 1;
+  -webkit-transition: opacity 0.5s, visibility 0.5s;
+  transition: opacity 0.5s, visibility 0.5s;
 }
 .sidebar-btn:hover {
   cursor: url("../img/select.cur"), auto;
+}
+.sidebar-btn:not(.is-visible) {
+  visibility: hidden;
+  opacity: 0;
 }
 
 @media only screen and (max-width: 48.75em) {
@@ -244,6 +251,21 @@ h1 {
     display: block;
   }
 }
+.close-btn {
+  display: none;
+  background: none;
+  border: none;
+  position: fixed;
+  top: -0.5em;
+  left: -6.5em;
+  -webkit-transform: scale(0.6);
+      -ms-transform: scale(0.6);
+          transform: scale(0.6);
+}
+.close-btn.is-visible {
+  display: block;
+}
+
 .main {
   min-height: 100vh;
   display: -webkit-box;

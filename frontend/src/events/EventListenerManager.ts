@@ -5,11 +5,14 @@ class EventListenerManager {
 
     private static initSidebarToggle() {
         const sidebar = document.querySelector('.sidebar') as HTMLElement;
-        const toggleButton = document.querySelector('.sidebar-btn') as HTMLElement;
+        const sideBarButton = document.querySelector('.sidebar-btn') as HTMLElement;
+        const closeButton = document.querySelector('.close-btn') as HTMLElement;
 
-        if (sidebar && toggleButton) {
-            toggleButton.addEventListener('click', () => {
-                sidebar.classList.toggle('is-visible');
+        if (sidebar && sideBarButton) { // Check if sidebar and sidebar button exist
+            sideBarButton.addEventListener('click', () => {
+                sidebar.classList.toggle('is-visible'); // Toggle sidebar visibility
+                sideBarButton.classList.toggle('is-visible'); // Toggle sidebar button visibility
+                closeButton.classList.toggle('is-visible'); // Toggle close button visibility
             });
         }
     }

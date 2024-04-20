@@ -1,0 +1,10 @@
+@use '../abstracts' as *;
+
+.close-btn {
+
+    @include sidebar-btns-defaults;
+    
+    &.is-visible {
+        display: block;
+    }
+}
