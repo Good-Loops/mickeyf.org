@@ -34,19 +34,19 @@
                     tabindex="0" 
                     @click="open = !open" 
                     @keydown.enter="open = !open">
-                <svg class="sidebar-btn__svg floating"
-                    x-show="open" 
-                    x-transition:enter="transition ease-out duration-300" 
-                    x-transition:enter-start="opacity-0" 
-                    x-transition:enter-end="opacity-100" 
-                    x-transition:leave="transition ease-in duration-300" 
-                    x-transition:leave-start="opacity-100" 
-                    x-transition:leave-end="opacity-0">
+                <svg class="sidebar-btn__svg floating">
                     <use xlink:href="/frontend/public/assets/img/sprite.svg#compass"></use>
                 </svg>
             </div>
         </div>
-        <div class="sidebar" x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="sidebar" 
+            x-show="open" 
+            x-transition:enter="transition ease-out duration-300" 
+            x-transition:enter-start="opacity-0" 
+            x-transition:enter-end="opacity-100" 
+            x-transition:leave="transition ease-in duration-300" 
+            x-transition:leave-start="opacity-100" 
+            x-transition:leave-end="opacity-0">
             <nav class="sidebar__nav">
                 <ul class="sidebar__nav__list">
                     <li class="sidebar__nav__item"><a class="sidebar__nav__link" href="/">Home</a></li>
