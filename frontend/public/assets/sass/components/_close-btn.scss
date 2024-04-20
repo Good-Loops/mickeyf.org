@@ -3,7 +3,9 @@
 .close-btn {
 
     @include sidebar-btns-defaults;
-    
+
+    z-index: $front;
+
     &.is-visible {
         display: block;
     }

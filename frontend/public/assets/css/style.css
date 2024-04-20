@@ -261,6 +261,7 @@ h1 {
   -webkit-transform: scale(0.6);
       -ms-transform: scale(0.6);
           transform: scale(0.6);
+  z-index: 10;
 }
 .close-btn.is-visible {
   display: block;
