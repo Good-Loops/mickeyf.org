@@ -1,5 +1,6 @@
 @use '../abstracts' as *;
 
+// Settings to reset default browser styles
 *, 
 *::before, 
 *::after {
@@ -8,10 +9,18 @@
     box-sizing: inherit;
 }
 
+// Settings to disable scrolling
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+// Settings to set the font-size to 10px for easier rem calculations
+// also the box-sizing property is set to border-box 
+// which includes padding and border in the element's total width and height
 html {
     font-size: 62.5%;
-
-    scroll-behavior: smooth;
 
     box-sizing: border-box;
 }

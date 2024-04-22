@@ -17,6 +17,8 @@
     // Transition for opacity and visibility
     transition: opacity 0.5s, visibility 0.5s;
 
+    z-index: $front-9;
+
     // This class will make the sidebar visible
     // when the sidebar-btn is clicked
     &.is-visible {
@@ -35,9 +37,9 @@
 
             list-style: none;
 
-            background-color: rgba($primary-dark, .95);
-            border: .13em solid rgba($white, .3);
-            border-radius: .7em;
+            background-image: $sidebar-bg-gradient;
+            border: .1em solid rgba($white, .6);
+            border-radius: 1em;
         }
 
         &__item {
