@@ -2,11 +2,21 @@
 @use 'shadows' as *;
 @use 'variables' as *;
 
+//////////////////////// Typography ////////////////////////
 // Main title coloring
 @mixin title-coloring {
     color: $primary-dark;
     -webkit-text-stroke: .05em rgba($white, .3);
     text-shadow: $title-text-shadow;
+}
+
+// Component title styling
+@mixin component-title {
+    @include title-coloring;
+    font-size: 10rem;
+    letter-spacing: 2rem;
+    margin-right: -.333em;
+
 }
 
 //////////////////////// Buttons ////////////////////////

@@ -111,3 +111,31 @@ $bps-games: (
         )
     ),
 );
+
+// Breakpoint Map for Social Media Component
+$bps-social-media: (
+    'xl': (
+        'width': $bp-xl,
+        'selectors': (
+            '.social-media__title': (
+                'font-size': 8rem,
+            ),
+        )
+    ),
+    'l': (
+        'width': $bp-l,
+        'selectors': (
+            '.social-media__title': (
+                'font-size': 6rem,
+            ),
+        )
+    ),
+    'm': (
+        'width': $bp-m,
+        'selectors': (
+            '.social-media__title': (
+                'font-size': 4rem,
+            ),
+        )
+    ),
+);

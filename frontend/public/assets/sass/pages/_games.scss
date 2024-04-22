@@ -9,10 +9,7 @@
     justify-items: center;
 
     &__title {
-        @include title-coloring;
-        font-size: 10rem;
-        letter-spacing: 2rem;
-        margin-right: -.333em;
+        @include component-title;
     }
 
     // &__grid {

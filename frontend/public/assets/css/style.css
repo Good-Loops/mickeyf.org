@@ -431,6 +431,7 @@ h1 {
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
   font-size: 10rem;
   letter-spacing: 2rem;
+  margin-right: -0.333em;
 }
 .social-media__grid {
   display: grid;
@@ -542,6 +543,21 @@ h1 {
   scale: 0.2;
 }
 
+@media only screen and (max-width: 61.25em) {
+  .social-media__title {
+    font-size: 8rem;
+  }
+}
+@media only screen and (max-width: 55em) {
+  .social-media__title {
+    font-size: 6rem;
+  }
+}
+@media only screen and (max-width: 48.75em) {
+  .social-media__title {
+    font-size: 4rem;
+  }
+}
 .registration {
   display: grid;
   row-gap: 3rem;

@@ -9,9 +9,7 @@
     justify-items: center;
 
     &__title {
-        @include title-coloring;
-        font-size: 10rem;
-        letter-spacing: 2rem;
+        @include component-title;
     }
 
     &__grid {
@@ -63,3 +61,5 @@
         }
     }
 }
+
+@include generate-media-queries($bps-social-media);
