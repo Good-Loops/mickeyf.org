@@ -230,9 +230,9 @@ h1 {
   position: fixed;
   top: -0.5em;
   left: -6.5em;
-  -webkit-transform: scale(0.6);
-      -ms-transform: scale(0.6);
-          transform: scale(0.6);
+  -webkit-transform: scale(0.45);
+      -ms-transform: scale(0.45);
+          transform: scale(0.45);
   visibility: visible;
   opacity: 1;
   -webkit-transition: opacity 0.5s, visibility 0.5s;
@@ -258,9 +258,9 @@ h1 {
   position: fixed;
   top: -0.5em;
   left: -6.5em;
-  -webkit-transform: scale(0.6);
-      -ms-transform: scale(0.6);
-          transform: scale(0.6);
+  -webkit-transform: scale(0.45);
+      -ms-transform: scale(0.45);
+          transform: scale(0.45);
   z-index: 10;
 }
 .close-btn.is-visible {
@@ -299,6 +299,7 @@ h1 {
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
   font-size: 10rem;
   letter-spacing: 2rem;
+  margin-right: -0.333em;
 }
 .games__grid-item {
   font-size: 2rem;
@@ -348,6 +349,7 @@ h1 {
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
   font-size: 10rem;
   letter-spacing: 2rem;
+  margin-right: -0.333em;
 }
 .animations__grid-item {
   font-size: 2rem;
