@@ -14,6 +14,12 @@ $back-3: 3;
 $back-2: 2;
 $back: 1;
 
+///////////////////// Font Sizes //////////////////////
+$font-size-xl: 10rem;
+$font-size-l: 8rem;
+$font-size-m: 6rem;
+$font-size-s: 4rem;
+
 ///////////////////// Breakpoints Values //////////////////////
 // Breakpoints for Navigation
 $bp-xl: 61.25em; // 980px
@@ -70,7 +76,7 @@ $bps-animations: (
         'width': $bp-xl,
         'selectors': (
             '.animations__title': (
-                'font-size': 8rem,
+                'font-size': $font-size-l,
             ),
         )
     ),
@@ -78,7 +84,7 @@ $bps-animations: (
         'width': $bp-l,
         'selectors': (
             '.animations__title': (
-                'font-size': 6rem,
+                'font-size': $font-size-m,
             ),
         )
     ),
@@ -86,7 +92,7 @@ $bps-animations: (
         'width': $bp-m,
         'selectors': (
             '.animations__title': (
-                'font-size': 4rem,
+                'font-size': $font-size-s,
             ),
         )
     ),
@@ -98,7 +104,7 @@ $bps-games: (
         'width': $bp-l,
         'selectors': (
             '.games__title': (
-                'font-size': 8rem,
+                'font-size': $font-size-l,
             ),
         )
     ),
@@ -106,7 +112,7 @@ $bps-games: (
         'width': $bp-m,
         'selectors': (
             '.games__title': (
-                'font-size': 6rem,
+                'font-size': $font-size-m,
             ),
         )
     ),
@@ -118,7 +124,7 @@ $bps-social-media: (
         'width': $bp-xl,
         'selectors': (
             '.social-media__title': (
-                'font-size': 8rem,
+                'font-size': $font-size-l,
             ),
         )
     ),
@@ -126,7 +132,7 @@ $bps-social-media: (
         'width': $bp-l,
         'selectors': (
             '.social-media__title': (
-                'font-size': 6rem,
+                'font-size': $font-size-m,
             ),
         )
     ),
@@ -134,7 +140,7 @@ $bps-social-media: (
         'width': $bp-m,
         'selectors': (
             '.social-media__title': (
-                'font-size': 4rem,
+                'font-size': $font-size-s,
             ),
         )
     ),

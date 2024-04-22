@@ -13,7 +13,7 @@
 // Component title styling
 @mixin component-title {
     @include title-coloring;
-    font-size: 10rem;
+    font-size: $font-size-xl;
     letter-spacing: 2rem;
     margin-right: -.333em;
 
