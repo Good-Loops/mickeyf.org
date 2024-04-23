@@ -17,46 +17,22 @@
 
         grid-auto-flow: column;
         column-gap: 8rem;
-
-        &-item {
+        
+        &-btn {
             &--tiktok {
-                @include default-btn;
-                padding-block: 5rem;
-                padding-inline: .05rem;
-                &:hover {
-                    @include default-btn-hover;
-                }
-
-                &:active {
-                    @include default-btn-active;
-                }
+                @include social-media-btn;
             }
 
             &--instagram {
-                @include default-btn;
-                padding-block: 5rem;
-                padding-inline: .05rem;
-                &:hover {
-                    @include default-btn-hover;
-                }
-
-                &:active {
-                    @include default-btn-active;
-                }
+                @include social-media-btn;
             }
 
             &--youtube {
-                @include default-btn;
-                padding-block: 5rem;
-                padding-inline: .05rem;
-                &:hover {
-                    @include default-btn-hover;
-                }
+                @include social-media-btn;
+            }
 
-                &:active {
-                    @include default-btn-active;
-                }
-
+            &--github {
+                @include social-media-btn;
             }
         }
     }

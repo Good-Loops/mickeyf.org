@@ -15,7 +15,7 @@
     @include title-coloring;
     font-size: $font-size-xl;
     letter-spacing: 2rem;
-    margin-right: -.333em;
+    margin-right: -.6em;
 
 }
 
@@ -48,6 +48,22 @@
     z-index: $back-2;
     user-select: none;
 }
+
+//////////////////////// Social Media ////////////////////////
+@mixin social-media-btn {
+    @include default-btn;
+    padding-block: 5rem;
+    padding-inline: .05rem;
+
+    &:hover {
+        @include default-btn-hover;
+    }
+
+    &:active {
+        @include default-btn-active;
+    }
+}
+
 
 // Default button hover effect
 @mixin default-btn-hover {

@@ -20,13 +20,14 @@ $font-size-l: 8rem;
 $font-size-m: 6rem;
 $font-size-s: 4rem;
 
-///////////////////// Breakpoints Values //////////////////////
-// Breakpoints for Navigation
+///////////////////// Breakpoints (max-width) //////////////////////
+$bp-5xl: 97.5em; // 1560px
+$bp-4xl: 85em;// 1360px
+$bp-3xl: 80em;// 1280px
+$bp-2xl: 75em;// 1200px
 $bp-xl: 61.25em; // 980px
 $bp-l: 55em; // 880px
 $bp-m: 48.75em; // 780px
-
-//Breakpoints for Animations component
 
 
 ///////////////////// Breakpoint Maps //////////////////////
@@ -120,11 +121,30 @@ $bps-games: (
 
 // Breakpoint Map for Social Media Component
 $bps-social-media: (
-    'xl': (
-        'width': $bp-xl,
+    '5xl': (
+        'width': $bp-5xl,
         'selectors': (
-            '.social-media__title': (
+            '.social-media__grid': (
+                'column-gap': 2rem,
+            ),
+            '.social-media__grid-anchor': (
+                'scale': .8,
+            ),
+        )
+    ),
+    '3xl': (
+        'width': $bp-3xl,
+        'selectors': (
+            '.social-media__title': ( 
                 'font-size': $font-size-l,
+                'margin-bottom': -5rem,
+            ),
+            '.social-media__grid': (
+                'grid-template-rows': 1fr 1fr,    
+                'column-gap': 0rem,
+            ),
+            '.social-media__grid-anchor': (
+                'scale': .7,
             ),
         )
     ),
@@ -141,6 +161,9 @@ $bps-social-media: (
         'selectors': (
             '.social-media__title': (
                 'font-size': $font-size-s,
+            ),
+            '.social-media__grid-anchor': (
+                'scale': .5,
             ),
         )
     ),
