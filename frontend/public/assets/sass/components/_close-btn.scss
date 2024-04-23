@@ -2,7 +2,7 @@
 
 .close-btn {
 
-    @include sidebar-btns-defaults;
+    @include default-sidebar-btn;
 
     z-index: $front;
 

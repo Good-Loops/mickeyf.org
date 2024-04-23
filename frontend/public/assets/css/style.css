@@ -134,7 +134,7 @@ h1 {
 }
 .nav__link {
   text-decoration: none;
-  color: rgba(204, 204, 204, 0.8);
+  color: rgba(206, 235, 253, 0.8);
   -webkit-transition: text-shadow 1.5s ease-in-out;
   transition: text-shadow 1.5s ease-in-out;
 }
@@ -217,7 +217,7 @@ h1 {
 }
 .sidebar__nav__link {
   text-decoration: none;
-  color: rgba(204, 204, 204, 0.8);
+  color: rgba(206, 235, 253, 0.8);
   -webkit-transition: text-shadow 1.5s ease-in-out;
   transition: text-shadow 1.5s ease-in-out;
 }
@@ -232,6 +232,7 @@ h1 {
 }
 .sidebar-btn {
   display: none;
+  fill: hsl(203, 92%, 90%);
   background: none;
   border: none;
   position: fixed;
@@ -260,6 +261,7 @@ h1 {
 }
 .close-btn {
   display: none;
+  fill: hsl(203, 92%, 90%);
   background: none;
   border: none;
   position: fixed;
@@ -461,6 +463,7 @@ h1 {
           user-select: none;
   padding-block: 5rem;
   padding-inline: 0.05rem;
+  fill: hsl(203, 92%, 90%);
 }
 .social-media__grid-btn--tiktok:hover {
   color: hsl(240, 67%, 95%);
@@ -495,6 +498,7 @@ h1 {
           user-select: none;
   padding-block: 5rem;
   padding-inline: 0.05rem;
+  fill: hsl(203, 92%, 90%);
 }
 .social-media__grid-btn--instagram:hover {
   color: hsl(240, 67%, 95%);
@@ -529,6 +533,7 @@ h1 {
           user-select: none;
   padding-block: 5rem;
   padding-inline: 0.05rem;
+  fill: hsl(203, 92%, 90%);
 }
 .social-media__grid-btn--youtube:hover {
   color: hsl(240, 67%, 95%);
@@ -563,6 +568,7 @@ h1 {
           user-select: none;
   padding-block: 5rem;
   padding-inline: 0.05rem;
+  fill: hsl(203, 92%, 90%);
 }
 .social-media__grid-btn--github:hover {
   color: hsl(240, 67%, 95%);

@@ -16,7 +16,6 @@
     font-size: $font-size-xl;
     letter-spacing: 2rem;
     margin-right: -.6em;
-
 }
 
 //////////////////////// Buttons ////////////////////////
@@ -55,6 +54,8 @@
     padding-block: 5rem;
     padding-inline: .05rem;
 
+    fill: $primary-light;
+
     &:hover {
         @include default-btn-hover;
     }
@@ -86,9 +87,11 @@
 }
 
 // Sidebar button defaults
-@mixin sidebar-btns-defaults {
+@mixin default-sidebar-btn {
     display: none;
     
+    fill: $primary-light;
+
     background: none;
     border: none;
 
@@ -123,7 +126,7 @@
 @mixin nav-link {
     text-decoration: none;
     
-    color: rgba($gray-light, .8);
+    color: rgba($primary-light, .8);
 
     transition: text-shadow 1.5s ease-in-out;
 

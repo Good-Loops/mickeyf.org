@@ -2,7 +2,7 @@
 
 .sidebar-btn {
     
-    @include sidebar-btns-defaults;
+    @include default-sidebar-btn;
 
     &:hover {
         cursor: $cursor-hover;
