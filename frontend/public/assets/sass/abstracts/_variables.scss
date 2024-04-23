@@ -28,6 +28,7 @@ $bp-2xl: 75em;// 1200px
 $bp-xl: 61.25em; // 980px
 $bp-l: 55em; // 880px
 $bp-m: 48.75em; // 780px
+$bp-s: 34.375em; // 550px
 
 
 ///////////////////// Breakpoint Maps //////////////////////
@@ -159,11 +160,28 @@ $bps-social-media: (
     'm': (
         'width': $bp-m,
         'selectors': (
-            '.social-media__title': (
-                'font-size': $font-size-s,
-            ),
             '.social-media__grid-anchor': (
                 'scale': .5,
+                'margin': -2rem,
+            ),
+            '.social-media__title': (
+                'display': inline-block,
+                'padding-inline': 3rem,
+                'text-align': center,
+            ),
+        )
+    ),
+    's': (
+        'width': $bp-s,
+        'selectors': (
+            '.social-media': (
+                'margin-bottom': 0,
+            ),
+            '.social-media__grid': (
+                'grid-auto-flow': row,  
+            ),
+            '.social-media__grid-anchor': (
+                'margin-block': -5rem,
             ),
         )
     ),
