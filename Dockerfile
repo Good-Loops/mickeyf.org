@@ -1,6 +1,9 @@
 # Specifying the base image
 FROM node:21.7.2-alpine
 
+# Specifying the base image
+FROM node:21.7.2-alpine
+
 # Update and upgrade the system packages, and remove unnecessary cache and temporary files
 RUN apk update && \
     apk upgrade && \
@@ -9,22 +12,17 @@ RUN apk update && \
 # Create and set the working directory    
 WORKDIR /usr/src/app
 
-# Copy application dependency manifests to the container image.
-# Copying this separately prevents re-running npm install on every code change.
+# Copy backend application dependency manifests to the container image.
 COPY backend/package*.json ./backend/
-COPY frontend/package*.json ./frontend/
 
-# Install dependencies for backend and frontend
+# Install backend dependencies
 RUN cd backend && npm install
-RUN cd frontend && npm install
 
-# Copy local code to the container image for backend and frontend
+# Copy local backend code to the container image
 COPY backend/ ./backend/
-COPY frontend/ ./frontend/
 
-# Build the application using webpack for both backend and frontend
+# Build the backend application using webpack
 RUN cd backend && npm run prod
-RUN cd frontend && npm run prod
 
 # Create a new non-root user for running applications securely
 RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup

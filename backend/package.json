@@ -1,6 +1,6 @@
 {
     "name": "mickeyf-backend",
-    "version": "0.0.2",
+    "version": "0.1.44",
     "description": "Backend server for mickeyf.org",
     "main": "app.ts",
     "scripts": {

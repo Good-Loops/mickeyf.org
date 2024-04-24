@@ -8,14 +8,14 @@ import userRoutes from './routes/userRoutes';
 const app = express();
 
 // Serve static files from assets
-app.use(express.static('assets'));
+app.use(express.static('public'));
 
 // Helmet CSP configuration
 app.use(
     helmet.contentSecurityPolicy({
         directives: {
             defaultSrc: ["'none'"], // Sets the default source to 'none'
-            imgSrc: ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app", "http://localhost:3000"], // Allows images from both domains
+            imgSrc: ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app", "http://localhost:3000"], // Allows images from these backend domains
             scriptSrc: ["'self'"], // Allows scripts from the same origin
         }
     })
@@ -26,7 +26,7 @@ app.use(express.json());
 // CORS configuration
 app.use(cors(
     {
-        origin: ['http://localhost:7777', 'http://localhost:3000', 'https://mickeyf.org'], // Only allow requests from these domains
+        origin: ['http://localhost:7777', 'http://localhost:3000', 'https://mickeyf-org-j7yuum4tiq-uc.a.run.app', 'https://mickeyf.org'], // Allow requests from these domains
         methods: ['GET', 'POST'], // Allowed HTTP methods
         allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
     }

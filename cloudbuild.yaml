@@ -1,11 +1,12 @@
 steps:
-  # Build the Docker image
+  # Build the Docker image for the backend
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:v0.1.44', '.']
-
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:${SHORT_SHA}:v0.1.44', '.']
+    dir: 'backend'
+  
   # Push the Docker image to Google Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:v0.1.44']
+    args: ['push', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:${SHORT_SHA}:v0.1.44']
 
   # Deploy the image to Google Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,7 +16,7 @@ steps:
       - 'deploy'
       - '${_SERVICE_NAME}'
       - '--image'
-      - 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:v0.1.44'
+      - 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:${SHORT_SHA}:v0.1.44'
       - '--region'
       - '${_REGION}'
       - '--platform'
@@ -24,12 +25,16 @@ steps:
       - '--port'
       - '8080'
 
+  # Upload frontend files to Cloud Storage
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['rsync', '-r', 'frontend/public', 'gs://${_FRONTEND_BUCKET}']
+
 substitutions:
   _GCP_PROJECT_ID: 'noted-reef-387021'
   _REPO_NAME: 'cloud-run-source-deploy'
   _SERVICE_NAME: 'mickeyf-org'
   _REGION: 'us-central1'
+  _FRONTEND_BUCKET: 'www.mickeyf.org' # Specify your bucket name
 
 options:
   logging: CLOUD_LOGGING_ONLY
-
