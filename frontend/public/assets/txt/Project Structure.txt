@@ -19,82 +19,72 @@ mickeyf.org
 |   |-- tsconfig.json
 |   `-- webpack.config.js
 |-- frontend
-|   |-- components
-|   |   |-- animations
-|   |   |   `-- DanceCircles.ts
-|   |   |-- games
-|   |   |   `-- P4Vega.ts
-|   |   |-- Animations.ts
-|   |   |-- Error404.ts
-|   |   |-- Games.ts
-|   |   |-- Home.ts
-|   |   |-- Register.ts
-|   |   |-- SocialMedia.ts
-|   |   `-- User.ts
 |   |-- dist
 |   |   |-- index.min.js
 |   |   `-- index.min.js.map
 |   |-- node_modules [276 entries exceeds filelimit, not opening dir]
 |   |-- public
-|   |   `-- assets
-|   |       |-- audio
-|   |       |   |-- Test Score.wav
-|   |       |   `-- Testing Song.wav
-|   |       |-- css
-|   |       |   |-- style.css
-|   |       |   `-- style.min.css
-|   |       |-- img
-|   |       |   |-- SVG
-|   |       |   |   |-- instagram.svg
-|   |       |   |   |-- tiktok.svg
-|   |       |   |   `-- youtube.svg
-|   |       |   |-- normal.cur
-|   |       |   |-- notallowed.cur
-|   |       |   |-- select.cur
-|   |       |   `-- sprite.svg
-|   |       |-- sass
-|   |       |   |-- abstracts
-|   |       |   |   |-- _colors.scss
-|   |       |   |   |-- _fonts.scss
-|   |       |   |   |-- _functions.scss
-|   |       |   |   |-- _index.scss
-|   |       |   |   |-- _mixins.scss
-|   |       |   |   |-- _shadows.scss
-|   |       |   |   `-- _variables.scss
-|   |       |   |-- base
-|   |       |   |   |-- _animations.scss
-|   |       |   |   |-- _base.scss
-|   |       |   |   |-- _index.scss
-|   |       |   |   |-- _typography.scss
-|   |       |   |   `-- _utilities.scss
-|   |       |   |-- components
-|   |       |   |   `-- _index.scss
-|   |       |   |-- layout
-|   |       |   |   |-- _footer.scss
-|   |       |   |   |-- _header.scss
-|   |       |   |   |-- _index.scss
-|   |       |   |   `-- _main.scss
-|   |       |   |-- pages
-|   |       |   |   |-- _animations.scss
-|   |       |   |   |-- _dancing-circles.scss
-|   |       |   |   |-- _games.scss
-|   |       |   |   |-- _index.scss
-|   |       |   |   |-- _p4-vega.scss
-|   |       |   |   |-- _registration.scss
-|   |       |   |   `-- _social-media.scss
-|   |       |   |-- themes
-|   |       |   |   `-- _index.scss
-|   |       |   `-- style.scss
-|   |       |-- sprites
-|   |       |   |-- blackholeBlue.png
-|   |       |   |-- blackholeRed.png
-|   |       |   |-- blackholeYellow.png
-|   |       |   |-- p4.png
-|   |       |   `-- water.png
-|   |       |-- txt
-|   |       |   |-- Colors for Website.txt
-|   |       |   `-- Project Structure.txt
-|   |       `-- favicon.ico
+|   |   |-- assets
+|   |   |   |-- audio
+|   |   |   |   |-- Test Score.wav
+|   |   |   |   `-- Testing Song.wav
+|   |   |   |-- css
+|   |   |   |   |-- style.css
+|   |   |   |   `-- style.min.css
+|   |   |   |-- img
+|   |   |   |   |-- SVG
+|   |   |   |   |   |-- instagram.svg
+|   |   |   |   |   |-- tiktok.svg
+|   |   |   |   |   `-- youtube.svg
+|   |   |   |   |-- normal.cur
+|   |   |   |   |-- notallowed.cur
+|   |   |   |   |-- select.cur
+|   |   |   |   `-- sprite.svg
+|   |   |   |-- sass
+|   |   |   |   |-- abstracts
+|   |   |   |   |   |-- _colors.scss
+|   |   |   |   |   |-- _fonts.scss
+|   |   |   |   |   |-- _functions.scss
+|   |   |   |   |   |-- _index.scss
+|   |   |   |   |   |-- _mixins.scss
+|   |   |   |   |   |-- _shadows.scss
+|   |   |   |   |   `-- _variables.scss
+|   |   |   |   |-- base
+|   |   |   |   |   |-- _animations.scss
+|   |   |   |   |   |-- _base.scss
+|   |   |   |   |   |-- _index.scss
+|   |   |   |   |   |-- _typography.scss
+|   |   |   |   |   `-- _utilities.scss
+|   |   |   |   |-- components
+|   |   |   |   |   `-- _index.scss
+|   |   |   |   |-- layout
+|   |   |   |   |   |-- _footer.scss
+|   |   |   |   |   |-- _header.scss
+|   |   |   |   |   |-- _index.scss
+|   |   |   |   |   `-- _main.scss
+|   |   |   |   |-- pages
+|   |   |   |   |   |-- _animations.scss
+|   |   |   |   |   |-- _dancing-circles.scss
+|   |   |   |   |   |-- _games.scss
+|   |   |   |   |   |-- _index.scss
+|   |   |   |   |   |-- _p4-vega.scss
+|   |   |   |   |   |-- _registration.scss
+|   |   |   |   |   `-- _social-media.scss
+|   |   |   |   |-- themes
+|   |   |   |   |   `-- _index.scss
+|   |   |   |   `-- style.scss
+|   |   |   |-- sprites
+|   |   |   |   |-- blackholeBlue.png
+|   |   |   |   |-- blackholeRed.png
+|   |   |   |   |-- blackholeYellow.png
+|   |   |   |   |-- p4.png
+|   |   |   |   `-- water.png
+|   |   |   |-- txt
+|   |   |   |   |-- Colors for Website.txt
+|   |   |   |   `-- Project Structure.txt
+|   |   |   `-- favicon.ico
+|   |   |-- 404.html
+|   |   `-- index.html
 |   |-- src
 |   |   |-- animations
 |   |   |   |-- dancing circles
@@ -104,6 +94,19 @@ mickeyf.org
 |   |   |   |   |   `-- ColorHandler.ts
 |   |   |   |   `-- danceCircles.ts
 |   |   |   `-- dancing fractals
+|   |   |-- components
+|   |   |   |-- animations
+|   |   |   |   `-- DanceCircles.ts
+|   |   |   |-- games
+|   |   |   |   `-- P4Vega.ts
+|   |   |   |-- Animations.ts
+|   |   |   |-- Error404.ts
+|   |   |   |-- Games.ts
+|   |   |   |-- Home.ts
+|   |   |   |-- Register.ts
+|   |   |   |-- SocialMedia.ts
+|   |   |   `-- User.ts
+|   |   |-- events
 |   |   |-- games
 |   |   |   |-- Three Bosses
 |   |   |   |-- classes
@@ -126,20 +129,22 @@ mickeyf.org
 |   |   |   |-- interfaces
 |   |   |   |   `-- IUserCreate.ts
 |   |   |   `-- create.ts
+|   |   |-- routes
 |   |   |-- utils
+|   |   |   |-- checkCollision.ts
 |   |   |   |-- constants.ts
-|   |   |   |-- loadPage.ts
-|   |   |   `-- methods.ts
+|   |   |   |-- getUserData.ts
+|   |   |   |-- lerp.ts
+|   |   |   |-- loadComponent.ts
+|   |   |   `-- random.ts
 |   |   `-- index.ts
 |   |-- package-lock.json
 |   |-- package.json
 |   |-- server.ts
 |   |-- tsconfig.json
 |   `-- webpack.config.js
-|-- 404.html
 |-- Dockerfile
 |-- LICENSE
 |-- README.md
 |-- cloudbuild.yaml
-|-- index.html
 `-- install-scout.sh

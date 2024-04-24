@@ -1,9 +1,9 @@
-import { getUserData } from "../utils/methods";
+import getUserData from "../utils/getUserData";
 import IListUsers from "./interfaces/IListUsers";
 
 export default function listUsers(): IListUsers {
     return {
-        data: [], 
+        data: [],
         list: async function () {
             try {
                 const data = await getUserData();

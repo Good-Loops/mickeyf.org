@@ -1,5 +1,5 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
-import { getRandomIndexArr, getRandomX, getRandomY } from "../../utils/methods";
+import { getRandomIndexArr, getRandomX, getRandomY } from "../../utils/random";
 import ColorHandler from "./classes/ColorHandler";
 import Circle from "./classes/Circle";
 import AudioHandler from "./classes/AudioHandler";
@@ -33,9 +33,9 @@ export default function danceCircles() {
     // // Audio Handling
     AudioHandler.processAudio(fileInput, uploadButton);
 
-    let deltaTime: number, lastTime: number, 
-        updateTimer: number, updateInterval: number,     
-        updateOnPitchTimer: number, updateOnPitchInterval: number, 
+    let deltaTime: number, lastTime: number,
+        updateTimer: number, updateInterval: number,
+        updateOnPitchTimer: number, updateOnPitchInterval: number,
         drawTimer: number, drawInterval: number;
 
     // Fills circle array
@@ -52,7 +52,7 @@ export default function danceCircles() {
         canvasTargetColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
-        
+
         Circle.startingBaseR = 50;
         Circle.prevR = 8;
         Circle.circles = [];
@@ -138,10 +138,10 @@ export default function danceCircles() {
         }
     }
 
-    deltaTime = 0, lastTime = 0, 
-    updateTimer = 0, updateInterval = 1000,     
-    updateOnPitchTimer = 0, updateOnPitchInterval = 10, 
-    drawTimer = 0, drawInterval = 40;
+    deltaTime = 0, lastTime = 0,
+        updateTimer = 0, updateInterval = 1000,
+        updateOnPitchTimer = 0, updateOnPitchInterval = 10,
+        drawTimer = 0, drawInterval = 40;
     const draw = (): void => {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);

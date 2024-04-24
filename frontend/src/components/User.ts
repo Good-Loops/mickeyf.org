@@ -1,10 +1,10 @@
-import { getUserData } from "../src/utils/methods";
+import getUserData from "../utils/getUserData";
 
 function component() {
-    const user = async function(id: string) {
-        
+    const user = async function (id: string) {
+
         const data = await getUserData();
-        
+
         const numericId = parseInt(id, 10);
         if (isNaN(numericId)) {
             throw new Error('Invalid id');

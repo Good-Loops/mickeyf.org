@@ -1,5 +1,15 @@
+# Ignore build artifacts and dependencies
 node_modules/
-.gcloudignore
-.git/
-.gitignore
-README.md
+backend/dist/
+frontend/dist/
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+
+# Ignore configuration files
+backend/.env
+cloudbuild.yaml
+install-scout.sh

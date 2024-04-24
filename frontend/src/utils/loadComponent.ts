@@ -1,12 +1,12 @@
-import Home from "../../components/Home";
-import User from "../../components/User";
-import Games from "../../components/Games";
-import Animations from "../../components/Animations";
-import SocialMedia from "../../components/SocialMedia";
-import Register from "../../components/Register";
-import DanceCircles from "../../components/animations/DanceCircles";
-import P4Vega from "../../components/games/P4Vega";
-import Error404 from "../../components/Error404";
+import Home from "../components/Home";
+import User from "../components/User";
+import Games from "../components/Games";
+import Animations from "../components/Animations";
+import SocialMedia from "../components/SocialMedia";
+import Register from "../components/Register";
+import DanceCircles from "../components/animations/DanceCircles";
+import P4Vega from "../components/games/P4Vega";
+import Error404 from "../components/Error404";
 
 interface ComponentInterface {
     render: (params?: any) => string | Promise<string>;

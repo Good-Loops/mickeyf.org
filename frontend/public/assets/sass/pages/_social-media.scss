@@ -9,9 +9,7 @@
     justify-items: center;
 
     &__title {
-        @include title-coloring;
-        font-size: 10rem;
-        letter-spacing: 2rem;
+        @include component-title;
     }
 
     &__grid {
@@ -19,47 +17,25 @@
 
         grid-auto-flow: column;
         column-gap: 8rem;
-
-        &-item {
+        
+        &-btn {
             &--tiktok {
-                @include default-btn;
-                padding-block: 5rem;
-                padding-inline: .05rem;
-                &:hover {
-                    @include default-btn-hover;
-                }
-
-                &:active {
-                    @include default-btn-active;
-                }
+                @include social-media-btn;
             }
 
             &--instagram {
-                @include default-btn;
-                padding-block: 5rem;
-                padding-inline: .05rem;
-                &:hover {
-                    @include default-btn-hover;
-                }
-
-                &:active {
-                    @include default-btn-active;
-                }
+                @include social-media-btn;
             }
 
             &--youtube {
-                @include default-btn;
-                padding-block: 5rem;
-                padding-inline: .05rem;
-                &:hover {
-                    @include default-btn-hover;
-                }
+                @include social-media-btn;
+            }
 
-                &:active {
-                    @include default-btn-active;
-                }
-
+            &--github {
+                @include social-media-btn;
             }
         }
     }
 }
+
+@include generate-media-queries($bps-social-media);

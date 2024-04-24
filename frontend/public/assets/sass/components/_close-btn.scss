@@ -1,0 +1,12 @@
+@use '../abstracts' as *;
+
+.close-btn {
+
+    @include default-sidebar-btn;
+
+    z-index: $front;
+
+    &.is-visible {
+        display: block;
+    }
+}

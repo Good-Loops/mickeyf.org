@@ -1,85 +1,24 @@
-import create from "./register/create";
-import listUsers from "./home/listUsers";
-import IUserCreate from "./register/interfaces/IUserCreate";
-import IListUsers from "./home/interfaces/IListUsers";
-import { loadComponent } from './utils/loadPage';
 import Alpine from "alpinejs";
 import page from "page";
+import setupRoutes from './routes/setUpRoutes';
+import initializeGlobals from "./utils/initializeGlobals";
+import EventListenerManager from './events/EventListenerManager';
+import { initializeObserver } from './events/eventManager';
+    
+// Initialize global variables
+initializeGlobals();
 
-type EventListenerRecord = {
-    element: Document | Element,
-    event: string,
-    handler: (event: Event) => void,
-};
+// Start Alpine.js and Page.js
+Alpine.start();
+page.start();
 
 // Define routes using Page.js
-page('/', () => loadComponent('/'));
-page('/user/signup', () => loadComponent('/user/signup'));
-page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
-page('/games', () => loadComponent('/games'));
-page('/animations', () => loadComponent('/animations'));
-page('/socialmedia', () => loadComponent('/socialmedia'));
-page('/dancing-circles', () => loadComponent('/dancing-circles'));
-page('/p4-Vega', () => loadComponent('/p4-Vega'));
-page('*', () => loadComponent('/error'));
+setupRoutes(page);
 
-// Global variables
-declare global {
-    interface Window {
-        Alpine: typeof Alpine;
-        
-        create: () => IUserCreate;
-        listUsers: () => IListUsers;
-        
-        dcAnimationID: number | null;
-        p4AnimationID: number | null;
-        eventListeners: Record<string, EventListenerRecord[]>;
-    }
-}
-// Page.js
-window.page = page;
-page.start();
-// Alpine.js
-window.Alpine = Alpine;
-Alpine.start();
-// Event listeners
-window.eventListeners = {};
-// Register user
-window.create = create;
-// List registered users
-window.listUsers = listUsers;
+// Initialize event manager
+const observer = initializeObserver();
 
-// Stop animation function
-const stopAnimation = (animationId: number | null): void => {
-    if (animationId !== null) {
-        cancelAnimationFrame(animationId);
-    }
-}
-// Reset page state when page is removed from DOM
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        if (mutation.removedNodes) {
-            const content = document.getElementById("content");
-            mutation.removedNodes.forEach((node) => {
-                if (mutation.target === content && (<Element>node).id) {
-                    const componentId = (<Element>node).id;
-                    switch (componentId) {
-                        case "dancing-circles":
-                            stopAnimation(window.dcAnimationID);
-                            break;
-                        case "p4-vega":
-                            stopAnimation(window.p4AnimationID);
-                            break;
-                    }
-                    if (window.eventListeners[componentId]) {
-                        window.eventListeners[componentId].forEach(({ element, event, handler }) => {
-                            element.removeEventListener(event, handler);
-                        });
-                        delete window.eventListeners[componentId];
-                    }
-                }
-            });
-        }
-    });
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    EventListenerManager.init();
 });
-observer.observe(document, { childList: true, subtree: true });
