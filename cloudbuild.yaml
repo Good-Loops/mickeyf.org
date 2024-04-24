@@ -1,11 +1,11 @@
 steps:
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:${COMMIT_SHA}', '.']
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:${COMMIT_SHA}:v0.1.44', '.']
 
   # Push the Docker image to Google Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:${COMMIT_SHA}']
+    args: ['push', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:${COMMIT_SHA}:v0.1.44']
 
   # Deploy the image to Google Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,7 +15,7 @@ steps:
       - 'deploy'
       - '${_SERVICE_NAME}'
       - '--image'
-      - 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:${COMMIT_SHA}'
+      - 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:${COMMIT_SHA}:v0.1.44'
       - '--region'
       - '${_REGION}'
       - '--platform'
