@@ -6,28 +6,32 @@ RUN apk update && \
     apk upgrade && \
     rm -rf /var/cache/apk/*
 
-# Create and change to the app directory.
+# Create and set the working directory    
 WORKDIR /usr/src/app
 
 # Copy application dependency manifests to the container image.
 # A wildcard is used to ensure both package.json AND package-lock.json are copied.
 # Copying this separately prevents re-running npm install on every code change.
-COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY frontend/package*.json ./frontend/
 
-# Install production dependencies.
-RUN npm install --only=production
+# Install backend dependencies
+RUN cd backend && npm install --only=production
 
-# Copy local code to the container image.
-COPY . .
+# Install frontend dependencies
+RUN cd frontend && npm install --only=production
 
-# Create a new group and user 'nodeuser'
-RUN addgroup -S nodeuser && adduser -S nodeuser -G nodeuser
+# Copy local code to the container image for backend and frontend
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
 
-# Change to the 'nodeuser' user
+# Create a new non-root user for running applications securely
+RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
+# Change to non-root user
 USER nodeuser
 
 # Inform Docker that the container is listening on the specified port at runtime.
 EXPOSE 8080
 
-# Run the web service on container startup.
-CMD [ "node", "dist/server.min.js" ]
+# Command to start the backend server
+CMD ["node", "/usr/src/app/backend/dist/server.min.js"]

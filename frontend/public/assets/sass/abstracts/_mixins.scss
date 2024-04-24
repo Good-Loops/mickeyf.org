@@ -2,12 +2,24 @@
 @use 'shadows' as *;
 @use 'variables' as *;
 
+//////////////////////// Typography ////////////////////////
+// Main title coloring
 @mixin title-coloring {
     color: $primary-dark;
     -webkit-text-stroke: .05em rgba($white, .3);
     text-shadow: $title-text-shadow;
 }
 
+// Component title styling
+@mixin component-title {
+    @include title-coloring;
+    font-size: $font-size-xl;
+    letter-spacing: 2rem;
+    margin-right: -.6em;
+}
+
+//////////////////////// Buttons ////////////////////////
+// Default button styling
 @mixin default-btn {
     padding: .5em;
     padding-top: .4em;
@@ -32,27 +44,29 @@
         color 1.5s,
         border-color 2s;
 
-    z-index: 2;
+    z-index: $back-2;
     user-select: none;
 }
 
-@mixin box-shadow-effect {
-    box-shadow:
-            0 0 .6em rgba($white, .6),
-            0 0 0em rgba($primary, .5) inset,
-            0 0 0em $primary;
-    
-    transition:
-        box-shadow .5s linear,
-        scale .7s linear,
-        text-shadow 1s ease-in-out,
-        color 1.5s,
-        border-color 2s;
+//////////////////////// Social Media ////////////////////////
+@mixin social-media-btn {
+    @include default-btn;
+    padding-block: 5rem;
+    padding-inline: .05rem;
 
-    z-index: 2;
-    user-select: none;
+    fill: $primary-light;
+
+    &:hover {
+        @include default-btn-hover;
+    }
+
+    &:active {
+        @include default-btn-active;
+    }
 }
 
+
+// Default button hover effect
 @mixin default-btn-hover {
     color: $white;
     border-color: rgba($white, .3);
@@ -67,6 +81,91 @@
     cursor: $cursor-hover;
 }
 
+// Default button active effect
 @mixin default-btn-active {
     scale: .2;
+}
+
+// Sidebar button defaults
+@mixin default-sidebar-btn {
+    display: none;
+    
+    fill: $primary-light;
+
+    background: none;
+    border: none;
+
+    position: fixed;
+    top: -.5em;
+    left: -6.5em;
+    
+    transform: scale(.45);
+}
+
+//////////////////////// Shadows ////////////////////////
+// Box shadow effect
+@mixin box-shadow-effect {
+    box-shadow:
+            0 0 .6em rgba($white, .6),
+            0 0 0em rgba($primary, .5) inset,
+            0 0 0em $primary;
+    
+    transition:
+        box-shadow .5s linear,
+        scale .7s linear,
+        text-shadow 1s ease-in-out,
+        color 1.5s,
+        border-color 2s;
+
+    z-index: $back-2;
+    user-select: none;
+}
+
+//////////////////////// Navigation ////////////////////////
+// Default nav link styling
+@mixin nav-link {
+    text-decoration: none;
+    
+    color: rgba($primary-light, .8);
+
+    transition: text-shadow 1.5s ease-in-out;
+
+    &:hover,
+    &:focus {
+        text-shadow: $label-text-shadow;
+    }
+}
+
+// Default nav item styling
+@mixin nav-item {
+    transition: transform .5s ease-in-out;
+    
+    padding-inline: .5em;
+
+    white-space: nowrap;
+
+    &:hover,
+    &:focus {
+        transform: scale(1.1);
+    }
+
+    &:active {
+        transform: scale(.5);
+    }
+}
+
+// This mixin generates media queries for the given map
+// Maps are defined in the variables file
+@mixin generate-media-queries($map) {
+    @each $bp, $bp-info in $map { // Loop through the breakpoints
+        @media only screen and (max-width: map-get($bp-info, 'width')) { // Generate media queries for each breakpoint
+            @each $selector, $properties in map-get($bp-info, 'selectors') { // Loop through the selectors
+                #{$selector} { // Generate the selector
+                    @each $property, $value in $properties { // Loop through the properties
+                        #{$property}: $value; // Generate the property
+                    }
+                }
+            }
+        }
+    }
 }

@@ -1,5 +1,6 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
-import { checkCollision, getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../utils/methods";
+import { getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../utils/random";
+import checkCollision from "../../../utils/checkCollision";
 import Entity from "../../classes/Entity";
 import P4 from "./P4";
 
@@ -7,10 +8,10 @@ export default class BlackHole extends Entity {
     private hue: number = getRandomInt(0, 360);
     private minDistance: number = 200;
     private vX?: number;
-    private vY?: number; 
+    private vY?: number;
 
     public width: number = 90;
-    public height: number  = 90;
+    public height: number = 90;
     public x: number = getRandomX(this.sprite.width);
     public y: number = getRandomY(this.sprite.height);
     public free: boolean = false;
@@ -30,7 +31,7 @@ export default class BlackHole extends Entity {
     constructor() {
         super(BlackHole.getRandomSprite(), 50);
         this.determineDirection();
-        if(!BlackHole.lastFree) {
+        if (!BlackHole.lastFree) {
             BlackHole.lastFree = this;
         } else {
             BlackHole.linkElement(this);
@@ -54,9 +55,9 @@ export default class BlackHole extends Entity {
     }
 
     private static checkNumberOfFree(): void {
-        if(this.freeElements / this.poolSize > this.maxPercentFree * .01) {
+        if (this.freeElements / this.poolSize > this.maxPercentFree * .01) {
             const increaseSize = ~~(this.poolSize * this.increasePercent * .01);
-            for(let i = 0; i < increaseSize; i++) {
+            for (let i = 0; i < increaseSize; i++) {
                 this.pool.push(new BlackHole());
             }
             this.poolSize += increaseSize;
