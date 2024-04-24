@@ -1,6 +1,6 @@
 {
     "name": "mickeyf-frontend",
-    "version": "0.0.2",
+    "version": "0.1.44",
     "description": "Frontend for mickeyf.org",
     "main": "src/index.ts",
     "scripts": {

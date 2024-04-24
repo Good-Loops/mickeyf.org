@@ -10,7 +10,7 @@ const publicPath = path.resolve(__dirname, 'public');
 
 // Proxy API requests to Backend
 app.use('/api', createProxyMiddleware({
-    target: 'http://localhost:3000',
+    target: 'https://mickeyf-org-j7yuum4tiq-uc.a.run.app',
     changeOrigin: true,
     pathRewrite: {
         '^/api': '', // optionally strip the /api prefix if needed
