@@ -36,7 +36,7 @@ app.use(cors(
 // Use userRoutes for all user-related endpoints
 app.use('/api', userRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
