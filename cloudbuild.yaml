@@ -13,3 +13,4 @@ substitutions:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  logsBucket: 'gs://mickeyf-logs'
