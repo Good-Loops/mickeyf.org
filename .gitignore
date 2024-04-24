@@ -8,8 +8,3 @@ frontend/dist/
 
 # Ignore temporary files
 *.tmp
-
-# Ignore configuration files
-backend/.env
-cloudbuild.yaml
-install-scout.sh
