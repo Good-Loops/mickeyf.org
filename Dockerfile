@@ -10,20 +10,21 @@ RUN apk update && \
 WORKDIR /usr/src/app
 
 # Copy application dependency manifests to the container image.
-# A wildcard is used to ensure both package.json AND package-lock.json are copied.
 # Copying this separately prevents re-running npm install on every code change.
 COPY backend/package*.json ./backend/
 COPY frontend/package*.json ./frontend/
 
-# Install backend dependencies
-RUN cd backend && npm install --only=production
-
-# Install frontend dependencies
-RUN cd frontend && npm install --only=production
+# Install dependencies for backend and frontend
+RUN cd backend && npm install
+RUN cd frontend && npm install
 
 # Copy local code to the container image for backend and frontend
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
+
+# Build the application using webpack for both backend and frontend
+RUN cd backend && npm run prod
+RUN cd frontend && npm run prod
 
 # Create a new non-root user for running applications securely
 RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
