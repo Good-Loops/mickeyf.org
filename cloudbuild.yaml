@@ -7,10 +7,28 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/${_GCP_PROJECT_ID}/${_APP_NAME}:${COMMIT_SHA}']
 
+  # Deploy the image to Google Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - 'gcr.io/${_GCP_PROJECT_ID}/${_APP_NAME}:${COMMIT_SHA}'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+
 substitutions:
   _GCP_PROJECT_ID: 'noted-reef-387021'
-  _APP_NAME: 'mickeyf-org' 
+  _APP_NAME: 'mickeyf-org'
+  _SERVICE_NAME: 'mickeyf-org'
+  _REGION: 'us-central1'
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  logsBucket: 'gs://mickeyf-logs'
