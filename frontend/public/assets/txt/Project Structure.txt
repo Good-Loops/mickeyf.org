@@ -1,130 +1,145 @@
 mickeyf.org
 |
-|-- assets
-|   |-- audio
-|   |   |-- Test Score.wav
-|   |   `-- Testing Song.wav
-|   |-- css
-|   |   |-- style.css
-|   |   `-- style.min.css
-|   |-- img
-|   |   |-- SVG
-|   |   |   |-- instagram.svg
-|   |   |   |-- tiktok.svg
-|   |   |   `-- youtube.svg
-|   |   |-- icon.ico
-|   |   |-- normal.cur
-|   |   |-- notallowed.cur
-|   |   |-- select.cur
-|   |   `-- sprite.svg
-|   |-- sass
-|   |   |-- abstracts
-|   |   |   |-- _colors.scss
-|   |   |   |-- _fonts.scss
-|   |   |   |-- _functions.scss
-|   |   |   |-- _index.scss
-|   |   |   |-- _mixins.scss
-|   |   |   |-- _shadows.scss
-|   |   |   `-- _variables.scss
-|   |   |-- base
-|   |   |   |-- _animations.scss
-|   |   |   |-- _base.scss
-|   |   |   |-- _index.scss
-|   |   |   |-- _typography.scss
-|   |   |   `-- _utilities.scss
-|   |   |-- components
-|   |   |   `-- _index.scss
-|   |   |-- layout
-|   |   |   |-- _footer.scss
-|   |   |   |-- _header.scss
-|   |   |   |-- _index.scss
-|   |   |   `-- _main.scss
-|   |   |-- pages
-|   |   |   |-- _animations.scss
-|   |   |   |-- _dancing-circles.scss
-|   |   |   |-- _games.scss
-|   |   |   |-- _index.scss
-|   |   |   |-- _p4-vega.scss
-|   |   |   |-- _registration.scss
-|   |   |   `-- _social-media.scss
-|   |   |-- themes
-|   |   |   `-- _index.scss
-|   |   `-- style.scss
-|   |-- sprites
-|   |   |-- blackholeBlue.png
-|   |   |-- blackholeRed.png
-|   |   |-- blackholeYellow.png
-|   |   |-- p4.png
-|   |   `-- water.png
-|   `-- txt
-|       |-- Colors for Website.txt
-|       `-- Project Structure.txt
 |-- backend
-|   |-- db_connect.php
-|   |-- index.php
-|   `-- server.ts
-|-- dist
-|   |-- index.min.js
-|   |-- server.min.js
-|   `-- server.min.js.LICENSE.txt
-|-- node_modules [277 entries exceeds filelimit, not opening dir]
-|-- pages
-|   |-- animations
-|   |   `-- DanceCircles.ts
-|   |-- games
-|   |   `-- P4Vega.ts
-|   |-- Animations.ts
-|   |-- Error404.ts
-|   |-- Games.ts
-|   |-- Home.ts
-|   |-- Register.ts
-|   |-- SocialMedia.ts
-|   `-- User.ts
-|-- src
-|   |-- animations
-|   |   |-- dancing circles
+|   |-- config
+|   |   `-- dbConfig.ts
+|   |-- controllers
+|   |   `-- userController.ts
+|   |-- dist
+|   |   |-- server.min.js
+|   |   `-- server.min.js.map
+|   |-- node_modules [188 entries exceeds filelimit, not opening dir]
+|   |-- routes
+|   |   `-- userRoutes.ts
+|   |-- types
+|   |   `-- customTypes.ts
+|   |-- app.ts
+|   |-- package-lock.json
+|   |-- package.json
+|   |-- tsconfig.json
+|   `-- webpack.config.js
+|-- frontend
+|   |-- components
+|   |   |-- animations
+|   |   |   `-- DanceCircles.ts
+|   |   |-- games
+|   |   |   `-- P4Vega.ts
+|   |   |-- Animations.ts
+|   |   |-- Error404.ts
+|   |   |-- Games.ts
+|   |   |-- Home.ts
+|   |   |-- Register.ts
+|   |   |-- SocialMedia.ts
+|   |   `-- User.ts
+|   |-- dist
+|   |   |-- index.min.js
+|   |   `-- index.min.js.map
+|   |-- node_modules [276 entries exceeds filelimit, not opening dir]
+|   |-- public
+|   |   `-- assets
+|   |       |-- audio
+|   |       |   |-- Test Score.wav
+|   |       |   `-- Testing Song.wav
+|   |       |-- css
+|   |       |   |-- style.css
+|   |       |   `-- style.min.css
+|   |       |-- img
+|   |       |   |-- SVG
+|   |       |   |   |-- instagram.svg
+|   |       |   |   |-- tiktok.svg
+|   |       |   |   `-- youtube.svg
+|   |       |   |-- normal.cur
+|   |       |   |-- notallowed.cur
+|   |       |   |-- select.cur
+|   |       |   `-- sprite.svg
+|   |       |-- sass
+|   |       |   |-- abstracts
+|   |       |   |   |-- _colors.scss
+|   |       |   |   |-- _fonts.scss
+|   |       |   |   |-- _functions.scss
+|   |       |   |   |-- _index.scss
+|   |       |   |   |-- _mixins.scss
+|   |       |   |   |-- _shadows.scss
+|   |       |   |   `-- _variables.scss
+|   |       |   |-- base
+|   |       |   |   |-- _animations.scss
+|   |       |   |   |-- _base.scss
+|   |       |   |   |-- _index.scss
+|   |       |   |   |-- _typography.scss
+|   |       |   |   `-- _utilities.scss
+|   |       |   |-- components
+|   |       |   |   `-- _index.scss
+|   |       |   |-- layout
+|   |       |   |   |-- _footer.scss
+|   |       |   |   |-- _header.scss
+|   |       |   |   |-- _index.scss
+|   |       |   |   `-- _main.scss
+|   |       |   |-- pages
+|   |       |   |   |-- _animations.scss
+|   |       |   |   |-- _dancing-circles.scss
+|   |       |   |   |-- _games.scss
+|   |       |   |   |-- _index.scss
+|   |       |   |   |-- _p4-vega.scss
+|   |       |   |   |-- _registration.scss
+|   |       |   |   `-- _social-media.scss
+|   |       |   |-- themes
+|   |       |   |   `-- _index.scss
+|   |       |   `-- style.scss
+|   |       |-- sprites
+|   |       |   |-- blackholeBlue.png
+|   |       |   |-- blackholeRed.png
+|   |       |   |-- blackholeYellow.png
+|   |       |   |-- p4.png
+|   |       |   `-- water.png
+|   |       |-- txt
+|   |       |   |-- Colors for Website.txt
+|   |       |   `-- Project Structure.txt
+|   |       `-- favicon.ico
+|   |-- src
+|   |   |-- animations
+|   |   |   |-- dancing circles
+|   |   |   |   |-- classes
+|   |   |   |   |   |-- AudioHandler.ts
+|   |   |   |   |   |-- Circle.ts
+|   |   |   |   |   `-- ColorHandler.ts
+|   |   |   |   `-- danceCircles.ts
+|   |   |   `-- dancing fractals
+|   |   |-- games
+|   |   |   |-- Three Bosses
 |   |   |   |-- classes
-|   |   |   |   |-- AudioHandler.ts
-|   |   |   |   |-- Circle.ts
-|   |   |   |   `-- ColorHandler.ts
-|   |   |   `-- danceCircles.ts
-|   |   `-- dancing fractals
-|   |-- games
-|   |   |-- Three Bosses
-|   |   |-- classes
-|   |   |   `-- Entity.ts
-|   |   |-- interfaces
-|   |   |   `-- IEntity.ts
-|   |   `-- p4-Vega
-|   |       |-- classes
-|   |       |   |-- BlackHole.ts
-|   |       |   |-- P4.ts
-|   |       |   |-- Sky.ts
-|   |       |   |-- Star.ts
-|   |       |   `-- Water.ts
-|   |       `-- p4-Vega.ts
-|   |-- helpers
-|   |   |-- constants.ts
-|   |   |-- hashInfo.ts
-|   |   |-- loadPage.ts
-|   |   `-- methods.ts
-|   |-- home
-|   |   |-- interfaces
-|   |   |   `-- IListUsers.ts
-|   |   `-- listUsers.ts
-|   |-- register
-|   |   |-- interfaces
-|   |   |   `-- IUserCreate.ts
-|   |   `-- create.ts
-|   `-- index.ts
+|   |   |   |   `-- Entity.ts
+|   |   |   |-- interfaces
+|   |   |   |   `-- IEntity.ts
+|   |   |   `-- p4-Vega
+|   |   |       |-- classes
+|   |   |       |   |-- BlackHole.ts
+|   |   |       |   |-- P4.ts
+|   |   |       |   |-- Sky.ts
+|   |   |       |   |-- Star.ts
+|   |   |       |   `-- Water.ts
+|   |   |       `-- p4-Vega.ts
+|   |   |-- home
+|   |   |   |-- interfaces
+|   |   |   |   `-- IListUsers.ts
+|   |   |   `-- listUsers.ts
+|   |   |-- register
+|   |   |   |-- interfaces
+|   |   |   |   `-- IUserCreate.ts
+|   |   |   `-- create.ts
+|   |   |-- utils
+|   |   |   |-- constants.ts
+|   |   |   |-- loadPage.ts
+|   |   |   `-- methods.ts
+|   |   `-- index.ts
+|   |-- package-lock.json
+|   |-- package.json
+|   |-- server.ts
+|   |-- tsconfig.json
+|   `-- webpack.config.js
 |-- 404.html
 |-- Dockerfile
 |-- LICENSE
 |-- README.md
 |-- cloudbuild.yaml
 |-- index.html
-|-- install-scout.sh
-|-- package-lock.json
-|-- package.json
-|-- tsconfig.json
-`-- webpack.config.js
+`-- install-scout.sh
