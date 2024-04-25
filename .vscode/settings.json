@@ -59,15 +59,15 @@
         {
             "format": "expanded",
             "extensionName": ".css",
-            "savePath": "/frontend/public/assets/css",
+            "savePath": "/public/assets/css",
         },
         {
             "format": "compressed",
             "extensionName": ".min.css",
-            "savePath": "/frontend/public/assets/css",
+            "savePath": "/public/assets/css",
         }
     ],
     "liveSassCompile.settings.includeItems": [
-        "/frontend/public/assets/sass/style.scss"
+        "/public/assets/sass/style.scss"
     ]
 }
