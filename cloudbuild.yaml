@@ -26,8 +26,13 @@ steps:
       - '8080'
 
   # Upload frontend files to Cloud Storage
+   # Delete existing files in the Cloud Storage bucket
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['rsync', '-r', 'frontend/public', 'gs://${_FRONTEND_BUCKET}']
+    args: ['rm', 'gs://${_FRONTEND_BUCKET}/**']
+
+  # Upload new frontend files to Cloud Storage
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', '-r', 'frontend/public/*', 'gs://${_FRONTEND_BUCKET}']
 
 substitutions:
   _GCP_PROJECT_ID: 'noted-reef-387021'
