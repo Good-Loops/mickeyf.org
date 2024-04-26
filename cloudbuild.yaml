@@ -26,7 +26,7 @@ steps:
       - '8080'
       - '--add-cloudsql-instances'
       - '${_CLOUD_SQL_CONNECTION_NAME}' # Include the Cloud SQL instance
-      - '--set-env-vars=CLOUD_SQL_CONNECTION_NAME=${_CLOUD_SQL_CONNECTION_NAME},DB_USER=${_DB_USER},DB_PASS="${_DB_PASS}",DB_NAME=${_DB_NAME}' # Include the DB env vars
+      - '--set-env-vars=CLOUD_SQL_CONNECTION_NAME=${_CLOUD_SQL_CONNECTION_NAME},DB_USER=${_DB_USER},DB_PASS="*<HLecm?,el(S>@H",DB_NAME=${_DB_NAME}' # Include the DB env vars
 
   # Upload frontend files to Cloud Storage
   # Delete existing files in the Cloud Storage bucket
@@ -45,7 +45,7 @@ substitutions:
   _FRONTEND_BUCKET: 'www.mickeyf.org'
   _CLOUD_SQL_CONNECTION_NAME: 'noted-reef-387021:us-central1:cms-mickeyf'
   _DB_USER: 'cms_mickeyf'
-  _DB_PASS: '*<HLecm?,el(S>@H'
+  # _DB_PASS: '*<HLecm?,el(S>@H'
   _DB_NAME: 'cms'
 
 options:
