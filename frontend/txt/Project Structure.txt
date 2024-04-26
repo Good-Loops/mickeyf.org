@@ -7,6 +7,7 @@ mickeyf.org
 |   |   `-- userController.ts
 |   |-- dist
 |   |   |-- server.min.js
+|   |   |-- server.min.js.LICENSE.txt
 |   |   `-- server.min.js.map
 |   |-- node_modules [188 entries exceeds filelimit, not opening dir]
 |   |-- routes
@@ -19,10 +20,7 @@ mickeyf.org
 |   |-- tsconfig.json
 |   `-- webpack.config.js
 |-- frontend
-|   |-- dist
-|   |   |-- index.min.js
-|   |   `-- index.min.js.map
-|   |-- node_modules [276 entries exceeds filelimit, not opening dir]
+|   |-- node_modules [283 entries exceeds filelimit, not opening dir]
 |   |-- public
 |   |   |-- assets
 |   |   |   |-- audio
@@ -30,9 +28,14 @@ mickeyf.org
 |   |   |   |   `-- Testing Song.wav
 |   |   |   |-- css
 |   |   |   |   |-- style.css
-|   |   |   |   `-- style.min.css
+|   |   |   |   |-- style.css.map
+|   |   |   |   |-- style.min.css
+|   |   |   |   `-- style.min.css.map
 |   |   |   |-- img
 |   |   |   |   |-- SVG
+|   |   |   |   |   |-- close.svg
+|   |   |   |   |   |-- compass.svg
+|   |   |   |   |   |-- github.svg
 |   |   |   |   |   |-- instagram.svg
 |   |   |   |   |   |-- tiktok.svg
 |   |   |   |   |   `-- youtube.svg
@@ -40,51 +43,53 @@ mickeyf.org
 |   |   |   |   |-- notallowed.cur
 |   |   |   |   |-- select.cur
 |   |   |   |   `-- sprite.svg
-|   |   |   |-- sass
-|   |   |   |   |-- abstracts
-|   |   |   |   |   |-- _colors.scss
-|   |   |   |   |   |-- _fonts.scss
-|   |   |   |   |   |-- _functions.scss
-|   |   |   |   |   |-- _index.scss
-|   |   |   |   |   |-- _mixins.scss
-|   |   |   |   |   |-- _shadows.scss
-|   |   |   |   |   `-- _variables.scss
-|   |   |   |   |-- base
-|   |   |   |   |   |-- _animations.scss
-|   |   |   |   |   |-- _base.scss
-|   |   |   |   |   |-- _index.scss
-|   |   |   |   |   |-- _typography.scss
-|   |   |   |   |   `-- _utilities.scss
-|   |   |   |   |-- components
-|   |   |   |   |   `-- _index.scss
-|   |   |   |   |-- layout
-|   |   |   |   |   |-- _footer.scss
-|   |   |   |   |   |-- _header.scss
-|   |   |   |   |   |-- _index.scss
-|   |   |   |   |   `-- _main.scss
-|   |   |   |   |-- pages
-|   |   |   |   |   |-- _animations.scss
-|   |   |   |   |   |-- _dancing-circles.scss
-|   |   |   |   |   |-- _games.scss
-|   |   |   |   |   |-- _index.scss
-|   |   |   |   |   |-- _p4-vega.scss
-|   |   |   |   |   |-- _registration.scss
-|   |   |   |   |   `-- _social-media.scss
-|   |   |   |   |-- themes
-|   |   |   |   |   `-- _index.scss
-|   |   |   |   `-- style.scss
 |   |   |   |-- sprites
 |   |   |   |   |-- blackholeBlue.png
 |   |   |   |   |-- blackholeRed.png
 |   |   |   |   |-- blackholeYellow.png
 |   |   |   |   |-- p4.png
 |   |   |   |   `-- water.png
-|   |   |   |-- txt
-|   |   |   |   |-- Colors for Website.txt
-|   |   |   |   `-- Project Structure.txt
 |   |   |   `-- favicon.ico
+|   |   |-- dist
+|   |   |   |-- index.min.js
+|   |   |   `-- index.min.js.map
 |   |   |-- 404.html
 |   |   `-- index.html
+|   |-- sass
+|   |   |-- abstracts
+|   |   |   |-- _colors.scss
+|   |   |   |-- _fonts.scss
+|   |   |   |-- _functions.scss
+|   |   |   |-- _index.scss
+|   |   |   |-- _mixins.scss
+|   |   |   |-- _shadows.scss
+|   |   |   `-- _variables.scss
+|   |   |-- base
+|   |   |   |-- _animations.scss
+|   |   |   |-- _base.scss
+|   |   |   |-- _index.scss
+|   |   |   |-- _typography.scss
+|   |   |   `-- _utilities.scss
+|   |   |-- components
+|   |   |   |-- _close-btn.scss
+|   |   |   |-- _index.scss
+|   |   |   |-- _nav.scss
+|   |   |   |-- _sidebar-btn.scss
+|   |   |   `-- _sidebar.scss
+|   |   |-- layout
+|   |   |   |-- _index.scss
+|   |   |   `-- _main.scss
+|   |   |-- pages
+|   |   |   |-- _animations.scss
+|   |   |   |-- _dancing-circles.scss
+|   |   |   |-- _games.scss
+|   |   |   |-- _index.scss
+|   |   |   |-- _p4-vega.scss
+|   |   |   |-- _registration.scss
+|   |   |   `-- _social-media.scss
+|   |   |-- themes
+|   |   |   `-- _index.scss
+|   |   `-- style.scss
 |   |-- src
 |   |   |-- animations
 |   |   |   |-- dancing circles
@@ -107,6 +112,8 @@ mickeyf.org
 |   |   |   |-- SocialMedia.ts
 |   |   |   `-- User.ts
 |   |   |-- events
+|   |   |   |-- EventListenerManager.ts
+|   |   |   `-- eventManager.ts
 |   |   |-- games
 |   |   |   |-- Three Bosses
 |   |   |   |-- classes
@@ -130,14 +137,21 @@ mickeyf.org
 |   |   |   |   `-- IUserCreate.ts
 |   |   |   `-- create.ts
 |   |   |-- routes
+|   |   |   `-- setUpRoutes.ts
 |   |   |-- utils
 |   |   |   |-- checkCollision.ts
 |   |   |   |-- constants.ts
 |   |   |   |-- getUserData.ts
+|   |   |   |-- initializeGlobals.ts
 |   |   |   |-- lerp.ts
 |   |   |   |-- loadComponent.ts
 |   |   |   `-- random.ts
-|   |   `-- index.ts
+|   |   |-- index.ts
+|   |   `-- types.d.ts
+|   |-- txt
+|   |   |-- Colors for Website.txt
+|   |   |-- Common Screen Resolutions.txt
+|   |   `-- Project Structure.txt
 |   |-- package-lock.json
 |   |-- package.json
 |   |-- server.ts
