@@ -2,10 +2,10 @@ import { createPool } from 'mysql2/promise';
 
 // For production
 export const pool = createPool({
-    host: process.env.DB_HOST,
     user: process.env.DB_USER,
     database: process.env.DB_NAME,
     password: process.env.DB_PASS,
+    socketPath: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
