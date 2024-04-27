@@ -15,7 +15,7 @@ app.use(
     helmet.contentSecurityPolicy({
         directives: {
             defaultSrc: ["'none'"], // Sets the default source to 'none'
-            imgSrc: ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app", "http://localhost:3000"], // Allows images from these backend domains
+            imgSrc: ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"], // Allows images from these backend domains
             scriptSrc: ["'self'"], // Allows scripts from the same origin
         }
     })
@@ -26,7 +26,7 @@ app.use(express.json());
 // CORS configuration
 app.use(cors(
     {
-        origin: ['http://localhost:7777', 'http://localhost:3000', 'https://mickeyf-org-j7yuum4tiq-uc.a.run.app', 'https://mickeyf.org'], // Allow requests from these domains
+        origin: ['https://mickeyf-org-j7yuum4tiq-uc.a.run.app', 'https://mickeyf.org'], // Allow requests from these domains
         methods: ['GET', 'POST'], // Allowed HTTP methods
         allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
     }
