@@ -8,3 +8,6 @@ frontend/dist/
 
 # Ignore temporary files
 *.tmp
+
+# Ignore environment file
+.env
