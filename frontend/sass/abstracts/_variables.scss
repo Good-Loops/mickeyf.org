@@ -60,12 +60,12 @@ $bps-nav: (
     ), 
 );
 
-// Breakpoint Map for Sidebar
-$bps-sidebar: (
+// Breakpoint Map for Menu
+$bps-menu: (
     'm': (
         'width': $bp-m,
         'selectors': (
-            '.sidebar-btn': (
+            '.menu-btn': (
                 'display': block,
             ),
         )
@@ -165,6 +165,7 @@ $bps-social-media: (
                 'margin': -2rem,
             ),
             '.social-media__title': (
+                'font-size': $font-size-s,
                 'display': inline-block,
                 'padding-inline': 3rem,
                 'text-align': center,

@@ -12,8 +12,9 @@
 // Settings to disable scrolling
 html,
 body {
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 // Settings to set the font-size to 10px for easier rem calculations
