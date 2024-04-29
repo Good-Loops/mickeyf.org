@@ -7,8 +7,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>mickeyf.org (Alpha 0.1.44)</title>
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <!-- For devlopment -->
+    <!-- <link rel="stylesheet" type="text/css" href="assets/css/style.css"> -->
     <link rel="stylesheet" type="text/css" href="assets/css/style.min.css">
-    <script src="//unpkg.com/alpinejs" defer></script>
 </head>
 
 <body>
@@ -25,33 +26,32 @@
                 <li class="nav__item"><a class="nav__link" href="/user/signup">Sign up</a></li>
             </ul>
         </nav>
-    </header>
-
-    <main class="main">
         <!-- For smaller screens -->
-        <button class="sidebar-btn is-visible">
-            <svg class="sidebar-btn__svg floating">
+        <button class="menu-btn is-visible">
+            <svg class="menu-btn__svg floating">
                 <use xlink:href="assets/img/sprite.svg#compass"></use>
             </svg>
         </button>
-        <button class="close-btn"> 
+        <button class="close-btn">
             <svg class="close-btn__svg floating">
                 <use xlink:href="assets/img/sprite.svg#close"></use>
             </svg>
         </button>
-        <div class="sidebar">
-            <nav class="sidebar__nav">
-                <ul class="sidebar__nav__list">
-                    <li class="sidebar__nav__item"><a class="sidebar__nav__link" href="/">Home</a></li>
-                    <li class="sidebar__nav__item"><a class="sidebar__nav__link" href="/games">Games</a></li>
-                    <li class="sidebar__nav__item"><a class="sidebar__nav__link" href="/animations">Animations</a></li>
-                    <li class="sidebar__nav__item"><a class="sidebar__nav__link" href="/socialmedia">Social Media</a></li>
-                    <li class="sidebar__nav__item"><a class="sidebar__nav__link" href="/login">Log in</a></li>
-                    <li class="sidebar__nav__item"><a class="sidebar__nav__link" href="/user/signup">Sign up</a></li>
+        <div class="menu">
+            <nav class="menu__nav">
+                <ul class="menu__nav__list">
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/">Home</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/games">Games</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/animations">Animations</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/socialmedia">Social Media</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/login">Log in</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/user/signup">Sign up</a></li>
                 </ul>
             </nav>
         </div>
+    </header>
 
+    <main class="main">
         <div class="main__content" id="content"></div>
     </main>
 

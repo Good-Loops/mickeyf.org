@@ -2,7 +2,11 @@
 
 .close-btn {
 
-    @include default-sidebar-btn;
+    @include default-menu-btn;
+
+    &:hover {
+        cursor: $cursor-hover;
+    }
 
     z-index: $front;
 

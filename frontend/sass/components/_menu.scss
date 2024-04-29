@@ -1,6 +1,6 @@
 @use '../abstracts' as *;
 
-.sidebar {
+.menu {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -57,4 +57,4 @@
     }
 }
 
-@include generate-media-queries($bps-sidebar);
+@include generate-media-queries($bps-menu);

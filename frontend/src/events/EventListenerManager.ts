@@ -4,8 +4,8 @@ class EventListenerManager {
     }
 
     private static initSidebarToggle() {
-        const sidebar = document.querySelector('.sidebar') as HTMLElement;
-        const sideBarButton = document.querySelector('.sidebar-btn') as HTMLElement;
+        const sidebar = document.querySelector('.menu') as HTMLElement;
+        const sideBarButton = document.querySelector('.menu-btn') as HTMLElement;
         const closeButton = document.querySelector('.close-btn') as HTMLElement;
 
         if (sidebar && sideBarButton && closeButton) { // Check if sidebar, sidebar button, and close button exist
