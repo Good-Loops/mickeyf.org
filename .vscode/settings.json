@@ -3,7 +3,7 @@
         {
             "splitTerminals": [
                 {
-                    "name": "front-compiler",
+                    "name": "ts-compiler",
                     "commands": [
                         "cd frontend"
                     ]
@@ -13,7 +13,7 @@
         {
             "splitTerminals": [
                 {
-                    "name": "front-server",
+                    "name": "sass-compiler",
                     "commands": [
                         "cd frontend"
                     ]
@@ -33,7 +33,7 @@
         {
             "splitTerminals": [
                 {
-                    "name": "back-server",
+                    "name": "server",
                     "commands": [
                         "cd backend"
                     ]
@@ -55,19 +55,4 @@
             ]
         }
     ],
-    "liveSassCompile.settings.formats": [
-        {
-            "format": "expanded",
-            "extensionName": ".css",
-            "savePath": "/public/assets/css",
-        },
-        {
-            "format": "compressed",
-            "extensionName": ".min.css",
-            "savePath": "/public/assets/css",
-        }
-    ],
-    "liveSassCompile.settings.includeItems": [
-        "/public/assets/sass/style.scss"
-    ]
 }

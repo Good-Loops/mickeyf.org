@@ -5,7 +5,6 @@
     "scripts": {
         "dev": "webpack --mode development --watch",
         "prod": "webpack --mode production",
-        "server": "nodemon src/server/server.ts",
         "build:sass": "sass  --no-source-map ./sass/style.scss:public/assets/css/style.min.css",
         "copy:assets": "copyfiles -u 1 ./public/assets/**/* public",
         "copy:html": "copyfiles -u 1 ./public/index.html public",
