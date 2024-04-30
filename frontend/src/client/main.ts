@@ -8,15 +8,15 @@ import { initializeObserver } from './events/eventManager';
 // Initialize global variables
 initializeGlobals();
 
+// Define routes using Page.js
+setupRoutes(page);
+
 // Start Alpine.js and Page.js
 Alpine.start();
 page.start();
 
-// Define routes using Page.js
-setupRoutes(page);
-
 // Initialize event manager
-const observer = initializeObserver();
+initializeObserver();
 
 // Initialize event listeners
 document.addEventListener('DOMContentLoaded', () => {

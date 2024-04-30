@@ -6,7 +6,7 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 const app = express();
 
 // Define the absolute path to the root of your project
-const publicPath = path.resolve(__dirname, 'public');
+const publicPath = path.resolve(__dirname, '../../public');
 
 // Proxy API requests to Backend
 app.use('/api', createProxyMiddleware({
@@ -21,12 +21,8 @@ app.use('/api', createProxyMiddleware({
 app.use(serveStatic(publicPath, { index: ['index.html', 'index.htm'] }));
 
 // This route will handle all other GET requests to give control to the SPA
-app.get('*', (req, res) => {
-    console.log('Request path:', req.path);
-    if (req.method === 'GET' && !req.originalUrl.includes('/api')) {
-        console.log('Serving index.html for path:', req.path);
-        res.sendFile('index.html', { root: publicPath });
-    }
+app.get('*', (req: { path: any; method: string; originalUrl: string | string[]; }, res: { sendFile: (arg0: string, arg1: { root: any; }) => void; }) => {
+    res.sendFile('index.html', { root: publicPath });
 });
 
 // 404 handling

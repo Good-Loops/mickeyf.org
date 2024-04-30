@@ -1,11 +1,9 @@
 const path = require('path');
 
-module.exports = {
+// Common configuration settings
+const commonConfig = {
     mode: process.env.NODE_ENV,
     devtool: process.env.NODE_ENV === 'development' ? 'eval-source-map' : 'source-map',
-    entry: {
-        index: ['./src/index.ts'],
-    },
     module: {
         rules: [
             {
@@ -18,19 +16,40 @@ module.exports = {
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
     },
+};
+
+// Configuration for client-side
+const clientConfig = {
+    ...commonConfig,
+    entry: {
+        index: './src/client/main.ts',
+    },
     output: {
         filename: '[name].min.js',
         path: path.resolve(__dirname, 'public/dist'),
+    }
+};
+
+// Configuration for server-side
+const serverConfig = {
+    ...commonConfig,
+    target: 'node', // Important: configures Webpack to compile for usage in a Node.js environment
+    entry: {
+        server: './src/server/server.ts',
     },
-    devServer: {
-        static: {
-            directory: path.join(__dirname, '../'),
-        },
-        compress: true,
-        port: 7777,
-        open: true,
-        liveReload: true,
-        watchFiles: ['**/*'],
-        historyApiFallback: true, // Properly handle SPA routing
+    output: {
+        filename: '[name].min.js',
+        path: path.resolve(__dirname, 'src/server'),
+    },
+    externalsPresets: { node: true }, // Ignore node_modules being bundled
+    externals: { // Required to keep node_modules out of the server bundle
+        formidable: 'commonjs formidable',
+        express: 'commonjs express',
+    },
+    node: {
+        __dirname: false, // Preserve the default node behavior for __dirname
+        __filename: false, // Preserve the default node behavior for __filename
     },
 };
+
+module.exports = [clientConfig, serverConfig];
