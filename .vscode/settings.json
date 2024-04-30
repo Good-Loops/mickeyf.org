@@ -5,7 +5,8 @@
                 {
                     "name": "ts-compiler",
                     "commands": [
-                        "cd frontend"
+                        "cd frontend",
+                        "npm run dev"
                     ]
                 }
             ]
@@ -15,7 +16,8 @@
                 {
                     "name": "sass-compiler",
                     "commands": [
-                        "cd frontend"
+                        "cd frontend",
+                        "npm run start"
                     ]
                 }
             ]
@@ -25,7 +27,8 @@
                 {
                     "name": "back-compiler",
                     "commands": [
-                        "cd backend"
+                        "cd backend",
+                        "npm run dev"
                     ]
                 },
             ]
@@ -35,7 +38,8 @@
                 {
                     "name": "server",
                     "commands": [
-                        "cd backend"
+                        "cd backend",
+                        "npm run server"
                     ]
                 }
             ]
