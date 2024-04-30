@@ -4,6 +4,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes';
+import path from 'path';
 
 const app = express();
 
@@ -32,6 +33,10 @@ app.use(cors(
     }
 ));
 
+// SPA Fallback: Redirect all non-API requests to your SPA
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Use userRoutes for all user-related endpoints
 app.use('/api', userRoutes);
