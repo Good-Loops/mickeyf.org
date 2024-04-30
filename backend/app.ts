@@ -9,7 +9,7 @@ import path from 'path';
 const app = express();
 
 // Serve static files from assets
-app.use(express.static('public'));
+app.use(express.static('../frontend/public'));
 
 // Helmet CSP configuration
 app.use(
@@ -33,23 +33,18 @@ app.use(cors(
     }
 ));
 
-// SPA Fallback: Redirect all non-API requests to your SPA
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 // Use userRoutes for all user-related endpoints
 app.use('/api', userRoutes);
+
+// SPA Fallback: Redirect all non-API requests to your SPA
+app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../../frontend/public', 'index.html'));
+});
 
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-});
-
-// Serve the root page
-app.get('/', (req, res) => {
-    res.send('Welcome to my backend server!');
 });
 
 export default app;
