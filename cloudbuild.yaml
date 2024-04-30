@@ -32,14 +32,13 @@ steps:
         DB_USER=${_DB_USER},
         DB_NAME=${_DB_NAME}
 
-  # Upload frontend files to Cloud Storage
   # Delete existing files in the Cloud Storage bucket
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['rm', 'gs://${_FRONTEND_BUCKET}/**']
+    args: ['-m', 'rm', 'gs://${_FRONTEND_BUCKET}/**']
 
   # Upload new frontend files to Cloud Storage
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', '-r', 'frontend/public/*', 'gs://${_FRONTEND_BUCKET}']
+    args: ['-m', 'cp', '-r', 'frontend/public/*', 'gs://${_FRONTEND_BUCKET}']
 
 substitutions:
   _GCP_PROJECT_ID: 'noted-reef-387021'
