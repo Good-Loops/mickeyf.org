@@ -86,8 +86,8 @@
     scale: .2;
 }
 
-// Sidebar button defaults
-@mixin default-sidebar-btn {
+// Menu button defaults
+@mixin default-menu-btn {
     display: none;
     
     fill: $primary-light;
@@ -96,8 +96,8 @@
     border: none;
 
     position: fixed;
-    top: -.5em;
-    left: -6.5em;
+    top: -1.5em;
+    left: -7.5em;
     
     transform: scale(.45);
 }

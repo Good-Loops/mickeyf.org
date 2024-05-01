@@ -1,13 +1,13 @@
 @use '../abstracts' as *;
 
-.sidebar-btn {
+.menu-btn {
     
-    @include default-sidebar-btn;
+    @include default-menu-btn;
 
     &:hover {
         cursor: $cursor-hover;
     }
-
+    
     // Initial visible state
     visibility: visible;
     opacity: 1;
@@ -25,4 +25,4 @@
     
 }
 
-@include generate-media-queries($bps-sidebar);
+@include generate-media-queries($bps-menu);
