@@ -20,8 +20,8 @@ export default class BlackHole extends Entity {
     public static pool: BlackHole[];
     public static freeElements: number;
 
-    private static increasePercent: number = 50;
-    private static maxPercentFree: number = 80;
+    private static increasePercent: number = 20;
+    private static maxPercentFree: number = 60;
 
     public static nextFree: BlackHole | null = null;
     private static lastFree: BlackHole | null = null;

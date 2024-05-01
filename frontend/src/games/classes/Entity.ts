@@ -1,6 +1,18 @@
 import IEntity from "../interfaces/IEntity";
 import P4 from "../p4-Vega/classes/P4";
 
+class ResourceManager {
+    static sprites: { [key: string]: HTMLImageElement } = {};
+
+    static getSprite(id: string): HTMLImageElement {
+        if (!this.sprites[id]) {
+            this.sprites[id] = document.getElementById(id) as HTMLImageElement;
+        }
+        console.log(this.sprites);
+        return this.sprites[id];
+    }
+}
+
 export default abstract class Entity implements IEntity {
     abstract width: number;
     abstract height: number;
@@ -21,7 +33,7 @@ export default abstract class Entity implements IEntity {
     constructor(id: string, gap: number = 0) {
         this.gap = gap;
         this.id = id;
-        this.sprite = document.getElementById(`${this.id}`) as HTMLImageElement;
+        this.sprite = ResourceManager.getSprite(id);
     }
 
     // Abstract method to be implemented by subclasses specifying the total number of frames
