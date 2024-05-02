@@ -25,6 +25,7 @@
         "http-proxy-middleware": "^3.0.0",
         "page": "^1.11.6",
         "pitchy": "^4.0.7",
+        "pixi.js": "^8.1.1",
         "sweetalert2": "^11.10.8",
         "ts-loader": "^9.5.1",
         "typescript": "^5.4.5",

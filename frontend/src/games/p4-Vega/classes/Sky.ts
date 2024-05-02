@@ -1,29 +1,42 @@
-import Star from "./Star";
+// import Star from "./Star";
+import * as PIXI from "pixi.js";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
 
 export default class Sky {
-    public width: number;
-    public height: number;
-    private stars: Star[] = [];
-    private numberOfStars: number;
+    private stage: PIXI.Container;
+    private stars: PIXI.Graphics[] = [];
 
-    constructor(canvas: HTMLCanvasElement) {
-        this.width = canvas.width;
-        this.height = canvas.height;
-        this.stars = [];
-        this.numberOfStars = 60;
+    constructor(stage: PIXI.Container) {
+        this.stage = stage;
         this.createStars();
     }
 
-    public handleStars(context: CanvasRenderingContext2D): void {
-        this.stars.forEach((star: Star) => {
-            star.draw(context);
-            star.update();
-        });
+    private createStars() {
+        for (let i = 0; i < 100; i++) {
+            let star = new PIXI.Graphics();
+            const radius = Math.random() * 2 + 1;
+            star.fill({ color: 0xFFFFFF });
+            star.circle(0, 0, radius);
+            star.fill();
+
+            star.x = Math.random() * CANVAS_WIDTH;
+            star.y = Math.random() * CANVAS_HEIGHT;
+            star.alpha = Math.random();
+
+            this.stars.push(star);
+            this.stage.addChild(star);
+        }
     }
 
-    private createStars(): void {
-        for (let i = 0; i < this.numberOfStars; i++) {
-            this.stars.push(new Star(this));
-        }
+    public update() {
+        this.stars.forEach(star => {
+            star.x += Math.random() * 0.5 - 0.25;
+            star.y += Math.random() * 0.5 - 0.25;
+
+            // Adjust alpha randomly to flicker
+            star.alpha += Math.random() * 0.1 - 0.05;
+            if (star.alpha < 0.1) star.alpha = 0.1;
+            if (star.alpha > 1) star.alpha = 1;
+        });
     }
 }
