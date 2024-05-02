@@ -2,22 +2,30 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
 import { getRandomX, getRandomY } from "../../../utils/random";
 import checkCollision from "../../../utils/checkCollision";
 import BlackHole from "./BlackHole";
-import Entity from "../../classes/Entity";
+// import Entity from "../../classes/Entity";
 import P4 from "./P4";
 import * as PIXI from 'pixi.js';
 
 
 
-export default class Water extends PIXI.Spritesheet {
+export default class Water {
 
-    constructor(texture: PIXI.Texture, spritesheetData: JSON) {
-        texture = PIXI.Texture.from('../../../../public/assets/textures/water.png');
-        spritesheetData = PIXI.Assets.load([
-            "spritesheets/character.json",
-            "scene/background.png"
-        ]);
-        super(texture, spritesheetData);
-    }
+
+    // private static async loadTexture(): Promise<PIXI.Texture> {
+    //     const texture = await PIXI.Assets.load(["/games/p4-Vega/assets/water.png"]) as PIXI.BindableTexture;
+
+    //     return texture;
+    // }
+
+    // constructor(stage: PIXI.Container) {
+
+    //     const spritesheet = await PIXI.Assets.load([
+    //         "../datafiles/water.json",
+    //     ]);
+    //     const spritesheetData = Water.loadSpritesheet();
+
+    //     super(texture, spritesheetData);
+    // }
 
     // protected totalFrames(): number {
     //     return 5;

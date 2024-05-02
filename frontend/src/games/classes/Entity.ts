@@ -1,59 +1,48 @@
 import IEntity from "../interfaces/IEntity";
 import P4 from "../p4-Vega/classes/P4";
 
-class ResourceManager {
-    static sprites: { [key: string]: HTMLImageElement } = {};
+import * as PIXI from 'pixi.js';
+import { Application } from 'pixi.js';
 
-    static getSprite(id: string): HTMLImageElement {
-        if (!this.sprites[id]) {
-            this.sprites[id] = document.getElementById(id) as HTMLImageElement;
-        }
-        console.log(this.sprites);
-        return this.sprites[id];
-    }
-}
+// // Class definition extending PIXI.Spritesheet
+// export class LoadSpritesheet extends PIXI.Spritesheet {
+//     private static instances: Map<string, PIXI.Spritesheet> = new Map();
 
-export default abstract class Entity implements IEntity {
-    abstract width: number;
-    abstract height: number;
-    abstract x: number;
-    abstract y: number;
+//     // Static method to load and parse spritesheet assets
+//     static async loadSpritesheet(app: Application, texturePath: string, dataPath: string): Promise<PIXI.Spritesheet> {
+//         return new Promise((resolve, reject) => {
+//             if (this.instances.has(texturePath)) {
+//                 resolve(this.instances.get(texturePath));
+//             } else {
+//                 app.loader
+//                     .add('texture', texturePath)
+//                     .add('data', dataPath)
+//                     .load((loader, resources) => {
+//                         const spritesheet = new PIXI.Spritesheet(
+//                             resources.texture.texture,
+//                             resources.data.data
+//                         );
+//                         spritesheet.parse(() => {
+//                             this.instances.set(texturePath, spritesheet);
+//                             resolve(spritesheet);
+//                         });
+//                     });
+//             }
+//         });
+//     }
 
-    public sprite: HTMLImageElement;
-    public id: string;
-    public gap: number;
-
-    public static gap: number = 15;
-    public static hitBoxAdjust: number = 15;
-
-    protected frame: number = 0;
-    protected animationTimer: number = 0;
-    protected animationInterval: number = 150;
-
-    constructor(id: string, gap: number = 0) {
-        this.gap = gap;
-        this.id = id;
-        this.sprite = ResourceManager.getSprite(id);
-    }
-
-    // Abstract method to be implemented by subclasses specifying the total number of frames
-    protected abstract totalFrames(): number;
-
-    // Update method with animation logic
-    public update(deltaTime: number, p4?: P4, gameLive?: boolean): void {
-        if (this.animationTimer > this.animationInterval) {
-            this.frame = (this.frame + 1) % this.totalFrames(); // Cycle through frames
-            this.animationTimer = 0;
-        } else {
-            this.animationTimer += deltaTime;
-        }
-    }
-
-    public draw(context: CanvasRenderingContext2D): void {
-        context.drawImage(this.sprite,
-            this.sprite.width / this.totalFrames() * this.frame, 0,
-            this.sprite.width / this.totalFrames(), this.sprite.height,
-            this.x, this.y,
-            this.sprite.width / this.totalFrames(), this.sprite.height);
-    }
-}
+//     // Constructor accepts paths and initializes spritesheet using already loaded assets
+//     constructor(app: Application, texturePath: string, dataPath: string) {
+//         const instance = AdvancedSpritesheet.instances.get(texturePath);
+//         if (!instance) {
+//             throw new Error('Spritesheet not loaded, please call loadSpritesheet first');
+//         }
+//         super(instance.baseTexture, instance.data);
+//         // Ensure the spritesheet is preloaded
+//         AdvancedSpritesheet.loadSpritesheet(app, texturePath, dataPath).then((loadedSpritesheet) => {
+//             console.log('Spritesheet is ready to use:', loadedSpritesheet);
+//         }).catch((error) => {
+//             console.error('Error loading spritesheet:', error);
+//         });
+//     }
+// }
