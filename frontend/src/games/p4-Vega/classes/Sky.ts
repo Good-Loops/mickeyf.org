@@ -1,6 +1,6 @@
 // import Star from "./Star";
-import * as PIXI from "pixi.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
+import * as PIXI from "pixi.js";
 
 export default class Sky {
     private stage: PIXI.Container;

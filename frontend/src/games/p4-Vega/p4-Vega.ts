@@ -6,25 +6,62 @@ import Sky from "./classes/Sky";
 import * as PIXI from 'pixi.js';
 
 export default async function p4Vega() {
-    // Setup the PixiJS application to use WebGPU
-    // Create a new renderer
-    const renderer = new PIXI.WebGPURenderer();
-    await renderer.init();
+    // Setup the PixiJS application 
+    const renderer = await PIXI.autoDetectRenderer({
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+        backgroundColor: 0x0d0033,
+    });
 
-    // Add the renderer to the stage
-    document.getElementById("p4-vega")!.appendChild(renderer.canvas);
+    // Set canvas properties
+    const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
+    canvas.className = "p4-vega__canvas";
+    canvas.id = "p4-canvas";
 
-    // Set the width and height of the canvas
-    renderer.canvas.width = CANVAS_WIDTH;
-    renderer.canvas.height = CANVAS_HEIGHT;
-    renderer.canvas.className = "p4-vega__canvas";
-    renderer.canvas.id = "p4-canvas";
+    // Add the canvas to the stage
+    document.getElementById("p4-vega")!.appendChild(canvas);
 
     // Create a new stage
     const stage = new PIXI.Container();
 
-    // Render the stage
-    renderer.render(stage);
+    // Globals
+    let gameLive: boolean, sky: Sky, p4: P4, water: Water;
+
+    // Load game assets
+    const load = async () => {
+        gameLive = true;
+
+        // Background
+        sky = new Sky(stage);
+
+        // Game elements
+        
+    }
+
+    // Update game state
+    const update = async () =>{
+        // Update your game state here
+        sky.update();
+    }
+
+    // Render the game
+    const render = async () => {
+        renderer.render(stage);
+    }
+
+    // Game loop
+    const gameLoop = async () => {
+        update();
+        render();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Start game
+    load();
+    gameLoop();
+
+    let componentId = "p4-wrapper";
+    if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = [];}
 }
 
 // export default function p4Vega() {

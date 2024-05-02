@@ -4,29 +4,33 @@ import checkCollision from "../../../utils/checkCollision";
 import BlackHole from "./BlackHole";
 import Entity from "../../classes/Entity";
 import P4 from "./P4";
+import * as PIXI from 'pixi.js';
 
-export default class Water extends Entity {
-    public width: number = 28;
-    public height: number = 46;
-    public x: number = CANVAS_WIDTH - this.sprite.width - Entity.gap;
-    public y: number = CANVAS_HEIGHT * .5;;
 
-    constructor() {
-        super("water", 50);
+
+export default class Water extends PIXI.Spritesheet {
+
+    constructor(texture: PIXI.Texture, spritesheetData: JSON) {
+        texture = PIXI.Texture.from('../../../../public/assets/textures/water.png');
+        spritesheetData = PIXI.Assets.load([
+            "spritesheets/character.json",
+            "scene/background.png"
+        ]);
+        super(texture, spritesheetData);
     }
 
-    protected totalFrames(): number {
-        return 5;
-    }
+    // protected totalFrames(): number {
+    //     return 5;
+    // }
 
-    public update(deltaTime: number, p4: P4): void {
-        super.update(deltaTime);
+    // public update(deltaTime: number, p4: P4): void {
+    //     super.update(deltaTime);
 
-        if (checkCollision(p4, this)) {
-            this.x = getRandomX(this.width + Entity.gap + this.gap);
-            this.y = getRandomY(this.height + Entity.gap + this.gap);
-            p4.totalWater += 10;
-            BlackHole.release(p4);
-        }
-    }
+    //     if (checkCollision(p4, this)) {
+    //         this.x = getRandomX(this.width + Entity.gap + this.gap);
+    //         this.y = getRandomY(this.height + Entity.gap + this.gap);
+    //         p4.totalWater += 10;
+    //         BlackHole.release(p4);
+    //     }
+    // }
 }

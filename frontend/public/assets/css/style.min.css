@@ -636,7 +636,6 @@ h1 {
   gap: 2rem;
 }
 .p4-vega__canvas {
-  background-color: hsl(255, 100%, 10%);
   box-shadow: 0 0 2em rgba(38, 38, 38, 0.6);
 }
 .p4-vega__img {

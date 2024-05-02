@@ -31,12 +31,13 @@ app.use(
             ],
             scriptSrc: [
                 "'self'",
-                "'unsafe-inline'", // Remove in production
+                "'unsafe-inline'",
+                "'unsafe-eval'", 
                 ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : [])
             ],
             styleSrc: [
                 "'self'",
-                "'unsafe-inline'", // Remove in production
+                "'unsafe-inline'",
                 "https://fonts.googleapis.com",
                 ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : [])
             ],
