@@ -1,8 +1,9 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
-import P4 from "./classes/P4";
-import Water from "./classes/Water";
-import BlackHole from "./classes/BlackHole";
+// import P4 from "./classes/P4";
+// import Water from "./classes/Water";
+// import BlackHole from "./classes/BlackHole";
 import Sky from "./classes/Sky";
+import p4AtlasData from './data/p4.json';
 import * as PIXI from 'pixi.js';
 
 export default async function p4Vega() {
@@ -25,7 +26,7 @@ export default async function p4Vega() {
     const stage = new PIXI.Container();
 
     // Globals
-    let gameLive: boolean, sky: Sky, p4: P4, water: Water;
+    let gameLive: boolean, sky: Sky; // p4: P4, water: Water;
 
     // Load game assets
     const load = async () => {
@@ -35,7 +36,21 @@ export default async function p4Vega() {
         sky = new Sky(stage);
 
         // Game elements
+        const p4Image = document.getElementById('p4') as HTMLImageElement;
+        const p4Texture = await PIXI.Assets.load(p4Image);
+        const p4Spritesheet = new PIXI.Spritesheet(
+            p4Texture,
+            p4AtlasData
+        );
         
+        await p4Spritesheet.parse();
+
+        const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
+        p4Anim.x = 100;
+        p4Anim.y = 100;
+        p4Anim.animationSpeed = 0.1;
+        p4Anim.play();
+        stage.addChild(p4Anim);
     }
 
     // Update game state

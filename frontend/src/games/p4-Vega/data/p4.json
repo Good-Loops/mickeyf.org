@@ -65,7 +65,7 @@
 	"sourceSize": {"w":70,"h":66}
 }},
 "animations": {
-	"p4-frame": ["p4-frame1.png","p4-frame2.png","p4-frame3.png","p4-frame4.png","p4-frame5.png","p4-frame6.png","p4-frame7.png","p4-frame8.png"]
+	"p4": ["p4-frame1.png","p4-frame2.png","p4-frame3.png","p4-frame4.png","p4-frame5.png","p4-frame6.png","p4-frame7.png","p4-frame8.png"]
 },
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",

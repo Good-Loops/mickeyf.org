@@ -21,6 +21,7 @@ app.use(
             defaultSrc: ["'self'"],
             connectSrc: [
                 "'self'",
+                "data:",
                 ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
             imgSrc: [
@@ -33,6 +34,11 @@ app.use(
                 "'self'",
                 "'unsafe-inline'",
                 "'unsafe-eval'", 
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : [])
+            ],
+            workerSrc: [
+                "'self'",
+                "blob:",
                 ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : [])
             ],
             styleSrc: [

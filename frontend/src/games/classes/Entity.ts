@@ -1,8 +1,7 @@
-import IEntity from "../interfaces/IEntity";
-import P4 from "../p4-Vega/classes/P4";
+// import IEntity from "../interfaces/IEntity";
+// import P4 from "../p4-Vega/classes/P4";
 
-import * as PIXI from 'pixi.js';
-import { Application } from 'pixi.js';
+// import * as PIXI from 'pixi.js';
 
 // // Class definition extending PIXI.Spritesheet
 // export class LoadSpritesheet extends PIXI.Spritesheet {
