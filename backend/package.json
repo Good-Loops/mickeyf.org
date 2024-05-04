@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "webpack --mode development --watch",
         "prod": "webpack --mode production",
-        "server": "nodemon dist/server.min.js | browser-sync start --proxy localhost:8080 --files '**/*' --no-open"
+        "server": "nodemon dist/server.min.js | browser-sync start --proxy localhost:8080 --files '../frontend' --no-open"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",

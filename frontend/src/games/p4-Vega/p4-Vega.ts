@@ -73,19 +73,8 @@ export default async function p4Vega() {
         await bhYellowSpritesheet.parse();
         const bhYellowAnim = new PIXI.AnimatedSprite(bhYellowSpritesheet.animations.bhYellow);
 
-        BlackHole.poolSize = 8;
-        BlackHole.freeElements = 0;
-        BlackHole.pool = new Array(BlackHole.poolSize).fill(0);
-        for(let i = 0; i < BlackHole.poolSize; i++) {
-            BlackHole.pool[i] = new BlackHole(stage, [bhBlueAnim, bhRedAnim, bhYellowAnim], p4Anim);
-            if (BlackHole.pool[i].previousElement) {
-                BlackHole.pool[i].previousElement!.nextElement = BlackHole.pool[i];
-                BlackHole.pool[i].previousElement = BlackHole.pool[i].previousElement;
-            }
-            BlackHole.pool[i].previousElement = BlackHole.pool[i];
-        }
-        BlackHole.lastFree = BlackHole.pool[BlackHole.poolSize - 1];
-        BlackHole.nextFree = BlackHole.pool[0];
+        const initialSize = 8;
+        BlackHole.initializePool(initialSize, stage, [bhBlueAnim, bhRedAnim, bhYellowAnim], p4Anim, true);
         BlackHole.release(p4);
     }
 
@@ -95,11 +84,12 @@ export default async function p4Vega() {
         p4.update(p4.p4Anim);  
         water.update(water.waterAnim, p4, stage);
 
-        for (let i = 0; i < BlackHole.freeElements; i++) {
-            const blackHole = BlackHole.pool[i];
-            blackHole.free = true;
-            gameLive = blackHole.update(blackHole.bhAnim, p4.p4Anim, gameLive);
-        } 
+        for (let blackHole of BlackHole.pool) {
+            if (blackHole) {
+                blackHole.free = true;
+                gameLive = blackHole.update(blackHole.bhAnim, p4.p4Anim, gameLive);
+            }
+        }
     }
 
     // Render the game
