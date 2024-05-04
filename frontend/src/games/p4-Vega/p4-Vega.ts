@@ -26,7 +26,8 @@ export default async function p4Vega() {
     // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
     // Globals
-    let gameLive: boolean, sky: Sky, p4: P4, water: Water, bh: BlackHole;
+    let gameLive: boolean = true;
+    let sky: Sky, p4: P4, water: Water, firstBlackHole: BlackHole;
 
     // Load game assets
     const load = async () => {
@@ -73,9 +74,7 @@ export default async function p4Vega() {
         await bhYellowSpritesheet.parse();
         const bhYellowAnim = new PIXI.AnimatedSprite(bhYellowSpritesheet.animations.bhYellow);
 
-        const initialSize = 8;
-        BlackHole.initializePool(initialSize, stage, [bhBlueAnim, bhRedAnim, bhYellowAnim], p4Anim, true);
-        BlackHole.release(p4);
+        firstBlackHole = new BlackHole(stage, [bhBlueAnim, bhRedAnim, bhYellowAnim], p4Anim);
     }
 
     // Update game state
@@ -83,12 +82,8 @@ export default async function p4Vega() {
         sky.update();
         p4.update(p4.p4Anim);  
         water.update(water.waterAnim, p4, stage);
-
-        for (let blackHole of BlackHole.pool) {
-            if (blackHole) {
-                blackHole.free = true;
-                gameLive = blackHole.update(blackHole.bhAnim, p4.p4Anim, gameLive);
-            }
+        for (let blackHole of BlackHole.bhArray) {
+            blackHole.update(blackHole.bhAnim, p4.p4Anim, gameLive);
         }
     }
 
@@ -101,7 +96,7 @@ export default async function p4Vega() {
     const gameLoop = async () => {
         update();
         render();
-        requestAnimationFrame(gameLoop);
+        if(gameLive) requestAnimationFrame(gameLoop);
     }
 
     // Start game
@@ -109,8 +104,9 @@ export default async function p4Vega() {
     gameLoop();
 
     // Restart game
-    const restart = (): void => {
+    const restart = async () => {
         if (!gameLive) {
+            renderer.clear();
             load();
             gameLoop();
         }
