@@ -2,7 +2,6 @@
 node_modules/
 backend/dist/
 frontend/dist/
-frontend/public/
 
 # Ignore log files
 *.log
