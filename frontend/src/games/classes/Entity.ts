@@ -13,10 +13,6 @@ export default abstract class Entity implements IEntity {
         stage.addChild(anim);
     }
 
-    public update(anim: PIXI.AnimatedSprite): void {
-
-    }
-
     constructor(stage: PIXI.Container<PIXI.ContainerChild>, anim: PIXI.AnimatedSprite) {
         this.stage = stage;
         this.anim = anim;

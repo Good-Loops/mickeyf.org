@@ -57,7 +57,7 @@
 	"sourceSize": {"w":90,"h":90}
 }},
 "animations": {
-	"bhYellow-frame": ["bhYellow-frame1.png","bhYellow-frame2.png","bhYellow-frame3.png","bhYellow-frame4.png","bhYellow-frame5.png","bhYellow-frame6.png","bhYellow-frame7.png"]
+	"bhYellow": ["bhYellow-frame1.png","bhYellow-frame2.png","bhYellow-frame3.png","bhYellow-frame4.png","bhYellow-frame5.png","bhYellow-frame6.png","bhYellow-frame7.png"]
 },
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",

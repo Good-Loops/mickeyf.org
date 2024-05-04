@@ -64,7 +64,7 @@
 	"anchor": {"x":0.5,"y":0.5}
 }},
 "animations": {
-	"bhRed-frame": ["bhRed-frame1.png","bhRed-frame2.png","bhRed-frame3.png","bhRed-frame4.png","bhRed-frame5.png","bhRed-frame6.png","bhRed-frame7.png"]
+	"bhRed": ["bhRed-frame1.png","bhRed-frame2.png","bhRed-frame3.png","bhRed-frame4.png","bhRed-frame5.png","bhRed-frame6.png","bhRed-frame7.png"]
 },
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",

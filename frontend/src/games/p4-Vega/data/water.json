@@ -41,7 +41,7 @@
 	"sourceSize": {"w":28,"h":46}
 }},
 "animations": {
-	"water-frame": ["water-frame1.png","water-frame2.png","water-frame3.png","water-frame4.png","water-frame5.png"]
+	"water": ["water-frame1.png","water-frame2.png","water-frame3.png","water-frame4.png","water-frame5.png"]
 },
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",

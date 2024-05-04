@@ -3,31 +3,30 @@ import P4 from "./classes/P4";
 import Water from "./classes/Water";
 import BlackHole from "./classes/BlackHole";
 import Sky from "./classes/Sky";
-import p4AtlasData from './data/p4.json';
-import waterAtlasData from './data/water.json'
+import p4Data from './data/p4.json';
+import waterData from './data/water.json'
+import bhBlueData from './data/bhBlue.json'
+import bhRedData from './data/bhRed.json'
+import bhYellowData from './data/bhYellow.json'
 import * as PIXI from 'pixi.js';
 
 export default async function p4Vega() {
-    // Setup the PixiJS application 
+    // Setup PixiJS renderer 
     const renderer = await PIXI.autoDetectRenderer({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
         backgroundColor: 0x0d0033,
     });
-
     // Set canvas properties
     const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
     canvas.className = "p4-vega__canvas";
     canvas.id = "p4-canvas";
-
-    // Add the canvas to the stage
+    // Add the canvas to the DOM
     document.getElementById("p4-vega")!.appendChild(canvas);
-
-    // Create a new stage
+    // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
-
     // Globals
-    let gameLive: boolean, sky: Sky, p4: P4, water: Water;
+    let gameLive: boolean, sky: Sky, p4: P4, water: Water, bh: BlackHole;
 
     // Load game assets
     const load = async () => {
@@ -36,28 +35,53 @@ export default async function p4Vega() {
         // Background
         sky = new Sky(stage);
 
-        // Game elements
+        ///////////////////// Game elements /////////////////////
+        // Player
         const p4Image: HTMLImageElement = document.getElementById('p4') as HTMLImageElement;
         const p4Texture: PIXI.Texture = await PIXI.Assets.load(p4Image) as PIXI.Texture;
-        const p4Spritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(p4Texture, p4AtlasData);
+        const p4Spritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(p4Texture, p4Data);
         await p4Spritesheet.parse();
         const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
 
         p4 = new P4(stage, p4Anim);
 
+        // Water
         const waterImage: HTMLImageElement = document.getElementById('water') as HTMLImageElement;
         const waterTexture: PIXI.Texture = await PIXI.Assets.load(waterImage) as PIXI.Texture;
-        const waterSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(waterTexture, waterAtlasData);
+        const waterSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(waterTexture, waterData);
         await waterSpritesheet.parse();
         const waterAnim = new PIXI.AnimatedSprite(waterSpritesheet.animations.water);
 
         water = new Water(stage, waterAnim);
+
+        // Black holes
+        const bhBlueImage: HTMLImageElement = document.getElementById('bhBlue') as HTMLImageElement;
+        const bhBlueTexture: PIXI.Texture = await PIXI.Assets.load(bhBlueImage) as PIXI.Texture;
+        const bhBlueSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhBlueTexture, bhBlueData);
+        await bhBlueSpritesheet.parse();
+        const bhBlueAnim = new PIXI.AnimatedSprite(bhBlueSpritesheet.animations.bhBlue);
+
+        const bhRedImage: HTMLImageElement = document.getElementById('bhRed') as HTMLImageElement;
+        const bhRedTexture: PIXI.Texture = await PIXI.Assets.load(bhRedImage) as PIXI.Texture;
+        const bhRedSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhRedTexture, bhRedData);
+        await bhRedSpritesheet.parse();
+        const bhRedAnim = new PIXI.AnimatedSprite(bhRedSpritesheet.animations.bhRed);
+
+        const bhYellowImage: HTMLImageElement = document.getElementById('bhYellow') as HTMLImageElement;
+        const bhYellowTexture: PIXI.Texture = await PIXI.Assets.load(bhYellowImage) as PIXI.Texture;
+        const bhYellowSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhYellowTexture, bhYellowData);
+        await bhYellowSpritesheet.parse();
+        const bhYellowAnim = new PIXI.AnimatedSprite(bhYellowSpritesheet.animations.bhYellow);
+
+        bh = new BlackHole(stage, [bhBlueAnim, bhRedAnim, bhYellowAnim], p4Anim);
     }
 
     // Update game state
     const update = async () =>{
-        // Update your game state here
         sky.update();
+        p4.update(p4.p4Anim);  
+        water.update(water.waterAnim, p4.p4Anim);
+        bh.update(bh.bhAnim, p4.p4Anim, gameLive); 
     }
 
     // Render the game
@@ -73,11 +97,67 @@ export default async function p4Vega() {
     }
 
     // Start game
-    load();
+    await load();
     gameLoop();
+
+    // Restart game
+    const restart = (): void => {
+        if (!gameLive) {
+            load();
+            gameLoop();
+        }
+    }
+
+    // User input
+    const handleKeydown = (key: Event): void => {
+        switch ((<KeyboardEvent>key).code) {
+            // Player movement
+            case "ArrowRight":
+                p4.isMovingRight = true;
+                break;
+            case "ArrowLeft":
+                p4.isMovingLeft = true;
+                break;
+            case "ArrowUp":
+                p4.isMovingUp = true;
+                break;
+            case "ArrowDown":
+                p4.isMovingDown = true;
+                break;
+            // Restart game
+            case "Space":
+                restart();
+                break;
+            default:
+                break;
+        }
+    }
+    const handleKeyup = (key: Event): void => {
+        switch ((<KeyboardEvent>key).code) {
+
+            case "ArrowRight":
+                p4.isMovingRight = false;
+                break;
+            case "ArrowLeft":
+                p4.isMovingLeft = false;
+                break;
+            case "ArrowUp":
+                p4.isMovingUp = false;
+                break;
+            case "ArrowDown":
+                p4.isMovingDown = false;
+                break;
+            default:
+                break;
+        }
+    }
+    document.addEventListener("keyup", handleKeyup);
+    document.addEventListener("keydown", handleKeydown);
 
     let componentId = "p4-wrapper";
     if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = [];}
+    window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
+    window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
 }
 
 // export default function p4Vega() {

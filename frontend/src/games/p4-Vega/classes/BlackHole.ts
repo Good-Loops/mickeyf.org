@@ -1,8 +1,8 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
 import { getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../utils/random";
-import checkCollision from "../../../utils/checkCollision";
 import Entity from "../../classes/Entity";
-import P4 from "./P4";
+import * as PIXI from 'pixi.js';
+// import checkCollision from "../../../utils/checkCollision";
 
 export default class BlackHole extends Entity {
     private hue: number = getRandomInt(0, 360);
@@ -10,79 +10,42 @@ export default class BlackHole extends Entity {
     private vX?: number;
     private vY?: number;
 
-    public width: number = 90;
-    public height: number = 90;
-    public x: number = getRandomX(this.sprite.width);
-    public y: number = getRandomY(this.sprite.height);
-    public free: boolean = false;
+    public bhAnim: PIXI.AnimatedSprite;
 
-    public static poolSize: number;
-    public static pool: BlackHole[];
-    public static freeElements: number;
+    // public free: boolean = false;
 
-    private static increasePercent: number = 20;
-    private static maxPercentFree: number = 60;
+    // public static poolSize: number;
+    // public static pool: BlackHole[];
+    // public static freeElements: number;
 
-    public static nextFree: BlackHole | null = null;
-    private static lastFree: BlackHole | null = null;
-    private previousElement: BlackHole | null = null;
-    private nextElement: BlackHole | null = null;
+    // private static increasePercent: number = 20;
+    // private static maxPercentFree: number = 60;
 
-    constructor() {
-        super(BlackHole.getRandomSprite(), 50);
+    // public static nextFree: BlackHole | null = null;
+    // private static lastFree: BlackHole | null = null;
+    // private previousElement: BlackHole | null = null;
+    // private nextElement: BlackHole | null = null;
+
+    
+    constructor(stage: PIXI.Container<PIXI.ContainerChild>, bhAnimArray: PIXI.AnimatedSprite[], p4Anim: PIXI.AnimatedSprite) {
+        // Select random black hole
+        const bhAnim = BlackHole.getRandomBhAnim(bhAnimArray);
+        super(stage, bhAnim);
+
+        // Make anim public
+        this.bhAnim = bhAnim;
+
+        // Set random direction of movement
         this.determineDirection();
-        if (!BlackHole.lastFree) {
-            BlackHole.lastFree = this;
-        } else {
-            BlackHole.linkElement(this);
-        }
-    }
 
-    protected totalFrames(): number {
-        return 7;
+        // Set random starting position
+        bhAnim.x = getRandomX(bhAnim.width);
+        bhAnim.y = getRandomY(bhAnim.height);
+        this.checkDistance(bhAnim, p4Anim);
     }
-
-    private static linkElement(blackHole: BlackHole): void {
-        blackHole.previousElement = this.lastFree;
-        this.lastFree!.nextElement = blackHole;
-        this.lastFree = blackHole;
-    }
-
-    private static unlinkFirstElement(blackHole: BlackHole): void {
-        this.nextFree = blackHole.nextElement;
-        this.nextFree!.previousElement = null;
-        blackHole.nextElement = blackHole.previousElement = null;
-    }
-
-    private static checkNumberOfFree(): void {
-        if (this.freeElements / this.poolSize > this.maxPercentFree * .01) {
-            const increaseSize = ~~(this.poolSize * this.increasePercent * .01);
-            for (let i = 0; i < increaseSize; i++) {
-                this.pool.push(new BlackHole());
-            }
-            this.poolSize += increaseSize;
-        }
-    }
-
-    public static getElement(): BlackHole {
-        const availableElement = this.nextFree;
-        this.unlinkFirstElement(availableElement!);
-        this.checkNumberOfFree();
-        return availableElement!;
-    }
-
-    public static release(p4: Entity): void {
-        this.freeElements++;
-        const blackHole: BlackHole = this.getElement();
-        this.linkElement(blackHole);
-        blackHole.checkDistance(p4);
-    }
-
-    private checkDistance(p4: Entity): void {
-        while (Math.hypot(this.x - p4.x, this.y - p4.y) < this.minDistance) {
-            this.x = getRandomX(this.sprite.width);
-            this.y = getRandomY(this.sprite.height);
-        }
+            
+    private static getRandomBhAnim(bhAnimArray: PIXI.AnimatedSprite[]): PIXI.AnimatedSprite {
+        return bhAnimArray[getRandomInt(0, 2)];
     }
 
     private determineDirection(): void {
@@ -96,36 +59,73 @@ export default class BlackHole extends Entity {
         }
     }
 
-    private static getRandomSprite(): string {
-        const sprites = ["blackholeBlue", "blackholeRed", "blackholeYellow"];
-        return sprites[getRandomInt(0, 2)];
+    private checkDistance(bhAnim: PIXI.AnimatedSprite, p4Anim: PIXI.AnimatedSprite): void {
+        while (Math.hypot(bhAnim.x - p4Anim.x, bhAnim.y - p4Anim.y) < this.minDistance) {
+            bhAnim.x = getRandomX(bhAnim.width);
+            bhAnim.y = getRandomY(bhAnim.height);
+        }
     }
 
-    public update(deltaTime: number, p4: P4, gameLive: boolean): boolean {
-        super.update(deltaTime);
-
-        if (checkCollision(p4, this)) {
-            gameLive = false;
-        }
-
-        this.y += this.vY!;
-        this.x += this.vX!;
-
-        if (this.y + this.height >= CANVAS_HEIGHT || this.y <= 0) {
+    public update(bhAnim: PIXI.AnimatedSprite, p4Anim: PIXI.AnimatedSprite, gameLive: boolean): boolean {
+        
+        // if (checkCollision(p4, this)) {
+        //     gameLive = false;
+        // }
+            
+        bhAnim.y += this.vY!;
+        bhAnim.x += this.vX!;
+    
+        if (bhAnim.y + bhAnim.height >= CANVAS_HEIGHT || bhAnim.y <= 0) {
             this.vY! *= -1;
-            this.hue = getRandomInt(0, 360);
+            // this.hue = getRandomInt(0, 360);
         }
-        if (this.x + this.width >= CANVAS_WIDTH || this.x <= 0) {
+        if (bhAnim.x + bhAnim.width >= CANVAS_WIDTH || bhAnim.x <= 0) {
             this.vX! *= -1;
-            this.hue = getRandomInt(0, 360);
+            // this.hue = getRandomInt(0, 360);
         }
-
+    
         return gameLive!;
     }
-
-    public draw(context: CanvasRenderingContext2D): void {
-        context.filter = `sepia(100%) saturate(600%) hue-rotate(${this.hue}deg)`;
-        super.draw(context);
-        context.filter = "none";
-    }
 }
+    
+    // public static release(p4: Entity): void {
+    //     this.freeElements++;
+    //     const blackHole: BlackHole = this.getElement();
+    //     this.linkElement(blackHole);
+    //     blackHole.checkDistance(p4);
+    // }
+
+    // public draw(context: CanvasRenderingContext2D): void {
+    //     context.filter = `sepia(100%) saturate(600%) hue-rotate(${this.hue}deg)`;
+    //     super.draw(context);
+    //     context.filter = "none";
+    // }
+
+    // private static linkElement(blackHole: BlackHole): void {
+    //     blackHole.previousElement = this.lastFree;
+    //     this.lastFree!.nextElement = blackHole;
+    //     this.lastFree = blackHole;
+    // }
+
+    // private static unlinkFirstElement(blackHole: BlackHole): void {
+    //     this.nextFree = blackHole.nextElement;
+    //     this.nextFree!.previousElement = null;
+    //     blackHole.nextElement = blackHole.previousElement = null;
+    // }
+
+    // private static checkNumberOfFree(): void {
+    //     if (this.freeElements / this.poolSize > this.maxPercentFree * .01) {
+    //         const increaseSize = ~~(this.poolSize * this.increasePercent * .01);
+    //         for (let i = 0; i < increaseSize; i++) {
+    //             // this.pool.push(new BlackHole());
+    //         }
+    //         this.poolSize += increaseSize;
+    //     }
+    // }
+
+    // public static getElement(): BlackHole {
+    //     const availableElement = this.nextFree;
+    //     this.unlinkFirstElement(availableElement!);
+    //     this.checkNumberOfFree();
+    //     return availableElement!;
+    // }
