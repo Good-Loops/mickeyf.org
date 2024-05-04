@@ -36,15 +36,14 @@ export default async function p4Vega() {
         sky = new Sky(stage);
 
         // Game elements
+        // Create entity class for loading sprites
         const p4Image = document.getElementById('p4') as HTMLImageElement;
         const p4Texture = await PIXI.Assets.load(p4Image);
         const p4Spritesheet = new PIXI.Spritesheet(
             p4Texture,
             p4AtlasData
         );
-        
         await p4Spritesheet.parse();
-
         const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
         p4Anim.x = 100;
         p4Anim.y = 100;
