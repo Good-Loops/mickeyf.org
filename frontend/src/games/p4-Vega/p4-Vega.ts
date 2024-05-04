@@ -1,9 +1,10 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
-// import P4 from "./classes/P4";
-// import Water from "./classes/Water";
-// import BlackHole from "./classes/BlackHole";
+import P4 from "./classes/P4";
+import Water from "./classes/Water";
+import BlackHole from "./classes/BlackHole";
 import Sky from "./classes/Sky";
 import p4AtlasData from './data/p4.json';
+import waterAtlasData from './data/water.json'
 import * as PIXI from 'pixi.js';
 
 export default async function p4Vega() {
@@ -23,10 +24,10 @@ export default async function p4Vega() {
     document.getElementById("p4-vega")!.appendChild(canvas);
 
     // Create a new stage
-    const stage = new PIXI.Container();
+    const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
 
     // Globals
-    let gameLive: boolean, sky: Sky; // p4: P4, water: Water;
+    let gameLive: boolean, sky: Sky, p4: P4, water: Water;
 
     // Load game assets
     const load = async () => {
@@ -36,20 +37,21 @@ export default async function p4Vega() {
         sky = new Sky(stage);
 
         // Game elements
-        // Create entity class for loading sprites
-        const p4Image = document.getElementById('p4') as HTMLImageElement;
-        const p4Texture = await PIXI.Assets.load(p4Image);
-        const p4Spritesheet = new PIXI.Spritesheet(
-            p4Texture,
-            p4AtlasData
-        );
+        const p4Image: HTMLImageElement = document.getElementById('p4') as HTMLImageElement;
+        const p4Texture: PIXI.Texture = await PIXI.Assets.load(p4Image) as PIXI.Texture;
+        const p4Spritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(p4Texture, p4AtlasData);
         await p4Spritesheet.parse();
         const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
-        p4Anim.x = 100;
-        p4Anim.y = 100;
-        p4Anim.animationSpeed = 0.1;
-        p4Anim.play();
-        stage.addChild(p4Anim);
+
+        p4 = new P4(stage, p4Anim);
+
+        const waterImage: HTMLImageElement = document.getElementById('water') as HTMLImageElement;
+        const waterTexture: PIXI.Texture = await PIXI.Assets.load(waterImage) as PIXI.Texture;
+        const waterSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(waterTexture, waterAtlasData);
+        await waterSpritesheet.parse();
+        const waterAnim = new PIXI.AnimatedSprite(waterSpritesheet.animations.water);
+
+        water = new Water(stage, waterAnim);
     }
 
     // Update game state

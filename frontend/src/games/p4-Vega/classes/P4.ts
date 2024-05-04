@@ -1,58 +1,62 @@
-// import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants"
-// import Entity from "../../classes/Entity"
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants"
+import Entity from "../../classes/Entity"
+import * as PIXI from 'pixi.js';
 
-// export default class P4 extends Entity {
-//     private startX: number = Entity.gap;
-//     private startY: number  = CANVAS_HEIGHT * .5;
-//     private speed: number = 10;
+export default class P4 extends Entity {
+    private startX: number = Entity.gap;
+    private startY: number  = CANVAS_HEIGHT * .5;
 
-//     public width: number = 70;
-//     public height: number = 66;
-//     public x: number = this.startX;
-//     public y: number = this.startY;
-    
-//     public totalWater: number = 0;
-//     public isMovingRight: boolean = false;
-//     public isMovingLeft: boolean = false;
-//     public isMovingUp: boolean = false;
-//     public isMovingDown: boolean= false;
+    public x: number = this.startX;
+    public y: number = this.startY;
 
-//     constructor() {
-//         super("p4");
-//     }
+    private speed: number = 10;
 
-//     protected totalFrames(): number {
-//         return 8;
-//     }
+    private p4Anim: PIXI.AnimatedSprite;
 
-//     public update(deltaTime: number): void {
-//         super.update(deltaTime);
-//         // Movement
-//         if (this.isMovingRight) {
-//             this.x += this.speed;
-//         }
-//         if (this.isMovingLeft) {
-//             this.x -= this.speed;
-//         }
-//         if (this.isMovingUp) {
-//             this.y -= this.speed;
-//         }
-//         if (this.isMovingDown) {
-//             this.y += this.speed;
-//         }
+    public totalWater: number = 0;
 
-//         // World bounds
-//         if (this.x + this.width * .8 > CANVAS_WIDTH - Entity.gap) {
-//             this.x -= this.speed;
-//         }
-//         if (this.x < 0) {
-//             this.x += this.speed;
-//         }
-//         if (this.y + this.height  * .8 > CANVAS_HEIGHT - Entity.gap) {
-//             this.y -= this.speed;
-//         }
-//         if (this.y < 0) {
-//             this.y += this.speed;
-//         }
-//     }
-// }
+    public isMovingRight: boolean = false;
+    public isMovingLeft: boolean = false;
+    public isMovingUp: boolean = false;
+    public isMovingDown: boolean= false;
+
+    constructor(stage: PIXI.Container<PIXI.ContainerChild>, anim: PIXI.AnimatedSprite) {
+        super(stage, anim);
+
+        this.p4Anim = anim;
+        
+        this.p4Anim.x = this.startX;
+        this.p4Anim.y = this.startY;
+    }
+
+    public update(p4Anim: PIXI.AnimatedSprite): void {
+        super.update(p4Anim);
+        // Movement
+        if (this.isMovingRight) {
+            this.p4Anim.x += this.speed;
+        }
+        if (this.isMovingLeft) {
+            this.p4Anim.x -= this.speed;
+        }
+        if (this.isMovingUp) {
+            this.p4Anim.y -= this.speed;
+        }
+        if (this.isMovingDown) {
+            this.p4Anim.y += this.speed;
+        }
+
+        // World bounds
+        if (this.p4Anim.x + this.p4Anim.width * .8 > CANVAS_WIDTH - Entity.gap) {
+            this.p4Anim.x -= this.speed;
+        }
+        if (this.p4Anim.x < 0) {
+            this.p4Anim.x += this.speed;
+        }
+        if (this.p4Anim.y + this.p4Anim.height  * .8 > CANVAS_HEIGHT - Entity.gap) {
+            this.p4Anim.y -= this.speed;
+        }
+        if (this.p4Anim.y < 0) {
+            this.p4Anim.y += this.speed;
+        }
+    }
+}

@@ -1,47 +1,26 @@
-// import IEntity from "../interfaces/IEntity";
-// import P4 from "../p4-Vega/classes/P4";
+import * as PIXI from "pixi.js";
+import IEntity from "../interfaces/IEntity";
 
-// import * as PIXI from 'pixi.js';
+export default abstract class Entity implements IEntity {
+    stage: PIXI.Container<PIXI.ContainerChild>;
+    anim: PIXI.AnimatedSprite;
 
-// // Class definition extending PIXI.Spritesheet
-// export class LoadSpritesheet extends PIXI.Spritesheet {
-//     private static instances: Map<string, PIXI.Spritesheet> = new Map();
+    public static gap: number = 10;    
 
-//     // Static method to load and parse spritesheet assets
-//     static async loadSpritesheet(app: Application, texturePath: string, dataPath: string): Promise<PIXI.Spritesheet> {
-//         return new Promise((resolve, reject) => {
-//             if (this.instances.has(texturePath)) {
-//                 resolve(this.instances.get(texturePath));
-//             } else {
-//                 app.loader
-//                     .add('texture', texturePath)
-//                     .add('data', dataPath)
-//                     .load((loader, resources) => {
-//                         const spritesheet = new PIXI.Spritesheet(
-//                             resources.texture.texture,
-//                             resources.data.data
-//                         );
-//                         spritesheet.parse(() => {
-//                             this.instances.set(texturePath, spritesheet);
-//                             resolve(spritesheet);
-//                         });
-//                     });
-//             }
-//         });
-//     }
+    public add(stage: PIXI.Container<PIXI.ContainerChild>, anim: PIXI.AnimatedSprite): void {
+        anim.animationSpeed = 0.1;
+        anim.play();
+        stage.addChild(anim);
+    }
 
-//     // Constructor accepts paths and initializes spritesheet using already loaded assets
-//     constructor(app: Application, texturePath: string, dataPath: string) {
-//         const instance = AdvancedSpritesheet.instances.get(texturePath);
-//         if (!instance) {
-//             throw new Error('Spritesheet not loaded, please call loadSpritesheet first');
-//         }
-//         super(instance.baseTexture, instance.data);
-//         // Ensure the spritesheet is preloaded
-//         AdvancedSpritesheet.loadSpritesheet(app, texturePath, dataPath).then((loadedSpritesheet) => {
-//             console.log('Spritesheet is ready to use:', loadedSpritesheet);
-//         }).catch((error) => {
-//             console.error('Error loading spritesheet:', error);
-//         });
-//     }
-// }
+    public update(anim: PIXI.AnimatedSprite): void {
+
+    }
+
+    constructor(stage: PIXI.Container<PIXI.ContainerChild>, anim: PIXI.AnimatedSprite) {
+        this.stage = stage;
+        this.anim = anim;
+
+        this.add(this.stage, this.anim);
+    }
+}
