@@ -18,7 +18,8 @@ export default class P4 extends Entity {
     public isMovingDown: boolean= false;
 
     constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
-        super(stage, p4Anim);
+        super(p4Anim);
+        stage.addChild(p4Anim);
 
         this.p4Anim = p4Anim;
         
@@ -42,13 +43,13 @@ export default class P4 extends Entity {
         }
 
         // World bounds
-        if (p4Anim.x + p4Anim.width * .8 > CANVAS_WIDTH - Entity.gap) {
+        if (p4Anim.x + p4Anim.width * Entity.hitBoxAdjust > CANVAS_WIDTH - Entity.gap) {
             p4Anim.x -= this.speed;
         }
         if (p4Anim.x < 0) {
             p4Anim.x += this.speed;
         }
-        if (p4Anim.y + p4Anim.height  * .8 > CANVAS_HEIGHT - Entity.gap) {
+        if (p4Anim.y + p4Anim.height * Entity.hitBoxAdjust > CANVAS_HEIGHT - Entity.gap) {
             p4Anim.y -= this.speed;
         }
         if (p4Anim.y < 0) {

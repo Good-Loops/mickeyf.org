@@ -73,15 +73,33 @@ export default async function p4Vega() {
         await bhYellowSpritesheet.parse();
         const bhYellowAnim = new PIXI.AnimatedSprite(bhYellowSpritesheet.animations.bhYellow);
 
-        bh = new BlackHole(stage, [bhBlueAnim, bhRedAnim, bhYellowAnim], p4Anim);
+        BlackHole.poolSize = 8;
+        BlackHole.freeElements = 0;
+        BlackHole.pool = new Array(BlackHole.poolSize).fill(0);
+        for(let i = 0; i < BlackHole.poolSize; i++) {
+            BlackHole.pool[i] = new BlackHole(stage, [bhBlueAnim, bhRedAnim, bhYellowAnim], p4Anim);
+            if (BlackHole.pool[i].previousElement) {
+                BlackHole.pool[i].previousElement!.nextElement = BlackHole.pool[i];
+                BlackHole.pool[i].previousElement = BlackHole.pool[i].previousElement;
+            }
+            BlackHole.pool[i].previousElement = BlackHole.pool[i];
+        }
+        BlackHole.lastFree = BlackHole.pool[BlackHole.poolSize - 1];
+        BlackHole.nextFree = BlackHole.pool[0];
+        BlackHole.release(p4);
     }
 
     // Update game state
     const update = async () =>{
         sky.update();
         p4.update(p4.p4Anim);  
-        water.update(water.waterAnim, p4.p4Anim);
-        bh.update(bh.bhAnim, p4.p4Anim, gameLive); 
+        water.update(water.waterAnim, p4, stage);
+
+        for (let i = 0; i < BlackHole.freeElements; i++) {
+            const blackHole = BlackHole.pool[i];
+            blackHole.free = true;
+            gameLive = blackHole.update(blackHole.bhAnim, p4.p4Anim, gameLive);
+        } 
     }
 
     // Render the game
@@ -134,7 +152,6 @@ export default async function p4Vega() {
     }
     const handleKeyup = (key: Event): void => {
         switch ((<KeyboardEvent>key).code) {
-
             case "ArrowRight":
                 p4.isMovingRight = false;
                 break;
