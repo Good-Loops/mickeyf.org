@@ -3,14 +3,15 @@
         "target": "ES2016",
         "module": "CommonJS",
         "moduleResolution": "node",
-        "outDir": "./dist",
+        "outDir": "public/dist",
         "baseUrl": "./",
         "sourceMap": true,
         "allowJs": true,
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true
     },
     "include": [
         "src/**/*"

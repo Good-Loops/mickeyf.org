@@ -14,9 +14,9 @@ export const pool = createPool({
 // For development
 // export const pool = createPool({
 //     host: 'localhost',
-//     user: 'cms_mickeyf',
-//     password: '*<HLecm?,el(S>@H',
-//     database: 'cms',
+//     user: '',
+//     password: '',
+//     database: '',
 //     waitForConnections: true,
 //     connectionLimit: 10,
 //     queueLimit: 0

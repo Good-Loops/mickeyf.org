@@ -3,9 +3,10 @@
         {
             "splitTerminals": [
                 {
-                    "name": "front-compiler",
+                    "name": "ts-compiler",
                     "commands": [
-                        "cd frontend"
+                        "cd frontend",
+                        "npm run dev"
                     ]
                 }
             ]
@@ -13,9 +14,10 @@
         {
             "splitTerminals": [
                 {
-                    "name": "front-server",
+                    "name": "sass-compiler",
                     "commands": [
-                        "cd frontend"
+                        "cd frontend",
+                        "npm run start"
                     ]
                 }
             ]
@@ -25,7 +27,8 @@
                 {
                     "name": "back-compiler",
                     "commands": [
-                        "cd backend"
+                        "cd backend",
+                        "npm run dev"
                     ]
                 },
             ]
@@ -33,9 +36,10 @@
         {
             "splitTerminals": [
                 {
-                    "name": "back-server",
+                    "name": "server",
                     "commands": [
-                        "cd backend"
+                        "cd backend",
+                        "npm run server"
                     ]
                 }
             ]
@@ -45,9 +49,9 @@
                 {
                     "name": "temp-bash",
                     "commands": [
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
                         "exit",
                     ]
@@ -55,19 +59,4 @@
             ]
         }
     ],
-    "liveSassCompile.settings.formats": [
-        {
-            "format": "expanded",
-            "extensionName": ".css",
-            "savePath": "/public/assets/css",
-        },
-        {
-            "format": "compressed",
-            "extensionName": ".min.css",
-            "savePath": "/public/assets/css",
-        }
-    ],
-    "liveSassCompile.settings.includeItems": [
-        "/public/assets/sass/style.scss"
-    ]
 }
