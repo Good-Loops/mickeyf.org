@@ -1,58 +1,63 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants"
 import Entity from "../../classes/Entity"
+import * as PIXI from 'pixi.js';
 
 export default class P4 extends Entity {
     private startX: number = Entity.gap;
     private startY: number  = CANVAS_HEIGHT * .5;
+
     private speed: number = 10;
 
-    public width: number = 70;
-    public height: number = 66;
-    public x: number = this.startX;
-    public y: number = this.startY;
-    
+    public p4Anim: PIXI.AnimatedSprite;
+
     public totalWater: number = 0;
+
     public isMovingRight: boolean = false;
     public isMovingLeft: boolean = false;
     public isMovingUp: boolean = false;
     public isMovingDown: boolean= false;
 
-    constructor() {
-        super("p4");
+    constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
+        super(p4Anim);
+        stage.addChild(p4Anim);
+
+        this.p4Anim = p4Anim;
+        
+        p4Anim.x = this.startX;
+        p4Anim.y = this.startY;
     }
 
-    protected totalFrames(): number {
-        return 8;
-    }
-
-    public update(deltaTime: number): void {
-        super.update(deltaTime);
+    public update(p4Anim: PIXI.AnimatedSprite): void {
         // Movement
         if (this.isMovingRight) {
-            this.x += this.speed;
+            p4Anim.x += this.speed;
         }
         if (this.isMovingLeft) {
-            this.x -= this.speed;
+            p4Anim.x -= this.speed;
         }
         if (this.isMovingUp) {
-            this.y -= this.speed;
+            p4Anim.y -= this.speed;
         }
         if (this.isMovingDown) {
-            this.y += this.speed;
+            p4Anim.y += this.speed;
         }
 
         // World bounds
-        if (this.x + this.width * .8 > CANVAS_WIDTH - Entity.gap) {
-            this.x -= this.speed;
+        if (p4Anim.x + p4Anim.width > CANVAS_WIDTH) {
+            p4Anim.x -= this.speed;
         }
-        if (this.x < 0) {
-            this.x += this.speed;
+        if (p4Anim.x < 0) {
+            p4Anim.x += this.speed;
         }
-        if (this.y + this.height  * .8 > CANVAS_HEIGHT - Entity.gap) {
-            this.y -= this.speed;
+        if (p4Anim.y + p4Anim.height > CANVAS_HEIGHT) {
+            p4Anim.y -= this.speed;
         }
-        if (this.y < 0) {
-            this.y += this.speed;
+        if (p4Anim.y < 0) {
+            p4Anim.y += this.speed;
         }
+    }
+
+    public destroy(): void {
+        this.p4Anim.destroy();
     }
 }

@@ -19,18 +19,19 @@ mickeyf.org
 |   |-- package.json
 |   |-- tsconfig.json
 |   `-- webpack.config.js
+|-- docs
+|   |-- Colors for Website.txt
+|   |-- Common Screen Resolutions.txt
+|   `-- Project Structure.txt
 |-- frontend
-|   |-- node_modules [283 entries exceeds filelimit, not opening dir]
+|   |-- node_modules [470 entries exceeds filelimit, not opening dir]
 |   |-- public
 |   |   |-- assets
 |   |   |   |-- audio
 |   |   |   |   |-- Test Score.wav
 |   |   |   |   `-- Testing Song.wav
 |   |   |   |-- css
-|   |   |   |   |-- style.css
-|   |   |   |   |-- style.css.map
-|   |   |   |   |-- style.min.css
-|   |   |   |   `-- style.min.css.map
+|   |   |   |   `-- style.min.css
 |   |   |   |-- img
 |   |   |   |   |-- SVG
 |   |   |   |   |   |-- close.svg
@@ -52,7 +53,9 @@ mickeyf.org
 |   |   |   `-- favicon.ico
 |   |   |-- dist
 |   |   |   |-- index.min.js
-|   |   |   `-- index.min.js.map
+|   |   |   |-- index.min.js.map
+|   |   |   |-- main.min.js
+|   |   |   `-- main.min.js.map
 |   |   |-- 404.html
 |   |   `-- index.html
 |   |-- sass
@@ -73,10 +76,12 @@ mickeyf.org
 |   |   |-- components
 |   |   |   |-- _close-btn.scss
 |   |   |   |-- _index.scss
-|   |   |   |-- _nav.scss
-|   |   |   |-- _sidebar-btn.scss
-|   |   |   `-- _sidebar.scss
+|   |   |   |-- _menu-btn.scss
+|   |   |   |-- _menu.scss
+|   |   |   `-- _nav.scss
 |   |   |-- layout
+|   |   |   |-- _footer.scss
+|   |   |   |-- _header.scss
 |   |   |   |-- _index.scss
 |   |   |   `-- _main.scss
 |   |   |-- pages
@@ -146,15 +151,10 @@ mickeyf.org
 |   |   |   |-- lerp.ts
 |   |   |   |-- loadComponent.ts
 |   |   |   `-- random.ts
-|   |   |-- index.ts
+|   |   |-- main.ts
 |   |   `-- types.d.ts
-|   |-- txt
-|   |   |-- Colors for Website.txt
-|   |   |-- Common Screen Resolutions.txt
-|   |   `-- Project Structure.txt
 |   |-- package-lock.json
 |   |-- package.json
-|   |-- server.ts
 |   |-- tsconfig.json
 |   `-- webpack.config.js
 |-- Dockerfile

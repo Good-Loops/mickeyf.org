@@ -1,10 +1,7 @@
-export default interface IEntity {
-    sprite: HTMLImageElement;
-    width: number;
-    height: number;
-    x: number;
-    y: number;
-    gap?: number;
+import * as PIXI from 'pixi.js';
 
-    draw(context: CanvasRenderingContext2D): void;
+export default interface IEntity {
+    anim: PIXI.AnimatedSprite;
+
+    play(anim: PIXI.AnimatedSprite): void;
 }

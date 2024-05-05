@@ -5,12 +5,11 @@ function component() {
         return /*html*/`
             <section class="p4-vega" id="p4-vega">
                 <h1 class="u-canvas-title">p4-Vega</h1>
-                <canvas class="p4-vega__canvas" id="p4-canvas"></canvas>
-                <img class="p4-vega__img" id="p4" width="560" height="66" src="assets/sprites/p4.png" alt="p4">
-                <img class="p4-vega__img" id="water" width="138" height="46" src="assets/sprites/water.png" alt="water">
-                <img class="p4-vega__img" id="blackholeBlue" width="630" height="90" src="assets/sprites/blackholeBlue.png" alt="blackhole">
-                <img class="p4-vega__img" id="blackholeRed" width="630" height="90" src="assets/sprites/blackholeRed.png" alt="blackhole">
-                <img class="p4-vega__img" id="blackholeYellow" width="630" height="90" src="assets/sprites/blackholeYellow.png" alt="blackhole">
+                <img id="p4" src="./sprites/p4Vega/p4.png" style="display: none;">
+                <img id="water" src="./sprites/p4Vega/water.png" style="display: none;">
+                <img id="bhBlue" src="./sprites/p4Vega/bhBlue.png" style="display: none;">
+                <img id="bhRed" src="./sprites/p4Vega/bhRed.png" style="display: none;">
+                <img id="bhYellow" src="./sprites/p4Vega/bhYellow.png" style="display: none;">
             </section>   
         `;
     }
