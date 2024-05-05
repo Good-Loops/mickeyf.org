@@ -36,7 +36,7 @@ export default async function p4Vega() {
 
     ////////////////// Globals //////////////////
     // Game state
-    let gameLive: boolean, gameOverTexts: PIXI.Text[] = [];
+    let gameLive: boolean, gameOverTexts: PIXI.ContainerChild[] = [];
     // Game elements
     let sky: Sky, p4: P4, water: Water, firstBlackHole: BlackHole;
     
@@ -83,6 +83,7 @@ export default async function p4Vega() {
 
     // Update game state
     const update = async () =>{
+        // Update game elements
         sky.update();
         p4.update(p4.p4Anim);  
         water.update(water.waterAnim, p4, stage);
@@ -107,7 +108,7 @@ export default async function p4Vega() {
     // Game loop
     const gameLoop = async () => {
         await update();
-        render();
+        await render();
         if(gameLive) requestAnimationFrame(gameLoop);
     }
 
