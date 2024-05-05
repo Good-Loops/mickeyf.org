@@ -34,23 +34,23 @@ app.use(
                 "'self'",
                 "'unsafe-inline'",
                 "'unsafe-eval'", 
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : [])
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
             workerSrc: [
                 "'self'",
                 "blob:",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : [])
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
             styleSrc: [
                 "'self'",
                 "'unsafe-inline'",
                 "https://fonts.googleapis.com",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : [])
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
             fontSrc: [
                 "'self'",
                 "https://fonts.gstatic.com",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : [])
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
         }
     })

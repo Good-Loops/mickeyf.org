@@ -1,6 +1,6 @@
 {
     "name": "mickeyf-frontend",
-    "version": "0.1.44",
+    "version": "0.2.33",
     "description": "Frontend for mickeyf.org",
     "scripts": {
         "dev": "webpack --mode development --watch",
