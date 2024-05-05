@@ -1,7 +1,7 @@
 function component() {
     const render = function() {
         return /*html*/`
-            <div x-data="listUsers()" x-init="list">
+            <!-- <div x-data="listUsers()" x-init="list">
                 <ul>
                     <template x-for="user in data" :key="user.user_id">
                         <li>
@@ -10,7 +10,7 @@ function component() {
                         </li>
                     </template>
                 </ul>
-            </div>
+            </div> -->
         `;
     }
 

@@ -1,13 +1,21 @@
+// Utilities
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
+import gameOver from "../../utils/gameOver";
+
+// Game elements
 import P4 from "./classes/P4";
 import Water from "./classes/Water";
 import BlackHole from "./classes/BlackHole";
 import Sky from "./classes/Sky";
+
+// Entity data
 import p4Data from './data/p4.json';
 import waterData from './data/water.json'
 import bhBlueData from './data/bhBlue.json'
 import bhRedData from './data/bhRed.json'
 import bhYellowData from './data/bhYellow.json'
+
+// PixiJS
 import * as PIXI from 'pixi.js';
 
 export default async function p4Vega() {
@@ -28,7 +36,7 @@ export default async function p4Vega() {
 
     ////////////////// Globals //////////////////
     // Game state
-    let gameLive: boolean;
+    let gameLive: boolean, gameOverTexts: PIXI.Text[] = [];
     // Game elements
     let sky: Sky, p4: P4, water: Water, firstBlackHole: BlackHole;
     
@@ -82,6 +90,13 @@ export default async function p4Vega() {
             let blackHole = BlackHole.bhArray[i];
             gameLive = blackHole.update(blackHole.bhAnim, p4, gameLive);
         }
+
+        // Check for game over
+        if(!gameLive) 
+        {
+            gameOverTexts = await gameOver(gameLive, p4);
+            gameOverTexts.forEach(text => stage.addChild(text));
+        }
     }
 
     // Render the game
@@ -108,6 +123,7 @@ export default async function p4Vega() {
         p4.destroy();
         water.destroy();
         BlackHole.destroy(stage);
+        gameOverTexts.forEach(text => stage.removeChild(text));
         // Load game assets
         await load();
         gameLoop();
@@ -158,150 +174,9 @@ export default async function p4Vega() {
     document.addEventListener("keyup", handleKeyup);
     document.addEventListener("keydown", handleKeydown);
 
+    // Add and Remove event listeners
     let componentId = "p4-wrapper";
     if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = [];}
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
 }
-
-// export default function p4Vega() {
-//     // Canvas
-//     const canvas: HTMLCanvasElement = document.getElementById("p4-canvas") as HTMLCanvasElement;
-//     const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
-//     canvas.width = CANVAS_WIDTH;
-//     canvas.height = CANVAS_HEIGHT;
-
-//     // Globals
-//     let gameLive: boolean, sky: Sky, p4: P4, water: Water, deltaTime: number, lastTime: number;
-
-//     // Game loop
-//     const load = (): void => {
-//         gameLive = true;
-//         sky = new Sky(canvas);
-//         p4 = new P4();
-//         water = new Water();
-
-//         BlackHole.poolSize = 15;
-//         BlackHole.freeElements = 0;
-//         BlackHole.pool = new Array(BlackHole.poolSize).fill(0);
-//         for(let i = 0; i < BlackHole.poolSize; i++) { 
-//             BlackHole.pool[i] = new BlackHole(); 
-//         }
-//         BlackHole.nextFree = BlackHole.pool[0];
-//         BlackHole.release(p4);
-//     }
-
-//     const update = (): void => {
-//         p4.update(deltaTime);
-//         water.update(deltaTime, p4);
-//         for(let i = 0; i < BlackHole.freeElements; i++) {
-//             const blackHole = BlackHole.pool[i];
-//             blackHole.free = true;
-//             gameLive = blackHole.update(deltaTime, p4, gameLive);
-//         }
-//     }
-
-//     const draw = (): void => {
-//         // Clear canvas
-//         ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-//         // Draw background
-//         ctx.fillStyle = 'white';
-//         sky.handleStars(ctx);
-        
-//         // Draw game elements
-//         p4.draw(ctx);
-//         water.draw(ctx);
-//         for(let i = 0; i < BlackHole.freeElements; i++) {
-//             const blackHole = BlackHole.pool[i];
-//             blackHole.draw(ctx);
-//         }
-
-//         // Game over
-//         if (!gameLive) {
-//             ctx.font = "50px Arial";
-//             ctx.textAlign = "center";
-//             ctx.fillStyle = "rgb(200,0,0)";
-//             ctx.fillText("GAME OVER", CANVAS_WIDTH * .5, CANVAS_HEIGHT * .5 - 20);
-//             ctx.fillStyle = "cyan";
-//             ctx.fillText("Total Water: " + p4.totalWater, CANVAS_WIDTH * .5, CANVAS_HEIGHT * .5 + 60);
-//             ctx.font = "30px Arial";
-//             ctx.fillText("Press space to try again", CANVAS_WIDTH * .5, CANVAS_HEIGHT * .5 + 100);
-//         }
-//     }
-
-//     deltaTime = 0; 
-//     lastTime = 0;
-//     const step = (timeStamp: number): void => {
-//         deltaTime = timeStamp - lastTime;
-//         lastTime = timeStamp;
-//         if (gameLive) {
-//             update();
-//             draw();
-//             window.p4AnimationID = requestAnimationFrame(step);
-//         }
-//     }
-
-//     // Start game
-//     load();
-//     step(0);
-
-//     // Restart game
-//     const restart = (): void => {
-//         if (!gameLive) {
-//             load();
-//             step(0);
-//         }
-//     }
-
-//     // User input
-//     const handleKeydown = (key: Event): void => {
-//         switch ((<KeyboardEvent>key).code) {
-//             // Player movement
-//             case "ArrowRight":
-//                 p4.isMovingRight = true;
-//                 break;
-//             case "ArrowLeft":
-//                 p4.isMovingLeft = true;
-//                 break;
-//             case "ArrowUp":
-//                 p4.isMovingUp = true;
-//                 break;
-//             case "ArrowDown":
-//                 p4.isMovingDown = true;
-//                 break;
-//             // Restart game
-//             case "Space":
-//                 restart();
-//                 break;
-//             default:
-//                 break;
-//         }
-//     }
-//     const handleKeyup = (key: Event): void => {
-//         switch ((<KeyboardEvent>key).code) {
-
-//             case "ArrowRight":
-//                 p4.isMovingRight = false;
-//                 break;
-//             case "ArrowLeft":
-//                 p4.isMovingLeft = false;
-//                 break;
-//             case "ArrowUp":
-//                 p4.isMovingUp = false;
-//                 break;
-//             case "ArrowDown":
-//                 p4.isMovingDown = false;
-//                 break;
-//             default:
-//                 break;
-//         }
-//     }
-//     document.addEventListener("keyup", handleKeyup);
-//     document.addEventListener("keydown", handleKeydown);
-
-//     let componentId = "p4-wrapper";
-//     if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = [];}
-//     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
-//     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
-// }
