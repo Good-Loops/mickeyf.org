@@ -56,4 +56,8 @@ export default class P4 extends Entity {
             p4Anim.y += this.speed;
         }
     }
+
+    public destroy(): void {
+        this.p4Anim.destroy();
+    }
 }

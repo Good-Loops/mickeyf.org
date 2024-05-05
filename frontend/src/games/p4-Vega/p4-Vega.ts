@@ -11,7 +11,7 @@ import bhYellowData from './data/bhYellow.json'
 import * as PIXI from 'pixi.js';
 
 export default async function p4Vega() {
-    // Setup PixiJS renderer 
+    /////////////////// Setup PixiJS renderer ////////////////// 
     const renderer = await PIXI.autoDetectRenderer({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
@@ -25,10 +25,13 @@ export default async function p4Vega() {
     document.getElementById("p4-vega")!.appendChild(canvas);
     // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
-    // Globals
-    let gameLive: boolean = true;
-    let sky: Sky, p4: P4, water: Water, firstBlackHole: BlackHole;
 
+    ////////////////// Globals //////////////////
+    // Game state
+    let gameLive: boolean;
+    // Game elements
+    let sky: Sky, p4: P4, water: Water, firstBlackHole: BlackHole;
+    
     // Load game assets
     const load = async () => {
         gameLive = true;
@@ -36,14 +39,12 @@ export default async function p4Vega() {
         // Background
         sky = new Sky(stage);
 
-        ///////////////////// Game elements /////////////////////
         // Player
         const p4Image: HTMLImageElement = document.getElementById('p4') as HTMLImageElement;
         const p4Texture: PIXI.Texture = await PIXI.Assets.load(p4Image) as PIXI.Texture;
         const p4Spritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(p4Texture, p4Data);
         await p4Spritesheet.parse();
         const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
-
         p4 = new P4(stage, p4Anim);
 
         // Water
@@ -52,7 +53,6 @@ export default async function p4Vega() {
         const waterSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(waterTexture, waterData);
         await waterSpritesheet.parse();
         const waterAnim = new PIXI.AnimatedSprite(waterSpritesheet.animations.water);
-
         water = new Water(stage, waterAnim);
 
         // Black holes
@@ -60,21 +60,17 @@ export default async function p4Vega() {
         const bhBlueTexture: PIXI.Texture = await PIXI.Assets.load(bhBlueImage) as PIXI.Texture;
         const bhBlueSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhBlueTexture, bhBlueData);
         await bhBlueSpritesheet.parse();
-        const bhBlueAnim = new PIXI.AnimatedSprite(bhBlueSpritesheet.animations.bhBlue);
-
         const bhRedImage: HTMLImageElement = document.getElementById('bhRed') as HTMLImageElement;
         const bhRedTexture: PIXI.Texture = await PIXI.Assets.load(bhRedImage) as PIXI.Texture;
         const bhRedSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhRedTexture, bhRedData);
         await bhRedSpritesheet.parse();
-        const bhRedAnim = new PIXI.AnimatedSprite(bhRedSpritesheet.animations.bhRed);
-
         const bhYellowImage: HTMLImageElement = document.getElementById('bhYellow') as HTMLImageElement;
         const bhYellowTexture: PIXI.Texture = await PIXI.Assets.load(bhYellowImage) as PIXI.Texture;
         const bhYellowSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhYellowTexture, bhYellowData);
         await bhYellowSpritesheet.parse();
-        const bhYellowAnim = new PIXI.AnimatedSprite(bhYellowSpritesheet.animations.bhYellow);
 
-        firstBlackHole = new BlackHole(stage, [bhBlueAnim, bhRedAnim, bhYellowAnim], p4Anim);
+        BlackHole.bhSpriteSheetArray.push(bhBlueSpritesheet, bhRedSpritesheet, bhYellowSpritesheet);
+        firstBlackHole = new BlackHole(stage, BlackHole.bhSpriteSheetArray, p4Anim);
     }
 
     // Update game state
@@ -82,8 +78,9 @@ export default async function p4Vega() {
         sky.update();
         p4.update(p4.p4Anim);  
         water.update(water.waterAnim, p4, stage);
-        for (let blackHole of BlackHole.bhArray) {
-            blackHole.update(blackHole.bhAnim, p4.p4Anim, gameLive);
+        for (let i = 0; i < BlackHole.bhArray.length; i++) {
+            let blackHole = BlackHole.bhArray[i];
+            gameLive = blackHole.update(blackHole.bhAnim, p4, gameLive);
         }
     }
 
@@ -94,7 +91,7 @@ export default async function p4Vega() {
 
     // Game loop
     const gameLoop = async () => {
-        update();
+        await update();
         render();
         if(gameLive) requestAnimationFrame(gameLoop);
     }
@@ -105,11 +102,15 @@ export default async function p4Vega() {
 
     // Restart game
     const restart = async () => {
-        if (!gameLive) {
-            renderer.clear();
-            load();
-            gameLoop();
-        }
+        gameLive = true;
+        // Clear stage
+        sky.destroy();
+        p4.destroy();
+        water.destroy();
+        BlackHole.destroy(stage);
+        // Load game assets
+        await load();
+        gameLoop();
     }
 
     // User input

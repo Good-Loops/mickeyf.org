@@ -23,14 +23,17 @@ export default class Water extends Entity {
         waterAnim.y = this.startY;
     }
 
-
     public update(waterAnim: PIXI.AnimatedSprite, p4: P4, stage: PIXI.Container<PIXI.ContainerChild>): void {
         if (checkCollision(p4.p4Anim, waterAnim)) {
             waterAnim.x = getRandomX(waterAnim.width + Entity.gap);
             waterAnim.y = getRandomY(waterAnim.height + Entity.gap);
 
             p4.totalWater += 10;
-            let newBlackHole = new BlackHole(stage, BlackHole.bhAnimArray, p4.p4Anim);
+            new BlackHole(stage, BlackHole.bhSpriteSheetArray, p4.p4Anim);
         }
+    }
+
+    public destroy(): void {
+        this.waterAnim.destroy();
     }
 }

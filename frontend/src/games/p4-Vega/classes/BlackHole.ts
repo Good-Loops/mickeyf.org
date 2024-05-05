@@ -2,6 +2,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
 import { getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../utils/random";
 import checkCollision from "../../../utils/checkCollision";
 import Entity from "../../classes/Entity";
+import P4 from "./P4";
 import * as PIXI from 'pixi.js';
 
 // Constants
@@ -12,33 +13,60 @@ const VELOCITY_MAX = 5.5;
 // BlackHole class extends Entity, managing its own behaviors and a pool of instances for reuse.
 export default class BlackHole extends Entity {
     private hue: number = getRandomInt(0, 360);
+
     private vX: number = 0;
     private vY: number = 0;
 
     public bhAnim: PIXI.AnimatedSprite;
-    public static bhAnimArray: PIXI.AnimatedSprite[];
+
+    public static bhAnimArray: PIXI.AnimatedSprite[] = [];
+    public static bhSpriteSheetArray: PIXI.Spritesheet[] = [];
+    public static animArrayIndex: number = 0;  
 
     public static bhArray: BlackHole[] = [];
 
-    constructor(stage: PIXI.Container<PIXI.ContainerChild>, bhAnimArray: PIXI.AnimatedSprite[], p4Anim: PIXI.AnimatedSprite) {
-        const bhAnim = BlackHole.getRandomBhAnim(bhAnimArray);
-        super(bhAnim);
+    constructor(stage: PIXI.Container<PIXI.ContainerChild>, bhSpritesheetArray: PIXI.Spritesheet[], p4Anim: PIXI.AnimatedSprite) {
+        const bhColor = BlackHole.getRandomBHColor();
+        switch(bhColor) {
+            case 'bhBlue':
+                BlackHole.bhAnimArray.push(new PIXI.AnimatedSprite(bhSpritesheetArray[0].animations.bhBlue));
+                break;
+            case 'bhRed':
+                BlackHole.bhAnimArray.push(new PIXI.AnimatedSprite(bhSpritesheetArray[1].animations.bhRed));
+                break;
+            case 'bhYellow':
+                BlackHole.bhAnimArray.push(new PIXI.AnimatedSprite(bhSpritesheetArray[2].animations.bhYellow));
+                break;
+        }
+        const newBHAnim = BlackHole.bhAnimArray[BlackHole.animArrayIndex];
+        super(newBHAnim);
 
-        this.bhAnim = bhAnim;
-        BlackHole.bhAnimArray = bhAnimArray;
+        this.bhAnim = newBHAnim;
 
-        bhAnim.y = getRandomY(bhAnim.height);
-        bhAnim.x = getRandomX(bhAnim.width);
+        this.bhAnim.y = getRandomY(this.bhAnim.height);
+        this.bhAnim.x = getRandomX(this.bhAnim.width);
+
         this.determineDirection();
-        this.setPosition(bhAnim, p4Anim);
-        stage.addChild(bhAnim);
+
+        this.setPosition(this.bhAnim, p4Anim);
+
+        stage.addChild(this.bhAnim);
 
         BlackHole.bhArray.push(this);
+        BlackHole.animArrayIndex++;
     }
 
-    // Randomly selects an animation for the black hole.
-    private static getRandomBhAnim(bhAnimArray: PIXI.AnimatedSprite[]): PIXI.AnimatedSprite {
-        return bhAnimArray[getRandomInt(0, bhAnimArray.length - 1)];
+    private static getRandomBHColor(): string {
+        switch(getRandomInt(0, 2)) {
+            case 0:
+                return 'bhBlue';
+            case 1:
+                return 'bhRed';
+            case 2:
+                return 'bhYellow';
+            default:
+                return 'error';
+        } 
     }
 
     // Initializes the pool with a given size, stage, animation array, and player animation.
@@ -59,8 +87,8 @@ export default class BlackHole extends Entity {
     }
 
     // Updates the position of the black hole and checks for collisions and boundary conditions.
-    public update(bhAnim: PIXI.AnimatedSprite, p4Anim: PIXI.AnimatedSprite, gameLive: boolean): boolean {
-        if (checkCollision(p4Anim, bhAnim)) {
+    public update(bhAnim: PIXI.AnimatedSprite, p4: P4, gameLive: boolean): boolean {
+        if (checkCollision(p4.p4Anim, bhAnim)) {
             gameLive = false;
         }
 
@@ -70,13 +98,23 @@ export default class BlackHole extends Entity {
             bhAnim.x += this.vX!;
         }
 
-        if (bhAnim.y + (bhAnim.height / 2) > CANVAS_HEIGHT || bhAnim.y - (bhAnim.height / 3) < 0) {
+        if (bhAnim.y + bhAnim.height * Entity.hitBoxAdjust > CANVAS_HEIGHT - Entity.gap || bhAnim.y < 0) {
             this.vY! *= -1;
         }
-        if (bhAnim.x + (bhAnim.width / 3) > CANVAS_WIDTH || bhAnim.x - (bhAnim.width / 3) < 0) {
+        if (bhAnim.x + bhAnim.width * Entity.hitBoxAdjust > CANVAS_WIDTH - Entity.gap || bhAnim.x < 0) {
             this.vX! *= -1;
         }
 
         return gameLive;
+    }
+
+    // Removes the black holes from the stage and clear arrays.
+    public static destroy(stage: PIXI.Container<PIXI.ContainerChild>): void {
+        for (let i = 0; i < BlackHole.bhAnimArray.length; i++) {
+            stage.removeChild(BlackHole.bhAnimArray[i]);
+        }
+        BlackHole.bhArray = [];
+        BlackHole.bhAnimArray = [];
+        BlackHole.animArrayIndex = 0;
     }
 }

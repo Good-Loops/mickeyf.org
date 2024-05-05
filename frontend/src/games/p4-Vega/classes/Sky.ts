@@ -12,7 +12,7 @@ export default class Sky {
     }
 
     private createStars() {
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 333; i++) {
             let star = new PIXI.Graphics();
             const radius = Math.random() * 2 + 1;
             star.fill({ color: 0xFFFFFF });
@@ -38,5 +38,10 @@ export default class Sky {
             if (star.alpha < 0.1) star.alpha = 0.1;
             if (star.alpha > 1) star.alpha = 1;
         });
+    }
+
+    // Remove stars from stage
+    public destroy() {
+        this.stars.forEach(star => this.stage.removeChild(star));
     }
 }
