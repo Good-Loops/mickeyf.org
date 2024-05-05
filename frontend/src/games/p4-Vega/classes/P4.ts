@@ -43,13 +43,13 @@ export default class P4 extends Entity {
         }
 
         // World bounds
-        if (p4Anim.x + p4Anim.width * Entity.hitBoxAdjust > CANVAS_WIDTH - Entity.gap) {
+        if (p4Anim.x + p4Anim.width > CANVAS_WIDTH) {
             p4Anim.x -= this.speed;
         }
         if (p4Anim.x < 0) {
             p4Anim.x += this.speed;
         }
-        if (p4Anim.y + p4Anim.height * Entity.hitBoxAdjust > CANVAS_HEIGHT - Entity.gap) {
+        if (p4Anim.y + p4Anim.height > CANVAS_HEIGHT) {
             p4Anim.y -= this.speed;
         }
         if (p4Anim.y < 0) {

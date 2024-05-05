@@ -5,7 +5,6 @@ export default abstract class Entity implements IEntity {
     anim: PIXI.AnimatedSprite;
 
     public static gap: number = 10;
-    public static hitBoxAdjust: number = .8;    
 
     public play(anim: PIXI.AnimatedSprite): void {
         anim.animationSpeed = .1;

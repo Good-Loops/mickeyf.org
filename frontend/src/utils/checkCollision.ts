@@ -1,11 +1,16 @@
 import * as PIXI from 'pixi.js';
 
 // Check if two rectangles are colliding
-export default function checkCollision(anim1: PIXI.AnimatedSprite, anim2: PIXI.AnimatedSprite): boolean {
+export default function checkCollision(animA: PIXI.AnimatedSprite, animB: PIXI.AnimatedSprite): boolean {
+    // Retrieve the bounds of each sprite
+    const boundsA = animA.getBounds();
+    const boundsB = animB.getBounds();
+
+    // Check for overlap between the two rectangles
     return (
-        (anim1.x + anim1.width > anim2.x) &&
-        (anim1.x < anim2.x + anim2.width) &&
-        (anim1.y + anim1.height > anim2.y) &&
-        (anim1.y < anim2.y + anim2.height)
+        boundsA.x + boundsA.width > boundsB.x &&
+        boundsA.x < boundsB.x + boundsB.width &&
+        boundsA.y + boundsA.height > boundsB.y &&
+        boundsA.y < boundsB.y + boundsB.height
     );
 }

@@ -98,10 +98,12 @@ export default class BlackHole extends Entity {
             bhAnim.x += this.vX!;
         }
 
-        if (bhAnim.y + bhAnim.height * Entity.hitBoxAdjust > CANVAS_HEIGHT - Entity.gap || bhAnim.y < 0) {
+        const bhBounds = bhAnim.getBounds();
+
+        if (bhBounds.y + bhBounds.height > CANVAS_HEIGHT || bhBounds.y < 0) {
             this.vY! *= -1;
         }
-        if (bhAnim.x + bhAnim.width * Entity.hitBoxAdjust > CANVAS_WIDTH - Entity.gap || bhAnim.x < 0) {
+        if (bhBounds.x + bhBounds.width > CANVAS_WIDTH || bhBounds.x < 0) {
             this.vX! *= -1;
         }
 
