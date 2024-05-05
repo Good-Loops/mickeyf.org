@@ -9,7 +9,7 @@ mickeyf.org
 |   |   |-- server.min.js
 |   |   |-- server.min.js.LICENSE.txt
 |   |   `-- server.min.js.map
-|   |-- node_modules [188 entries exceeds filelimit, not opening dir]
+|   |-- node_modules [210 entries exceeds filelimit, not opening dir]
 |   |-- routes
 |   |   `-- userRoutes.ts
 |   |-- types
@@ -44,18 +44,19 @@ mickeyf.org
 |   |   |   |   |-- notallowed.cur
 |   |   |   |   |-- select.cur
 |   |   |   |   `-- sprite.svg
-|   |   |   |-- sprites
-|   |   |   |   |-- blackholeBlue.png
-|   |   |   |   |-- blackholeRed.png
-|   |   |   |   |-- blackholeYellow.png
-|   |   |   |   |-- p4.png
-|   |   |   |   `-- water.png
 |   |   |   `-- favicon.ico
 |   |   |-- dist
 |   |   |   |-- index.min.js
 |   |   |   |-- index.min.js.map
 |   |   |   |-- main.min.js
 |   |   |   `-- main.min.js.map
+|   |   |-- sprites
+|   |   |   `-- p4Vega
+|   |   |       |-- bhBlue.png
+|   |   |       |-- bhRed.png
+|   |   |       |-- bhYellow.png
+|   |   |       |-- p4.png
+|   |   |       `-- water.png
 |   |   |-- 404.html
 |   |   `-- index.html
 |   |-- sass
@@ -116,6 +117,7 @@ mickeyf.org
 |   |   |   |-- Register.ts
 |   |   |   |-- SocialMedia.ts
 |   |   |   `-- User.ts
+|   |   |-- config
 |   |   |-- events
 |   |   |   |-- EventListenerManager.ts
 |   |   |   `-- eventManager.ts
@@ -130,8 +132,13 @@ mickeyf.org
 |   |   |       |   |-- BlackHole.ts
 |   |   |       |   |-- P4.ts
 |   |   |       |   |-- Sky.ts
-|   |   |       |   |-- Star.ts
 |   |   |       |   `-- Water.ts
+|   |   |       |-- data
+|   |   |       |   |-- bhBlue.json
+|   |   |       |   |-- bhRed.json
+|   |   |       |   |-- bhYellow.json
+|   |   |       |   |-- p4.json
+|   |   |       |   `-- water.json
 |   |   |       `-- p4-Vega.ts
 |   |   |-- home
 |   |   |   |-- interfaces
@@ -146,6 +153,7 @@ mickeyf.org
 |   |   |-- utils
 |   |   |   |-- checkCollision.ts
 |   |   |   |-- constants.ts
+|   |   |   |-- gameOver.ts
 |   |   |   |-- getUserData.ts
 |   |   |   |-- initializeGlobals.ts
 |   |   |   |-- lerp.ts
@@ -161,4 +169,5 @@ mickeyf.org
 |-- LICENSE
 |-- README.md
 |-- cloudbuild.yaml
-`-- install-scout.sh
+|-- install-scout.sh
+`-- nginx.config
