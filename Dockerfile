@@ -14,7 +14,7 @@ RUN cd backend && npm run prod
 FROM nginx:stable
 
 # Nginx configuration
-COPY /nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 RUN rm -rf /usr/share/nginx/html/*
 COPY frontend/public /usr/share/nginx/html
 
