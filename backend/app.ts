@@ -2,7 +2,6 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes';
-import path from 'path';
 import dotenv from 'dotenv';
 
 // Load environment variables from the .env file
@@ -10,9 +9,6 @@ dotenv.config();
 
 // Create an Express application
 const app = express();
-
-// Serve static files from assets
-app.use(express.static('../frontend/public'));
 
 // Helmet CSP configuration
 app.use(
@@ -72,10 +68,13 @@ app.use(cors({
 // Use userRoutes for all user-related endpoints
 app.use('/api', userRoutes);
 
+// Trust the proxy in front of you for proper IP resolution and secure protocol usage
+app.set('trust proxy', true);
+
 // SPA Fallback: Redirect all non-API requests to your SPA
-app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../frontend/public', 'index.html'));
-});
+// app.get('*', (req, res) => {
+//     res.sendFile(path.resolve(__dirname, '../../frontend/public', 'index.html'));
+// });
 
 const PORT = process.env.PORT || 8080;
 
