@@ -11,7 +11,7 @@ COPY backend/ ./backend/
 RUN cd backend && npm run prod
 
 ## Final Stage - Nginx to serve static files and proxy requests to backend
-FROM nginx:stable
+FROM nginx:stable-alpine
 
 # Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
