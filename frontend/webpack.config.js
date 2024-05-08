@@ -1,12 +1,11 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     mode: process.env.NODE_ENV,
     devtool: process.env.NODE_ENV === 'development' ? 'eval-source-map' : 'source-map',
     entry: {
-        index: ['./src/main.ts'],
+        main: ['./src/main.ts'],
     },
     module: {
         rules: [
@@ -40,9 +39,6 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin(),
-        new HtmlWebpackPlugin({
-            template: './public/index.html',
-        }),
     ],
     devServer: {
         static: {
