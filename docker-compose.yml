@@ -15,7 +15,7 @@ services:
     image: gcr.io/cloudsql-docker/gce-proxy:1.16
     command: /cloud_sql_proxy -instances=noted-reef-387021:us-central1:cms-mickeyf=tcp:5432 -credential_file=/secrets/cloudsql/credentials.json
     volumes:
-      - ./path/to/credentials.json:/secrets/cloudsql/credentials.json
+      - ./credentials.json:/secrets/cloudsql/credentials.json
 
   frontend:
     build:

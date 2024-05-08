@@ -18,35 +18,35 @@ app.use(
             connectSrc: [
                 "'self'",
                 "data:",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
             imgSrc: [
                 "'self'",
                 "https://mickeyf-org-j7yuum4tiq-uc.a.run.app",
-                "http://localhost:8080",
+                "http://localhost:3000",
                 "data:"
             ],
             scriptSrc: [
                 "'self'",
                 "'unsafe-inline'",
                 "'unsafe-eval'", 
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
             workerSrc: [
                 "'self'",
                 "blob:",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
             styleSrc: [
                 "'self'",
                 "'unsafe-inline'",
                 "https://fonts.googleapis.com",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
             fontSrc: [
                 "'self'",
                 "https://fonts.gstatic.com",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:8080"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
             ],
         }
     })
@@ -59,7 +59,7 @@ app.use(express.json());
 // CORS configuration
 app.use(cors({
     origin: process.env.NODE_ENV === 'development' ?
-        ['http://localhost:8080'] :
+        ['http://localhost:3000'] :
         ['https://mickeyf-org-j7yuum4tiq-uc.a.run.app', 'https://mickeyf.org'],
     methods: '*', // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
@@ -70,11 +70,6 @@ app.use('/api', userRoutes);
 
 // Trust the proxy in front of you for proper IP resolution and secure protocol usage
 app.set('trust proxy', true);
-
-// SPA Fallback: Redirect all non-API requests to your SPA
-// app.get('*', (req, res) => {
-//     res.sendFile(path.resolve(__dirname, '../../frontend/public', 'index.html'));
-// });
 
 const PORT = 8080;
 

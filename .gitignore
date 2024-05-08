@@ -11,3 +11,6 @@ frontend/dist/
 
 # Ignore environment file
 .env
+
+# Ignore credentials file
+credentials.json

@@ -6,7 +6,6 @@
                     "name": "ts-compiler",
                     "commands": [
                         "cd frontend",
-                        "npm run dev"
                     ]
                 }
             ]
@@ -17,20 +16,8 @@
                     "name": "sass-compiler",
                     "commands": [
                         "cd frontend",
-                        "npm run sass"
                     ]
                 }
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
-                    "name": "back-compiler",
-                    "commands": [
-                        "cd backend",
-                        "npm run dev"
-                    ]
-                },
             ]
         },
         {
