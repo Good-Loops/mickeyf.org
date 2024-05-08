@@ -9,12 +9,7 @@ interface Page {
 // The setUpRoutes function is used to set up the routes for the application.
 const setUpRoutes = (page: Page) => {
     page('/', () => loadComponent('/'));
-
-    page('/user/signup', () => {
-        document.body.className = 'registration-page';
-        loadComponent('/user/signup');
-    });
-
+    page('/user/signup', () => loadComponent('/user/signup'));
     page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
     page('/games', () => loadComponent('/games'));
     page('/animations', () => loadComponent('/animations'));

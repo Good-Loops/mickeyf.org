@@ -1,35 +1,33 @@
-# Use a multi-stage build to keep the image size down
-## Build Stage for Node.js backend
-FROM node:21.7.2-alpine as builder
+# Specifying the base image
+FROM node:21.7.2-alpine
 
-# Set up environment and install dependencies
-RUN apk update && apk upgrade && rm -rf /var/cache/apk/*
+# Update and upgrade the system packages, and remove unnecessary cache and temporary files
+RUN apk update && \
+    apk upgrade && \
+    rm -rf /var/cache/apk/*
+
+# Create and set the working directory    
 WORKDIR /usr/src/app
+
+# Copy backend application dependency manifests to the container image.
 COPY backend/package*.json ./backend/
+
+# Install backend dependencies
 RUN cd backend && npm install
+
+# Copy local backend code to the container image
 COPY backend/ ./backend/
+
+# Build the backend application using webpack
 RUN cd backend && npm run prod
 
-## Final Stage - Nginx to serve static files and proxy requests to backend
-FROM nginx:stable-alpine
+# Create a new non-root user for running applications securely
+RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
+# Change to non-root user
+USER nodeuser
 
-# Nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
-RUN rm -rf /usr/share/nginx/html/*
-COPY frontend/public /usr/share/nginx/html
-
-# Copy the built backend files from the builder stage
-COPY --from=builder /usr/src/app/backend/dist /usr/src/app/backend/dist
-
-# Install Node.js in the final stage to run the backend server
-RUN apk add --no-cache nodejs npm
-
-# Set working directory and copy backend executable files
-WORKDIR /usr/src/app
-COPY --from=builder /usr/src/app/backend /usr/src/app/backend
-
-# Expose port 8080 for Nginx
+# Inform Docker that the container is listening on the specified port at runtime.
 EXPOSE 8080
 
-# Start Nginx and the backend server
-CMD ["sh", "-c", "node /usr/src/app/backend/dist/server.min.js & nginx -g 'daemon off;'"]
+# Command to start the backend server
+CMD ["node", "/usr/src/app/backend/dist/server.min.js"]
