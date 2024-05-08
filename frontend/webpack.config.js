@@ -1,9 +1,21 @@
 const path = require('path');
+const webpack = require('webpack');
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
+require('dotenv').config();
 
 module.exports = {
     entry: {
         main: ['./src/main.ts'],
     },
+    devtool: 'eval-source-map',
+    plugins: [
+        new NodePolyfillPlugin({
+            excludeAliases: ["console"]
+        }),
+        new webpack.DefinePlugin({
+            "process.env": JSON.stringify(process.env)
+        })
+    ],
     module: {
         rules: [
             {
@@ -15,11 +27,18 @@ module.exports = {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
             },
+            {
+                test: /\.js$/,
+                use: ["source-map-loader"],
+                enforce: "pre",
+                exclude: /node_modules/
+            }
         ],
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
         fallback: {
+            "process": require.resolve("process/browser"),
             "path": require.resolve("path-browserify"),
             "os": require.resolve("os-browserify/browser"),
             "crypto": require.resolve("crypto-browserify"),
