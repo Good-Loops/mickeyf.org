@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 3000
 
 # Command to start the dev server
-CMD ["sh", "-c", "npm run sass & npm run dev"]
+CMD ["sh", "-c", "npm run sass & npm run dev & npm run live"]
