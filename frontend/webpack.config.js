@@ -24,6 +24,13 @@ module.exports = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
+        fallback: {
+            "path": require.resolve("path-browserify"),
+            "os": require.resolve("os-browserify/browser"),
+            "crypto": require.resolve("crypto-browserify"),
+            "vm": require.resolve("vm-browserify"),
+            "stream": require.resolve("stream-browserify")
+        }
     },
     output: {
         filename: '[name].min.js',
