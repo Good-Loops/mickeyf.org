@@ -1,5 +1,4 @@
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     mode: process.env.NODE_ENV,
@@ -14,7 +13,6 @@ module.exports = {
                 use: 'ts-loader',
                 exclude: /node_modules/,
             },
-            // Add CSS loaders if you're handling styles
             {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
@@ -37,9 +35,6 @@ module.exports = {
         path: path.resolve(__dirname, 'public/dist'),
         publicPath: '/'
     },
-    plugins: [
-        new CleanWebpackPlugin(),
-    ],
     devServer: {
         static: {
             directory: path.join(__dirname, 'public'),

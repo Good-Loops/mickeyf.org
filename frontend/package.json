@@ -4,7 +4,7 @@
     "description": "Frontend for mickeyf.org",
     "scripts": {
         "dev": "webpack --mode development --watch",
-        "start": "webpack serve --mode development --open --hot",
+        "start": "webpack serve --mode development --hot",
         "sass": "npm-run-all copy --parallel watch",
         "prod": "webpack --mode production",
         "postbuild": "postcss public/assets/css/style.min.css -u autoprefixer cssnano -o public/assets/css/style.min.css --no-map",
@@ -47,7 +47,6 @@
         "@types/page": "^1.11.9",
         "@types/webfontloader": "^1.6.38",
         "autoprefixer": "^10.4.2",
-        "clean-webpack-plugin": "^4.0.0",
         "copyfiles": "^2.4.1",
         "cssnano": "^5.0.17",
         "npm-run-all": "^4.1.5",
