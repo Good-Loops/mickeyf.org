@@ -7,6 +7,13 @@ import dotenv from 'dotenv';
 // Load environment variables from the .env file
 dotenv.config();
 
+// Determine the environment
+const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production';
+// Determine Base URL
+const baseUrl = environment === 'development' ? process.env.DEV_BASE_URL : process.env.BASE_URL;
+// Detertmine API URL
+const apiUrl = environment === 'development' ? process.env.DEV_API_URL : process.env.API_URL;
+
 // Create an Express application
 const app = express();
 
@@ -18,35 +25,34 @@ app.use(
             connectSrc: [
                 "'self'",
                 "data:",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                baseUrl!
             ],
             imgSrc: [
                 "'self'",
-                "https://mickeyf-org-j7yuum4tiq-uc.a.run.app",
-                "http://localhost:3000",
-                "data:"
+                "data:",
+                baseUrl!
             ],
             scriptSrc: [
                 "'self'",
                 "'unsafe-inline'",
-                "'unsafe-eval'", 
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                "'unsafe-eval'",
+                baseUrl! 
             ],
             workerSrc: [
                 "'self'",
                 "blob:",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                baseUrl!
             ],
             styleSrc: [
                 "'self'",
                 "'unsafe-inline'",
                 "https://fonts.googleapis.com",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                baseUrl!
             ],
             fontSrc: [
                 "'self'",
                 "https://fonts.gstatic.com",
-                ...(process.env.NODE_ENV === 'development' ? ["http://localhost:3000"] : ["https://mickeyf-org-j7yuum4tiq-uc.a.run.app"])
+                baseUrl!
             ],
         }
     })
@@ -58,9 +64,7 @@ app.use(express.json());
 
 // CORS configuration
 app.use(cors({
-    origin: process.env.NODE_ENV === 'development' ?
-        ['http://localhost:3000'] :
-        ['https://mickeyf-org-j7yuum4tiq-uc.a.run.app', 'https://mickeyf.org'],
+    origin: [baseUrl!, apiUrl!],
     methods: '*', // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
