@@ -17,7 +17,7 @@
                     "name": "sass-compiler",
                     "commands": [
                         "cd frontend",
-                        "npm run start"
+                        "npm run sass"
                     ]
                 }
             ]
@@ -36,21 +36,9 @@
         {
             "splitTerminals": [
                 {
-                    "name": "server",
-                    "commands": [
-                        "cd backend",
-                        "npm run server"
-                    ]
-                }
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
                     "name": "temp-bash",
                     "commands": [
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
                         "exit",
