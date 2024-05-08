@@ -61,7 +61,7 @@ app.use(cors({
     origin: process.env.NODE_ENV === 'development' ?
         ['http://localhost:8080'] :
         ['https://mickeyf-org-j7yuum4tiq-uc.a.run.app', 'https://mickeyf.org'],
-    methods: ['GET', 'POST'], // Allowed HTTP methods
+    methods: '*', // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
 
@@ -76,10 +76,10 @@ app.set('trust proxy', true);
 //     res.sendFile(path.resolve(__dirname, '../../frontend/public', 'index.html'));
 // });
 
-const PORT = process.env.PORT || 8080;
+const PORT = 3000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Backend running on port ${PORT}`);
 });
 
 export default app;
