@@ -76,7 +76,7 @@ app.set('trust proxy', true);
 //     res.sendFile(path.resolve(__dirname, '../../frontend/public', 'index.html'));
 // });
 
-const PORT = 3000;
+const PORT = 8080;
 
 app.listen(PORT, () => {
     console.log(`Backend running on port ${PORT}`);
