@@ -9,7 +9,7 @@ steps:
     args: ['push', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:v0.2.33']
 
   # Deploy the image to Google Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:alpine'
     entrypoint: 'gcloud'
     args:
       - 'run'
@@ -33,11 +33,13 @@ steps:
         DB_NAME=${_DB_NAME}
 
   # Delete existing files in the Cloud Storage bucket
-  - name: 'gcr.io/cloud-builders/gsutil'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:alpine'
+    entrypoint: 'gsutil'
     args: ['-m', 'rm', 'gs://${_FRONTEND_BUCKET}/**']
 
   # Upload new frontend files to Cloud Storage
-  - name: 'gcr.io/cloud-builders/gsutil'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:alpine'
+    entrypoint: 'gsutil'
     args: ['-m', 'cp', '-r', 'frontend/public/*', 'gs://${_FRONTEND_BUCKET}']
 
 substitutions:
