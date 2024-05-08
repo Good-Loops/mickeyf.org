@@ -4,8 +4,10 @@
     "description": "Frontend for mickeyf.org",
     "scripts": {
         "dev": "webpack --mode development --watch",
-        "prod": "webpack --mode production",
         "start": "webpack serve --mode development --open --hot",
+        "sass": "npm-run-all copy --parallel watch",
+        "prod": "webpack --mode production",
+        "postbuild": "postcss public/assets/css/style.min.css -u autoprefixer cssnano -o public/assets/css/style.min.css --no-map",
         "build:sass": "sass  --no-source-map ./sass/style.scss:public/assets/css/style.min.css",
         "copy:assets": "copyfiles -u 1 ./public/assets/**/* public",
         "copy:html": "copyfiles -u 1 ./public/index.html public",
@@ -14,9 +16,7 @@
         "watch:html": "onchange \"public/index.html\" -- npm run copy:html",
         "watch:sass": "sass  --no-source-map --watch ./sass/style.scss:public/assets/css/style.min.css",
         "watch": "npm-run-all --parallel watch:*",
-        "sass": "npm-run-all copy --parallel watch",
-        "build": "npm-run-all copy:html build:*",
-        "postbuild": "postcss public/assets/css/style.min.css -u autoprefixer cssnano -o public/assets/css/style.min.css --no-map"
+        "build": "npm-run-all copy:html build:*"
     },
     "dependencies": {
         "alpinejs": "^3.13.8",

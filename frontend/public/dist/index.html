@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>mickeyf.org (Alpha 0.2.33)</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="assets/css/style.min.css">
+<script defer src="/index.min.js"></script></head>
+
+<body>
+    <audio id="music"></audio>
+
+    <header class="header">
+        <nav class="nav">
+            <ul class="nav__list">
+                <li class="nav__item"><a class="nav__link" href="/">Home</a></li>
+                <li class="nav__item"><a class="nav__link" href="/games">Games</a></li>
+                <li class="nav__item"><a class="nav__link" href="/animations">Animations</a></li>
+                <li class="nav__item"><a class="nav__link" href="/socialmedia">Social Media</a></li> 
+                <li class="nav__item"><a class="nav__link" href="/login">Log in</a></li>
+                <li class="nav__item"><a class="nav__link" href="/user/signup">Sign up</a></li>
+            </ul>
+        </nav>
+        <!-- For smaller screens -->
+        <button class="menu-btn is-visible">
+            <svg class="menu-btn__svg floating">
+                <use xlink:href="assets/img/sprite.svg#compass"></use>
+            </svg>
+        </button>
+        <button class="close-btn">
+            <svg class="close-btn__svg floating">
+                <use xlink:href="assets/img/sprite.svg#close"></use>
+            </svg>
+        </button>
+        <div class="menu">
+            <nav class="menu__nav">
+                <ul class="menu__nav__list">
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/">Home</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/games">Games</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/animations">Animations</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/socialmedia">Social Media</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/login">Log in</a></li>
+                    <li class="menu__nav__item"><a class="menu__nav__link" href="/user/signup">Sign up</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="main__content" id="content"></div>
+    </main>
+
+    <footer class="footer">
+    </footer>
+
+    <script src="dist/index.min.js"></script>
+</body>
+</html>
