@@ -1,3 +1,4 @@
+require('dotenv').config();
 import Alpine from "alpinejs";
 import page from "page";
 import setupRoutes from './routes/setUpRoutes';

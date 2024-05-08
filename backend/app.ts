@@ -1,11 +1,8 @@
+require('dotenv').config();
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes';
-import dotenv from 'dotenv';
-
-// Load environment variables from the .env file
-dotenv.config();
 
 // Determine the environment
 const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production';
