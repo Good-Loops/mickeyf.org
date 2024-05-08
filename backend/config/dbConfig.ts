@@ -25,3 +25,21 @@ export const pool = createPool({
 pool.getConnection()
     .then(conn => console.log("Database connected successfully!"))
     .catch(err => console.error("Database connection failed:", err));
+
+// Handle connection events
+pool.on('connection', function (connection) {
+    console.log("DB Connection established");
+
+    connection.on('error', function (err) {
+        console.error(new Date(), 'MySQL error', err.code);
+    });
+
+    connection.on('close', function (err) {
+        console.error(new Date(), 'MySQL close', err);
+    });
+});
+
+// Attempt to reconnect if connection is lost
+pool.on('enqueue', function () {
+    console.log('Waiting for available connection slot');
+});
