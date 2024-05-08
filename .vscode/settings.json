@@ -17,7 +17,7 @@
                     "name": "sass-compiler",
                     "commands": [
                         "cd frontend",
-                        "npm run start"
+                        "npm run sass"
                     ]
                 }
             ]
@@ -31,17 +31,6 @@
                         "npm run dev"
                     ]
                 },
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
-                    "name": "server",
-                    "commands": [
-                        "cd backend",
-                        "npm run server"
-                    ]
-                }
             ]
         },
         {
