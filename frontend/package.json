@@ -3,7 +3,8 @@
     "version": "0.2.33",
     "description": "Frontend for mickeyf.org",
     "scripts": {
-        "dev": "webpack --mode development --watch & lite-server",
+        "dev": "webpack --mode development --watch",
+        "live": "lite-server",
         "sass": "npm-run-all copy --parallel watch",
         "prod": "webpack --mode production",
         "postbuild": "postcss public/assets/css/style.min.css -u autoprefixer cssnano -o public/assets/css/style.min.css --no-map",

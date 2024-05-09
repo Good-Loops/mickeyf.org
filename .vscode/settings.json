@@ -10,9 +10,20 @@
         {
             "splitTerminals": [
                 {
+                    "name": "sass-compiler",
+                    "commands": [
+                        "cd frotend && npm run sass"
+                    ]
+                }
+            ]
+        },
+        {
+            "splitTerminals": [
+                {
                     "name": "temp-bash",
                     "commands": [
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
                         "exit",
                     ]
                 }
