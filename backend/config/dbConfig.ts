@@ -13,11 +13,11 @@ import { createPool } from 'mysql2/promise';
 
 // For development
 export const pool = createPool({
-    host: '127.0.0.1',
+    host: 'localhost',
     port: 3306,
-    user: process.env.DB_USER,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASS,
+    user: 'cms_mickeyf',
+    database: 'cms',
+    password: '3691Dg123',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
