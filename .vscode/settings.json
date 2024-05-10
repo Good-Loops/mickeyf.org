@@ -5,7 +5,7 @@
                 {
                     "name": "front-live-server",
                     "commands": [
-                        "sleep 2s && cd frontend && npm run live"
+                        "sleep 4s && cd frontend && npm run live"
                     ]
                 }
             ]
@@ -15,7 +15,7 @@
                 {
                     "name": "front-compiler",
                     "commands": [
-                        "sleep 2s && cd frontend && npm run dev"
+                        "sleep 3s && cd frontend && npm run dev"
                     ]
                 }
             ]
@@ -25,7 +25,7 @@
                 {
                     "name": "sass-compiler",
                     "commands": [
-                        "sleep 2s && cd frotend && npm run sass"
+                        "sleep 3s && cd frontend && npm run sass"
                     ]
                 }
             ]
@@ -35,7 +35,7 @@
                 {
                     "name": "back-compiler",
                     "commands": [
-                        "sleep 2s && cd backend && npm run dev"
+                        "sleep 3s && cd backend && npm run dev"
                     ]
                 }
             ]
@@ -45,7 +45,7 @@
                 {
                     "name": "back-server",
                     "commands": [
-                        "sleep 2s && cd backend && npm run dev"
+                        "sleep 6s && cd backend && npm run serve"
                     ]
                 }
             ]
@@ -55,11 +55,11 @@
                 {
                     "name": "temp-bash",
                     "commands": [
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'magenta~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'purple~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
                         "exit",
                     ]
                 }
