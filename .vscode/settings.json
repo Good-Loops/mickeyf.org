@@ -5,7 +5,7 @@
                 {
                     "name": "front-live-server",
                     "commands": [
-                        "cd frontend && npm run live"
+                        "sleep 2s && cd frontend && npm run live"
                     ]
                 }
             ]
@@ -15,7 +15,7 @@
                 {
                     "name": "front-compiler",
                     "commands": [
-                        "cd frontend && npm run dev"
+                        "sleep 2s && cd frontend && npm run dev"
                     ]
                 }
             ]
@@ -25,7 +25,7 @@
                 {
                     "name": "sass-compiler",
                     "commands": [
-                        "cd frotend && npm run sass"
+                        "sleep 2s && cd frotend && npm run sass"
                     ]
                 }
             ]
@@ -35,7 +35,7 @@
                 {
                     "name": "back-compiler",
                     "commands": [
-                        "cd backend && npm run dev"
+                        "sleep 2s && cd backend && npm run dev"
                     ]
                 }
             ]
@@ -45,7 +45,7 @@
                 {
                     "name": "back-server",
                     "commands": [
-                        "cd backend && npm run dev"
+                        "sleep 2s && cd backend && npm run dev"
                     ]
                 }
             ]
