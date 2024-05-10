@@ -1,12 +1,20 @@
+// Main Components
 import Home from "../components/Home";
-import User from "../components/User";
 import Games from "../components/Games";
 import Animations from "../components/Animations";
 import SocialMedia from "../components/SocialMedia";
 import Register from "../components/Register";
-import DanceCircles from "../components/animations/DanceCircles";
-import P4Vega from "../components/games/P4Vega";
+import Login from "../components/Login";
 import Error404 from "../components/Error404";
+
+// Animations
+import DanceCircles from "../components/animations/DanceCircles";
+
+// Games
+import P4Vega from "../components/games/P4Vega";
+
+// User unique component
+// import User from "../components/User";
 
 interface ComponentInterface {
     render: (params?: any) => string | Promise<string>;
@@ -14,15 +22,23 @@ interface ComponentInterface {
 }
 
 const routes: Record<string, ComponentInterface> = {
+    // Main Components
     "/": Home,
-    "/signup": Register,
-    "/user/:id": User,
     "/games": Games,
     "/animations": Animations,
     "/socialmedia": SocialMedia,
+    "/signup": Register,
+    "/login": Login,
+    "/error": Error404,
+
+    // Animations
     "/dancing-circles": DanceCircles,
+
+    // Games
     "/p4-Vega": P4Vega,
-    "/error": Error404
+
+    // User unique component
+    // "/user/:id": User,
 }
 
 // Utility function to match dynamic routes

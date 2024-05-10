@@ -1,5 +1,6 @@
 import getUserData from "../utils/getUserData";
 
+// NOT BEING USED
 function component() {
     const user = async function (id: string) {
 

@@ -4,7 +4,7 @@ import { pool } from '../config/dbConfig';
 import { IUser } from '../types/customTypes';
 import bcrypt from 'bcryptjs';
 
-export const getUsers = async (req: Request, res: Response) => {
+export const getUsers = async (_req: Request, res: Response) => {
     try {
         // Get all users from database
         const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users');
@@ -44,5 +44,23 @@ export const addUser = async (req: Request, res: Response) => {
         } else {
             res.status(500).send('An unexpected error occurred');
         }
+    }
+};
+
+export const loginUser = async (req: Request, res: Response) => {
+    const { user_name, user_password } = req.body; // Destructure user_name and user_password from request body
+    try {
+        // Get user from database
+        const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE user_name = ?', [user_name]);
+        const user: IUser = rows[0] as IUser;
+
+        // Check if user exists and password is correct
+        if (user && await bcrypt.compare(user_password, user.user_password)) {
+            res.json({ success: true, message: "Login successful", user });
+        } else {
+            res.status(401).send("Authentication failed");
+        }
+    } catch (error) {
+        res.status(500).send('An unexpected error occurred');
     }
 };

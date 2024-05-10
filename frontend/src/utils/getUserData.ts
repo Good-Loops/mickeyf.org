@@ -1,7 +1,9 @@
+import { API_URL } from "./constants";
+
 // Fetches user data from the backend
 export default async function getUserData(): Promise<any> {
     try {
-        const response = await fetch('https://mickeyf-org-j7yuum4tiq-uc.a.run.app/api/users');
+        const response = await fetch(API_URL);
         if (!response.ok) {
             const message = await response.text();
             throw new Error(`HTTP error! status: ${response.status}, message: ${message}`);
