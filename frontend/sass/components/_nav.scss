@@ -1,12 +1,10 @@
 @use '../abstracts' as *;
 
 .nav {
-    font-size: 2.6rem;
+    font-size: $font-size-xs;
 
-    position: fixed;
-    top: .3em;
-    left: 50%;
-    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
 
     &__list {
         display: flex;

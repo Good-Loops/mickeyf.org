@@ -13,9 +13,7 @@
 // Component title styling
 @mixin component-title {
     @include title-coloring;
-    font-size: $font-size-xl;
-    letter-spacing: 2rem;
-    margin-right: -.6em;
+    font-size: $font-size-l;
 }
 
 //////////////////////// Buttons ////////////////////////
@@ -24,7 +22,7 @@
     padding: .5em;
     padding-top: .4em;
 
-    font-size: 2rem;
+    font-size: $font-size-xs;
 
     text-shadow: $label-text-shadow;
     color: $primary-dark;
@@ -49,6 +47,7 @@
 }
 
 //////////////////////// Social Media ////////////////////////
+// Social media button styling
 @mixin social-media-btn {
     @include default-btn;
     padding-block: 5rem;
@@ -96,10 +95,10 @@
     border: none;
 
     position: fixed;
-    top: -1.5em;
-    left: -7.5em;
+    top: -2.8em;
+    left: -8.5em;
     
-    transform: scale(.45);
+    transform: scale(.35);
 }
 
 //////////////////////// Shadows ////////////////////////

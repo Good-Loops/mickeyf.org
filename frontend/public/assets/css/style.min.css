@@ -60,7 +60,7 @@ body {
 
 h1 {
   font-family: "Space Mono", monospace, sans-serif;
-  font-size: 5rem;
+  font-size: 4rem;
 }
 
 .u-canvas-title {
@@ -75,11 +75,9 @@ h1 {
 }
 
 .nav {
-  font-size: 2.6rem;
-  position: fixed;
-  top: 0.3em;
-  left: 50%;
-  transform: translateX(-50%);
+  font-size: 2rem;
+  display: flex;
+  justify-content: center;
 }
 .nav__list {
   display: flex;
@@ -128,7 +126,7 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 5rem;
+  font-size: 2rem;
   position: fixed;
   inset: 0;
   visibility: hidden;
@@ -144,8 +142,8 @@ h1 {
   display: grid;
   justify-items: center;
   align-items: center;
-  width: 98vw;
-  height: 98vh;
+  width: 80vw;
+  height: 70vh;
   list-style: none;
   background-image: linear-gradient(to top left, rgba(133, 205, 250, 0.8) 35%, rgba(145, 238, 145, 0.8) 70%);
   border: 0.1em solid rgba(234, 234, 251, 0.6);
@@ -185,9 +183,9 @@ h1 {
   background: none;
   border: none;
   position: fixed;
-  top: -1.5em;
-  left: -7.5em;
-  transform: scale(0.45);
+  top: -2.8em;
+  left: -8.5em;
+  transform: scale(0.35);
   visibility: visible;
   opacity: 1;
   transition: opacity 0.5s, visibility 0.5s;
@@ -211,9 +209,9 @@ h1 {
   background: none;
   border: none;
   position: fixed;
-  top: -1.5em;
-  left: -7.5em;
-  transform: scale(0.45);
+  top: -2.8em;
+  left: -8.5em;
+  transform: scale(0.35);
   z-index: 10;
 }
 .close-btn:hover {
@@ -249,9 +247,7 @@ h1 {
   color: hsl(203, 92%, 65%);
   -webkit-text-stroke: 0.05em rgba(234, 234, 251, 0.3);
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
-  font-size: 10rem;
-  letter-spacing: 2rem;
-  margin-right: -0.6em;
+  font-size: 8rem;
 }
 .games__grid-item {
   font-size: 2rem;
@@ -301,9 +297,7 @@ h1 {
   color: hsl(203, 92%, 65%);
   -webkit-text-stroke: 0.05em rgba(234, 234, 251, 0.3);
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
-  font-size: 10rem;
-  letter-spacing: 2rem;
-  margin-right: -0.6em;
+  font-size: 8rem;
 }
 .animations__grid-item {
   font-size: 2rem;
@@ -349,18 +343,16 @@ h1 {
   }
 }
 .social-media {
-  margin-bottom: 15rem;
   display: grid;
-  row-gap: 10rem;
+  row-gap: 4rem;
   justify-items: center;
 }
 .social-media__title {
   color: hsl(203, 92%, 65%);
   -webkit-text-stroke: 0.05em rgba(234, 234, 251, 0.3);
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
-  font-size: 10rem;
-  letter-spacing: 2rem;
-  margin-right: -0.6em;
+  font-size: 8rem;
+  font-size: 6rem;
 }
 .social-media__grid {
   display: grid;
@@ -486,7 +478,6 @@ h1 {
 }
 @media only screen and (max-width: 80em) {
   .social-media__title {
-    font-size: 8rem;
     margin-bottom: -5rem;
   }
   .social-media__grid {
@@ -522,6 +513,7 @@ h1 {
     grid-auto-flow: row;
   }
   .social-media__grid-anchor {
+    scale: 0.4;
     margin-block: -5rem;
   }
 }
@@ -532,7 +524,7 @@ h1 {
   margin-bottom: 10svh;
 }
 .registration__title {
-  font-size: 7rem;
+  font-size: 6rem;
   color: hsl(203, 92%, 65%);
   -webkit-text-stroke: 0.05em rgba(234, 234, 251, 0.3);
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
