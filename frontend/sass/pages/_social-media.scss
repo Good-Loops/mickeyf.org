@@ -1,15 +1,14 @@
 @use '../abstracts' as *;
 
 .social-media {
-    margin-bottom: 15rem;
-
     display: grid;
-    row-gap: 10rem;
+    row-gap: 4rem;
 
     justify-items: center;
 
     &__title {
         @include component-title;
+        font-size: $font-size-m;
     }
 
     &__grid {

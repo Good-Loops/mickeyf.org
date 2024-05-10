@@ -9,11 +9,12 @@ mickeyf.org
 |   |   |-- server.min.js
 |   |   |-- server.min.js.LICENSE.txt
 |   |   `-- server.min.js.map
-|   |-- node_modules [210 entries exceeds filelimit, not opening dir]
+|   |-- node_modules [189 entries exceeds filelimit, not opening dir]
 |   |-- routes
 |   |   `-- userRoutes.ts
 |   |-- types
 |   |   `-- customTypes.ts
+|   |-- Dockerfile
 |   |-- app.ts
 |   |-- package-lock.json
 |   |-- package.json
@@ -24,7 +25,7 @@ mickeyf.org
 |   |-- Common Screen Resolutions.txt
 |   `-- Project Structure.txt
 |-- frontend
-|   |-- node_modules [470 entries exceeds filelimit, not opening dir]
+|   |-- node_modules [503 entries exceeds filelimit, not opening dir]
 |   |-- public
 |   |   |-- assets
 |   |   |   |-- audio
@@ -46,10 +47,9 @@ mickeyf.org
 |   |   |   |   `-- sprite.svg
 |   |   |   `-- favicon.ico
 |   |   |-- dist
+|   |   |   |-- index.html
 |   |   |   |-- index.min.js
-|   |   |   |-- index.min.js.map
-|   |   |   |-- main.min.js
-|   |   |   `-- main.min.js.map
+|   |   |   `-- index.min.js.map
 |   |   |-- sprites
 |   |   |   `-- p4Vega
 |   |   |       |-- bhBlue.png
@@ -57,7 +57,6 @@ mickeyf.org
 |   |   |       |-- bhYellow.png
 |   |   |       |-- p4.png
 |   |   |       `-- water.png
-|   |   |-- 404.html
 |   |   `-- index.html
 |   |-- sass
 |   |   |-- abstracts
@@ -161,6 +160,7 @@ mickeyf.org
 |   |   |   `-- random.ts
 |   |   |-- main.ts
 |   |   `-- types.d.ts
+|   |-- Dockerfile
 |   |-- package-lock.json
 |   |-- package.json
 |   |-- tsconfig.json
@@ -169,5 +169,6 @@ mickeyf.org
 |-- LICENSE
 |-- README.md
 |-- cloudbuild.yaml
-|-- install-scout.sh
-`-- nginx.config
+|-- credentials.json
+|-- docker-compose.yml
+`-- install-scout.sh

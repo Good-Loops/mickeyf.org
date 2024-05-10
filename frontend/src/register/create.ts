@@ -1,6 +1,10 @@
 import { INVALID_EMAIL, INVALID_PASSWORD, EMPTY_FIELDS, DUPLICATE_USER } from "../utils/constants";
 import IUserCreate from "./interfaces/IUserCreate";
 import Swal from 'sweetalert2';
+import dotenv from 'dotenv';
+
+dotenv.config();
+const apiUrl = process.env.NODE_ENV === 'development' ? process.env.DEV_API_URL : process.env.PROD_API_URL as string;
 
 function create(): IUserCreate {
     return {
@@ -14,7 +18,7 @@ function create(): IUserCreate {
             const email = (<HTMLInputElement>document.getElementById('email')).value;
             const user_password = (<HTMLInputElement>document.getElementById('password')).value;
 
-            fetch('https://mickeyf-org-j7yuum4tiq-uc.a.run.app/api/users', {
+            fetch(apiUrl!, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

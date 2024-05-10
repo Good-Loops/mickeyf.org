@@ -15,7 +15,7 @@ interface ComponentInterface {
 
 const routes: Record<string, ComponentInterface> = {
     "/": Home,
-    "/user/signup": Register,
+    "/signup": Register,
     "/user/:id": User,
     "/games": Games,
     "/animations": Animations,

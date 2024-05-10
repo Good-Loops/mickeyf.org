@@ -5,7 +5,8 @@
     "main": "app.ts",
     "scripts": {
         "dev": "webpack --mode development --watch",
-        "prod": "webpack --mode production"
+        "prod": "webpack --mode production",
+        "serve": "node dist/server.min.js"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
