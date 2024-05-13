@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "webpack --mode development --watch",
         "prod": "webpack --mode production",
-        "serve": "node dist/server.min.js"
+        "serve": "nodemon dist/server.min.js"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
@@ -21,6 +21,7 @@
         "@types/cors": "^2.8.17",
         "@types/express": "^4.17.21",
         "@types/node": "^20.12.5",
+        "nodemon": "^3.1.0",
         "ts-loader": "^9.4.2",
         "ts-node": "^10.9.1",
         "typescript": "^5.0.4",

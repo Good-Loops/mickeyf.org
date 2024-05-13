@@ -586,6 +586,75 @@ h1 {
   border: 0.18em solid hsl(0, 0%, 30%);
 }
 
+.login {
+  display: grid;
+  row-gap: 3rem;
+  justify-items: center;
+  margin-bottom: 10svh;
+}
+.login__title {
+  font-size: 6rem;
+  color: hsl(203, 92%, 65%);
+  -webkit-text-stroke: 0.05em rgba(234, 234, 251, 0.3);
+  text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
+}
+.login__form-wrapper {
+  background: linear-gradient(to top left, rgba(133, 205, 250, 0.5) 35%, rgba(145, 238, 145, 0.5) 70%);
+  border-radius: 1.5em;
+  padding-block: 4em;
+  width: 80%;
+  justify-self: center;
+}
+.login__form {
+  grid-column: 2/3;
+  display: grid;
+  grid-gap: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+}
+.login__input {
+  background-color: hsl(203, 92%, 90%);
+  border: 0.15em solid hsl(0, 0%, 80%);
+  border-radius: 0.4em;
+  transition: border 0.7s;
+  outline: none;
+  font-family: var(--font);
+  font-size: 3.8rem;
+  color: hsl(0, 0%, 30%);
+  grid-column: 1/4;
+  justify-self: center;
+  width: 80%;
+  padding: 0.2em;
+}
+.login__input:focus {
+  border: 0.15em solid hsl(0, 0%, 30%);
+}
+.login__input--username {
+  grid-row: 1/2;
+}
+.login__input--email {
+  grid-row: 2/3;
+}
+.login__input--password {
+  grid-row: 3/4;
+}
+.login__input--btn {
+  width: 100%;
+  margin-top: 2rem;
+  font-size: 3rem;
+  grid-row: 4/5;
+  grid-column: 2/3;
+  border: 0.18em solid hsl(0, 0%, 80%);
+  border-radius: 0.5em;
+  transition: border 0.7s;
+}
+.login__input--btn:active {
+  transform: scale(0.85);
+}
+.login__input--btn:hover {
+  cursor: url("../img/select.cur"), auto;
+  border: 0.18em solid hsl(0, 0%, 30%);
+}
+
 .dancing-circles {
   display: grid;
   gap: 2.5rem;
