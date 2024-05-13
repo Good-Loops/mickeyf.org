@@ -9,8 +9,6 @@ export default function userLogin(): IUserLogin {
             const user_name: string = (<HTMLInputElement>document.getElementById('user_name')).value;
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
 
-            console.log(API_URL);
-
             fetch(API_URL, {
                 method: 'GET',
                 headers: {
