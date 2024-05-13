@@ -19,46 +19,48 @@ export default function userCreate(): IUserCreate {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ user_name: user_name, email: email, user_password: user_password }),
+                body: JSON.stringify({
+                    type: 'signup',
+                    user_name: user_name,
+                    email: email,
+                    user_password: user_password
+                }),
             })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return response.text();
-            })
-            .then(data => {
-                return JSON.parse(data);  // Parse the response as JSON
+                return response.json();
             })
             .then(data => {
                 if (data.error) {
                     switch (data.error) {
-                        case INVALID_EMAIL:
-                            Swal.fire({
-                                title: 'Invalid email',
-                                icon: 'warning'
-                            });
-                            break;
-                        case INVALID_PASSWORD:
-                            Swal.fire({
-                                title: 'Invalid passoword',
-                                text: 'Password must be between 8 and 16 characters long',
-                                icon: 'warning'
-                            });
-                            break;
-                        case EMPTY_FIELDS:
-                            Swal.fire({
-                                title: 'Missing required fields',
-                                icon: 'warning'
-                            });
-                            break;
-                        case DUPLICATE_USER:
-                            Swal.fire({
-                                title: 'Duplicate user',
-                                text: 'This email or username is already in use',
-                                icon: 'warning'
-                            });
-                            break;
+                    case INVALID_EMAIL:
+                        Swal.fire({
+                            title: 'Invalid email',
+                            icon: 'warning'
+                        });
+                        break;
+                    case INVALID_PASSWORD:
+                        Swal.fire({
+                            title: 'Invalid passoword',
+                            text: 'Password must be between 8 and 16 characters long',
+                            icon: 'warning'
+                        });
+                        break;
+                    case EMPTY_FIELDS:
+                        Swal.fire({
+                            title: 'Missing required fields',
+                            icon: 'warning'
+                        });
+                        break;
+                    case DUPLICATE_USER:
+                        Swal.fire({
+                            title: 'Duplicate user',
+                            text: 'This email or username is already in use',
+                            icon: 'warning'
+                        });
+                        break;
                     }
                 } else {
                     Swal.fire({

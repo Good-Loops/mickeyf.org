@@ -1,4 +1,4 @@
-import { API_URL, INVALID_PASSWORD, EMPTY_FIELDS } from '../utils/constants';
+import { API_URL, AUTH_FAILED } from '../utils/constants';
 import IUserLogin from './Interfaces/IUserLogin';
 import Swal from 'sweetalert2';
 
@@ -10,35 +10,32 @@ export default function userLogin(): IUserLogin {
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
 
             fetch(API_URL, {
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({
+                    type: 'login',
+                    username: user_name,
+                    password: user_password
+                })
             })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return response.text();
-            })
-            .then(data => {
-                return JSON.parse(data);  // Parse the response as JSON
+                return response.json();
             })
             .then(data => {
                 if (data.error) {
                     switch (data.error) {
-                        case INVALID_PASSWORD:
-                            Swal.fire({
-                                title: 'Invalid passoword',
-                                icon: 'warning'
-                            });
-                            break;
-                        case EMPTY_FIELDS:
-                            Swal.fire({
-                                title: 'Missing required fields',
-                                icon: 'warning'
-                            });
-                            break;
+                    case AUTH_FAILED:
+                        Swal.fire({
+                            title: 'Authentication failed',
+                            text: 'Please check your username and password',
+                            icon: 'error'
+                        });
+                        break;
                     }
                 } else {
                     Swal.fire({
