@@ -1,0 +1,23 @@
+{
+  "hosting": {
+    "public": "/frontend/public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+        {
+            "source": "/api/**",
+            "run": {
+                "serviceId": "mickeyf-org",
+                "region": "us-central1"
+                }
+        },
+        {
+            "source": "**",
+            "destination": "/index.html"
+        }
+    ]
+  }
+}
