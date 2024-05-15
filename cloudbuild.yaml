@@ -32,22 +32,11 @@ steps:
         DB_USER=${_DB_USER},
         DB_NAME=${_DB_NAME}
 
-  # Delete existing files in the Cloud Storage bucket
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:alpine'
-    entrypoint: 'gsutil'
-    args: ['-m', 'rm', 'gs://${_FRONTEND_BUCKET}/**']
-
-  # Upload new frontend files to Cloud Storage
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:alpine'
-    entrypoint: 'gsutil'
-    args: ['-m', 'cp', '-r', 'frontend/public/*', 'gs://${_FRONTEND_BUCKET}']
-
 substitutions:
   _GCP_PROJECT_ID: 'noted-reef-387021'
   _REPO_NAME: 'cloud-run-source-deploy'
   _SERVICE_NAME: 'mickeyf-org'
   _REGION: 'us-central1'
-  _FRONTEND_BUCKET: 'www.mickeyf.org'
   _CLOUD_SQL_CONNECTION_NAME: 'noted-reef-387021:us-central1:cms-mickeyf'
   _DB_USER: 'cms_mickeyf'
   _DB_NAME: 'cms'
