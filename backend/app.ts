@@ -5,11 +5,11 @@ import cors from 'cors';
 import userRoutes from './routes/userRoutes';
 
 // Determine the environment
-const environment = process.env.NODE_ENV === 'development' ? 'development' : 'production';
+const environment: string = process.env.NODE_ENV === 'development' ? 'development' : 'production';
 // Determine Base URL
-const baseUrl = environment === 'development' ? process.env.DEV_BASE_URL : process.env.BASE_URL;
+const baseUrl: string = environment === 'development' ? process.env.DEV_BASE_URL as string : process.env.PROD_BASE_URL as string;
 // Detertmine API URL
-const apiUrl = environment === 'development' ? process.env.DEV_API_URL : process.env.API_URL;
+const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL as string : process.env.PROD_API_URL as string;
 
 // Create an Express application
 const app = express();

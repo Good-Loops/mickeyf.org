@@ -1,5 +1,5 @@
 function component() {
-    const render = function() {
+    const render = () => {
         return /*html*/`
             <h1>Error 404: Page not found</h1>   
         `

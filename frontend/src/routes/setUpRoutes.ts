@@ -8,15 +8,24 @@ interface Page {
 
 // The setUpRoutes function is used to set up the routes for the application.
 const setUpRoutes = (page: Page) => {
-    page('/', () => loadComponent('/'));
-    page('/signup', () => loadComponent('/signup'));
-    page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
-    page('/games', () => loadComponent('/games'));
-    page('/animations', () => loadComponent('/animations'));
-    page('/socialmedia', () => loadComponent('/socialmedia'));
-    page('/dancing-circles', () => loadComponent('/dancing-circles'));
+    // Main components
+    page('/', () => loadComponent('/')); // Home 
+    page('/games', () => loadComponent('/games')); // Games
+    page('/animations', () => loadComponent('/animations')); // Animations
+    page('/socialmedia', () => loadComponent('/socialmedia')); // Social Media
+    page('/signup', () => loadComponent('/signup')); // Register
+    page('/login', () => loadComponent('/login')); // Login
+    page('*', () => loadComponent('/error')); // Error page
+
+    // Games
     page('/p4-Vega', () => loadComponent('/p4-Vega'));
-    page('*', () => loadComponent('/error'));
+
+    // Animations
+    page('/dancing-circles', () => loadComponent('/dancing-circles'));
+
+    // User unique component
+    // page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
+
 };
 
 export default setUpRoutes;

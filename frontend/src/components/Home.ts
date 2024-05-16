@@ -1,5 +1,5 @@
 function component() {
-    const render = function() {
+    const render = () => {
         return /*html*/`
             <!-- <div x-data="listUsers()" x-init="list">
                 <ul>

@@ -1,17 +1,24 @@
-import create from "../register/create";
-// import listUsers from "../home/listUsers";
+// Libraries
 import Alpine from "alpinejs";
 import page from "page";
+
+// Global methods
+import userLogIn from "../login/userLogin";
+import userCreate from "../register/userCreate";
+// import listUsers from "../home/listUsers";
 
 // Global variables
 const initializeGlobals = () => {
     // Libraries
     window.page = page;
-    window.Alpine = Alpine; 
+    window.Alpine = Alpine;
+
+    // Event listener manager
+    window.eventListeners = {}; // Event listeners 
 
     // Global methods
-    window.eventListeners = {}; // Event listeners 
-    window.create = create; // Create user
+    window.userCreate = userCreate; // Create user
+    window.userLogin = userLogIn; // Login user
     // window.listUsers = listUsers;
 };
 
