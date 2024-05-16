@@ -16,8 +16,8 @@ export default function userLogin(): IUserLogin {
                 },
                 body: JSON.stringify({
                     type: 'login',
-                    username: user_name,
-                    password: user_password
+                    user_name: user_name,
+                    user_password: user_password
                 })
             })
             .then(response => {

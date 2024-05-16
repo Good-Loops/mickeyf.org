@@ -15,17 +15,19 @@ const setUpRoutes = (page: Page) => {
     page('/socialmedia', () => loadComponent('/socialmedia')); // Social Media
     page('/signup', () => loadComponent('/signup')); // Register
     page('/login', () => loadComponent('/login')); // Login
-    page('*', () => loadComponent('/error')); // Error page
-
+    
     // Games
     page('/p4-Vega', () => loadComponent('/p4-Vega'));
-
+    
     // Animations
     page('/dancing-circles', () => loadComponent('/dancing-circles'));
-
+    
     // User unique component
     // page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
 
+    // Error page must be the last route because it is a catch-all route
+    // that matches any path that is not matched by the other routes.
+    page('*', () => loadComponent('/error')); 
 };
 
 export default setUpRoutes;
