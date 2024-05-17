@@ -16,7 +16,7 @@ export default function leaderboard(): ILeaderboard {
          */
         fetchLeaderboard: async function (): Promise<void> {
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(`${API_URL}/api/users`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

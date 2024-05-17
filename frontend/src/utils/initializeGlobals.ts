@@ -6,6 +6,7 @@ import page from "page";
 import userLogIn from "../login/userLogin";
 import userCreate from "../register/userCreate";
 import leaderboard from "../leaderboard/leaderboard";
+import loggedIn from "./loggedIn";
 
 // Global variables
 const initializeGlobals = () => {
@@ -20,6 +21,7 @@ const initializeGlobals = () => {
     window.userCreate = userCreate; // Create user
     window.userLogin = userLogIn; // Login user
     window.leaderboard = leaderboard; // Leaderboard
+    window.loggedIn = loggedIn; // Check if user is logged in
 };
 
 export default initializeGlobals;

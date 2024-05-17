@@ -53,10 +53,7 @@
         {
             "splitTerminals": [
                 {
-                    "name": "firebase-emulator",
-                    "commands": [
-                        "sleep 6s && firebase init && firebase emulators:start"
-                    ]
+                    "name": "general",
                 }
             ]
         },
@@ -65,12 +62,12 @@
                 {
                     "name": "temp-bash",
                     "commands": [
+                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'blue~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'magenta~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
                         "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'blue~'",
                         "exit",
                     ]
                 }

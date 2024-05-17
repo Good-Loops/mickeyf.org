@@ -7,16 +7,21 @@ require('dotenv').config(); // Load environment variables from .env file
 
 // Import the required modules
 import express from 'express'; // Import the Express module
+import cookieParser from 'cookie-parser'; // Import the cookie-parser module
 import helmet from 'helmet'; // Import the Helmet module
 import cors from 'cors';  // Import the CORS module
  
-import mainRouter from './routes/mainRouter'; // Import the main router
+// Import routers
+import mainRouter from './routers/mainRouter'; // Import the main router
+import authRouter from './routers/authRouter'; // Import the auth router
 
 const environment: string = process.env.NODE_ENV as string; // Determine environment
 const baseUrl: string = environment ? process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!; // Determine Base URL
 const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
 const app = express(); // Create an Express application
+
+app.use(cookieParser()); // Use cookie parser
 
 // Helmet CSP configuration
 app.use(
@@ -58,20 +63,30 @@ app.use(
         }
     })
 );
+
 app.use(express.json()); // Parse JSON bodies
+
 // CORS configuration
 app.use(cors({
-    origin: [baseUrl!, apiUrl!], // Allowed origins
+    origin: [ // Allowed origins
+        baseUrl!, 
+        `${apiUrl!}/api/users`, // Allow the /api/users route to be accessed from the frontend
+        `${apiUrl!}/auth/verify-token` // Allow the /auth/verify-token route to be accessed from the frontend
+    ],
+    credentials: true, // Allow credentials 
     methods: '*', // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
-app.use('/api', mainRouter); // Use the main router for all routes
+
+
+app.use('/api', mainRouter); // Main router for database-operations related routes
+app.use('/auth', authRouter); // Auth router for authentication related routes
+
 app.set('trust proxy', true); // Trust the first proxy
-const PORT = 8080; // Port to run the server on
 
 // Start the server
-app.listen(PORT, () => {   
-    console.log(`Backend running on port ${PORT}`); 
+app.listen(8080, () => {   
+    console.log("Backend running on port 8080"); 
 });
 
 export default app; // Export the Express application

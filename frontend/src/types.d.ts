@@ -5,7 +5,6 @@ import page from 'page';
 // Interfaces
 import IUserCreate from './register/interfaces/IUserCreate';
 import IUserLogin from './login/Interfaces/IUserLogin';
-// import IListUsers from './home/interfaces/IListUsers';
 
 // Event listener manager
 import { EventListenerRecord } from './events/eventManager';
@@ -21,7 +20,7 @@ declare global {
         userCreate: () => IUserCreate;
         userLogin: () => IUserLogin;
         leaderboard: () => ILeaderboard;
-
+        loggedIn: () => Promise<boolean>;   
 
         // Event listener manager
         eventListeners: Record<string, EventListenerRecord[]>;

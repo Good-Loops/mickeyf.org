@@ -4,28 +4,31 @@ mickeyf.org
 |   |-- config
 |   |   `-- dbConfig.ts
 |   |-- controllers
-|   |   `-- userController.ts
+|   |   |-- authController.ts
+|   |   `-- mainController.ts
 |   |-- dist
+|   |   |-- 46934e7a4d2d5628e9fa9a833eb82ba3.node
 |   |   |-- server.min.js
 |   |   |-- server.min.js.LICENSE.txt
 |   |   `-- server.min.js.map
-|   |-- node_modules [189 entries exceeds filelimit, not opening dir]
-|   |-- routes
-|   |   `-- userRoutes.ts
+|   |-- node_modules [374 entries exceeds filelimit, not opening dir]
+|   |-- routers
+|   |   |-- authRouter.ts
+|   |   `-- mainRouter.ts
 |   |-- types
 |   |   `-- customTypes.ts
-|   |-- Dockerfile
 |   |-- app.ts
 |   |-- package-lock.json
 |   |-- package.json
 |   |-- tsconfig.json
+|   |-- types.d.ts
 |   `-- webpack.config.js
 |-- docs
 |   |-- Colors for Website.txt
 |   |-- Common Screen Resolutions.txt
 |   `-- Project Structure.txt
 |-- frontend
-|   |-- node_modules [503 entries exceeds filelimit, not opening dir]
+|   |-- node_modules [526 entries exceeds filelimit, not opening dir]
 |   |-- public
 |   |   |-- assets
 |   |   |   |-- audio
@@ -47,9 +50,8 @@ mickeyf.org
 |   |   |   |   `-- sprite.svg
 |   |   |   `-- favicon.ico
 |   |   |-- dist
-|   |   |   |-- index.html
-|   |   |   |-- index.min.js
-|   |   |   `-- index.min.js.map
+|   |   |   |-- main.min.js
+|   |   |   `-- main.min.js.map
 |   |   |-- sprites
 |   |   |   `-- p4Vega
 |   |   |       |-- bhBlue.png
@@ -89,6 +91,7 @@ mickeyf.org
 |   |   |   |-- _dancing-circles.scss
 |   |   |   |-- _games.scss
 |   |   |   |-- _index.scss
+|   |   |   |-- _login.scss
 |   |   |   |-- _p4-vega.scss
 |   |   |   |-- _registration.scss
 |   |   |   `-- _social-media.scss
@@ -113,10 +116,10 @@ mickeyf.org
 |   |   |   |-- Error404.ts
 |   |   |   |-- Games.ts
 |   |   |   |-- Home.ts
+|   |   |   |-- Leaderboard.ts
+|   |   |   |-- Login.ts
 |   |   |   |-- Register.ts
-|   |   |   |-- SocialMedia.ts
-|   |   |   `-- User.ts
-|   |   |-- config
+|   |   |   `-- SocialMedia.ts
 |   |   |-- events
 |   |   |   |-- EventListenerManager.ts
 |   |   |   `-- eventManager.ts
@@ -140,27 +143,32 @@ mickeyf.org
 |   |   |       |   `-- water.json
 |   |   |       `-- p4-Vega.ts
 |   |   |-- home
+|   |   |-- leaderboard
 |   |   |   |-- interfaces
-|   |   |   |   `-- IListUsers.ts
-|   |   |   `-- listUsers.ts
+|   |   |   |   `-- ILeaderboard.ts
+|   |   |   `-- leaderboard.ts
+|   |   |-- login
+|   |   |   |-- Interfaces
+|   |   |   |   `-- IUserLogin.ts
+|   |   |   `-- userLogin.ts
 |   |   |-- register
 |   |   |   |-- interfaces
 |   |   |   |   `-- IUserCreate.ts
-|   |   |   `-- create.ts
+|   |   |   `-- userCreate.ts
 |   |   |-- routes
 |   |   |   `-- setUpRoutes.ts
 |   |   |-- utils
 |   |   |   |-- checkCollision.ts
 |   |   |   |-- constants.ts
 |   |   |   |-- gameOver.ts
-|   |   |   |-- getUserData.ts
 |   |   |   |-- initializeGlobals.ts
 |   |   |   |-- lerp.ts
 |   |   |   |-- loadComponent.ts
+|   |   |   |-- loggedIn.ts
 |   |   |   `-- random.ts
 |   |   |-- main.ts
 |   |   `-- types.d.ts
-|   |-- Dockerfile
+|   |-- bs-config.json
 |   |-- package-lock.json
 |   |-- package.json
 |   |-- tsconfig.json
@@ -169,6 +177,5 @@ mickeyf.org
 |-- LICENSE
 |-- README.md
 |-- cloudbuild.yaml
-|-- credentials.json
-|-- docker-compose.yml
+|-- firebase.json
 `-- install-scout.sh
