@@ -66,7 +66,7 @@ const addUser = async (req: Request, res: Response) => {
     }
 };
 
-const loginUser = functions.https.onRequest(async (req, res) => {
+const loginUser = async (req: Request, res: Response) => {
     const { user_name, user_password } = req.body;
 
     try {
@@ -76,6 +76,7 @@ const loginUser = functions.https.onRequest(async (req, res) => {
         if (user && bcrypt.compareSync(user_password, user.user_password)) {
             const token = await admin.auth().createCustomToken(user.uid);
             res.status(200).send({ token });
+            res.json({ success: true });
         } else {
             res.status(401).send({ error: 'Invalid credentials' });
         }
@@ -83,7 +84,7 @@ const loginUser = functions.https.onRequest(async (req, res) => {
         console.error('Error logging in:', error);
         res.status(500).send({ error: 'Internal server error' });
     }
-});
+};
 
 // const loginUser = async (req: Request, res: Response) => {
 //     const { user_name, user_password } = req.body as IUser; // Destructure user_name and user_password from request body
