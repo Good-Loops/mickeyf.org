@@ -4,7 +4,6 @@ import { IUser } from '../types/customTypes';
 import pool from '../config/dbConfig';
 import bcrypt from 'bcryptjs';
 import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
 
 admin.initializeApp();
 
@@ -52,7 +51,7 @@ const addUser = async (req: Request, res: Response) => {
 
     try {
         // Insert user into database
-        const [result] = await pool.query(
+        await pool.query(
             'INSERT INTO users (user_name, email, user_password) VALUES (?, ?, ?)',
             [user_name, email, hashedPassword]
         );
