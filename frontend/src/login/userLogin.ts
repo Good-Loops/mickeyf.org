@@ -20,10 +20,15 @@ export default function userLogin() {
             .catch((error) => {
                 switch (error.code) {
                     case 'auth/wrong-password':
+                        Swal.fire({
+                            title: 'Authentication failed',
+                            text: 'Please check your password',
+                            icon: 'error'
+                        });
                     case 'auth/user-not-found':
                         Swal.fire({
                             title: 'Authentication failed',
-                            text: 'Please check your username and password',
+                            text: 'Please check your username',
                             icon: 'error'
                         });
                         break;
