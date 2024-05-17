@@ -1,50 +1,36 @@
-import { API_URL, AUTH_FAILED } from '../utils/constants';
-import IUserLogin from './Interfaces/IUserLogin';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import Swal from 'sweetalert2';
 
 // This function is used to handle the login event
-export default function userLogin(): IUserLogin {
+export default function userLogin() {
     return {
         loginUser: function (): void {
             const user_name: string = (<HTMLInputElement>document.getElementById('user_name')).value;
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
+            const auth = getAuth();
 
-            fetch(API_URL, {
-                method: 'POST', // Send a POST request
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    type: 'login',
-                    user_name: user_name,
-                    user_password: user_password
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    switch (data.error) {
-                    case AUTH_FAILED:
-                        Swal.fire({
-                            title: 'Authentication failed',
-                            text: 'Please check your username and password',
-                            icon: 'error'
-                        });
-                        break;
-                    }
-                } else {
+            signInWithEmailAndPassword(auth, user_name, user_password)
+                .then((userCredential) => {
+                    // Signed in 
                     Swal.fire({
                         title: 'Welcome back!',
                         icon: 'success'
                     });
-                }
-            })
-            .catch((error) => console.error('Fetch error:', error));   
+                })
+                .catch((error) => {
+                    switch (error.code) {
+                        case 'auth/wrong-password':
+                        case 'auth/user-not-found':
+                            Swal.fire({
+                                title: 'Authentication failed',
+                                text: 'Please check your username and password',
+                                icon: 'error'
+                            });
+                            break;
+                        default:
+                            console.error('Firebase error:', error);
+                    }
+                });
         }
     }
 }

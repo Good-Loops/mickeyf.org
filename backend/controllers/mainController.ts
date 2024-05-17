@@ -73,7 +73,6 @@ const loginUser = async (req: Request, res: Response) => {
         if (user) {
             const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
             if (isPasswordCorrect) {
-                // req.session.user = user; // Save user to session
                 res.json({ success: true });
             } else {
                 res.json({ error: 'AUTH_FAILED' });
