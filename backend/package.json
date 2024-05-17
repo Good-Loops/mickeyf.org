@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
+        "bindings": "^1.5.0",
         "cardinal": "^2.1.1",
         "connect-mysql2": "^2.2.6",
         "cors": "^2.8.5",
@@ -19,7 +20,8 @@
         "firebase-admin": "^12.1.0",
         "firebase-functions": "^5.0.1",
         "helmet": "^7.1.0",
-        "mysql2": "^3.9.3"
+        "mysql2": "^3.9.3",
+        "request": "^2.88.2"
     },
     "devDependencies": {
         "@types/bcryptjs": "^2.4.6",
@@ -27,6 +29,7 @@
         "@types/express": "^4.17.21",
         "@types/express-session": "^1.18.0",
         "@types/node": "^20.12.5",
+        "node-loader": "^2.0.0",
         "nodemon": "^3.1.0",
         "ts-loader": "^9.4.2",
         "ts-node": "^10.9.1",
