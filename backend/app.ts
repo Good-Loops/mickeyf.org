@@ -1,18 +1,25 @@
-require('dotenv').config();
-import express from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
-import mainRoutes from './routes/mainRoutes';
+/**
+ * This file represents the main application file for the backend of the mickeyf.org website.
+ * It sets up the Express server, configures middleware, and defines routes.
+ */
 
-// Determine environment
-const environment: string = process.env.NODE_ENV as string;
-// Determine Base URL
-const baseUrl: string = environment ? process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!;
-// Detertmine API URL
-const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!;
+require('dotenv').config(); // Load environment variables from .env file
 
-// Create an Express application
-const app = express();
+// Import the required modules
+import express from 'express'; // Import the Express module
+import helmet from 'helmet'; // Import the Helmet module
+import cors from 'cors';  // Import the CORS module
+ 
+import mainRouter from './routes/mainRouter'; // Import the main router
+
+import loginUser from './functions/loginUser'; // Import the loginUser function
+exports.loginUser = loginUser; // Export the loginUser function
+
+const environment: string = process.env.NODE_ENV as string; // Determine environment
+const baseUrl: string = environment ? process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!; // Determine Base URL
+const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+
+const app = express(); // Create an Express application
 
 // Helmet CSP configuration
 app.use(
@@ -54,27 +61,20 @@ app.use(
         }
     })
 );
-
-
-// Parse JSON bodies
-app.use(express.json());
-
+app.use(express.json()); // Parse JSON bodies
 // CORS configuration
 app.use(cors({
-    origin: [baseUrl!, apiUrl!],
+    origin: [baseUrl!, apiUrl!], // Allowed origins
     methods: '*', // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
+app.use('/api', mainRouter); // Use the main router for all routes
+app.set('trust proxy', true); // Trust the first proxy
+const PORT = 8080; // Port to run the server on
 
-app.use('/api', mainRoutes);
-
-// Trust the proxy in front of you for proper IP resolution and secure protocol usage
-app.set('trust proxy', true);
-
-const PORT = 8080;
-
-app.listen(PORT, () => {
-    console.log(`Backend running on port ${PORT}`);
+// Start the server
+app.listen(PORT, () => {   
+    console.log(`Backend running on port ${PORT}`); 
 });
 
-export default app;
+export default app; // Export the Express application

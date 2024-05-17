@@ -9,8 +9,8 @@ const mainController = async (req: Request, res: Response) => {
     switch (req.body.type) {
         case 'signup':
             return addUser(req, res);
-        case 'login':
-            return loginUser(req, res);
+        // case 'login':
+            // return loginUser(req, res);
         case 'submit_score':
             return submitScore(req, res);
         case 'get_leaderboard':
@@ -62,32 +62,32 @@ const addUser = async (req: Request, res: Response) => {
     }
 };
 
-const loginUser = async (req: Request, res: Response) => {
-    const { user_name, user_password } = req.body as IUser; // Destructure user_name and user_password from request body
-    try {
-        // Get user from database
-        const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE user_name = ?', [user_name]);
-        const user: IUser = rows[0] as IUser;
+// const loginUser = async (req: Request, res: Response) => {
+//     const { user_name, user_password } = req.body as IUser; // Destructure user_name and user_password from request body
+//     try {
+//         // Get user from database
+//         const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE user_name = ?', [user_name]);
+//         const user: IUser = rows[0] as IUser;
 
-        // Check if user exists and password is correct
-        if (user) {
-            const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
-            if (isPasswordCorrect) {
-                res.json({ success: true });
-            } else {
-                res.json({ error: 'AUTH_FAILED' });
-            }
-        } else {
-            res.json({ error: 'AUTH_FAILED' });
-        }
-    } catch (error) {
-        if (error instanceof Error) {
-            res.json({ error: 'SERVER_ERROR' });
-        } else {
-            res.json({ error: 'UNEXPECTED_ERROR' });
-        }
-    }
-};
+//         // Check if user exists and password is correct
+//         if (user) {
+//             const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
+//             if (isPasswordCorrect) {
+//                 res.json({ success: true });
+//             } else {
+//                 res.json({ error: 'AUTH_FAILED' });
+//             }
+//         } else {
+//             res.json({ error: 'AUTH_FAILED' });
+//         }
+//     } catch (error) {
+//         if (error instanceof Error) {
+//             res.json({ error: 'SERVER_ERROR' });
+//         } else {
+//             res.json({ error: 'UNEXPECTED_ERROR' });
+//         }
+//     }
+// };
 
 /**
  * Submits a score for a user.
