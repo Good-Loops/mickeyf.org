@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 
 // This function should check the body type and call the appropriate function
 const mainController = async (req: Request, res: Response) => {
+    console.log(req.body.type);
     switch (req.body.type) {
         case 'signup':
             return addUser(req, res);

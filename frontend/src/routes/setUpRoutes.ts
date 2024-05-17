@@ -15,6 +15,7 @@ const setUpRoutes = (page: Page) => {
     page('/socialmedia', () => loadComponent('/socialmedia')); // Social Media
     page('/signup', () => loadComponent('/signup')); // Register
     page('/login', () => loadComponent('/login')); // Login
+    page('/leaderboard', () => loadComponent('/leaderboard')); // Leaderboard
     
     // Games
     page('/p4-Vega', () => loadComponent('/p4-Vega'));

@@ -20,7 +20,8 @@ declare global {
         // Global methods
         userCreate: () => IUserCreate;
         userLogin: () => IUserLogin;
-        // listUsers: () => IListUsers;
+        leaderboard: () => ILeaderboard;
+
 
         // Event listener manager
         eventListeners: Record<string, EventListenerRecord[]>;

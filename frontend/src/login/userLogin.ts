@@ -10,7 +10,7 @@ export default function userLogin(): IUserLogin {
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
 
             fetch(API_URL, {
-                method: 'POST',
+                method: 'POST', // Send a POST request
                 headers: {
                     'Content-Type': 'application/json',
                 },

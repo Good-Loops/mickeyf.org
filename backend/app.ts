@@ -6,10 +6,12 @@ import session from 'express-session';
 import mainRoutes from './routes/mainRoutes';
 import pool from './config/dbConfig';
 
+// Determine environment
+const environment: string = process.env.NODE_ENV as string;
 // Determine Base URL
-const baseUrl: string = process.env.PROD_BASE_URL as string;
+const baseUrl: string = environment ? process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!;
 // Detertmine API URL
-const apiUrl: string = process.env.PROD_API_URL as string;
+const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!;
 
 // Create an Express application
 const app = express();
