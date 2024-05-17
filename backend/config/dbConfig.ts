@@ -12,7 +12,7 @@ import { createPool } from 'mysql2/promise';
 // });
 
 // For development
-export const pool = createPool({
+const pool = createPool({
     host: 'localhost',
     port: 3306,
     user: process.env.DB_USER,
@@ -44,3 +44,5 @@ pool.on('connection', function (connection) {
 pool.on('enqueue', function () {
     console.log('Waiting for available connection slot');
 });
+
+export default pool;

@@ -1,5 +1,5 @@
 // Utilities
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
+import { API_URL, CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
 import gameOver from "../../utils/gameOver";
 
 // Game elements
@@ -17,6 +17,9 @@ import bhYellowData from './data/bhYellow.json'
 
 // PixiJS
 import * as PIXI from 'pixi.js';
+
+// SweetAlert2
+import Swal from "sweetalert2";
 
 export default async function p4Vega() {
     /////////////////// Setup PixiJS renderer ////////////////// 
@@ -95,6 +98,7 @@ export default async function p4Vega() {
         // Check for game over
         if(!gameLive) 
         {
+            submitScore();
             gameOverTexts = await gameOver(gameLive, p4);
             gameOverTexts.forEach(text => stage.addChild(text));
         }
@@ -128,6 +132,37 @@ export default async function p4Vega() {
         // Load game assets
         await load();
         gameLoop();
+    }
+
+    // Submit score
+    const submitScore = async () => {
+        const p4_score = p4.totalWater;
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                type: 'submitScore',
+                p4_score: p4_score
+            }),
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        }).then(data => {
+            if (data.error) {
+                console.error(data.error);
+            } else {
+                // Display personal record break message
+                Swal.fire({
+                    title: 'Congratulations!',
+                    text: 'You have broken a new personal record, check the leaderboard to see where you stand!',
+                    icon: 'success'
+                });
+            }
+        }).catch((error) => console.error('Fetch error:', error));
     }
 
     // User input

@@ -2,17 +2,39 @@ require('dotenv').config();
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import userRoutes from './routes/userRoutes';
+import session from 'express-session';
+import mainRoutes from './routes/mainRoutes';
+import pool from './config/dbConfig';
 
-// Determine the environment
-const environment: string = process.env.NODE_ENV === 'development' ? 'development' : 'production';
 // Determine Base URL
-const baseUrl: string = environment === 'development' ? process.env.DEV_BASE_URL as string : process.env.PROD_BASE_URL as string;
+const baseUrl: string = process.env.PROD_BASE_URL as string;
 // Detertmine API URL
-const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL as string : process.env.PROD_API_URL as string;
+const apiUrl: string = process.env.PROD_API_URL as string;
 
 // Create an Express application
 const app = express();
+
+// Use MySQLStore for session storage
+let MySQLStore = require('connect-mysql2')(session);
+
+// In your session store configuration
+const sessionStore = new MySQLStore({
+    pool: pool,
+});
+
+if (!process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET environment variable is not set');
+}
+
+app.use(session({
+    secret: process.env.SESSION_SECRET as string,
+    store: sessionStore, // Use the sessionStore you created earlier
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 // 1 day
+    }
+}));
 
 // Helmet CSP configuration
 app.use(
@@ -66,8 +88,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
 
-// Use userRoutes for all user-related endpoints
-app.use('/api', userRoutes);
+app.use('/api', mainRoutes);
 
 // Trust the proxy in front of you for proper IP resolution and secure protocol usage
 app.set('trust proxy', true);
