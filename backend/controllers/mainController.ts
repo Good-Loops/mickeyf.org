@@ -3,14 +3,18 @@ import { RowDataPacket } from 'mysql2';
 import { IUser } from '../types/customTypes';
 import pool from '../config/dbConfig';
 import bcrypt from 'bcryptjs';
+import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions';
+
+admin.initializeApp();
 
 // This function should check the body type and call the appropriate function
 const mainController = async (req: Request, res: Response) => {
     switch (req.body.type) {
         case 'signup':
             return addUser(req, res);
-        // case 'login':
-            // return loginUser(req, res);
+        case 'login':
+            return loginUser(req, res);
         case 'submit_score':
             return submitScore(req, res);
         case 'get_leaderboard':
@@ -61,6 +65,25 @@ const addUser = async (req: Request, res: Response) => {
         }
     }
 };
+
+const loginUser = functions.https.onRequest(async (req, res) => {
+    const { user_name, user_password } = req.body;
+
+    try {
+        const [rows]: any[] = await pool.query('SELECT * FROM users WHERE user_name = ?', [user_name]);
+        const user = rows[0];
+
+        if (user && bcrypt.compareSync(user_password, user.user_password)) {
+            const token = await admin.auth().createCustomToken(user.uid);
+            res.status(200).send({ token });
+        } else {
+            res.status(401).send({ error: 'Invalid credentials' });
+        }
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).send({ error: 'Internal server error' });
+    }
+});
 
 // const loginUser = async (req: Request, res: Response) => {
 //     const { user_name, user_password } = req.body as IUser; // Destructure user_name and user_password from request body

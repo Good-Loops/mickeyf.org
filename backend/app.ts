@@ -12,9 +12,6 @@ import cors from 'cors';  // Import the CORS module
  
 import mainRouter from './routes/mainRouter'; // Import the main router
 
-import loginUser from './functions/loginUser'; // Import the loginUser function
-exports.loginUser = loginUser; // Export the loginUser function
-
 const environment: string = process.env.NODE_ENV as string; // Determine environment
 const baseUrl: string = environment ? process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!; // Determine Base URL
 const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL

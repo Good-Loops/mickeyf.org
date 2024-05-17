@@ -1,4 +1,3 @@
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import Swal from 'sweetalert2';
 
 // This function is used to handle the login event
