@@ -1,40 +1,50 @@
+import { API_URL, AUTH_FAILED } from '../utils/constants';
+import IUserLogin from './Interfaces/IUserLogin';
 import Swal from 'sweetalert2';
 
 // This function is used to handle the login event
-export default function userLogin() {
+export default function userLogin(): IUserLogin {
     return {
         loginUser: function (): void {
-            const email: string = (<HTMLInputElement>document.getElementById('email')).value;
+            const user_name: string = (<HTMLInputElement>document.getElementById('user_name')).value;
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
-            const auth = getAuth();
 
-            signInWithEmailAndPassword(auth, email, user_password)
-            .then((userCredential) => {
-                // Signed in 
-                Swal.fire({
-                    title: 'Welcome back!',
-                    icon: 'success'
-                });
+            fetch(API_URL, {
+                method: 'POST', // Send a POST request
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'login',
+                    user_name: user_name,
+                    user_password: user_password
+                })
             })
-            .catch((error) => {
-                switch (error.code) {
-                    case 'auth/wrong-password':
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    switch (data.error) {
+                    case AUTH_FAILED:
                         Swal.fire({
                             title: 'Authentication failed',
-                            text: 'Please check your password',
-                            icon: 'error'
-                        });
-                    case 'auth/user-not-found':
-                        Swal.fire({
-                            title: 'Authentication failed',
-                            text: 'Please check your username',
+                            text: 'Please check your username and password',
                             icon: 'error'
                         });
                         break;
-                    default:
-                        console.error('Firebase error:', error);
+                    }
+                } else {
+                    Swal.fire({
+                        title: 'Welcome back!',
+                        icon: 'success'
+                    });
                 }
-            });
+            })
+            .catch((error) => console.error('Fetch error:', error));   
         }
     }
 }
