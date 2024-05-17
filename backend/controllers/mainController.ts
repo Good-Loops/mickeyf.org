@@ -6,7 +6,6 @@ import bcrypt from 'bcryptjs';
 
 // This function should check the body type and call the appropriate function
 const mainController = async (req: Request, res: Response) => {
-    console.log(req.body.type);
     switch (req.body.type) {
         case 'signup':
             return addUser(req, res);
@@ -74,7 +73,7 @@ const loginUser = async (req: Request, res: Response) => {
         if (user) {
             const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
             if (isPasswordCorrect) {
-                req.session.user = user; // Save user to session
+                // req.session.user = user; // Save user to session
                 res.json({ success: true });
             } else {
                 res.json({ error: 'AUTH_FAILED' });

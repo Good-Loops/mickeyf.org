@@ -23,26 +23,25 @@ const pool = createPool({
     queueLimit: 0
 });
 
+// Establish a connection to the database and log a success message if successful, or an error message if failed
 pool.getConnection()
     .then(conn => console.log("Database connected successfully!"))
     .catch(err => console.error("Database connection failed:", err));
 
-// Handle connection events
-pool.on('connection', function (connection) {
-    console.log("DB Connection established");
-
-    connection.on('error', function (err) {
-        console.error(new Date(), 'MySQL error', err.code);
-    });
-
-    connection.on('close', function (err) {
-        console.error(new Date(), 'MySQL close', err);
-    });
+// Add logging for connection management
+// Log a message when a new database connection is established
+pool.on('connection', (connection) => {
+    console.log('New DB Connection established');
 });
 
-// Attempt to reconnect if connection is lost
-pool.on('enqueue', function () {
-    console.log('Waiting for available connection slot');
+// Log a message when a connection is acquired from the connection pool
+pool.on('acquire', (connection) => {
+    console.log('Connection %d acquired', connection.threadId);
+});
+
+// Log a message when a connection is released back to the connection pool
+pool.on('release', (connection) => {
+    console.log('Connection %d released', connection.threadId);
 });
 
 export default pool;

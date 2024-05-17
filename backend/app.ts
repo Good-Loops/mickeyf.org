@@ -2,9 +2,9 @@ require('dotenv').config();
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import session from 'express-session';
 import mainRoutes from './routes/mainRoutes';
-import pool from './config/dbConfig';
+// import session from 'express-session';
+// import pool from './config/dbConfig';
 
 // Determine environment
 const environment: string = process.env.NODE_ENV as string;
@@ -17,26 +17,26 @@ const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD
 const app = express();
 
 // Use MySQLStore for session storage
-let MySQLStore = require('connect-mysql2')(session);
+// let MySQLStore = require('connect-mysql2')(session);
 
 // In your session store configuration
-const sessionStore = new MySQLStore({
-    pool: pool,
-});
+// const sessionStore = new MySQLStore({
+//     pool: pool,
+// });
 
 if (!process.env.SESSION_SECRET) {
     throw new Error('SESSION_SECRET environment variable is not set');
 }
 
-app.use(session({
-    secret: process.env.SESSION_SECRET as string,
-    store: sessionStore, // Use the sessionStore you created earlier
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 1000 * 60 * 60 * 24 // 1 day
-    }
-}));
+// app.use(session({
+//     secret: process.env.SESSION_SECRET as string,
+//     store: sessionStore, // Use the sessionStore you created earlier
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//         maxAge: 1000 * 60 * 60 * 24 // 1 day
+//     }
+// }));
 
 // Helmet CSP configuration
 app.use(
