@@ -3,9 +3,6 @@ import { RowDataPacket } from 'mysql2';
 import { IUser } from '../types/customTypes';
 import pool from '../config/dbConfig';
 import bcrypt from 'bcryptjs';
-import * as admin from 'firebase-admin';
-
-admin.initializeApp();
 
 // This function should check the body type and call the appropriate function
 const mainController = async (req: Request, res: Response) => {
@@ -65,52 +62,33 @@ const addUser = async (req: Request, res: Response) => {
     }
 };
 
+
 const loginUser = async (req: Request, res: Response) => {
-    const { user_name, user_password } = req.body;
-
+    const { user_name, user_password } = req.body as IUser; // Destructure user_name and user_password from request body
     try {
-        const [rows]: any[] = await pool.query('SELECT * FROM users WHERE user_name = ?', [user_name]);
-        const user = rows[0];
+        // Get user from database
+        const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE user_name = ?', [user_name]);
+        const user: IUser = rows[0] as IUser;
 
-        if (user && bcrypt.compareSync(user_password, user.user_password)) {
-            const token = await admin.auth().createCustomToken(user.uid);
-            res.status(200).send({ token });
-            res.json({ success: true });
+        // Check if user exists and password is correct
+        if (user) {
+            const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
+            if (isPasswordCorrect) {
+                res.json({ success: true });
+            } else {
+                res.json({ error: 'AUTH_FAILED' });
+            }
         } else {
-            res.status(401).send({ error: 'Invalid credentials' });
+            res.json({ error: 'AUTH_FAILED' });
         }
     } catch (error) {
-        console.error('Error logging in:', error);
-        res.status(500).send({ error: 'Internal server error' });
+        if (error instanceof Error) {
+            res.json({ error: 'SERVER_ERROR' });
+        } else {
+            res.json({ error: 'UNEXPECTED_ERROR' });
+        }
     }
 };
-
-// const loginUser = async (req: Request, res: Response) => {
-//     const { user_name, user_password } = req.body as IUser; // Destructure user_name and user_password from request body
-//     try {
-//         // Get user from database
-//         const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE user_name = ?', [user_name]);
-//         const user: IUser = rows[0] as IUser;
-
-//         // Check if user exists and password is correct
-//         if (user) {
-//             const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
-//             if (isPasswordCorrect) {
-//                 res.json({ success: true });
-//             } else {
-//                 res.json({ error: 'AUTH_FAILED' });
-//             }
-//         } else {
-//             res.json({ error: 'AUTH_FAILED' });
-//         }
-//     } catch (error) {
-//         if (error instanceof Error) {
-//             res.json({ error: 'SERVER_ERROR' });
-//         } else {
-//             res.json({ error: 'UNEXPECTED_ERROR' });
-//         }
-//     }
-// };
 
 /**
  * Submits a score for a user.
