@@ -69,8 +69,7 @@ export default function userCreate(): IUserCreate {
                         icon: 'success'
                     });
                 }
-            })
-            .catch((error) => console.error('Fetch error:', error));
+            }).catch((error) => console.error('Fetch error:', error));
         }
     }
 }
