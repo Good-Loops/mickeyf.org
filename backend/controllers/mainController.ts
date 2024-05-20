@@ -66,30 +66,17 @@ const addUser = async (req: Request, res: Response) => {
 
 // This function logs in a user
 const loginUser = async (req: Request, res: Response) => {
-    const { user_name, user_password } = req.body as IUser; // Destructure user_name and user_password from request body
+    const { user_name, user_password } = req.body as IUser;
     try {
-        // Get user from database
         const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE user_name = ?', [user_name]);
         const user: IUser = rows[0] as IUser;
 
-        // Check if user exists and password is correct
         if (user) {
             const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
             if (isPasswordCorrect) {
-                // User logged in successfully, generate a JWT
                 const token = jwt.sign({ user_id: user.user_id }, process.env.SESSION_SECRET!, { expiresIn: '4h' });
-
-                // Log the token to verify it is generated correctly
-                console.log('Generated Token:', token);
-
-                // Set the JWT as a cookie
-                res.cookie('sessionToken', token, { secure: true, httpOnly: true, sameSite: 'strict' });
-
-                // Verify the cookie is being set
-                console.log('Set-Cookie Header:', res.getHeader('Set-Cookie'));
-
-                // Send a JSON response with success status
-                res.json({ success: true });
+                // Send a JSON response with success status and the token
+                res.json({ success: true, token: token }); // Include the token in the response
             } else {
                 res.json({ error: 'AUTH_FAILED' });
             }

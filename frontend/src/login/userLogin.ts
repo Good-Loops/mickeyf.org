@@ -43,12 +43,21 @@ export default function userLogin(): IUserLogin {
                         icon: 'success'
                     });
 
-                    // Add a delay to ensure the cookie is set
+                    // Store the token in local storage
+                    const token = loginData.token; // Make sure the token is included in the response
+                    localStorage.setItem('sessionToken', token);
+
+                    // Add a delay to ensure the token is stored
                     setTimeout(async () => {
                         try {
+                            // Retrieve the token from local storage
+                            const storedToken = localStorage.getItem('sessionToken');
+
                             const verifyResponse = await fetch(`${API_URL}/auth/verify-token`, {
                                 method: 'GET',
-                                credentials: 'include', // Include cookies in the request
+                                headers: {
+                                    'Authorization': `Bearer ${storedToken}`,
+                                },
                             });
 
                             if (!verifyResponse.ok) {
@@ -66,7 +75,7 @@ export default function userLogin(): IUserLogin {
                         } catch (error) {
                             console.error('Verify token fetch error:', error);
                         }
-                    }, 1000); // 1 second delay to ensure cookie is set
+                    }, 1000); // 1 second delay to ensure token is set
                 }
             } catch (error) {
                 console.error('Login fetch error:', error);
