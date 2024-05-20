@@ -44,7 +44,28 @@ export default function userLogin(): IUserLogin {
                     });
                 }
             })
-            .catch((error) => console.error('Fetch error:', error));   
+            .catch((error) => console.error('Fetch error:', error)); 
+        },
+        isLoggedIn: function (): void {
+            
+            fetch(`${API_URL}/auth/verify-token`, {
+                method: 'GET',
+                credentials: 'include', // Include cookies in the request
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.loggedIn) {
+                    window.IS_LOGGED_IN = true;
+                } else {
+                    window.IS_LOGGED_IN = false;
+                }
+            })
+            .catch((error) => console.error('Fetch error:', error));
         }
     }
 }

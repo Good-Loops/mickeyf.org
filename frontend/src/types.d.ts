@@ -20,7 +20,9 @@ declare global {
         userCreate: () => IUserCreate;
         userLogin: () => IUserLogin;
         leaderboard: () => ILeaderboard;
-        loggedIn: () => Promise<boolean>;   
+
+        // Global variables
+        IS_LOGGED_IN: boolean;   
 
         // Event listener manager
         eventListeners: Record<string, EventListenerRecord[]>;

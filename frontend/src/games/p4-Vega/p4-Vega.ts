@@ -1,7 +1,6 @@
 // Utilities
 import { API_URL, CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
 import gameOver from "../../utils/gameOver";
-import loggedIn from "../../utils/loggedIn";
 
 // Game elements
 import P4 from "./classes/P4";
@@ -99,12 +98,13 @@ export default async function p4Vega() {
         // Check for game over
         if(!gameLive) 
         {
-            if(await loggedIn()) {
-                console.log("User is logged in");
+            if (window.IS_LOGGED_IN) {
+                console.log('User is logged in');
                 submitScore();
             } else {
-                console.log("User is not logged in");
+                console.log('User is not logged in');
             }
+
             gameOverTexts = await gameOver(gameLive, p4);
             gameOverTexts.forEach(text => stage.addChild(text));
         }
