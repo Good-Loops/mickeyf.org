@@ -98,7 +98,7 @@ export default async function p4Vega() {
         // Check for game over
         if(!gameLive) 
         {
-            if (window.IS_LOGGED_IN) {
+            if (window.isLoggedIn) {
                 console.log('User is logged in');
                 submitScore();
             } else {

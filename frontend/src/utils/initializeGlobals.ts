@@ -22,7 +22,7 @@ const initializeGlobals = () => {
     window.leaderboard = leaderboard; // Leaderboard
     
     // Global variables
-    window.IS_LOGGED_IN = false;
+    window.isLoggedIn = false;
 };
 
 export default initializeGlobals;

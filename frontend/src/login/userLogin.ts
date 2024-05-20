@@ -44,9 +44,7 @@ export default function userLogin(): IUserLogin {
                     });
                 }
             })
-            .catch((error) => console.error('Fetch error:', error)); 
-        },
-        isLoggedIn: function (): void {
+            .catch((error) => console.error('Fetch error:', error));
             
             fetch(`${API_URL}/auth/verify-token`, {
                 method: 'GET',
@@ -59,10 +57,9 @@ export default function userLogin(): IUserLogin {
                 return response.json();
             })
             .then(data => {
+                console.log(data);
                 if (data.loggedIn) {
-                    window.IS_LOGGED_IN = true;
-                } else {
-                    window.IS_LOGGED_IN = false;
+                    window.isLoggedIn = true;
                 }
             })
             .catch((error) => console.error('Fetch error:', error));

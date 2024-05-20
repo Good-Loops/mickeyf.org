@@ -22,7 +22,7 @@ declare global {
         leaderboard: () => ILeaderboard;
 
         // Global variables
-        IS_LOGGED_IN: boolean;   
+        isLoggedIn: boolean;   
 
         // Event listener manager
         eventListeners: Record<string, EventListenerRecord[]>;
