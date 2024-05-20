@@ -98,13 +98,7 @@ export default async function p4Vega() {
         // Check for game over
         if(!gameLive) 
         {
-            if (window.isLoggedIn) {
-                console.log('User is logged in');
-                submitScore();
-            } else {
-                console.log('User is not logged in');
-            }
-
+            if (window.isLoggedIn) { await submitScore(); }
             gameOverTexts = await gameOver(gameLive, p4);
             gameOverTexts.forEach(text => stage.addChild(text));
         }
@@ -124,7 +118,7 @@ export default async function p4Vega() {
 
     // Start game
     await load();
-    gameLoop();
+    await gameLoop();
 
     // Restart game
     const restart = async () => {
@@ -137,20 +131,25 @@ export default async function p4Vega() {
         gameOverTexts.forEach(text => stage.removeChild(text));
         // Load game assets
         await load();
-        gameLoop();
+        await gameLoop();
     }
 
     // Submit score
     const submitScore = async () => {
         const p4_score = p4.totalWater;
+        const storedToken = localStorage.getItem('sessionToken'); // Retrieve the token from local storage
+        const loggedInUsername = localStorage.getItem('user_name'); // Retrieve the user data from local storage
+
         await fetch(`${API_URL}/api/users`, {
             method: 'POST',
             headers: {
+                'Authorization': `Bearer ${storedToken}`, // Include the token in the Authorization header
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                type: 'submitScore',
-                p4_score: p4_score
+                type: 'submit_score',
+                p4_score: p4_score,
+                user_name: loggedInUsername
             }),
         }).then(response => {
             if (!response.ok) {

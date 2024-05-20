@@ -76,7 +76,7 @@ const loginUser = async (req: Request, res: Response) => {
             if (isPasswordCorrect) {
                 const token = jwt.sign({ user_id: user.user_id }, process.env.SESSION_SECRET!, { expiresIn: '4h' });
                 // Send a JSON response with success status and the token
-                res.json({ success: true, token: token }); // Include the token in the response
+                res.json({ success: true, token: token, user_name: user.user_name }); // Include the token in the response
             } else {
                 res.json({ error: 'AUTH_FAILED' });
             }
@@ -100,33 +100,30 @@ const loginUser = async (req: Request, res: Response) => {
  * @returns A JSON response indicating success or error.
  */
 const submitScore = async (req: Request, res: Response) => {
-    const { user } = req.session;
-    const { p4_score } = req.body.p4_score as { p4_score: number };
-
-    if (!user) {
+    const { user_name, p4_score } = req.body; 
+              
+    if (!user_name) {
         return res.status(401).json({ error: 'UNAUTHORIZED' });
     }
 
     try {
         // Fetch the current score from the database
         const [rows] = await pool.query(
-            'SELECT p4_score FROM users WHERE user_id = ?',
-            [user.user_id]
+            'SELECT p4_score FROM users WHERE user_name = ?',
+            [user_name]
         );
 
         // Check if the new score is higher than the current score
-        if (
-            (Array.isArray(rows)
-                && rows.length > 0
-                && (rows[0] as RowDataPacket).p4_score > p4_score)
-            || p4_score === null) {
+        if ((Array.isArray(rows)
+        && rows.length > 0
+        && (rows[0] as RowDataPacket).p4_score < p4_score)
+        && p4_score !== null) {
             // Update the user's score in the database
             await pool.query(
-                'UPDATE users SET p4_score = ? WHERE user_id = ?',
-                [p4_score, user.user_id]
+                'UPDATE users SET p4_score = ? WHERE user_name = ?',
+                [p4_score, user_name]
             );
         }
-
 
         res.json({ success: true });
     } catch (error) {

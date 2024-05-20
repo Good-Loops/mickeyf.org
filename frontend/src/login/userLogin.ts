@@ -47,6 +47,10 @@ export default function userLogin(): IUserLogin {
                     const token = loginData.token; // Make sure the token is included in the response
                     localStorage.setItem('sessionToken', token);
 
+                    // Store the user name in local storage
+                    const user_name = loginData.user_name; // Make sure the user data is included in the response
+                    localStorage.setItem('user_name', user_name); // Convert the user object to a string before storing
+
                     // Add a delay to ensure the token is stored
                     setTimeout(async () => {
                         try {
@@ -65,7 +69,6 @@ export default function userLogin(): IUserLogin {
                             }
 
                             const verifyData = await verifyResponse.json();
-                            console.log('Verify Token Response:', verifyData);
 
                             if (verifyData.loggedIn) {
                                 window.isLoggedIn = true;

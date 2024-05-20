@@ -13,8 +13,10 @@ const authController = (req: Request, res: Response) => {
         // Verify the token
         jwt.verify(token, process.env.SESSION_SECRET!, (err: any, decoded: any) => {
             if (err) {
+                // If an error occurred, the token is not valid
                 res.json({ loggedIn: false });
             } else {
+                // If no error occurred, the token is valid
                 res.json({ loggedIn: true });
             }
         });
