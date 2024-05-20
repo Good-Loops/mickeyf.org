@@ -21,7 +21,7 @@ const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD
 
 const app = express(); // Create an Express application
 
-app.use(cookieParser()); // Use cookie parser
+app.use(cookieParser(process.env.SESSION_SECRET)); // Use cookie parser
 
 // Helmet CSP configuration
 app.use(

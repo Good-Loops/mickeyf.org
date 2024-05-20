@@ -78,8 +78,16 @@ const loginUser = async (req: Request, res: Response) => {
             if (isPasswordCorrect) {
                 // User logged in successfully, generate a JWT
                 const token = jwt.sign({ user_id: user.user_id }, process.env.SESSION_SECRET!, { expiresIn: '4h' });
+
+                // Log the token to verify it is generated correctly
+                console.log('Generated Token:', token);
+
                 // Set the JWT as a cookie
                 res.cookie('sessionToken', token, { secure: true, httpOnly: true, sameSite: 'strict' });
+
+                // Verify the cookie is being set
+                console.log('Set-Cookie Header:', res.getHeader('Set-Cookie'));
+
                 // Send a JSON response with success status
                 res.json({ success: true });
             } else {
