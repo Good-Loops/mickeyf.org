@@ -76,7 +76,19 @@ export default function userLogin(): IUserLogin {
 
                                 // Hide the login and signup buttons
                                 const loginSignupItems = document.getElementsByClassName('login-signup') as HTMLCollectionOf<HTMLElement>;
-                                Array.from(loginSignupItems).forEach(item => item.style.display = 'none');
+                                Array.from(loginSignupItems).forEach(function(item) {
+                                    item.style.display = 'none';
+                                });
+
+                                // Display logged in message
+                                const username = localStorage.getItem('user_name');
+                                const loggedInMessages = document.getElementsByClassName('logged-in-message') as HTMLCollectionOf<HTMLElement>;
+                                Array.from(loggedInMessages).forEach(function(item) {
+                                    item.style.display = 'list-item';
+                                    item.innerText = `Logged in as: ${username}`;
+                                });
+
+                                // Display the logout button
                             } else {
                                 window.isLoggedIn = false;
                             }
