@@ -46,6 +46,7 @@ export default async function p4Vega() {
     
     // Load game assets
     const load = async () => {
+        // Set game state
         gameLive = true;
         // Background
         sky = new Sky(stage);

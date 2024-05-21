@@ -1,6 +1,9 @@
+import { API_URL } from "../utils/constants";
+
 class EventListenerManager {
     static init() {
         this.initSidebarToggle();
+        this.initTokenVerification();
     }
 
     private static initSidebarToggle() {
@@ -19,6 +22,40 @@ class EventListenerManager {
             closeButton.addEventListener('click', toggleVisibility);
         }
     }
+
+    private static initTokenVerification() {
+        const token = localStorage.getItem('sessionToken');
+        if (token) {
+            fetch(`${API_URL}/auth/verify-token`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.loggedIn) {
+                    window.isLoggedIn = true;
+                    // Hide login and signup links
+                    const loginSignupItems = document.getElementsByClassName('login-signup') as HTMLCollectionOf<HTMLElement>;
+                    Array.from(loginSignupItems).forEach(function (item) {
+                        item.style.display = 'none';
+                    });
+                    // Show logged in message
+                    const username = localStorage.getItem('user_name');
+                    const loggedInMessages = document.getElementsByClassName('logged-in-message') as HTMLCollectionOf<HTMLElement>;
+                    Array.from(loggedInMessages).forEach(function (item) {
+                        item.style.display = 'list-item';
+                        item.innerText = `Logged in as: ${username}`;
+                    });
+                } else {
+                    window.isLoggedIn = false;
+                }
+            })
+            .catch(error => console.error('Error verifying token:', error));
+        }
+    }
+
 }
 
 export default EventListenerManager;
