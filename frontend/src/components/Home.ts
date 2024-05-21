@@ -1,16 +1,6 @@
 function component() {
     const render = () => {
         return /*html*/`
-            <!-- <div x-data="listUsers()" x-init="list">
-                <ul>
-                    <template x-for="user in data" :key="user.user_id">
-                        <li>
-                            <span x-text="user.user_name"></span>
-                            <a href="javascript:void(0);" x-bind:data-user-id="user.user_id" x-on:click="navigateToUser">Click here</a>
-                        </li>
-                    </template>
-                </ul>
-            </div> -->
         `;
     }
 

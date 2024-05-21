@@ -5,7 +5,7 @@ import page from "page";
 // Global methods
 import userLogIn from "../login/userLogin";
 import userCreate from "../register/userCreate";
-// import listUsers from "../home/listUsers";
+import leaderboard from "../leaderboard/leaderboard";
 
 // Global variables
 const initializeGlobals = () => {
@@ -19,7 +19,10 @@ const initializeGlobals = () => {
     // Global methods
     window.userCreate = userCreate; // Create user
     window.userLogin = userLogIn; // Login user
-    // window.listUsers = listUsers;
+    window.leaderboard = leaderboard; // Leaderboard
+    
+    // Global variables
+    window.isLoggedIn = false;
 };
 
 export default initializeGlobals;

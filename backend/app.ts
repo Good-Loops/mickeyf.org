@@ -1,18 +1,27 @@
-require('dotenv').config();
-import express from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
-import userRoutes from './routes/userRoutes';
+/**
+ * This file represents the main application file for the backend of the mickeyf.org website.
+ * It sets up the Express server, configures middleware, and defines routes.
+ */
 
-// Determine the environment
-const environment: string = process.env.NODE_ENV === 'development' ? 'development' : 'production';
-// Determine Base URL
-const baseUrl: string = environment === 'development' ? process.env.DEV_BASE_URL as string : process.env.PROD_BASE_URL as string;
-// Detertmine API URL
-const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL as string : process.env.PROD_API_URL as string;
+require('dotenv').config(); // Load environment variables from .env file
 
-// Create an Express application
-const app = express();
+// Import the required modules
+import express from 'express'; // Import the Express module
+import cookieParser from 'cookie-parser'; // Import the cookie-parser module
+import helmet from 'helmet'; // Import the Helmet module
+import cors from 'cors';  // Import the CORS module
+ 
+// Import routers
+import mainRouter from './routers/mainRouter'; // Import the main router
+import authRouter from './routers/authRouter'; // Import the auth router
+
+const environment: string = process.env.NODE_ENV as string; // Determine environment
+const baseUrl: string = environment ? process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!; // Determine Base URL
+const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+
+const app = express(); // Create an Express application
+
+app.use(cookieParser(process.env.SESSION_SECRET)); // Use cookie parser
 
 // Helmet CSP configuration
 app.use(
@@ -55,27 +64,29 @@ app.use(
     })
 );
 
-
-// Parse JSON bodies
-app.use(express.json());
+app.use(express.json()); // Parse JSON bodies
 
 // CORS configuration
 app.use(cors({
-    origin: [baseUrl!, apiUrl!],
+    origin: [ // Allowed origins
+        baseUrl!, 
+        `${apiUrl!}/api/users`, // Allow the /api/users route to be accessed from the frontend
+        `${apiUrl!}/auth/verify-token` // Allow the /auth/verify-token route to be accessed from the frontend
+    ],
+    credentials: true, // Allow credentials 
     methods: '*', // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
 
-// Use userRoutes for all user-related endpoints
-app.use('/api', userRoutes);
 
-// Trust the proxy in front of you for proper IP resolution and secure protocol usage
-app.set('trust proxy', true);
+app.use('/api', mainRouter); // Main router for database-operations related routes
+app.use('/auth', authRouter); // Auth router for authentication related routes
 
-const PORT = 8080;
+app.set('trust proxy', true); // Trust the first proxy
 
-app.listen(PORT, () => {
-    console.log(`Backend running on port ${PORT}`);
+// Start the server
+app.listen(8080, () => {   
+    console.log("Backend running on port 8080"); 
 });
 
-export default app;
+export default app; // Export the Express application

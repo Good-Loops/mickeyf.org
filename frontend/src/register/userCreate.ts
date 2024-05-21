@@ -14,7 +14,7 @@ export default function userCreate(): IUserCreate {
             const email: string = (<HTMLInputElement>document.getElementById('email')).value;
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
 
-            fetch(API_URL, {
+            fetch(`${API_URL}/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,8 +69,7 @@ export default function userCreate(): IUserCreate {
                         icon: 'success'
                     });
                 }
-            })
-            .catch((error) => console.error('Fetch error:', error));
+            }).catch((error) => console.error('Fetch error:', error));
         }
     }
 }
