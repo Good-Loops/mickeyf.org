@@ -231,6 +231,10 @@ h1 {
   color: hsl(120, 73%, 75%);
 }
 
+.logout {
+  display: none;
+}
+
 .main {
   min-height: 90vh;
   display: flex;

@@ -4,6 +4,7 @@ class EventListenerManager {
     static init() {
         this.initSidebarToggle();
         this.initTokenVerification();
+        this.initLogoutButton();
     }
 
     private static initSidebarToggle() {
@@ -48,12 +49,29 @@ class EventListenerManager {
                         item.style.display = 'list-item';
                         item.innerText = `Logged in as: ${username}`;
                     });
-                    // TODO: Display the logout button
+                    // Show log out button
+                    const logoutItems = document.getElementsByClassName('logout') as HTMLCollectionOf<HTMLElement>;
+                    Array.from(logoutItems).forEach(function (item) {
+                        item.style.display = 'list-item';
+                    });
                 } else {
                     window.isLoggedIn = false;
                 }
             })
             .catch(error => console.error('Error verifying token:', error));
+        }
+    }
+
+    private static initLogoutButton() {
+        const logoutButton = document.getElementById('logoutButton') as HTMLElement;
+        if (logoutButton) {
+            logoutButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                localStorage.removeItem('sessionToken');
+                localStorage.removeItem('user_name');
+                window.isLoggedIn = false;
+                location.reload(); // Reload the page to update the UI
+            });
         }
     }
 
