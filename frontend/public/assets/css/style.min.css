@@ -36,6 +36,7 @@ body {
 html {
   font-size: 62.5%;
   box-sizing: border-box;
+  user-select: none;
 }
 
 body {
@@ -223,6 +224,11 @@ h1 {
 
 .header {
   min-height: 5vh;
+}
+
+.logged-in-message {
+  display: none;
+  color: hsl(120, 73%, 75%);
 }
 
 .main {

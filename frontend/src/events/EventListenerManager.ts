@@ -48,6 +48,7 @@ class EventListenerManager {
                         item.style.display = 'list-item';
                         item.innerText = `Logged in as: ${username}`;
                     });
+                    // TODO: Display the logout button
                 } else {
                     window.isLoggedIn = false;
                 }

@@ -73,22 +73,7 @@ export default function userLogin(): IUserLogin {
                             if (verifyData.loggedIn) {
                                 window.isLoggedIn = true; // Set the global variable to true
                                 window.page('/'); // Redirect to the home page
-
-                                // Hide the login and signup buttons
-                                const loginSignupItems = document.getElementsByClassName('login-signup') as HTMLCollectionOf<HTMLElement>;
-                                Array.from(loginSignupItems).forEach(function(item) {
-                                    item.style.display = 'none';
-                                });
-
-                                // Display logged in message
-                                const username = localStorage.getItem('user_name');
-                                const loggedInMessages = document.getElementsByClassName('logged-in-message') as HTMLCollectionOf<HTMLElement>;
-                                Array.from(loggedInMessages).forEach(function(item) {
-                                    item.style.display = 'list-item';
-                                    item.innerText = `Logged in as: ${username}`;
-                                });
-
-                                // TODO: Display the logout button
+                                location.reload(); // Reload the page to update the UI
                             } else {
                                 window.isLoggedIn = false;
                             }

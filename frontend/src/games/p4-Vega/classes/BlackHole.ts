@@ -23,6 +23,7 @@ export default class BlackHole extends Entity {
 
     constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
         const newBHAnim = BlackHole.bhAnimArray[getRandomInt(0, BlackHole.bhAnimArray.length)];
+        if(!newBHAnim) throw new Error('Black hole animation not found');
         super(newBHAnim);
 
         this.bhAnim = newBHAnim;
