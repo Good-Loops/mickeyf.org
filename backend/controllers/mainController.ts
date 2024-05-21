@@ -100,7 +100,9 @@ const loginUser = async (req: Request, res: Response) => {
  * @returns A JSON response indicating success or error.
  */
 const submitScore = async (req: Request, res: Response) => {
-    const { user_name, p4_score } = req.body; 
+    const { user_name, p4_score } = req.body;
+
+    let personalBest: boolean = false; 
               
     if (!user_name) {
         return res.status(401).json({ error: 'UNAUTHORIZED' });
@@ -123,9 +125,10 @@ const submitScore = async (req: Request, res: Response) => {
                 'UPDATE users SET p4_score = ? WHERE user_name = ?',
                 [p4_score, user_name]
             );
+            personalBest = true;
         }
 
-        res.json({ success: true });
+        res.json({ success: true, personalBest: personalBest });
     } catch (error) {
         res.status(500).json({ error: 'SERVER_ERROR' });
     }

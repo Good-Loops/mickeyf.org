@@ -71,7 +71,12 @@ export default function userLogin(): IUserLogin {
                             const verifyData = await verifyResponse.json();
 
                             if (verifyData.loggedIn) {
-                                window.isLoggedIn = true;
+                                window.isLoggedIn = true; // Set the global variable to true
+                                window.page('/'); // Redirect to the home page
+
+                                // Hide the login and signup buttons
+                                const loginSignupItems = document.getElementsByClassName('login-signup') as HTMLCollectionOf<HTMLElement>;
+                                Array.from(loginSignupItems).forEach(item => item.style.display = 'none');
                             } else {
                                 window.isLoggedIn = false;
                             }

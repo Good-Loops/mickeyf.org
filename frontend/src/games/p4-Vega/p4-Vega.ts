@@ -159,8 +159,8 @@ export default async function p4Vega() {
         }).then(data => {
             if (data.error) {
                 console.error(data.error);
-            } else {
-                // Display personal record break message
+            }
+            if (data.personalBest) {
                 Swal.fire({
                     title: 'Congratulations!',
                     text: 'You have broken a new personal record, check the leaderboard to see where you stand!',
