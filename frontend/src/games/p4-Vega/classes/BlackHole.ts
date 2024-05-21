@@ -12,33 +12,17 @@ const VELOCITY_MAX = 5.5;
 
 // BlackHole class extends Entity, managing its own behaviors and a pool of instances for reuse.
 export default class BlackHole extends Entity {
-    private hue: number = getRandomInt(0, 360);
+    // private hue: number = getRandomInt(0, 360); // TODO: Random hue for color variation 
 
     private vX: number = 0;
     private vY: number = 0;
 
     public bhAnim: PIXI.AnimatedSprite;
-
     public static bhAnimArray: PIXI.AnimatedSprite[] = [];
-    public static bhSpriteSheetArray: PIXI.Spritesheet[] = [];
-    public static animArrayIndex: number = 0;  
-
     public static bhArray: BlackHole[] = [];
 
-    constructor(stage: PIXI.Container<PIXI.ContainerChild>, bhSpritesheetArray: PIXI.Spritesheet[], p4Anim: PIXI.AnimatedSprite) {
-        const bhColor = BlackHole.getRandomBHColor();
-        switch(bhColor) {
-            case 'bhBlue':
-                BlackHole.bhAnimArray.push(new PIXI.AnimatedSprite(bhSpritesheetArray[0].animations.bhBlue));
-                break;
-            case 'bhRed':
-                BlackHole.bhAnimArray.push(new PIXI.AnimatedSprite(bhSpritesheetArray[1].animations.bhRed));
-                break;
-            case 'bhYellow':
-                BlackHole.bhAnimArray.push(new PIXI.AnimatedSprite(bhSpritesheetArray[2].animations.bhYellow));
-                break;
-        }
-        const newBHAnim = BlackHole.bhAnimArray[BlackHole.animArrayIndex];
+    constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
+        const newBHAnim = BlackHole.bhAnimArray[getRandomInt(0, BlackHole.bhAnimArray.length)];
         super(newBHAnim);
 
         this.bhAnim = newBHAnim;
@@ -53,20 +37,6 @@ export default class BlackHole extends Entity {
         stage.addChild(this.bhAnim);
 
         BlackHole.bhArray.push(this);
-        BlackHole.animArrayIndex++;
-    }
-
-    private static getRandomBHColor(): string {
-        switch(getRandomInt(0, 2)) {
-            case 0:
-                return 'bhBlue';
-            case 1:
-                return 'bhRed';
-            case 2:
-                return 'bhYellow';
-            default:
-                return 'error';
-        } 
     }
 
     // Initializes the pool with a given size, stage, animation array, and player animation.
@@ -111,12 +81,11 @@ export default class BlackHole extends Entity {
     }
 
     // Removes the black holes from the stage and clear arrays.
-    public static destroy(stage: PIXI.Container<PIXI.ContainerChild>): void {
+    public static destroy(): void {
         for (let i = 0; i < BlackHole.bhAnimArray.length; i++) {
-            stage.removeChild(BlackHole.bhAnimArray[i]);
+            BlackHole.bhAnimArray[i].destroy();
         }
         BlackHole.bhArray = [];
         BlackHole.bhAnimArray = [];
-        BlackHole.animArrayIndex = 0;
     }
 }
