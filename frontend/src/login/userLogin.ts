@@ -88,7 +88,7 @@ export default function userLogin(): IUserLogin {
                                     item.innerText = `Logged in as: ${username}`;
                                 });
 
-                                // Display the logout button
+                                // TODO: Display the logout button
                             } else {
                                 window.isLoggedIn = false;
                             }
