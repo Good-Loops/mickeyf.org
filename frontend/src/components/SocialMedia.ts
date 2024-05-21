@@ -1,5 +1,5 @@
 function component() {
-    const render = function () {
+    const render = () => {
         return /*html*/`
             <section class="social-media">
                 <h1 class="social-media__title">Social Media</h1>

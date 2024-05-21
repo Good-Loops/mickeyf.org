@@ -29,7 +29,7 @@ export default class Water extends Entity {
             waterAnim.y = getRandomY(waterAnim.height + Entity.gap);
 
             p4.totalWater += 10;
-            new BlackHole(stage, BlackHole.bhSpriteSheetArray, p4.p4Anim);
+            new BlackHole(stage, p4.p4Anim);
         }
     }
 

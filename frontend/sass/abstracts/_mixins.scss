@@ -16,6 +16,97 @@
     font-size: $font-size-l;
 }
 
+//////////////////////// Forms ////////////////////////
+/// Default form styling
+@mixin user-conection-form {
+    display: grid;
+    row-gap: 3rem;
+
+    justify-items: center;
+
+    margin-bottom: 10svh;
+
+    &__title {
+        font-size: $font-size-m;
+        @include title-coloring;
+    }
+
+    &__form-wrapper {
+        background: $component-bg-gradient;
+        border-radius: 1.5em;
+
+        padding-block: 4em;
+        width: 80%;
+        justify-self: center;
+    }
+
+    &__form {
+        grid-column: 2 / 3;
+
+        display: grid;
+        grid-gap: 2rem;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    &__input {
+        background-color: $primary-light;
+        border: .15em solid $gray-light;
+        border-radius: .4em;
+
+        transition: border 0.7s;
+        outline: none;
+
+        font-family: var(--font);
+        font-size: 3.8rem;
+        color: $gray;
+
+        grid-column: 1 / 4;
+        justify-self: center;
+        width: 80%;
+
+        padding: .2em;
+
+        &:focus {
+            border: .15em solid $gray;
+        }
+
+        &--username {
+            grid-row: 1 / 2;
+        }
+
+        &--email {
+            grid-row: 2 / 3;
+        }
+
+        &--password {
+            grid-row: 3 / 4;
+        }
+
+        &--btn {
+            width: 100%;
+            margin-top: 2rem;
+            font-size: 3rem;
+
+            grid-row: 4 / 5;
+            grid-column: 2 / 3;
+
+            border: .18em solid $gray-light;
+            border-radius: .5em;
+            transition: border 0.7s;
+
+            &:active {
+                transform: scale(.85);
+            }
+
+            &:hover {
+                cursor: $cursor-hover;
+                border: .18em solid $gray;
+            }
+        }
+    }
+}
+
+
 //////////////////////// Buttons ////////////////////////
 // Default button styling
 @mixin default-btn {

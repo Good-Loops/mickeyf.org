@@ -1,3 +1,15 @@
+@use '../abstracts' as *;
+
 .header {
     min-height: 5vh;
 }
+
+.logged-in-message {
+    display: none;
+    color: $secondary;
+}
+
+.logout {
+    display: none;
+}
+

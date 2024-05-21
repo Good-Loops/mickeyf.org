@@ -1,67 +1,67 @@
 {
   "hosting": {
-    "public": "/frontend/public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-        {
-            "source": "/api/**",
-            "run": {
-                "serviceId": "mickeyf-org",
-                "region": "us-central1"
-            }
-        },
-        {
-            "source": "**",
-            "destination": "/index.html"
-        }
-    ],
-    "redirects": [
-        {
-            "source": "http://www.mickeyf.org",
-            "destination": "https://mickeyf.org",
-            "type": 301
-        },
-        {
-            "source": "http://mickeyf.org",
-            "destination": "https://mickeyf.org",
-            "type": 301
-        },
-        {
-            "source": "https://www.mickeyf.org",
-            "destination": "https://mickeyf.org",
-            "type": 301
-        }
-    ],
-    "headers": [
-        {
-            "source": "**",
-            "headers": [
-                {
-                    "key": "Strict-Transport-Security",
-                    "value": "max-age=31536000; includeSubDomains; preload"
-                },
-                {
-                    "key": "Content-Security-Policy",
-                    "value": "default-src 'self';"
-                },
-                {
-                    "key": "X-Content-Type-Options",
-                    "value": "nosniff"
-                },
-                {
-                    "key": "X-Frame-Options",
-                    "value": "DENY"
-                },
-                {
-                    "key": "Cache-Control",
-                    "value": "max-age=7200"
+        "public": "/frontend/public",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "/api/**",
+                "run": {
+                    "serviceId": "mickeyf-org",
+                    "region": "us-central1"
                 }
-            ]
-        }
-    ]
-  }
+            },
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ],
+        "redirects": [
+            {
+                "source": "http://www.mickeyf.org",
+                "destination": "https://mickeyf.org",
+                "type": 301
+            },
+            {
+                "source": "http://mickeyf.org",
+                "destination": "https://mickeyf.org",
+                "type": 301
+            },
+            {
+                "source": "https://www.mickeyf.org",
+                "destination": "https://mickeyf.org",
+                "type": 301
+            }
+        ],
+        "headers": [
+            {
+                "source": "**",
+                "headers": [
+                    {
+                        "key": "Strict-Transport-Security",
+                        "value": "max-age=31536000; includeSubDomains; preload"
+                    },
+                    {
+                        "key": "Content-Security-Policy",
+                        "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' data: baseUrl; worker-src 'self' blob: baseUrl;"
+                    },
+                    {
+                        "key": "X-Content-Type-Options",
+                        "value": "nosniff"
+                    },
+                    {
+                        "key": "X-Frame-Options",
+                        "value": "DENY"
+                    },
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=7200"
+                    }
+                ]
+            }
+        ]
+    }
 }
