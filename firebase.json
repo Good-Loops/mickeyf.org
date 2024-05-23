@@ -8,7 +8,7 @@
         ],
         "rewrites": [
             {
-                "source": "/api/**",
+                "source": "/**",
                 "run": {
                     "serviceId": "mickeyf-org",
                     "region": "us-central1"
