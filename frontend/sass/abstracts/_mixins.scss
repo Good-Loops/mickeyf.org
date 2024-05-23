@@ -16,6 +16,20 @@
     font-size: $font-size-l;
 }
 
+///////////////////////// Components ////////////////////////
+// Default component styling
+@mixin default-component {
+    display: grid;
+    row-gap: 10rem;
+
+    justify-items: center;
+
+    &__title {
+        @include component-title;
+    }
+}
+
+
 //////////////////////// Forms ////////////////////////
 /// Default form styling
 @mixin user-conection-form {

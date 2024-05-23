@@ -1,16 +1,8 @@
 @use '../abstracts' as *;
 
 .games {
-    margin-bottom: 15rem;
 
-    display: grid;
-    row-gap: 10rem;
-
-    justify-items: center;
-
-    &__title {
-        @include component-title;
-    }
+    @include default-component;
 
     // &__grid {
 

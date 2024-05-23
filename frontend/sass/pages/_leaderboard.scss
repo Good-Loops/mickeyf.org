@@ -1,0 +1,17 @@
+@use '../abstracts' as *;
+
+.leaderboard {
+    @include default-component;
+
+  &__list {
+      @include title-coloring;
+      font-weight: 900;
+
+      list-style-type: decimal;
+    }
+
+  &__list-item {
+    font-size: $font-size-s;
+  }
+
+}
