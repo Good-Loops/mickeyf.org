@@ -1,4 +1,4 @@
-import { API_URL, AUTH_FAILED } from '../utils/constants';
+import { AUTH_FAILED } from '../utils/constants';
 import IUserLogin from './Interfaces/IUserLogin';
 import Swal from 'sweetalert2';
 
@@ -8,8 +8,11 @@ export default function userLogin(): IUserLogin {
             const user_name: string = (<HTMLInputElement>document.getElementById('user_name')).value;
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
 
+            const environment: string = process.env.NODE_ENV as string; // Determine environment
+            const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+
             try {
-                const loginResponse = await fetch(`${API_URL}/api/users`, {
+                const loginResponse = await fetch(`${apiUrl}/api/users`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -57,7 +60,7 @@ export default function userLogin(): IUserLogin {
                             // Retrieve the token from local storage
                             const storedToken = localStorage.getItem('sessionToken');
 
-                            const verifyResponse = await fetch(`${API_URL}/auth/verify-token`, {
+                            const verifyResponse = await fetch(`${apiUrl}/auth/verify-token`, {
                                 method: 'GET',
                                 headers: {
                                     'Authorization': `Bearer ${storedToken}`,

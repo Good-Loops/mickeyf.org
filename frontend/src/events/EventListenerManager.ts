@@ -1,5 +1,3 @@
-import { API_URL } from "../utils/constants";
-
 class EventListenerManager {
     static init() {
         this.initSidebarToggle();
@@ -26,8 +24,12 @@ class EventListenerManager {
 
     private static initTokenVerification() {
         const token = localStorage.getItem('sessionToken');
+
+        const environment: string = process.env.NODE_ENV as string; // Determine environment
+        const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+
         if (token) {
-            fetch(`${API_URL}/auth/verify-token`, {
+            fetch(`${apiUrl}/auth/verify-token`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

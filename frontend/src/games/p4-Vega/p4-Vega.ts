@@ -1,5 +1,5 @@
 // Utilities
-import { API_URL, CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
 import gameOver from "../../utils/gameOver";
 
 // Game elements
@@ -151,13 +151,16 @@ export default async function p4Vega() {
         await gameLoop();
     }
 
+    const environment: string = process.env.NODE_ENV as string; // Determine environment
+    const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+
     // Submit score
     const submitScore = async () => {
         const p4_score = p4.totalWater;
         const storedToken = localStorage.getItem('sessionToken'); // Retrieve the token from local storage
         const loggedInUsername = localStorage.getItem('user_name'); // Retrieve the user data from local storage
 
-        await fetch(`${API_URL}/api/users`, {
+        await fetch(`${apiUrl}/api/users`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${storedToken}`, // Include the token in the Authorization header

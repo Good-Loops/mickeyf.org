@@ -1,4 +1,4 @@
-import { INVALID_EMAIL, INVALID_PASSWORD, EMPTY_FIELDS, DUPLICATE_USER, API_URL } from "../utils/constants";
+import { INVALID_EMAIL, INVALID_PASSWORD, EMPTY_FIELDS, DUPLICATE_USER } from "../utils/constants";
 import IUserCreate from "./interfaces/IUserCreate";
 import Swal from 'sweetalert2';
 
@@ -14,7 +14,10 @@ export default function userCreate(): IUserCreate {
             const email: string = (<HTMLInputElement>document.getElementById('email')).value;
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
 
-            fetch(`${API_URL}/api/users`, {
+            const environment: string = process.env.NODE_ENV as string; // Determine environment
+            const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+
+            fetch(`${apiUrl}/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
