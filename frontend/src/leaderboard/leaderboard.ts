@@ -1,4 +1,3 @@
-import { API_URL } from '../utils/constants';
 import ILeaderboard, { ILeaderboardEntry } from './interfaces/ILeaderboard';
 import Swal from 'sweetalert2';
 
@@ -15,8 +14,11 @@ export default function leaderboard(): ILeaderboard {
          * @throws An error if the HTTP request fails or if the server returns an error.
          */
         fetchLeaderboard: async function (): Promise<void> {
+            const environment: string = process.env.NODE_ENV as string; // Determine environment
+            const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+
             try {
-                const response = await fetch(`${API_URL}/api/users`, {
+                const response = await fetch(`${apiUrl}/api/users`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
