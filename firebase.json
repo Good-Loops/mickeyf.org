@@ -6,6 +6,12 @@
             "**/.*",
             "**/node_modules/**"
         ],
+        "rewrites": [
+           {
+             "source": "**",
+             "destination": "/frontend/public/index.html"
+            }
+        ],
         "redirects": [
             {
                 "source": "http://www.mickeyf.org",
