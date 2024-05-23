@@ -8,6 +8,3 @@ export const INVALID_PASSWORD: string = "INVALID_PASSWORD";
 export const EMPTY_FIELDS: string = "EMPTY_FIELDS";
 export const DUPLICATE_USER: string = "DUPLICATE_USER";
 export const AUTH_FAILED: string = "AUTH_FAILED";
-
-// API URL
-export const API_URL: string = process.env.NODE_ENV === 'development' ? process.env.DEV_API_URL as string : process.env.PROD_API_URL as string;
