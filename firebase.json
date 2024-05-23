@@ -6,19 +6,6 @@
             "**/.*",
             "**/node_modules/**"
         ],
-        "rewrites": [
-            {
-                "source": "/**",
-                "run": {
-                    "serviceId": "mickeyf-org",
-                    "region": "us-central1"
-                }
-            },
-            {
-                "source": "**",
-                "destination": "/index.html"
-            }
-        ],
         "redirects": [
             {
                 "source": "http://www.mickeyf.org",
