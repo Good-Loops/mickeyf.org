@@ -11,13 +11,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 'latest'
+          node-version: 'latest'  # You can specify the Node.js version you need
 
       - name: Install dependencies
         run: npm install
+        working-directory: frontend
+
+      - name: Build the project
+        run: npm run prod && npm run postbuild
         working-directory: frontend
         env:
           NODE_ENV: 'production'
@@ -30,10 +42,6 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_PASS: ${{ secrets.DB_PASS }}
           CLOUD_SQL_CONNECTION_NAME: ${{ secrets.CLOUD_SQL_CONNECTION_NAME }}
-
-      - name: Build the project
-        run: npm run prod && npm run postbuild
-        working-directory: frontend
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
