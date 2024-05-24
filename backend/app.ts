@@ -31,7 +31,8 @@ app.use(
             connectSrc: [
                 "'self'",
                 "data:",
-                baseUrl!
+                baseUrl!,
+                apiUrl!
             ],
             imgSrc: [
                 "'self'",
