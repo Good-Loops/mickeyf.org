@@ -9,7 +9,7 @@ export default function userLogin(): IUserLogin {
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
 
             const environment: string = process.env.NODE_ENV as string; // Determine environment
-            const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+            const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
             try {
                 const loginResponse = await fetch(`${apiUrl}/api/users`, {

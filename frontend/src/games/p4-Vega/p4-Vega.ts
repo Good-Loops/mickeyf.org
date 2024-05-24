@@ -152,7 +152,7 @@ export default async function p4Vega() {
     }
 
     const environment: string = process.env.NODE_ENV as string; // Determine environment
-    const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+    const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
     // Submit score
     const submitScore = async () => {

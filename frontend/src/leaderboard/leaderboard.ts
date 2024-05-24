@@ -15,7 +15,7 @@ export default function leaderboard(): ILeaderboard {
          */
         fetchLeaderboard: async function (): Promise<void> {
             const environment: string = process.env.NODE_ENV as string; // Determine environment
-            const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+            const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
             console.log(apiUrl);
             console.log(process.env);

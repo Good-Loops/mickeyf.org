@@ -15,7 +15,7 @@ export default function userCreate(): IUserCreate {
             const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
 
             const environment: string = process.env.NODE_ENV as string; // Determine environment
-            const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+            const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
             fetch(`${apiUrl}/api/users`, {
                 method: 'POST',
