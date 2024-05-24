@@ -16,8 +16,8 @@ import mainRouter from './routers/mainRouter'; // Import the main router
 import authRouter from './routers/authRouter'; // Import the auth router
 
 const environment: string = process.env.NODE_ENV as string; // Determine environment
-const baseUrl: string = environment ? process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!; // Determine Base URL
-const apiUrl: string = environment ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+const baseUrl: string = environment === 'development' ?  process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!; // Determine Base URL
+const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
 const app = express(); // Create an Express application
 
