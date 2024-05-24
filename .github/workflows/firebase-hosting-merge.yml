@@ -14,11 +14,22 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 'latest'  # You can specify the Node.js version you need
+          node-version: 'latest'
 
       - name: Install dependencies
         run: npm install
         working-directory: frontend
+        env:
+          NODE_ENV: 'production'
+          DEV_BASE_URL: ${{ secrets.DEV_BASE_URL }}
+          PROD_BASE_URL: ${{ secrets.PROD_BASE_URL }}
+          DEV_API_URL: ${{ secrets.DEV_API_URL }}
+          PROD_API_URL: ${{ secrets.PROD_API_URL }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          CLOUD_SQL_CONNECTION_NAME: ${{ secrets.CLOUD_SQL_CONNECTION_NAME }}
 
       - name: Build the project
         run: npm run prod && npm run postbuild
