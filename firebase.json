@@ -9,7 +9,7 @@
         "rewrites": [
             {
                 "source": "**",
-                "destination": "/frontend/public/index.html"
+                "destination": "/index.html"
             }
         ],
         "env": {
