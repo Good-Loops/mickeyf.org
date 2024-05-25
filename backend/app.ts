@@ -16,11 +16,7 @@ import mainRouter from './routers/mainRouter'; // Import the main router
 import authRouter from './routers/authRouter'; // Import the auth router
 
 const environment: string = process.env.NODE_ENV as string; // Determine environment
-const baseUrl: string = environment === 'development' ?  process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!; // Determine Base URL
 const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
-
-console.log('baseUrl:', baseUrl);
-console.log('apiUrl:', apiUrl);
 
 const app = express(); // Create an Express application
 
@@ -34,35 +30,41 @@ app.use(
             connectSrc: [
                 "'self'",
                 "data:",
-                baseUrl!,
+                "https://mickeyf.org",
+                "http:localhost:3000",
                 `${apiUrl!}/api/users`, // Allow the /api/users route to be accessed from the frontend
             ],
             imgSrc: [
                 "'self'",
                 "data:",
-                baseUrl!
+                "https://mickeyf.org",
+                "http:localhost:3000"
             ],
             scriptSrc: [
                 "'self'",
                 "'unsafe-inline'",
                 "'unsafe-eval'",
-                baseUrl! 
+                "https://mickeyf.org",
+                "http:localhost:3000" 
             ],
             workerSrc: [
                 "'self'",
                 "blob:",
-                baseUrl!
+                "https://mickeyf.org",
+                "http:localhost:3000"
             ],
             styleSrc: [
                 "'self'",
                 "'unsafe-inline'",
                 "https://fonts.googleapis.com",
-                baseUrl!
+                "https://mickeyf.org",
+                "http:localhost:3000"
             ],
             fontSrc: [
                 "'self'",
                 "https://fonts.gstatic.com",
-                baseUrl!
+                "https://mickeyf.org",
+                "http:localhost:3000"
             ],
         }
     })
@@ -73,7 +75,8 @@ app.use(express.json()); // Parse JSON bodies
 // CORS configuration
 app.use(cors({
     origin: [ // Allowed origins
-        baseUrl!, 
+        "https://mickeyf.org",
+        "http://localhost:3000", 
         `${apiUrl!}/api/users`, // Allow the /api/users route to be accessed from the frontend
         `${apiUrl!}/auth/verify-token` // Allow the /auth/verify-token route to be accessed from the frontend
     ],
