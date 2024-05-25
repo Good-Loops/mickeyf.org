@@ -12,6 +12,10 @@
                 "destination": "/frontend/public/index.html"
             }
         ],
+        "env": {
+            "DEV_API_URL": "localhost:8080",
+            "PROD_API_URL": "https://mickeyf-org-j7yuum4tiq-uc.a.run.app"
+        },
         "redirects": [
             {
                 "source": "http://www.mickeyf.org",
