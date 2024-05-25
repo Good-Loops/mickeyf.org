@@ -17,6 +17,7 @@ export default function leaderboard(): ILeaderboard {
             const environment: string = process.env.NODE_ENV as string; // Determine environment
             const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
             console.log('apiUrl:', apiUrl);
+            console.log(process.env.DEV_API_URL, process.env.PROD_API_URL, process.env.NODE_ENV, process.env);
             try {
                 const response = await fetch(`${apiUrl}/api/users`, {
                     method: 'POST',
