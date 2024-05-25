@@ -84,8 +84,9 @@ const loginUser = async (req: Request, res: Response) => {
             res.json({ error: 'AUTH_FAILED' });
         }
     } catch (error) {
+        console.error('Login error:', error);
         if (error instanceof Error) {
-            res.json({ error: 'SERVER_ERROR' });
+            res.json({ error: 'SERVER_ERROR', message: error.message });
         } else {
             res.json({ error: 'UNEXPECTED_ERROR' });
         }

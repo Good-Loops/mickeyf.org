@@ -39,6 +39,13 @@ export default function userLogin(): IUserLogin {
                                 icon: 'error'
                             });
                             break;
+                        case 'SERVER_ERROR':
+                            Swal.fire({
+                                title: 'Server error',
+                                text: loginData.message, // Display the error message from the server
+                                icon: 'error'
+                            });
+                            break;
                     }
                 } else {
                     Swal.fire({
