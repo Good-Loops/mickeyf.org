@@ -32,7 +32,7 @@ app.use(
                 "'self'",
                 "data:",
                 baseUrl!,
-                apiUrl!
+                `${apiUrl!}/api/users`, // Allow the /api/users route to be accessed from the frontend
             ],
             imgSrc: [
                 "'self'",
