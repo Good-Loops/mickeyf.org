@@ -19,6 +19,9 @@ const environment: string = process.env.NODE_ENV as string; // Determine environ
 const baseUrl: string = environment === 'development' ?  process.env.DEV_BASE_URL! : process.env.PROD_BASE_URL!; // Determine Base URL
 const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
+console.log('baseUrl:', baseUrl);
+console.log('apiUrl:', apiUrl);
+
 const app = express(); // Create an Express application
 
 app.use(cookieParser(process.env.SESSION_SECRET)); // Use cookie parser
