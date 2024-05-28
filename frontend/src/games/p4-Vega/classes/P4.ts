@@ -6,7 +6,7 @@ export default class P4 extends Entity {
     private startX: number = Entity.gap;
     private startY: number  = CANVAS_HEIGHT * .5;
 
-    private speed: number = 10;
+    private speed: number = 8;
 
     public p4Anim: PIXI.AnimatedSprite;
 

@@ -1,5 +1,6 @@
 // Utilities
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
+import { getRandomInt } from "../../utils/random";
 import gameOver from "../../utils/gameOver";
 
 // Game elements
@@ -20,7 +21,6 @@ import * as PIXI from 'pixi.js';
 
 // SweetAlert2
 import Swal from "sweetalert2";
-import { getRandomInt } from "../../utils/random";
 
 export default async function p4Vega() {
     /////////////////// Setup PixiJS renderer ////////////////// 
@@ -43,7 +43,7 @@ export default async function p4Vega() {
     let gameLive: boolean, gameOverTexts: PIXI.ContainerChild[] = [];
     // Game elements
     let sky: Sky, p4: P4, water: Water;
-    
+
     // Load game assets
     const load = async () => {
         // Set game state
@@ -62,7 +62,7 @@ export default async function p4Vega() {
         const bhBlueTexture: PIXI.Texture = await PIXI.Assets.load(bhBlueImage) as PIXI.Texture;
         const bhRedTexture: PIXI.Texture = await PIXI.Assets.load(bhRedImage) as PIXI.Texture;
         const bhYellowTexture: PIXI.Texture = await PIXI.Assets.load(bhYellowImage) as PIXI.Texture;
-        // Load spritesheets
+        // Load and parse spritesheets
         const p4Spritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(p4Texture, p4Data);
         await p4Spritesheet.parse();
         const waterSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(waterTexture, waterData);
@@ -77,44 +77,43 @@ export default async function p4Vega() {
         const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
         const waterAnim = new PIXI.AnimatedSprite(waterSpritesheet.animations.water);
 
-        // Create pool of 50 black holes with random colors
-        for(let i = 0; i < 50; i++) {
+        // Create pool of 100 black holes with random colors
+        for (let blackHoleIndex = 0; blackHoleIndex < 100; blackHoleIndex++) {
             let bhAnim: PIXI.AnimatedSprite;
-            switch(getRandomInt(0, 2)) {
-            case 0: 
-                bhAnim = new PIXI.AnimatedSprite(bhBlueSpritesheet.animations.bhBlue);
-                break;
-            case 1:
-                bhAnim = new PIXI.AnimatedSprite(bhRedSpritesheet.animations.bhRed);
-                break;
-            case 2:
-                bhAnim = new PIXI.AnimatedSprite(bhYellowSpritesheet.animations.bhYellow);
-                break;
+            switch (getRandomInt(0, 2)) {
+                case 0:
+                    bhAnim = new PIXI.AnimatedSprite(bhBlueSpritesheet.animations.bhBlue);
+                    break;
+                case 1:
+                    bhAnim = new PIXI.AnimatedSprite(bhRedSpritesheet.animations.bhRed);
+                    break;
+                case 2:
+                    bhAnim = new PIXI.AnimatedSprite(bhYellowSpritesheet.animations.bhYellow);
+                    break;
             }
-            BlackHole.bhAnimArray.push(bhAnim!);
+            BlackHole.bHAnimArray.push(bhAnim!);
         }
-        new BlackHole(stage, p4Anim); // Create initial black hole
+        new BlackHole(stage, p4Anim); // Add initial black hole
 
         // Create game elements
         p4 = new P4(stage, p4Anim);
         water = new Water(stage, waterAnim);
-        
+
     }
 
     // Update game state
-    const update = async () =>{
+    const update = async () => {
         // Update game elements
         sky.update();
-        p4.update(p4.p4Anim);  
+        p4.update(p4.p4Anim);
         water.update(water.waterAnim, p4, stage);
-        for (let i = 0; i < BlackHole.bhArray.length; i++) {
-            let blackHole = BlackHole.bhArray[i];
-            gameLive = blackHole.update(blackHole.bhAnim, p4, gameLive);
+        for (let i = 0; i < BlackHole.bHArray.length; i++) {
+            let blackHole = BlackHole.bHArray[i];
+            gameLive = blackHole.update(p4, gameLive);
         }
 
         // Check for game over
-        if(!gameLive) 
-        {
+        if (!gameLive) {
             if (window.isLoggedIn) { await submitScore(); }
             gameOverTexts = await gameOver(gameLive, p4);
             gameOverTexts.forEach(text => stage.addChild(text));
@@ -130,7 +129,7 @@ export default async function p4Vega() {
     const gameLoop = async () => {
         await update();
         await render();
-        if(gameLive) requestAnimationFrame(gameLoop);
+        if (gameLive) requestAnimationFrame(gameLoop);
     }
 
     // Start game
@@ -208,7 +207,7 @@ export default async function p4Vega() {
                 break;
             // Restart game
             case "Space":
-                restart();
+                if (!gameLive) restart();
                 break;
             default:
                 break;
@@ -237,7 +236,7 @@ export default async function p4Vega() {
 
     // Add and Remove event listeners
     let componentId = "p4-wrapper";
-    if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = [];}
+    if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
 }
