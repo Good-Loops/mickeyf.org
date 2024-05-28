@@ -32,7 +32,8 @@ app.use(
                 "data:",
                 "https://mickeyf.org",
                 "http:localhost:3000",
-                `${apiUrl!}/api/users`, // Allow the /api/users route to be accessed from the frontend
+                `${apiUrl!}/api/users`,
+                `${apiUrl}/auth/verify-token`
             ],
             imgSrc: [
                 "'self'",

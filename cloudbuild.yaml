@@ -30,7 +30,8 @@ steps:
       - >-
         CLOUD_SQL_CONNECTION_NAME=${_CLOUD_SQL_CONNECTION_NAME},
         DB_USER=${_DB_USER},
-        DB_NAME=${_DB_NAME}
+        DB_NAME=${_DB_NAME},
+        SESSION_SECRET=${_SESSION_SECRET}
 
 substitutions:
   _GCP_PROJECT_ID: 'noted-reef-387021'
@@ -40,6 +41,7 @@ substitutions:
   _CLOUD_SQL_CONNECTION_NAME: 'noted-reef-387021:us-central1:cms-mickeyf'
   _DB_USER: 'cms_mickeyf'
   _DB_NAME: 'cms'
+  _SESSION_SECRET: '9e6c991e3ad3cb10df18eced5bebf14bc89de75c96caf2dc85aa4f19eb9af27861091a59e6551370ce892ff1f56bf2fe497cf1ff147e92f62b5bd7af9a489303'
 
 options:
   logging: CLOUD_LOGGING_ONLY
