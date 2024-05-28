@@ -6,43 +6,48 @@ import P4 from "./P4";
 import * as PIXI from 'pixi.js';
 
 // Constants
-const MIN_DISTANCE = 200;
-const VELOCITY_MIN = 2.5;
-const VELOCITY_MAX = 5.5;
+const MIN_DISTANCE = 250;
+const VELOCITY_MIN = 1.5;
+const VELOCITY_MAX = 4.5;
 
 // BlackHole class extends Entity, managing its own behaviors and a pool of instances for reuse.
 export default class BlackHole extends Entity {
-    // private hue: number = getRandomInt(0, 360); // TODO: Random hue for color variation 
-
     private vX: number = 0;
     private vY: number = 0;
 
-    public bhAnim: PIXI.AnimatedSprite;
-    public static bhAnimArray: PIXI.AnimatedSprite[] = [];
-    public static bhArray: BlackHole[] = [];
+    private static addedIndexes: number[] = [];
+
+    public static bHAnimArray: PIXI.AnimatedSprite[] = [];
+    public static bHArray: BlackHole[] = [];
 
     constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
-        const newBHAnim = BlackHole.bhAnimArray[getRandomInt(0, BlackHole.bhAnimArray.length)];
-        if(!newBHAnim) throw new Error('Black hole animation not found');
+
+        // Make sure that the black hole animations are not repeated.
+        let index: number;
+        do { 
+            index = getRandomInt(0, BlackHole.bHAnimArray.length - 1);
+        } while (BlackHole.addedIndexes.includes(index));
+        BlackHole.addedIndexes.push(index);
+
+        const newBHAnim = BlackHole.bHAnimArray[index];
+        if (!newBHAnim) throw new Error('Black hole animation not found');
         super(newBHAnim);
 
-        this.bhAnim = newBHAnim;
-
-        this.bhAnim.y = getRandomY(this.bhAnim.height);
-        this.bhAnim.x = getRandomX(this.bhAnim.width);
+        this.anim.y = getRandomY(this.anim.height);
+        this.anim.x = getRandomX(this.anim.width);
 
         this.determineDirection();
 
-        this.setPosition(this.bhAnim, p4Anim);
+        this.setPosition(p4Anim);
 
-        stage.addChild(this.bhAnim);
+        stage.addChild(this.anim);
 
-        BlackHole.bhArray.push(this);
+        BlackHole.bHArray.push(this);
     }
 
     // Initializes the pool with a given size, stage, animation array, and player animation.
     private determineDirection(): void {
-        if(getRandomBoolean()) {
+        if (getRandomBoolean()) {
             this.vX = Math.floor(Math.random() * (VELOCITY_MAX - VELOCITY_MIN) + VELOCITY_MIN);
         } else {
             this.vY = Math.floor(Math.random() * (VELOCITY_MAX - VELOCITY_MIN) + VELOCITY_MIN);
@@ -50,26 +55,29 @@ export default class BlackHole extends Entity {
     }
 
     // Sets a random starting position for the black hole while maintaining a minimum distance from the player.
-    private setPosition(bhAnim: PIXI.AnimatedSprite, p4Anim: PIXI.AnimatedSprite): void {
-        do {
-            bhAnim.x = getRandomX(bhAnim.width);
-            bhAnim.y = getRandomY(bhAnim.height);
-        } while (Math.hypot(bhAnim.x - p4Anim.x, bhAnim.y - p4Anim.y) < MIN_DISTANCE);
+    private setPosition(p4Anim: PIXI.AnimatedSprite): void {
+        this.anim.x = getRandomX(this.anim.width);
+        this.anim.y = getRandomY(this.anim.height);
+
+        // Check if black hole is too close to player
+        if (Math.abs(this.anim.x - p4Anim.x) < MIN_DISTANCE && Math.abs(this.anim.y - p4Anim.y) < MIN_DISTANCE) {
+            this.setPosition(p4Anim);
+        }
     }
 
     // Updates the position of the black hole and checks for collisions and boundary conditions.
-    public update(bhAnim: PIXI.AnimatedSprite, p4: P4, gameLive: boolean): boolean {
-        if (checkCollision(p4.p4Anim, bhAnim)) {
+    public update(p4: P4, gameLive: boolean): boolean {
+        if (checkCollision(p4.p4Anim, this.anim)) {
             gameLive = false;
         }
 
-        if(this.vX == 0) {
-            bhAnim.y += this.vY!;
+        if (this.vX == 0) {
+            this.anim.y += this.vY!;
         } else {
-            bhAnim.x += this.vX!;
+            this.anim.x += this.vX!;
         }
 
-        const bhBounds = bhAnim.getBounds();
+        const bhBounds = this.anim.getBounds();
 
         if (bhBounds.y + bhBounds.height > CANVAS_HEIGHT || bhBounds.y < 0) {
             this.vY! *= -1;
@@ -83,10 +91,10 @@ export default class BlackHole extends Entity {
 
     // Removes the black holes from the stage and clear arrays.
     public static destroy(): void {
-        for (let i = 0; i < BlackHole.bhAnimArray.length; i++) {
-            BlackHole.bhAnimArray[i].destroy();
+        for (let i = 0; i < BlackHole.bHAnimArray.length; i++) {
+            BlackHole.bHAnimArray[i].destroy();
         }
-        BlackHole.bhArray = [];
-        BlackHole.bhAnimArray = [];
+        BlackHole.bHArray = [];
+        BlackHole.bHAnimArray = [];
     }
 }
