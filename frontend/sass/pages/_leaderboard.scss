@@ -3,15 +3,15 @@
 .leaderboard {
     @include default-component;
 
-  &__list {
-      @include title-coloring;
-      font-weight: 900;
+    &__list {
+        @include title-coloring;
+        font-weight: 900;
 
-      list-style-type: decimal;
+        list-style-type: decimal;
     }
 
-  &__list-item {
-    font-size: $font-size-s;
-  }
-
+    &__list-item {
+        font-size: $font-size-s;
+        font-weight: 900;
+    }
 }

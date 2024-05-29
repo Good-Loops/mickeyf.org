@@ -27,7 +27,8 @@ declare global {
         // Event listener manager
         eventListeners: Record<string, EventListenerRecord[]>;
 
-        // Canvas IDs
+        // Animation IDs
+        homeAnimationID: number | null;
         dcAnimationID: number | null;
         p4AnimationID: number | null;
     }

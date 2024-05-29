@@ -11,7 +11,7 @@ export const pool = createPool({
     queueLimit: 0
 });
 
-// For development
+// // For development
 // const pool = createPool({
 //     host: 'localhost',
 //     port: 3306,

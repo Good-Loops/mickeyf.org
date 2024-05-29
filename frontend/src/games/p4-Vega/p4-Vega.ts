@@ -191,6 +191,7 @@ export default async function p4Vega() {
 
     // User input
     const handleKeydown = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
             // Player movement
             case "ArrowRight":
@@ -214,6 +215,7 @@ export default async function p4Vega() {
         }
     }
     const handleKeyup = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
             case "ArrowRight":
                 p4.isMovingRight = false;
@@ -234,8 +236,7 @@ export default async function p4Vega() {
     document.addEventListener("keyup", handleKeyup);
     document.addEventListener("keydown", handleKeydown);
 
-    // Add and Remove event listeners
-    let componentId = "p4-wrapper";
+    let componentId = "p4-vega";
     if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
