@@ -3,8 +3,10 @@
 .home {
 
     &__welcome-message {
-        color: $primary-light;
+        color: $primary-mid;
         font-size: $font-size-m;
-        font-weight: $font-weight-l;
+        text-align: center;
+        font-weight: 600;
+        font-family: $subheading-font;
     }
 }

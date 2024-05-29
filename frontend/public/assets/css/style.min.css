@@ -14,8 +14,24 @@
     transform: translateY(0px);
   }
 }
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px hsl(240, 67%, 95%), 0 0 10px hsl(240, 67%, 95%), 0 0 15px hsl(240, 67%, 95%), 0 0 20px hsl(203, 92%, 75%), 0 0 30px hsl(203, 92%, 75%), 0 0 40px hsl(203, 92%, 75%), 0 0 55px hsl(203, 92%, 75%), 0 0 75px hsl(203, 92%, 75%);
+  }
+  to {
+    text-shadow: 0 0 10px hsl(240, 67%, 95%), 0 0 15px hsl(240, 67%, 95%), 0 0 20px hsl(240, 67%, 95%), 0 0 25px hsl(203, 92%, 75%), 0 0 35px hsl(203, 92%, 75%), 0 0 50px hsl(203, 92%, 75%), 0 0 70px hsl(203, 92%, 75%), 0 0 100px hsl(203, 92%, 75%);
+  }
+}
 .floating {
   animation: float 3s ease-in-out infinite;
+}
+
+.glowing {
+  animation: glow 1.5s infinite alternate;
+}
+
+.glowing-floating {
+  animation: glow 1.5s infinite alternate, float 3s ease-in-out infinite;
 }
 
 *,
@@ -248,9 +264,11 @@ h1 {
 }
 
 .home__welcome-message {
-  color: hsl(203, 92%, 90%);
+  color: hsl(203, 92%, 80%);
   font-size: 6rem;
-  font-weight: 700;
+  text-align: center;
+  font-weight: 600;
+  font-family: "Roboto", sans-serif;
 }
 
 .games {
@@ -737,4 +755,5 @@ h1 {
 }
 .leaderboard__list-item {
   font-size: 4rem;
+  font-weight: 900;
 }
