@@ -15,7 +15,7 @@
                 {
                     "name": "front-compiler",
                     "commands": [
-                        "sleep 3s && cd frontend && npm run dev"
+                        "sleep 5s && cd frontend && npm run dev"
                     ]
                 }
             ]
@@ -25,7 +25,7 @@
                 {
                     "name": "sass-compiler",
                     "commands": [
-                        "sleep 3s && cd frontend && npm run sass"
+                        "sleep 6s && cd frontend && npm run sass"
                     ]
                 }
             ]
@@ -35,7 +35,7 @@
                 {
                     "name": "back-compiler",
                     "commands": [
-                        "sleep 3s && cd backend && npm run dev"
+                        "sleep 7s && cd backend && npm run dev"
                     ]
                 }
             ]
