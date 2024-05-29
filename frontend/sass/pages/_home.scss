@@ -1,0 +1,10 @@
+@use '../abstracts' as *;
+
+.home {
+
+    &__welcome-message {
+        color: $primary-light;
+        font-size: $font-size-m;
+        font-weight: $font-weight-l;
+    }
+}

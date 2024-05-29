@@ -5,7 +5,7 @@
 
   &__list {
       @include title-coloring;
-      font-weight: 900;
+      font-weight: $font-weight-xl;
 
       list-style-type: decimal;
     }

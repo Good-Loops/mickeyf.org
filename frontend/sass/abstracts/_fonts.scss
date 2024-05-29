@@ -4,8 +4,23 @@
 @import url(https://fonts.googleapis.com/css?family=Work+Sans:100,200,300,regular,500,600,700,800,900,100italic,200italic,300italic,italic,500italic,600italic,700italic,800italic,900italic);
 @import url(https://fonts.googleapis.com/css?family=Fira+Sans:100,100italic,200,200italic,300,300italic,regular,italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic);
 
+///////////////////// Font Families //////////////////////
 $heading-font: 'Space Mono', monospace, sans-serif;
 $subheading-font: 'Roboto', sans-serif;
 $paragraph-font: 'Space Grotesk', sans-serif;
 $button-font: 'Work Sans', sans-serif;
 $game-font: 'Fira Sans', sans-serif;
+
+///////////////////// Font Sizes //////////////////////
+$font-size-xs: 2rem;
+$font-size-s: 4rem;
+$font-size-m: 6rem;
+$font-size-l: 8rem;
+$font-size-xl: 10rem;
+
+///////////////////// Font Weights //////////////////////
+$font-weight-xs: 100;
+$font-weight-s: 300;
+$font-weight-m: 400;
+$font-weight-l: 700;
+$font-weight-xl: 900;
