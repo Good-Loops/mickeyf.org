@@ -6,7 +6,7 @@ export type EventListenerRecord = {
 };
 
 // Stop animation function
-export const stopAnimation = (animationId: number | null): void => {
+const stopAnimation = (animationId: number | null): void => {
     if (animationId !== null) {
         cancelAnimationFrame(animationId);
     }
@@ -22,6 +22,9 @@ export const initializeObserver = (): MutationObserver => {
                     if (mutation.target === content && (<Element>node).id) {
                         const componentId = (<Element>node).id;
                         switch (componentId) {
+                            case "home":
+                                stopAnimation(window.homeAnimationID);
+                                break;
                             case "dancing-circles":
                                 stopAnimation(window.dcAnimationID);
                                 break;

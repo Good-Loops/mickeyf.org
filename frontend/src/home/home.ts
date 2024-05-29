@@ -41,8 +41,14 @@ export default function home() {
         "Believe you can and you're halfway there."
     ];
 
-    setInterval(() => {
+    const showQuote = () => {
         const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
         addQuote(randomQuote);
-    }, 5000);
+
+        window.homeAnimationID = requestAnimationFrame(() => {
+            setTimeout(showQuote, 3000); // Wait 3 seconds before showing the next quote
+        });
+    };
+
+    showQuote();
 }
