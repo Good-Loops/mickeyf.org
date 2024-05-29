@@ -1,3 +1,5 @@
+import home from '../home/home';
+
 function component() {
     const render = () => {
         return /*html*/`
@@ -9,7 +11,7 @@ function component() {
     }
 
     const action = () => {
-        // Future implementation for the quotes functionality
+        home();
     }
 
     return {

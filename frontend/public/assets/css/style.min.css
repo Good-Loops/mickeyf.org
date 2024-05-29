@@ -271,6 +271,15 @@ h1 {
   font-family: "Roboto", sans-serif;
 }
 
+.quote {
+  color: hsl(240, 67%, 95%);
+  font-size: 1.5rem;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 2s;
+  text-align: center;
+}
+
 .games {
   display: grid;
   row-gap: 10rem;
