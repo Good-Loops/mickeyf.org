@@ -4,8 +4,13 @@ function component() {
         `;
     }
 
+    const action = () => {
+
+    }
+
     return {
-        render
+        render,
+        action
     };
 }
 
