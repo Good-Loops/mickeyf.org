@@ -1,5 +1,3 @@
-@use 'fonts' as *;
-
 // Cursors
 $cursor: url("../img/normal.cur"), auto;
 $cursor-hover: url("../img/select.cur"), auto;
@@ -26,6 +24,12 @@ $bp-l: 55em; // 880px
 $bp-m: 48.75em; // 780px
 $bp-s: 34.375em; // 550px
 
+///////////////////// Font Sizes //////////////////////
+$font-size-xs: 2rem;
+$font-size-s: 4rem;
+$font-size-m: 6rem;
+$font-size-l: 8rem;
+$font-size-xl: 10rem;
 
 ///////////////////// Breakpoint Maps //////////////////////
 // Breakpoint Map for Navigation 
