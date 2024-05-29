@@ -14,11 +14,11 @@ const stopAnimation = (animationId: number | null): void => {
 
 // Mutation observer to reset page state when elements are removed from the DOM
 export const initializeObserver = (): MutationObserver => {
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.removedNodes) {
-                const content = document.getElementById("content");
-                mutation.removedNodes.forEach((node) => {
+    const observer = new MutationObserver((mutations) => { // Callback function to execute when a mutation is observed
+        mutations.forEach((mutation) => { // Iterate over each mutation
+            if (mutation.removedNodes) { // Check if nodes were removed, that is, if the mutation is a removal
+                const content = document.getElementById("content"); // Get the content element
+                mutation.removedNodes.forEach((node) => { // Iterate over each removed node
                     if (mutation.target === content && (<Element>node).id) {
                         const componentId = (<Element>node).id;
                         switch (componentId) {
