@@ -191,6 +191,7 @@ export default async function p4Vega() {
 
     // User input
     const handleKeydown = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
             // Player movement
             case "ArrowRight":
@@ -214,6 +215,7 @@ export default async function p4Vega() {
         }
     }
     const handleKeyup = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
             case "ArrowRight":
                 p4.isMovingRight = false;
