@@ -1,0 +1,23 @@
+@use '../abstracts' as *;
+
+.home {
+
+    &__welcome-message {
+        color: $primary-mid;
+        font-size: $font-size-m;
+        text-align: center;
+        font-weight: 600;
+        font-family: $subheading-font;
+    }
+}
+
+.quote {
+    color: $white;
+    font-size: $font-size-xs;
+    text-align: center;
+
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+
+    opacity: 0;
+    transition: opacity 2s;
+}

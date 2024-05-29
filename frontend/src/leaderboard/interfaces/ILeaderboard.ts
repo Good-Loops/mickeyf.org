@@ -3,9 +3,6 @@ export interface ILeaderboardEntry {
     p4_score: number;
 }
 
-/**
- * Represents the leaderboard interface.
- */
 export default interface ILeaderboard {
     leaderboard: ILeaderboardEntry[];
     fetchLeaderboard: () => void;

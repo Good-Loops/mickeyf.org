@@ -3,7 +3,7 @@ import p4Vega from "../../games/p4-Vega/p4-Vega";
 function component() {
     const render = () => {
         return /*html*/`
-            <section class="p4-vega" id="p4-vega">
+            <section id="p4-vega" class="p4-vega">
                 <h1 class="u-canvas-title">p4-Vega</h1>
                 <img id="p4" src="./sprites/p4Vega/p4.png" style="display: none;">
                 <img id="water" src="./sprites/p4Vega/water.png" style="display: none;">

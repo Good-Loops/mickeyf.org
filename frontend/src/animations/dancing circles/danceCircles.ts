@@ -139,9 +139,9 @@ export default function danceCircles() {
     }
 
     deltaTime = 0, lastTime = 0,
-        updateTimer = 0, updateInterval = 1000,
-        updateOnPitchTimer = 0, updateOnPitchInterval = 10,
-        drawTimer = 0, drawInterval = 40;
+    updateTimer = 0, updateInterval = 1000,
+    updateOnPitchTimer = 0, updateOnPitchInterval = 10,
+    drawTimer = 0, drawInterval = 40;
     const draw = (): void => {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -216,5 +216,6 @@ export default function danceCircles() {
 
         window.dcAnimationID = requestAnimationFrame(step);
     }
+
     step(0);
 }
