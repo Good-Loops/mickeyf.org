@@ -3,8 +3,8 @@ import Alpine from "alpinejs";
 import page from "page";
 
 // Global methods
-import userLogIn from "../login/userLogin";
-import userCreate from "../register/userCreate";
+import userLogIn from "../actions/login/userLogin";
+import userCreate from "../actions/register/userCreate";
 import leaderboard from "../leaderboard/leaderboard";
 
 // Global variables

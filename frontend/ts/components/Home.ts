@@ -1,4 +1,4 @@
-import home from '../home/home';
+import home from '../actions/home/home';
 
 function component() {
     const render = () => {

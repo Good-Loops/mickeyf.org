@@ -1,5 +1,5 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
-import { getRandomIndexArr, getRandomX, getRandomY } from "../../utils/random";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
+import { getRandomIndexArr, getRandomX, getRandomY } from "../../../utils/random";
 import ColorHandler from "./classes/ColorHandler";
 import Circle from "./classes/Circle";
 import AudioHandler from "./classes/AudioHandler";

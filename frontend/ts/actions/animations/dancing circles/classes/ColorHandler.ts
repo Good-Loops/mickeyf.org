@@ -1,4 +1,4 @@
-import { getRandomInt } from "../../../utils/random";
+import { getRandomInt } from '../../../../utils/random';
 
 export default class ColorHandler {
     // HSL Values to RGB Values

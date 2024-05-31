@@ -1,4 +1,4 @@
-import { AUTH_FAILED } from '../utils/constants';
+import { AUTH_FAILED } from '../../utils/constants';
 import IUserLogin from './Interfaces/IUserLogin';
 import Swal from 'sweetalert2';
 

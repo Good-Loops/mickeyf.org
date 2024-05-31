@@ -1,4 +1,4 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants"
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../../utils/constants"
 import Entity from "../../classes/Entity"
 import * as PIXI from 'pixi.js';
 

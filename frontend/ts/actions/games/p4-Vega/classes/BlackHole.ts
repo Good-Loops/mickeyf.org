@@ -1,6 +1,6 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
-import { getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../utils/random";
-import checkCollision from "../../../utils/checkCollision";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../../utils/constants";
+import { getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../../utils/random";
+import checkCollision from "../../../../utils/checkCollision";
 import Entity from "../../classes/Entity";
 import P4 from "./P4";
 import * as PIXI from 'pixi.js';

@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import Entity from '../games/classes/Entity';
+import Entity from '../actions/games/classes/Entity';
 
 // Check if two rectangles are colliding
 export default function checkCollision(animA: PIXI.AnimatedSprite, animB: PIXI.AnimatedSprite): boolean {

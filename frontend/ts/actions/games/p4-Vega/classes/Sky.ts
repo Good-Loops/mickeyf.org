@@ -1,5 +1,5 @@
 // import Star from "./Star";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../../utils/constants";
 import * as PIXI from "pixi.js";
 
 export default class Sky {

@@ -1,7 +1,7 @@
 // Utilities
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
-import { getRandomInt } from "../../utils/random";
-import gameOver from "../../utils/gameOver";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
+import { getRandomInt } from "../../../utils/random";
+import gameOver from "../../../utils/gameOver";
 
 // Game elements
 import P4 from "./classes/P4";

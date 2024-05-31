@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from './constants';
-import P4 from 'src/games/p4-Vega/classes/P4';
+import P4 from '../actions/games/p4-Vega/classes/P4'
 import WebFont from 'webfontloader';
 
 // Remember to create a helpers folder for this type of function (avoids repetition)
