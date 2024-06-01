@@ -68,7 +68,7 @@ export default async function danceCircles() {
     }
 
     // Updates a circle and canvas positions and colors 
-    function update(numCircs: number): void {
+    const update = (numCircs: number): void => {
         canvasTargetColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
@@ -91,7 +91,7 @@ export default async function danceCircles() {
     }
 
     let even = true;
-    function updateOnPitchAndVolume(): void {
+    const updateOnPitchAndVolume = (): void => {
         if (AudioHandler.playing) {
             // Update color base on pitch
             const randomIndexArr: number[] = getRandomIndexArr(Circle.circlesLength);
@@ -127,61 +127,61 @@ export default async function danceCircles() {
     }
 
     const draw = (): void => {
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.style.backgroundColor = ColorHandler.lerpColor(canvasBgColor,
-            canvasTargetColor, 0.02
-        );
-        canvasBgColor = ColorHandler.convertRGBtoHSL(canvas.style.backgroundColor);
+        // Clear the stage
+        stage.removeChildren();
+
+        // Update background color
+        const bgColor = ColorHandler.lerpColor(canvasBgColor, canvasTargetColor, 0.02);
+        canvasBgColor = ColorHandler.convertRGBtoHSL(bgColor);
+        renderer.background.init({
+            backgroundColor: bgColor,
+            backgroundAlpha: 0,
+            clearBeforeRender: true
+        });
 
         // Draw circles
         Circle.circles.forEach((circle: Circle): void => {
-
             circle.lerpRadius(); // Lerp Radius
             circle.lerpPosition(true); // Lerp X
             circle.lerpPosition(false); // Lerp Y
 
             if (circle.color[0] === "h" && circle.targetColor[0] === "h") {
                 circle.lerpColor();
-            }
-            else if (circle.color[0] === "r" && circle.targetColor[0] === "r") {
+            } else if (circle.color[0] === "r" && circle.targetColor[0] === "r") {
                 circle.convColor(false, true); // Convert to HSL
                 circle.convColor(true, true); // Convert to HSL
 
                 circle.lerpColor();
                 circle.convColor(true, false); // Convert to RGB
-            }
-            else {
-                // console.log(elem.color);
+            } else {
                 throw new Error("Browser Not Compatible");
             }
 
-            ctx.beginPath();
-            ctx.fillStyle = ColorHandler.convertHSLtoHSLA(circle.color, .7);
-            ctx.arc(
-                circle.x,
-                circle.y,
-                circle.currentR,
-                circle.startAngle,
-                circle.endAngle,
-                circle.counterclockwise
-            );
-            ctx.shadowBlur = 50;
-            ctx.shadowColor = "lavender";
-            ctx.filter = "blur(1px)";
-            ctx.fill();
+            const graphics = new PIXI.Graphics();
+            graphics.fill(ColorHandler.convertHSLtoHSLA(circle.color, .7));
+            graphics.circle(circle.x, circle.y, circle.currentR);
+            graphics.fill();
+
+            let colorMatrix = new PIXI.ColorMatrixFilter();
+            colorMatrix.tint('lavender');
+            graphics.filters = [
+                new PIXI.BlurFilter(),
+            ];
+
+            stage.addChild(graphics);
         });
+        // Render the stage
+        renderer.render(stage);
     }
-
-    load();
-
-    function step(): void {
+    
+    const step = (): void => {
         if (stop) return;
-
+        
         update(numCircs);
         updateOnPitchAndVolume();
         draw();
     }
-
+    
+    load();
     step();
 }
