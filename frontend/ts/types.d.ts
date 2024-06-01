@@ -30,6 +30,6 @@ declare global {
         // Animation IDs
         homeAnimationID: number | null;
         dcAnimationID: number | null;
-        p4AnimationID: number | null;
+        p4Ticker: PIXI.Ticker | null;
     }
 }

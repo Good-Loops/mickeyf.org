@@ -10,21 +10,26 @@ import AudioHandler from "./classes/AudioHandler";
 // Libraries
 import * as PIXI from 'pixi.js';
 
-export default function danceCircles() {
-    // Canvas
-    const canvas: HTMLCanvasElement = document.getElementById("dc-canvas") as HTMLCanvasElement;
-    const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
-    // Target color
+export default async function danceCircles() {
+    // Create PixiJS renderer and stage
+    const renderer = await PIXI.autoDetectRenderer({
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+        backgroundColor: 0x1099bb,
+    });
+    // Set canvas properties
+    const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
+    canvas.className = "dancing-circles__canvas";
+    canvas.id = "dc-canvas";
+    // Add the canvas to the DOM
+    document.getElementById("dc-canvas")!.appendChild(canvas);
+    // Create stage
+    const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
+
+    // Target color and background color
     let canvasTargetColor: string;
     let canvasBgColor: string;
-    // Min/Max Saturation
-    const canvasMinS: number = 65;
-    const canvasMaxS: number = 75;
-    // Min/Max Lightness
-    const canvasMinL: number = 40;
-    const canvasMaxL: number = 60;
+    const canvasMinS = 65, canvasMaxS = 75, canvasMinL = 40, canvasMaxL = 60;
 
     // Stop animation
     let stop: boolean = true;
@@ -32,12 +37,10 @@ export default function danceCircles() {
     // For input audio
     const fileInput: HTMLInputElement = document.getElementById("file-upload") as HTMLInputElement;
     const uploadButton: HTMLLabelElement = document.getElementById("upload-button") as HTMLLabelElement;
+    AudioHandler.processAudio(fileInput, uploadButton);
 
     // Circles updating color per call
     const numCircs: number = 2;
-
-    // // Audio Handling
-    AudioHandler.processAudio(fileInput, uploadButton);
 
     let deltaTime: number, lastTime: number,
         updateTimer: number, updateInterval: number,
