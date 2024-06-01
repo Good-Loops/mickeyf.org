@@ -42,11 +42,6 @@ export default async function danceCircles() {
     // Circles updating color per call
     const numCircs: number = 2;
 
-    let deltaTime: number, lastTime: number,
-        updateTimer: number, updateInterval: number,
-        updateOnPitchTimer: number, updateOnPitchInterval: number,
-        drawTimer: number, drawInterval: number;
-
     // Fills circle array
     // Defines starting random bg-color for canvas
     const load = (): void => {
@@ -95,62 +90,42 @@ export default async function danceCircles() {
         }
     }
 
-    // Color adjust
-    const colorInterval = 30;
-    let colorTimer = colorInterval;
-    // Radius adjust 
-    const adjustRInterval = 30;
-    let increaseRTimer = adjustRInterval;
-    let decreaseRTimer = adjustRInterval * .5;
     let even = true;
-    function updateOnPitch(): void {
+    function updateOnPitchAndVolume(): void {
         if (AudioHandler.playing) {
             // Update color base on pitch
-            if (colorTimer >= colorInterval) {
-                const randomIndexArr: number[] = getRandomIndexArr(Circle.circlesLength);
-                for (let i: number = 0; i < Circle.circlesLength; i++) {
-                    // Get circle at random index
-                    const circle: Circle = Circle.circles[randomIndexArr[i]];
-                    circle.targetColor = ColorHandler.convertHertzToHSL(Math.round(AudioHandler.pitch),
-                        Circle.minS, Circle.maxS, Circle.minL, Circle.maxL
-                    );
-                }
-                colorTimer = 0;
-            } else { colorTimer++; }
+            const randomIndexArr: number[] = getRandomIndexArr(Circle.circlesLength);
+            for (let i: number = 0; i < Circle.circlesLength; i++) {
+                // Get circle at random index
+                const circle: Circle = Circle.circles[randomIndexArr[i]];
+                circle.targetColor = ColorHandler.convertHertzToHSL(Math.round(AudioHandler.pitch),
+                    Circle.minS, Circle.maxS, Circle.minL, Circle.maxL
+                );
+            }
 
             // Update radius based on volume
             const volumePercentage = AudioHandler.getVolumePercentage(AudioHandler.volume);
             if (AudioHandler.volume != -Infinity) {
                 const ajdust = 1 + (volumePercentage * .02);
-                if (increaseRTimer >= adjustRInterval) {
-                    Circle.circles.forEach((circle, index) => {
-                        if (even) {
-                            if (index % 2 == 0) circle.targetR *= (ajdust);
-                        } else {
-                            if (index % 2 != 0) circle.targetR *= (ajdust);
-                        }
-                    });
-                    increaseRTimer = 0;
-                } else { increaseRTimer++; }
-                if (decreaseRTimer >= adjustRInterval) {
-                    Circle.circles.forEach((circle, index) => {
-                        if (even) {
-                            if (index % 2 == 0) circle.targetR = circle.baseR;
-                        } else {
-                            if (index % 2 != 0) circle.targetR = circle.baseR;
-                        }
-                    });
-                    even = !even;
-                    decreaseRTimer = 0;
-                } else { decreaseRTimer++; }
+                Circle.circles.forEach((circle, index) => {
+                    if (even) {
+                        if (index % 2 == 0) circle.targetR *= (ajdust);
+                    } else {
+                        if (index % 2 != 0) circle.targetR *= (ajdust);
+                    }
+                });
+                Circle.circles.forEach((circle, index) => {
+                    if (even) {
+                        if (index % 2 == 0) circle.targetR = circle.baseR;
+                    } else {
+                        if (index % 2 != 0) circle.targetR = circle.baseR;
+                    }
+                });
+                even = !even;
             }
         }
     }
 
-    deltaTime = 0, lastTime = 0,
-    updateTimer = 0, updateInterval = 1000,
-    updateOnPitchTimer = 0, updateOnPitchInterval = 10,
-    drawTimer = 0, drawInterval = 40;
     const draw = (): void => {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -200,31 +175,13 @@ export default async function danceCircles() {
 
     load();
 
-    function step(timeStamp: number): void {
+    function step(): void {
         if (stop) return;
 
-        deltaTime = timeStamp - lastTime;
-        lastTime = timeStamp;
-
-        updateTimer += deltaTime;
-        updateOnPitchTimer += deltaTime;
-        drawTimer += deltaTime;
-
-        if (updateTimer >= updateInterval) {
-            update(numCircs);
-            updateTimer = 0;
-        }
-        if (updateOnPitchTimer >= updateOnPitchInterval) {
-            updateOnPitch();
-            updateOnPitchTimer = 0;
-        }
-        if (drawTimer >= drawInterval) {
-            draw();
-            drawTimer = 0;
-        }
-
-        window.dcAnimationID = requestAnimationFrame(step);
+        update(numCircs);
+        updateOnPitchAndVolume();
+        draw();
     }
 
-    step(0);
+    step();
 }
