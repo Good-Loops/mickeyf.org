@@ -4,7 +4,7 @@ function component() {
     const render = () => {
         return /*html*/`
             <section class="dancing-circles" id="dancing-circles">
-                <h1 class="u-canvas-title">Dancing Circles</h1>
+                <h1 class="u-canvas-title" id="title" >Dancing Circles</h1>
                 <label class="dancing-circles__upload-btn floating" id="upload-button" for="file-upload">Upload Music</label>
                 <input class="dancing-circles__input" type="file" name="fileupload" id="file-upload" accept="audio/*"/>
             </section>   

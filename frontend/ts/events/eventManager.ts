@@ -38,7 +38,7 @@ export const initializeObserver = (): MutationObserver => {
                                 stopAnimation(window.dcAnimationID);
                                 break;
                             case "p4-vega":
-                                stopTicker(window.p4Ticker);
+                                stopTicker(window.p4GameTicker);
                                 break;
                         }
                         if (window.eventListeners[componentId]) {

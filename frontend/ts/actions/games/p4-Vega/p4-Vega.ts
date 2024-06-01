@@ -127,7 +127,7 @@ export default async function p4Vega() {
 
     // Game loop
     const ticker = new PIXI.Ticker();
-    window.p4Ticker = ticker;
+    window.p4GameTicker = ticker;
     ticker.add(update);
     ticker.add(render);
 
