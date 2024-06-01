@@ -1,6 +1,6 @@
 {
     "name": "mickeyf-frontend",
-    "version": "0.2.33",
+    "version": "0.3.0",
     "description": "Frontend for mickeyf.org",
     "scripts": {
         "dev": "webpack --mode development --watch",
@@ -32,7 +32,7 @@
         "page": "^1.11.6",
         "path-browserify": "^1.0.1",
         "pitchy": "^4.0.7",
-        "pixi.js": "^8.1.1",
+        "pixi.js": "^8.1.5",
         "stream-browserify": "^3.0.0",
         "sweetalert2": "^11.10.8",
         "ts-loader": "^9.5.1",

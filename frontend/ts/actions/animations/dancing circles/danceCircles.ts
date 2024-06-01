@@ -1,8 +1,14 @@
+// Utilities
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
 import { getRandomIndexArr, getRandomX, getRandomY } from "../../../utils/random";
+
+// Classes
 import ColorHandler from "./classes/ColorHandler";
 import Circle from "./classes/Circle";
 import AudioHandler from "./classes/AudioHandler";
+
+// Libraries
+import * as PIXI from 'pixi.js';
 
 export default function danceCircles() {
     // Canvas

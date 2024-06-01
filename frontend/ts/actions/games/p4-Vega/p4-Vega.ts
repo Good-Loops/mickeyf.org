@@ -16,10 +16,8 @@ import bhBlueData from './data/bhBlue.json'
 import bhRedData from './data/bhRed.json'
 import bhYellowData from './data/bhYellow.json'
 
-// PixiJS
+// Libraries
 import * as PIXI from 'pixi.js';
-
-// SweetAlert2
 import Swal from "sweetalert2";
 
 export default async function p4Vega() {
@@ -129,7 +127,7 @@ export default async function p4Vega() {
     const gameLoop = async () => {
         await update();
         await render();
-        if (gameLive) requestAnimationFrame(gameLoop);
+        if (gameLive) window.p4AnimationID = requestAnimationFrame(gameLoop);
     }
 
     // Start game
