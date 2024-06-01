@@ -84,7 +84,7 @@ export default async function danceCircles() {
     }
 
     // Updates a circle and canvas positions and colors 
-    function update(numCircs: number): void {
+    const update = (numCircs: number): void => {
         canvasTargetColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
@@ -114,7 +114,7 @@ export default async function danceCircles() {
     let increaseRTimer = adjustRInterval;
     let decreaseRTimer = adjustRInterval * .5;
     let even = true;
-    function updateOnPitch(): void {
+    const updateOnPitch = (): void => {
         if (AudioHandler.playing) {
             // Update color base on pitch
             if (colorTimer >= colorInterval) {
@@ -213,10 +213,6 @@ export default async function danceCircles() {
                
             graphics.filters = [blurFilter, bloomFilter];
             
-            // ctx.shadowColor = "lavender";
-            // ctx.filter = "blur(1px)";
-            // ctx.fill();
-
             stage.addChild(graphics);
         });
 
@@ -224,8 +220,7 @@ export default async function danceCircles() {
         renderer.render(stage);
     }
 
-    
-    function step(timeStamp: number): void {
+    const step = (timeStamp: number): void => {
         if (stop) return;
         
         deltaTime = timeStamp - lastTime;
@@ -247,10 +242,10 @@ export default async function danceCircles() {
             draw();
             drawTimer = 0;
         }
-        
+
         window.dcAnimationID = requestAnimationFrame(step);
     }
-    
+
     load();
     step(0);
 }
