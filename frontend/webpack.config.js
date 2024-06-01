@@ -4,7 +4,7 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 module.exports = {
     entry: {
-        main: ['./src/main.ts'],
+        main: ['./ts/main.ts'],
     },
     devtool: 'eval-source-map',
     plugins: [
