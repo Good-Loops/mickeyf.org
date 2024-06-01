@@ -1,15 +1,35 @@
+// Utilities
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
 import { getRandomIndexArr, getRandomX, getRandomY } from "../../../utils/random";
+
+// Classes
 import ColorHandler from "./classes/ColorHandler";
 import Circle from "./classes/Circle";
 import AudioHandler from "./classes/AudioHandler";
 
-export default function danceCircles() {
-    // Canvas
-    const canvas: HTMLCanvasElement = document.getElementById("dc-canvas") as HTMLCanvasElement;
-    const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
+// Libraries
+import * as PIXI from "pixi.js";
+import * as FILTERS from "pixi-filters";
+
+export default async function danceCircles() {
+    // Create PixiJS renderer and stage
+    const renderer = await PIXI.autoDetectRenderer({
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+        backgroundColor: 0x1099bb,
+    });
+
+    // Set canvas properties
+    const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
+    canvas.className = 'dancing-circles__canvas';
+    canvas.id = 'dc-canvas';
+
+    // Add the canvas to the DOM
+    document.getElementById('dancing-circles')!.append(canvas);
+
+    // Create stage
+    const stage: PIXI.Container = new PIXI.Container();
+
     // Target color
     let canvasTargetColor: string;
     let canvasBgColor: string;
@@ -64,7 +84,7 @@ export default function danceCircles() {
     }
 
     // Updates a circle and canvas positions and colors 
-    function update(numCircs: number): void {
+    const update = (numCircs: number): void => {
         canvasTargetColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
@@ -94,7 +114,7 @@ export default function danceCircles() {
     let increaseRTimer = adjustRInterval;
     let decreaseRTimer = adjustRInterval * .5;
     let even = true;
-    function updateOnPitch(): void {
+    const updateOnPitch = (): void => {
         if (AudioHandler.playing) {
             // Update color base on pitch
             if (colorTimer >= colorInterval) {
@@ -143,11 +163,11 @@ export default function danceCircles() {
     updateOnPitchTimer = 0, updateOnPitchInterval = 10,
     drawTimer = 0, drawInterval = 40;
     const draw = (): void => {
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.style.backgroundColor = ColorHandler.lerpColor(canvasBgColor,
-            canvasTargetColor, 0.02
-        );
+        // Clear the stage
+        stage.removeChildren();
+
+        // Update background color
+        renderer.background.color = ColorHandler.lerpColor(canvasBgColor, canvasTargetColor, 0.02);
         canvasBgColor = ColorHandler.convertRGBtoHSL(canvas.style.backgroundColor);
 
         // Draw circles
@@ -172,35 +192,44 @@ export default function danceCircles() {
                 throw new Error("Browser Not Compatible");
             }
 
-            ctx.beginPath();
-            ctx.fillStyle = ColorHandler.convertHSLtoHSLA(circle.color, .7);
-            ctx.arc(
-                circle.x,
-                circle.y,
-                circle.currentR,
-                circle.startAngle,
-                circle.endAngle,
-                circle.counterclockwise
-            );
-            ctx.shadowBlur = 50;
-            ctx.shadowColor = "lavender";
-            ctx.filter = "blur(1px)";
-            ctx.fill();
+            const graphics = new PIXI.Graphics();
+            graphics.fill(ColorHandler.convertHSLtoHSLA(circle.color, .7));
+            graphics.circle(circle.x, circle.y, circle.currentR);
+            graphics.fill();
+
+            const blurFilter = new PIXI.BlurFilter({
+                strength: 2,
+                quality: 1,
+                kernelSize: 5
+            });
+
+            const bloomFilter = new FILTERS.AdvancedBloomFilter({
+                bloomScale: 0.5,
+                brightness: 1.0,
+                threshold: 0.5,
+                blur: 1,
+                quality: 1, 
+            });
+               
+            graphics.filters = [blurFilter, bloomFilter];
+            
+            stage.addChild(graphics);
         });
+
+        // Render the stage
+        renderer.render(stage);
     }
 
-    load();
-
-    function step(timeStamp: number): void {
+    const step = (timeStamp: number): void => {
         if (stop) return;
-
+        
         deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
-
+        
         updateTimer += deltaTime;
         updateOnPitchTimer += deltaTime;
         drawTimer += deltaTime;
-
+        
         if (updateTimer >= updateInterval) {
             update(numCircs);
             updateTimer = 0;
@@ -217,5 +246,6 @@ export default function danceCircles() {
         window.dcAnimationID = requestAnimationFrame(step);
     }
 
+    load();
     step(0);
 }

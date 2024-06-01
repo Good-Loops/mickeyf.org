@@ -16,10 +16,8 @@ import bhBlueData from './data/bhBlue.json'
 import bhRedData from './data/bhRed.json'
 import bhYellowData from './data/bhYellow.json'
 
-// PixiJS
+// Libraries
 import * as PIXI from 'pixi.js';
-
-// SweetAlert2
 import Swal from "sweetalert2";
 
 export default async function p4Vega() {
@@ -114,9 +112,11 @@ export default async function p4Vega() {
 
         // Check for game over
         if (!gameLive) {
+            ticker.stop();
             if (window.isLoggedIn) { await submitScore(); }
             gameOverTexts = await gameOver(gameLive, p4);
             gameOverTexts.forEach(text => stage.addChild(text));
+            renderer.render(stage);
         }
     }
 
@@ -126,28 +126,26 @@ export default async function p4Vega() {
     }
 
     // Game loop
-    const gameLoop = async () => {
-        await update();
-        await render();
-        if (gameLive) requestAnimationFrame(gameLoop);
-    }
+    const ticker = new PIXI.Ticker();
+    window.p4GameTicker = ticker;
+    ticker.add(update);
+    ticker.add(render);
 
     // Start game
     await load();
-    await gameLoop();
+    ticker.start();
 
     // Restart game
     const restart = async () => {
         gameLive = true;
         // Clear stage
-        sky.destroy();
         p4.destroy();
         water.destroy();
         BlackHole.destroy();
-        gameOverTexts.forEach(text => stage.removeChild(text));
+        stage.removeChildren();
         // Load game assets
         await load();
-        await gameLoop();
+        ticker.start();
     }
 
     const environment: string = process.env.NODE_ENV as string; // Determine environment
@@ -191,23 +189,26 @@ export default async function p4Vega() {
 
     // User input
     const handleKeydown = (key: Event): void => {
-        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
-            // Player movement
             case "ArrowRight":
+                key.preventDefault();
                 p4.isMovingRight = true;
                 break;
             case "ArrowLeft":
+                key.preventDefault();
                 p4.isMovingLeft = true;
                 break;
             case "ArrowUp":
+                key.preventDefault();
                 p4.isMovingUp = true;
                 break;
             case "ArrowDown":
+                key.preventDefault();
                 p4.isMovingDown = true;
                 break;
             // Restart game
             case "Space":
+                key.preventDefault();
                 if (!gameLive) restart();
                 break;
             default:
@@ -215,18 +216,21 @@ export default async function p4Vega() {
         }
     }
     const handleKeyup = (key: Event): void => {
-        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
             case "ArrowRight":
+                key.preventDefault();
                 p4.isMovingRight = false;
                 break;
             case "ArrowLeft":
+                key.preventDefault();
                 p4.isMovingLeft = false;
                 break;
             case "ArrowUp":
+                key.preventDefault();
                 p4.isMovingUp = false;
                 break;
             case "ArrowDown":
+                key.preventDefault();
                 p4.isMovingDown = false;
                 break;
             default:

@@ -1,3 +1,5 @@
+import * as PIXI from "pixi.js";
+
 // The EventListenerRecord type is used to store event listeners for each component
 export type EventListenerRecord = {
     element: Document | Element,
@@ -9,6 +11,13 @@ export type EventListenerRecord = {
 const stopAnimation = (animationId: number | null): void => {
     if (animationId !== null) {
         cancelAnimationFrame(animationId);
+    }
+};
+
+// Stop ticker function
+const stopTicker = (ticker: PIXI.Ticker | null): void => {
+    if (ticker !== null) {
+        ticker.stop();
     }
 };
 
@@ -29,7 +38,7 @@ export const initializeObserver = (): MutationObserver => {
                                 stopAnimation(window.dcAnimationID);
                                 break;
                             case "p4-vega":
-                                stopAnimation(window.p4AnimationID);
+                                stopTicker(window.p4GameTicker);
                                 break;
                         }
                         if (window.eventListeners[componentId]) {

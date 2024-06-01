@@ -22,7 +22,7 @@ declare global {
         leaderboard: () => ILeaderboard;
 
         // Global variables
-        isLoggedIn: boolean;   
+        isLoggedIn: boolean;
 
         // Event listener manager
         eventListeners: Record<string, EventListenerRecord[]>;
@@ -30,6 +30,6 @@ declare global {
         // Animation IDs
         homeAnimationID: number | null;
         dcAnimationID: number | null;
-        p4AnimationID: number | null;
+        p4GameTicker: PIXI.Ticker | null;
     }
 }
