@@ -33,6 +33,7 @@
         "path-browserify": "^1.0.1",
         "pitchy": "^4.0.7",
         "pixi-filters": "^6.0.3",
+        "pixi-sound": "^3.0.5",
         "pixi.js": "^8.1.5",
         "stream-browserify": "^3.0.0",
         "sweetalert2": "^11.10.8",
