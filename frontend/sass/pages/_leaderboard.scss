@@ -2,16 +2,30 @@
 
 .leaderboard {
     @include default-component;
+    padding: 2rem;
+    padding-inline: 4rem;
+
+    border-radius: .8em;
+
+    background-image: $sidebar-bg-gradient;
+
+    box-shadow: $dark-box-shadow;
 
     &__list {
         @include title-coloring;
-        font-weight: 900;
-
         list-style-type: decimal;
     }
 
     &__list-item {
-        font-size: $font-size-s;
+        font-size: 3.5rem;
         font-weight: 900;
+        font-family: $subheading-font;
+        
+        padding: .5rem .8rem;
+        margin: .5rem 0;
+
+        box-shadow: $dark-box-shadow;
+
+        border-radius: .2em;
     }
 }

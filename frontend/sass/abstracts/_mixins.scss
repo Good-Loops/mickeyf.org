@@ -226,6 +226,16 @@
     user-select: none;
 }
 
+// Canvas shadow effect
+@mixin canvas-shadow-effect {
+    box-shadow: $canvas-shadow;
+}
+
+// Dark box shadow effect
+@mixin dark-box-shadow-effect {
+    box-shadow: $dark-box-shadow;
+}
+
 //////////////////////// Navigation ////////////////////////
 // Default nav link styling
 @mixin nav-link {

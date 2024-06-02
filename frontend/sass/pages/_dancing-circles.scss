@@ -2,10 +2,11 @@
 
 .dancing-circles {
     display: grid;
-    gap: 2.5rem;
+    gap: 2em;
 
     &__canvas {
-        box-shadow: .3em .3em .8em $primary-dark, -.3em -.3em 1em $secondary;
+        @include canvas-shadow-effect;
+        justify-self: center;
     }
 
     &__upload-btn {
