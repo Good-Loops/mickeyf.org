@@ -43,3 +43,17 @@ a {
     text-decoration: none;
     cursor: $cursor-hover;
 }
+
+::-webkit-scrollbar {
+    width: .6em;
+}
+
+::-webkit-scrollbar-thumb {
+    background: $page-bg-gradient;
+    border-radius: 100vw;
+}
+
+::-webkit-scrollbar-track {
+    background: $page-bg-gradient;
+}
+

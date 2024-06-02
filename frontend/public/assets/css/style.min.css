@@ -71,6 +71,19 @@ a {
   cursor: url("../img/select.cur"), auto;
 }
 
+::-webkit-scrollbar {
+  width: 0.6em;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
+  border-radius: 100vw;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
+}
+
 body {
   font-family: "Space Grotesk", sans-serif;
 }
@@ -102,7 +115,7 @@ h1 {
   list-style: none;
   border-bottom: 0.2em solid rgba(234, 234, 251, 0.3);
   border-radius: 1em;
-  padding: 0.2em 1em;
+  padding: 0.3em 1em;
 }
 .nav__item {
   transition: transform 0.5s ease-in-out;
@@ -330,12 +343,12 @@ h1 {
   }
 }
 .p4-vega {
-  margin-bottom: 7rem;
   display: grid;
-  gap: 2rem;
+  gap: 2em;
 }
 .p4-vega__canvas {
-  box-shadow: 0 0 2em rgba(38, 38, 38, 0.6);
+  box-shadow: 0.3em 0.3em 0.8em hsl(203, 92%, 65%), -0.3em -0.3em 1em hsl(120, 73%, 75%);
+  justify-self: center;
 }
 .p4-vega__img {
   display: none;
@@ -397,10 +410,11 @@ h1 {
 }
 .dancing-circles {
   display: grid;
-  gap: 2.5rem;
+  gap: 2em;
 }
 .dancing-circles__canvas {
   box-shadow: 0.3em 0.3em 0.8em hsl(203, 92%, 65%), -0.3em -0.3em 1em hsl(120, 73%, 75%);
+  justify-self: center;
 }
 .dancing-circles__upload-btn {
   justify-self: center;
@@ -749,6 +763,11 @@ h1 {
   display: grid;
   row-gap: 10rem;
   justify-items: center;
+  padding: 2rem;
+  padding-inline: 4rem;
+  border-radius: 0.8em;
+  background-image: linear-gradient(to top left, rgba(133, 205, 250, 0.8) 35%, rgba(145, 238, 145, 0.8) 70%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .leaderboard__title {
   color: hsl(203, 92%, 65%);
@@ -760,10 +779,14 @@ h1 {
   color: hsl(203, 92%, 65%);
   -webkit-text-stroke: 0.05em rgba(234, 234, 251, 0.3);
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
-  font-weight: 900;
   list-style-type: decimal;
 }
 .leaderboard__list-item {
-  font-size: 4rem;
+  font-size: 3.5rem;
   font-weight: 900;
+  font-family: "Roboto", sans-serif;
+  padding: 0.5rem 0.8rem;
+  margin: 0.5rem 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0.2em;
 }

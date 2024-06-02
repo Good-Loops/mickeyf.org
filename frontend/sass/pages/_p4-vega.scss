@@ -1,13 +1,12 @@
 @use '../abstracts' as *;
 
 .p4-vega {
-    margin-bottom: 7rem;
-
     display: grid;
-    gap: 2rem;
+    gap: 2em;
 
     &__canvas {
-        box-shadow: 0 0 2em rgba(hsl(0, 0%, 15%), .6);
+        @include canvas-shadow-effect;
+        justify-self: center;
     }
 
     &__img {
