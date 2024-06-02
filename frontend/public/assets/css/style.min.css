@@ -71,6 +71,19 @@ a {
   cursor: url("../img/select.cur"), auto;
 }
 
+::-webkit-scrollbar {
+  width: 0.6em;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
+  border-radius: 100vw;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
+}
+
 body {
   font-family: "Space Grotesk", sans-serif;
 }
