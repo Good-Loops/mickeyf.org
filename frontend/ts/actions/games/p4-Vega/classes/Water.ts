@@ -50,6 +50,6 @@ export default class Water extends Entity {
         // Play a random note from the pentatonic scale
         const notes = scales["Pentatonic Scale"].notes;
         const note = notes[Math.floor(Math.random() * notes.length)];
-        this.synth.triggerAttackRelease(note, '8n');
+        this.synth.triggerAttackRelease(note, '4n');
     }
 }

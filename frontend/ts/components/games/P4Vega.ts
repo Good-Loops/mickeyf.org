@@ -17,15 +17,6 @@ function component() {
 
     const action = async () => {
         await p4Vega();
-
-        // Setup and play the background music using Tone.js
-        const player = new Tone.Player({
-            url: "./assets/audio/bg-sound-p4.mp3",
-            loop: true,
-            autostart: true
-        }).toDestination();
-
-        await Tone.start();
     }
 
     return {
