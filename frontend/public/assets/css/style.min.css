@@ -115,7 +115,7 @@ h1 {
   list-style: none;
   border-bottom: 0.2em solid rgba(234, 234, 251, 0.3);
   border-radius: 1em;
-  padding: 0.2em 1em;
+  padding: 0.3em 1em;
 }
 .nav__item {
   transition: transform 0.5s ease-in-out;
