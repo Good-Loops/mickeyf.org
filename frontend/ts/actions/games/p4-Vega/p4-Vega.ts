@@ -18,7 +18,6 @@ import bhYellowData from './data/bhYellow.json'
 
 // Libraries
 import * as PIXI from 'pixi.js';
-import 'pixi-sound';
 import Swal from "sweetalert2";
 
 export default async function p4Vega() {
