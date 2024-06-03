@@ -38,6 +38,20 @@ export default async function p4Vega() {
     // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
 
+    /////////////////// Background Music //////////////////
+    // Get the checkbox element
+    const bgMusicCheckbox = document.getElementById("bg-music-playing") as HTMLInputElement;
+    // Play or stop the music based on the checkbox state
+    const toggleMusic = () => {
+        if (bgMusicCheckbox.checked) {
+            window.p4MusicPlayer.start();
+        } else {
+            window.p4MusicPlayer.stop();
+        }
+    };
+    // Add an event listener to the checkbox to toggle music on change
+    bgMusicCheckbox.addEventListener('change', toggleMusic);
+
     ////////////////// Globals //////////////////
     // Game state
     let gameLive: boolean, gameOverTexts: PIXI.ContainerChild[] = [];
@@ -52,6 +66,7 @@ export default async function p4Vega() {
             loop: true,
             autostart: true
         }).toDestination();
+        
         // Set game state
         gameLive = true;
         // Background
@@ -255,4 +270,5 @@ export default async function p4Vega() {
     if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
+    window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleMusic });
 }
