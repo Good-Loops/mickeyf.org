@@ -5,7 +5,7 @@ require('dotenv').config();
 import Alpine from "alpinejs";
 import page from "page";
 // Import custom modules
-import setupRoutes from './routes/setUpRoutes';
+import setupRoutes from './utils/setUpRoutes';
 import initializeGlobals from "./utils/initializeGlobals";
 import EventListenerManager from './events/EventListenerManager';
 import { initializeObserver } from './events/eventManager';

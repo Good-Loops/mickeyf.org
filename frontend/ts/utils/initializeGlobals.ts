@@ -5,7 +5,7 @@ import page from "page";
 // Global methods
 import userLogIn from "../actions/login/userLogin";
 import userCreate from "../actions/register/userCreate";
-import leaderboard from "../leaderboard/leaderboard";
+import leaderboard from "../actions/leaderboard/leaderboard";
 
 // Global variables
 const initializeGlobals = () => {

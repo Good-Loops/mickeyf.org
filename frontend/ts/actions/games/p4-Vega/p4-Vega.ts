@@ -17,8 +17,10 @@ import bhRedData from './data/bhRed.json'
 import bhYellowData from './data/bhYellow.json'
 
 // Libraries
+import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
 import Swal from "sweetalert2";
+
 
 export default async function p4Vega() {
     /////////////////// Setup PixiJS renderer ////////////////// 
@@ -41,9 +43,18 @@ export default async function p4Vega() {
     let gameLive: boolean, gameOverTexts: PIXI.ContainerChild[] = [];
     // Game elements
     let sky: Sky, p4: P4, water: Water;
+    // Music Player
+    let musicPlayer: Tone.Player;
+    
 
     // Load game assets
     const load = async () => {
+        // Background music
+        musicPlayer = new Tone.Player({
+            url: "./assets/audio/bg-sound-p4.mp3",
+            loop: true,
+            autostart: true
+        }).toDestination();
         // Set game state
         gameLive = true;
         // Background
@@ -143,6 +154,8 @@ export default async function p4Vega() {
         water.destroy();
         BlackHole.destroy();
         stage.removeChildren();
+        // Stop music
+        musicPlayer.stop();
         // Load game assets
         await load();
         ticker.start();

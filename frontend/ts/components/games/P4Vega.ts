@@ -1,4 +1,5 @@
 import p4Vega from "../../actions/games/p4-Vega/p4-Vega";
+import * as Tone from 'tone';
 
 function component() {
     const render = () => {
