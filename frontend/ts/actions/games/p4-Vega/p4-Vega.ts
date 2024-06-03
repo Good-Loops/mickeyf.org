@@ -38,23 +38,35 @@ export default async function p4Vega() {
     // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
 
+    /////////////////// Background Music //////////////////
+    // Get the checkbox element
+    const bgMusicCheckbox = document.getElementById("bg-music-playing") as HTMLInputElement;
+    // Play or stop the music based on the checkbox state
+    const toggleMusic = () => {
+        if (bgMusicCheckbox.checked) {
+            window.p4MusicPlayer.start();
+        } else {
+            window.p4MusicPlayer.stop();
+        }
+    };
+    // Add an event listener to the checkbox to toggle music on change
+    bgMusicCheckbox.addEventListener('change', toggleMusic);
+
     ////////////////// Globals //////////////////
     // Game state
     let gameLive: boolean, gameOverTexts: PIXI.ContainerChild[] = [];
     // Game elements
     let sky: Sky, p4: P4, water: Water;
-    // Music Player
-    let musicPlayer: Tone.Player;
-    
 
     // Load game assets
     const load = async () => {
         // Background music
-        musicPlayer = new Tone.Player({
+        window.p4MusicPlayer = new Tone.Player({
             url: "./assets/audio/bg-sound-p4.mp3",
             loop: true,
             autostart: true
         }).toDestination();
+        
         // Set game state
         gameLive = true;
         // Background
@@ -123,6 +135,7 @@ export default async function p4Vega() {
 
         // Check for game over
         if (!gameLive) {
+            // console.log(p4, BlackHole.bHArray);
             ticker.stop();
             if (window.isLoggedIn) { await submitScore(); }
             gameOverTexts = await gameOver(gameLive, p4);
@@ -155,7 +168,7 @@ export default async function p4Vega() {
         BlackHole.destroy();
         stage.removeChildren();
         // Stop music
-        musicPlayer.stop();
+        window.p4MusicPlayer.stop();
         // Load game assets
         await load();
         ticker.start();
@@ -257,4 +270,5 @@ export default async function p4Vega() {
     if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
+    window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleMusic });
 }

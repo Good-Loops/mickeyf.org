@@ -17,8 +17,8 @@ export default class AudioHandler {
         return volumePercentage;
     }
 
-    public static processAudio(fileInput: HTMLInputElement, uploadButton: HTMLLabelElement) {
-        fileInput.addEventListener("change", function (): void {
+    public static processAudio = (fileInput: HTMLInputElement, uploadButton: HTMLLabelElement): void => {
+        const process = (): void => {
             // add "playing" class to button when audio starts playing
             uploadButton.classList.add("playing");
 
@@ -80,6 +80,11 @@ export default class AudioHandler {
             const detector: PitchDetector<Float32Array> = PitchDetector.forFloat32Array(analyser.fftSize);
             const input: Float32Array = new Float32Array(detector.inputLength);
             getCurrentPitch(analyser, detector, input, audioContext.sampleRate);
-        });
+        }
+        fileInput.addEventListener('change', process);
+
+        let componentId = 'dancing-circles';
+        if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
+        window.eventListeners[componentId].push({ element: fileInput, event: 'change', handler: process });
     }
 }

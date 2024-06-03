@@ -1,28 +1,29 @@
 import * as PIXI from "pixi.js";
-
-// The EventListenerRecord type is used to store event listeners for each component
-export type EventListenerRecord = {
-    element: Document | Element,
-    event: string,
-    handler: (event: Event) => void,
-};
+import * as Tone from "tone";
 
 // Stop animation function
 const stopAnimation = (animationId: number | null): void => {
-    if (animationId !== null) {
+    if (animationId) {
         cancelAnimationFrame(animationId);
     }
 };
 
 // Stop ticker function
 const stopTicker = (ticker: PIXI.Ticker | null): void => {
-    if (ticker !== null) {
+    if (ticker) {
         ticker.stop();
     }
 };
 
+// Stop background music function
+const stopBackgroundMusic = (Player: Tone.Player | null): void => {
+    if (Player) {
+        Player.stop();
+    }
+};
+
 // Mutation observer to reset page state when elements are removed from the DOM
-export const initializeObserver = (): MutationObserver => {
+const initObserver = (): MutationObserver => {
     const observer = new MutationObserver((mutations) => { // Callback function to execute when a mutation is observed
         mutations.forEach((mutation) => { // Iterate over each mutation
             if (mutation.removedNodes) { // Check if nodes were removed, that is, if the mutation is a removal
@@ -39,7 +40,7 @@ export const initializeObserver = (): MutationObserver => {
                                 break;
                             case "p4-vega":
                                 stopTicker(window.p4GameTicker);
-                                break;
+                                stopBackgroundMusic(window.p4MusicPlayer);
                         }
                         if (window.eventListeners[componentId]) {
                             window.eventListeners[componentId].forEach(({ element, event, handler }) => {
@@ -55,3 +56,5 @@ export const initializeObserver = (): MutationObserver => {
     observer.observe(document, { childList: true, subtree: true });
     return observer;
 };
+
+export default initObserver;

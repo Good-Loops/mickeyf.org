@@ -36,7 +36,7 @@ body {
 canvas {
     width: 60vw;
     box-sizing: content-box;
-    border-radius: .8em;
+    border-radius: $default-border-radius;
 }
 
 a {

@@ -3,11 +3,15 @@
 .u-canvas-title {
     justify-self: center;
 
-    padding: 1vh;
+    padding-inline: .3em;
+    padding-block: .1em;
 
     @include title-coloring;
 
     border-top: .15em double rgba($white, .3);
     border-bottom: .15em double rgba($white, .3);
+
     border-radius: .4em;
+
+    box-shadow: $darl-box-shadow-s;
 }
