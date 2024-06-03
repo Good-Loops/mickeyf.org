@@ -6,20 +6,20 @@ import Alpine from "alpinejs";
 import page from "page";
 // Import custom modules
 import setupRoutes from './utils/setUpRoutes';
-import initializeGlobals from "./utils/initializeGlobals";
-import EventListenerManager from './events/EventListenerManager';
-import { initializeObserver } from './events/eventManager';
+import initGlobals from "./utils/initGlobals";
+import initObserver from './utils/initObserver';
+import EventListenerManager from './classes/EventListenerManager';
 
 // Initialize global variables
-initializeGlobals();
+initGlobals();
 // Define routes using Page.js
 setupRoutes(page);
 // Start Alpine.js and Page.js
 Alpine.start();
 page.start();
-// Initialize event manager
-initializeObserver();
-// Initialize event listeners
+// Initialize mutation observer
+initObserver();
+// Initialize event listener manager
 document.addEventListener('DOMContentLoaded', () => {
     EventListenerManager.init();
 });
@@ -39,4 +39,4 @@ const firebaseConfig = {
     measurementId: process.env.FIREBASE_MEASUREMENT_ID
 };
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);

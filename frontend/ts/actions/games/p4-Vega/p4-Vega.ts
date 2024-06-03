@@ -43,14 +43,11 @@ export default async function p4Vega() {
     let gameLive: boolean, gameOverTexts: PIXI.ContainerChild[] = [];
     // Game elements
     let sky: Sky, p4: P4, water: Water;
-    // Music Player
-    let musicPlayer: Tone.Player;
-    
 
     // Load game assets
     const load = async () => {
         // Background music
-        musicPlayer = new Tone.Player({
+        window.p4MusicPlayer = new Tone.Player({
             url: "./assets/audio/bg-sound-p4.mp3",
             loop: true,
             autostart: true
@@ -123,6 +120,7 @@ export default async function p4Vega() {
 
         // Check for game over
         if (!gameLive) {
+            // console.log(p4, BlackHole.bHArray);
             ticker.stop();
             if (window.isLoggedIn) { await submitScore(); }
             gameOverTexts = await gameOver(gameLive, p4);
@@ -155,7 +153,7 @@ export default async function p4Vega() {
         BlackHole.destroy();
         stage.removeChildren();
         // Stop music
-        musicPlayer.stop();
+        window.p4MusicPlayer.stop();
         // Load game assets
         await load();
         ticker.start();

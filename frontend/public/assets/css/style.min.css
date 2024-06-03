@@ -344,11 +344,30 @@ h1 {
 }
 .p4-vega {
   display: grid;
+  grid-template-columns: min-content max-content;
   gap: 2em;
+}
+.p4-vega__title {
+  grid-column: end;
+}
+.p4-vega__ui {
+  grid-column: -1;
+  display: grid;
+}
+.p4-vega__ui--option-input {
+  appearance: none;
+  width: 0.5em;
+  height: 0.5em;
+  background-color: hsl(240, 67%, 95%);
+  border-radius: 50%;
+}
+.p4-vega__ui--option-input:checked {
+  background-color: #4CAF50;
 }
 .p4-vega__canvas {
   box-shadow: 0.3em 0.3em 0.8em hsl(203, 92%, 65%), -0.3em -0.3em 1em hsl(120, 73%, 75%);
   justify-self: center;
+  grid-column: end;
 }
 .p4-vega__img {
   display: none;

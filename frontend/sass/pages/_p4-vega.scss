@@ -2,11 +2,42 @@
 
 .p4-vega {
     display: grid;
+    grid-template-columns: min-content max-content;
     gap: 2em;
+
+    &__title {
+        grid-column: end;
+    }
+
+    &__ui {
+        grid-column: -1;
+
+        display: grid;
+
+        &--option {
+
+            &-input {
+                appearance: none;
+                width: .5em;
+                height: .5em;
+                background-color: $white;
+                border-radius: 50%;
+            
+                &:checked {
+                    background-color: #4CAF50;
+                }
+            }
+
+            &-title {
+
+            }
+        }
+    }
 
     &__canvas {
         @include canvas-shadow-effect;
         justify-self: center;
+        grid-column: end;
     }
 
     &__img {

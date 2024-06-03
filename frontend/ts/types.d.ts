@@ -6,10 +6,15 @@ import page from 'page';
 import IUserCreate from './register/interfaces/IUserCreate';
 import IUserLogin from './login/Interfaces/IUserLogin';
 
-// Event listener manager
-import { EventListenerRecord } from './events/eventManager';
+// Event listener Record
+type EventListenerRecord = { // For storing event listeners for each component
+    element: Document | Element,
+    event: string,
+    handler: (event: Event) => void
+};
 
-// Extend the Window interface to include custom properties
+// For adding custom properties/methods to the window object
+// making them accessible globally
 declare global {
     interface Window {
         // Libraries
@@ -17,15 +22,18 @@ declare global {
         page: typeof page;
 
         // Global methods
-        userCreate: () => IUserCreate;
-        userLogin: () => IUserLogin;
-        leaderboard: () => ILeaderboard;
+        userCreate: () => IUserCreate; // For user sign up
+        userLogin: () => IUserLogin; // For user login
+        leaderboard: () => ILeaderboard; // For retrieving leaderboard data  
 
         // Global variables
         isLoggedIn: boolean;
-
+        
         // Event listener manager
         eventListeners: Record<string, EventListenerRecord[]>;
+
+        // Players
+        p4MusicPlayer: Tone.Player | null;
 
         // Animation IDs
         homeAnimationID: number | null;

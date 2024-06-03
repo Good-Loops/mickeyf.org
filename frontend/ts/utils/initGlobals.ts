@@ -8,7 +8,7 @@ import userCreate from "../actions/register/userCreate";
 import leaderboard from "../actions/leaderboard/leaderboard";
 
 // Global variables
-const initializeGlobals = () => {
+const initGlobals = () => {
     // Libraries
     window.page = page;
     window.Alpine = Alpine;
@@ -25,4 +25,4 @@ const initializeGlobals = () => {
     window.isLoggedIn = false;
 };
 
-export default initializeGlobals;
+export default initGlobals;
