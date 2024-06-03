@@ -15,6 +15,10 @@ function component() {
                         <input class="p4-vega__ui--option-input" id="bg-music-playing" type="checkbox">
                         <span class="p4-vega__ui--option-title">Background Music</span>
                     </label>
+                     <!-- <label class="p4-vega__ui--option">
+                        <input class="p4-vega__ui--option-input" id="musical-notes-playing" type="checkbox">
+                        <span class="p4-vega__ui--option-title">Musical Notes Playing</span>
+                    </label> -->
                 </div>
             </section>   
         `;

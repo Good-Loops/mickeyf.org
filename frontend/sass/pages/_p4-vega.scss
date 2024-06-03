@@ -2,34 +2,61 @@
 
 .p4-vega {
     display: grid;
-    grid-template-columns: min-content max-content;
-    gap: 2em;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 3em;
 
     &__title {
-        grid-column: end;
+        grid-column: 2 / 3;
     }
 
     &__ui {
-        grid-column: -1;
+        grid-column: 1 / 2;
 
         display: grid;
+        grid-auto-rows: max-content;
+        grid-auto-flow: row;
+        gap: 1em;
 
         &--option {
+            display: grid;
+            grid-auto-columns: max-content;
+            grid-auto-flow: column;
+            gap: .5em;
+
+            box-shadow: $darl-box-shadow-s;
+
+            padding-block: .5em;
+            padding-inline: 1em;
+
+            border-radius: $default-border-radius;
+
+            transition: background-color .3s;
+
+            &:hover {
+                background-color: $primary-darker;
+                cursor: $cursor-hover;
+            }
 
             &-input {
                 appearance: none;
+                border-radius: 50%;
+
                 width: .5em;
                 height: .5em;
-                background-color: $white;
-                border-radius: 50%;
-            
+
+                background-color: $white-darker;
+
+                align-self: center;
+
                 &:checked {
-                    background-color: #4CAF50;
+                    background-color: $secondary;
                 }
             }
 
             &-title {
-
+                white-space: nowrap;
+                color: $white-darker;
+                font-size: $font-size-xxs;
             }
         }
     }
@@ -37,7 +64,7 @@
     &__canvas {
         @include canvas-shadow-effect;
         justify-self: center;
-        grid-column: end;
+        grid-column: 2 / 3;
     }
 
     &__img {
