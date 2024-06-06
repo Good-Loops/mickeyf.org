@@ -38,11 +38,12 @@ export default async function p4Vega() {
     // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
 
-    /////////////////// Background Music //////////////////
+    /////////////////// UI //////////////////
+    // Background music checkbox
     // Get the checkbox element
     const bgMusicCheckbox = document.getElementById("bg-music-playing") as HTMLInputElement;
     // Play or stop the music based on the checkbox state
-    const toggleMusic = () => {
+    const toggleBackgroundMusic = (): void => {
         if (bgMusicCheckbox.checked) {
             window.p4MusicPlayer.start();
         } else {
@@ -50,7 +51,23 @@ export default async function p4Vega() {
         }
     };
     // Add an event listener to the checkbox to toggle music on change
-    bgMusicCheckbox.addEventListener('change', toggleMusic);
+    bgMusicCheckbox.addEventListener('change', toggleBackgroundMusic);
+    // Dropdown menu for key selection
+    // Get the dropdown menu element
+    const toggleDropdown = (event: Event): void => {
+        const isDropdownBtn: boolean = (event.target as Element).matches('[data-dropdown-btn]');
+        if (!isDropdownBtn && (event.target as Element).closest('[data-dropdown]') !== null) return;
+
+        let currentDropdown: Element;
+        currentDropdown = (event.target as Element).closest('[data-dropdown]') as Element;
+        currentDropdown.classList.toggle('active');
+
+        document.querySelectorAll('[data-dropdown].active').forEach(dropdown => {
+            if (dropdown === currentDropdown) return;
+            dropdown.classList.remove('active');
+        });
+    }
+    document.addEventListener('click', toggleDropdown);
 
     ////////////////// Globals //////////////////
     // Game state
@@ -270,5 +287,5 @@ export default async function p4Vega() {
     if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
-    window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleMusic });
+    window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleBackgroundMusic });
 }

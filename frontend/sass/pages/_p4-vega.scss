@@ -18,6 +18,8 @@
         gap: 1em;
 
         &--option {
+            cursor: $cursor-hover;
+
             display: grid;
             grid-auto-columns: max-content;
             grid-auto-flow: column;
@@ -32,25 +34,10 @@
 
             transition: background-color .3s;
 
-            &:hover {
+
+            &:hover,
+            &:focus-within {
                 background-color: $primary-darker;
-                cursor: $cursor-hover;
-            }
-
-            &-input {
-                appearance: none;
-                border-radius: 50%;
-
-                width: .5em;
-                height: .5em;
-
-                background-color: $white-darker;
-
-                align-self: center;
-
-                &:checked {
-                    background-color: $secondary;
-                }
             }
 
             &-title {
@@ -58,6 +45,55 @@
                 color: $white-darker;
                 font-size: $font-size-xxs;
             }
+        }
+
+        &--checkbox {
+            appearance: none;
+            border-radius: 50%;
+    
+            width: .5em;
+            height: .5em;
+    
+            background-color: $white-darker;
+    
+            align-self: center;
+
+            cursor: $cursor-hover;
+    
+            &:checked {
+                background-color: $secondary;
+            }
+        }
+
+        &--dropdown {
+            position: relative;
+        }
+
+        &--dropdown-menu {
+            cursor: $cursor-hover;
+
+            position: absolute;
+            left: 2.5em;
+            top: calc(100% + .7em);
+
+            padding: .35em;
+
+            border-radius: $border-radius-s;
+
+            box-shadow: $darl-box-shadow-s;
+
+            
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(-1em);
+            transition: opacity .15s ease-in-out, 
+                        transform .15s ease-in-out; 
+        }
+
+        &--dropdown.active > &--dropdown-btn + &--dropdown-menu {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
         }
     }
 

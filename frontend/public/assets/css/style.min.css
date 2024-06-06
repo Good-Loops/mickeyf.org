@@ -56,8 +56,17 @@ html {
 }
 
 body {
-  background-image: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
   cursor: url("../img/normal.cur"), auto;
+  background-image: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background-color: transparent;
+  border: none;
+  cursor: url("../img/select.cur"), auto;
 }
 
 canvas {
@@ -360,6 +369,7 @@ h1 {
   gap: 1em;
 }
 .p4-vega__ui--option {
+  cursor: url("../img/select.cur"), auto;
   display: grid;
   grid-auto-columns: max-content;
   grid-auto-flow: column;
@@ -370,25 +380,46 @@ h1 {
   border-radius: 0.8em;
   transition: background-color 0.3s;
 }
-.p4-vega__ui--option:hover {
+.p4-vega__ui--option:hover, .p4-vega__ui--option:focus-within {
   background-color: hsl(203, 92%, 63%);
-  cursor: url("../img/select.cur"), auto;
 }
-.p4-vega__ui--option-input {
+.p4-vega__ui--option-title {
+  white-space: nowrap;
+  color: hsl(240, 67%, 90%);
+  font-size: 1.3rem;
+}
+.p4-vega__ui--checkbox {
   appearance: none;
   border-radius: 50%;
   width: 0.5em;
   height: 0.5em;
   background-color: hsl(240, 67%, 90%);
   align-self: center;
+  cursor: url("../img/select.cur"), auto;
 }
-.p4-vega__ui--option-input:checked {
+.p4-vega__ui--checkbox:checked {
   background-color: hsl(120, 73%, 75%);
 }
-.p4-vega__ui--option-title {
-  white-space: nowrap;
-  color: hsl(240, 67%, 90%);
-  font-size: 1.3rem;
+.p4-vega__ui--dropdown {
+  position: relative;
+}
+.p4-vega__ui--dropdown-menu {
+  cursor: url("../img/select.cur"), auto;
+  position: absolute;
+  left: 2.5em;
+  top: calc(100% + 0.7em);
+  padding: 0.35em;
+  border-radius: 0.5em;
+  box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-1em);
+  transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+.p4-vega__ui--dropdown.active > .p4-vega__ui--dropdown-btn + .p4-vega__ui--dropdown-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 .p4-vega__canvas {
   box-shadow: 0.3em 0.3em 0.8em hsl(203, 92%, 65%), -0.3em -0.3em 1em hsl(120, 73%, 75%);
