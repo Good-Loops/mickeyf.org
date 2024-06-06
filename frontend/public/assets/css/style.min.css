@@ -369,21 +369,21 @@ h1 {
   gap: 1em;
 }
 .p4-vega__ui--option {
-  cursor: url("../img/select.cur"), auto;
   display: grid;
   grid-auto-columns: max-content;
   grid-auto-flow: column;
   gap: 0.5em;
+  cursor: url("../img/select.cur"), auto;
   box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
   padding-block: 0.5em;
   padding-inline: 1em;
   border-radius: 0.8em;
   transition: background-color 0.3s;
 }
-.p4-vega__ui--option:hover, .p4-vega__ui--option:focus-within {
+.p4-vega__ui--option:hover {
   background-color: hsl(203, 92%, 63%);
 }
-.p4-vega__ui--option-title {
+.p4-vega__ui--option-btn {
   white-space: nowrap;
   color: hsl(240, 67%, 90%);
   font-size: 1.3rem;
@@ -401,14 +401,35 @@ h1 {
   background-color: hsl(120, 73%, 75%);
 }
 .p4-vega__ui--dropdown {
+  cursor: url("../img/select.cur"), auto;
+  box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
+  padding-block: 0.5em;
+  padding-inline: 1em;
+  border-radius: 0.8em;
+  transition: background-color 0.3s;
   position: relative;
+}
+.p4-vega__ui--dropdown:hover {
+  background-color: hsl(203, 92%, 63%);
+}
+.p4-vega__ui--dropdown-btn {
+  white-space: nowrap;
+  color: hsl(240, 67%, 90%);
+  font-size: 1.3rem;
+}
+.p4-vega__ui--dropdown-btn {
+  width: 100%;
+  text-align: left;
+}
+.p4-vega__ui--dropdown.active + .p4-vega__ui--dropdown-btn, .p4-vega__ui--dropdown-btn:hover {
+  background-color: hsl(203, 92%, 63%);
 }
 .p4-vega__ui--dropdown-menu {
   cursor: url("../img/select.cur"), auto;
   position: absolute;
-  left: 2.5em;
+  left: 4em;
   top: calc(100% + 0.7em);
-  padding: 0.35em;
+  padding: 0.5em;
   border-radius: 0.5em;
   box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
   pointer-events: none;

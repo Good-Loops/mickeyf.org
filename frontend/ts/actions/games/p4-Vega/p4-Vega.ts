@@ -60,7 +60,7 @@ export default async function p4Vega() {
 
         let currentDropdown: Element;
         currentDropdown = (event.target as Element).closest('[data-dropdown]') as Element;
-        currentDropdown.classList.toggle('active');
+        if(currentDropdown) currentDropdown.classList.toggle('active');
 
         document.querySelectorAll('[data-dropdown].active').forEach(dropdown => {
             if (dropdown === currentDropdown) return;

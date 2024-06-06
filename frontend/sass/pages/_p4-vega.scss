@@ -18,33 +18,12 @@
         gap: 1em;
 
         &--option {
-            cursor: $cursor-hover;
-
             display: grid;
             grid-auto-columns: max-content;
             grid-auto-flow: column;
             gap: .5em;
 
-            box-shadow: $darl-box-shadow-s;
-
-            padding-block: .5em;
-            padding-inline: 1em;
-
-            border-radius: $default-border-radius;
-
-            transition: background-color .3s;
-
-
-            &:hover,
-            &:focus-within {
-                background-color: $primary-darker;
-            }
-
-            &-title {
-                white-space: nowrap;
-                color: $white-darker;
-                font-size: $font-size-xxs;
-            }
+            @include default-option;
         }
 
         &--checkbox {
@@ -66,17 +45,29 @@
         }
 
         &--dropdown {
+            @include default-option;
+
             position: relative;
+        }
+
+        &--dropdown-btn {
+            width: 100%;
+            text-align: left;
+        }
+
+        &--dropdown.active + &--dropdown-btn,
+        &--dropdown-btn:hover {
+            background-color: $primary-darker;
         }
 
         &--dropdown-menu {
             cursor: $cursor-hover;
 
             position: absolute;
-            left: 2.5em;
+            left: 4em;
             top: calc(100% + .7em);
 
-            padding: .35em;
+            padding: .5em;
 
             border-radius: $border-radius-s;
 

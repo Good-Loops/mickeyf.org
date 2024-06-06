@@ -13,20 +13,20 @@ function component() {
                 <div class="p4-vega__ui">
                     <label class="p4-vega__ui--option">
                         <input class="p4-vega__ui--checkbox" id="bg-music-playing" type="checkbox" checked>
-                        <span class="p4-vega__ui--option-title">Background Music</span>
+                        <span class="p4-vega__ui--option-btn">Background Music</span>
                     </label>
                     <label class="p4-vega__ui--option">
                         <input class="p4-vega__ui--checkbox" id="musical-notes-playing" type="checkbox">
-                        <span class="p4-vega__ui--option-title">Notes Playing</span>
+                        <span class="p4-vega__ui--option-btn">Notes Playing</span>
                     </label>
-                    <label class="p4-vega__ui--option">
-                        <div class="p4-vega__ui--dropdown" data-dropdown>
-                            <button class="p4-vega__ui--dropdown-btn p4-vega__ui--option-title" data-dropdown-btn>Key:</button>
-                            <div class="p4-vega__ui--dropdown-menu p4-vega__ui--option-title">
-                                Content
-                            </div>
+                    <!-- <label class="p4-vega__ui--option"> -->
+                    <div class="p4-vega__ui--dropdown" data-dropdown>
+                        <button class="p4-vega__ui--dropdown-btn" data-dropdown-btn>Key:</button>
+                        <div class="p4-vega__ui--dropdown-menu keys">
+                            Content
                         </div>
-                    </label>
+                    </div>
+                    <!-- </label> -->
                         <!-- <select class="p4-vega__ui--dropdown" id="dropdown-menu"> -->
                             <!-- <option value="C">C</option>
                             <option value="C#/Db">C#/Db</option>

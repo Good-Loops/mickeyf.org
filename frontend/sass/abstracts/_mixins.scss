@@ -152,25 +152,6 @@
     user-select: none;
 }
 
-//////////////////////// Social Media ////////////////////////
-// Social media button styling
-@mixin social-media-btn {
-    @include default-btn;
-    padding-block: 5rem;
-    padding-inline: .05rem;
-
-    fill: $primary-light;
-
-    &:hover {
-        @include default-btn-hover;
-    }
-
-    &:active {
-        @include default-btn-active;
-    }
-}
-
-
 // Default button hover effect
 @mixin default-btn-hover {
     color: $white;
@@ -194,7 +175,7 @@
 // Menu button defaults
 @mixin default-menu-btn {
     display: none;
-    
+
     fill: $primary-light;
 
     background: none;
@@ -203,8 +184,51 @@
     position: fixed;
     top: -2.8em;
     left: -8.5em;
-    
+
     transform: scale(.35);
+}
+
+///////////////////////// UI Elements ////////////////////////
+// Default option styling
+@mixin default-option {
+    cursor: $cursor-hover;
+
+    box-shadow: $darl-box-shadow-s;
+
+    padding-block: .5em;
+    padding-inline: 1em;
+
+    border-radius: $default-border-radius;
+
+    transition: background-color .3s;
+
+    &:hover {
+        background-color: $primary-darker;
+    }
+
+    &-btn {
+        white-space: nowrap;
+        color: $white-darker;
+        font-size: $font-size-xxs;
+    }
+}
+
+//////////////////////// Social Media ////////////////////////
+// Social media button styling
+@mixin social-media-btn {
+    @include default-btn;
+    padding-block: 5rem;
+    padding-inline: .05rem;
+
+    fill: $primary-light;
+
+    &:hover {
+        @include default-btn-hover;
+    }
+
+    &:active {
+        @include default-btn-active;
+    }
 }
 
 //////////////////////// Shadows ////////////////////////
@@ -269,6 +293,7 @@
     }
 }
 
+//////////////////////// Media Queries ////////////////////////
 // This mixin generates media queries for the given map
 // Maps are defined in the variables file
 @mixin generate-media-queries($map) {
