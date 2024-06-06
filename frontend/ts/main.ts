@@ -8,7 +8,7 @@ import page from "page";
 import setupRoutes from './utils/setUpRoutes';
 import initGlobals from "./utils/initGlobals";
 import initObserver from './utils/initObserver';
-import EventListenerManager from './classes/EventListenerManager';
+import EventListenerManager from './helpers/EventListenerManager';
 
 // Initialize global variables
 initGlobals();
