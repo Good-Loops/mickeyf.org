@@ -19,28 +19,23 @@ function component() {
                         <input class="p4-vega__ui--checkbox" id="musical-notes-playing" type="checkbox">
                         <span class="p4-vega__ui--option-btn">Notes Playing</span>
                     </label>
-                    <!-- <label class="p4-vega__ui--option"> -->
                     <div class="p4-vega__ui--dropdown" data-dropdown>
-                        <button class="p4-vega__ui--dropdown-btn" data-dropdown-btn>Key:</button>
-                        <div class="p4-vega__ui--dropdown-menu keys">
-                            Content
+                        <button class="p4-vega__ui--dropdown-btn" data-dropdown-btn>Key: &nbsp;<span data-selected-key>C</span></button>
+                        <div class="p4-vega__ui--dropdown-menu">
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="C">C</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="C#/Db">C#/Db</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="D">D</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="D#/Eb">D#/Eb</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="E">E</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="F">F</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="F#/Gb">F#/Gb</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="G">G</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="G#/Ab">G#/Ab</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="A">A</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="A#/Bb">A#/Bb</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="B">B</div>
                         </div>
                     </div>
-                    <!-- </label> -->
-                        <!-- <select class="p4-vega__ui--dropdown" id="dropdown-menu"> -->
-                            <!-- <option value="C">C</option>
-                            <option value="C#/Db">C#/Db</option>
-                            <option value="D">D</option>
-                            <option value="D#/Eb">D#/Eb</option>
-                            <option value="E">E</option>
-                            <option value="F">F</option>
-                            <option value="F#/Gb">F#/Gb</option>
-                            <option value="G">G</option>
-                            <option value="G#/Ab">G#/Ab</option>
-                            <option value="A">A</option>
-                            <option value="A#/Bb">A#/Bb</option>
-                            <option value="B">B</option> -->
-                        <!-- </select> -->
                 </div>
             </section>   
         `;

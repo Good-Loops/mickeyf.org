@@ -48,37 +48,47 @@
             @include default-option;
 
             position: relative;
-        }
 
-        &--dropdown-btn {
-            width: 100%;
-            text-align: left;
+            &-menu {
+                cursor: $cursor-hover;
+
+                position: absolute;
+                left: 4em;
+                top: calc(100% + .1em);
+
+                padding: .5em;
+
+                border-radius: $border-radius-s;
+
+                box-shadow: $darl-box-shadow-s;
+
+
+                pointer-events: none;
+                opacity: 0;
+                transform: translateY(-1em);
+                transition: opacity .15s ease-in-out,
+                            transform .15s ease-in-out;
+
+                &-item {
+                    padding: .5em;
+                    font-size: $font-size-xxs;
+                    color: $white-darker;
+
+                    &:hover {
+                        background-color: $primary-darker;
+                        border-radius: $border-radius-s;
+                    }
+                }
+
+                &.active {
+                    display: block;
+                }
+            }
         }
 
         &--dropdown.active + &--dropdown-btn,
         &--dropdown-btn:hover {
             background-color: $primary-darker;
-        }
-
-        &--dropdown-menu {
-            cursor: $cursor-hover;
-
-            position: absolute;
-            left: 4em;
-            top: calc(100% + .7em);
-
-            padding: .5em;
-
-            border-radius: $border-radius-s;
-
-            box-shadow: $darl-box-shadow-s;
-
-            
-            pointer-events: none;
-            opacity: 0;
-            transform: translateY(-1em);
-            transition: opacity .15s ease-in-out, 
-                        transform .15s ease-in-out; 
         }
 
         &--dropdown.active > &--dropdown-btn + &--dropdown-menu {

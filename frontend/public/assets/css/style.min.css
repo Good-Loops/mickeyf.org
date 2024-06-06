@@ -417,18 +417,11 @@ h1 {
   color: hsl(240, 67%, 90%);
   font-size: 1.3rem;
 }
-.p4-vega__ui--dropdown-btn {
-  width: 100%;
-  text-align: left;
-}
-.p4-vega__ui--dropdown.active + .p4-vega__ui--dropdown-btn, .p4-vega__ui--dropdown-btn:hover {
-  background-color: hsl(203, 92%, 63%);
-}
 .p4-vega__ui--dropdown-menu {
   cursor: url("../img/select.cur"), auto;
   position: absolute;
   left: 4em;
-  top: calc(100% + 0.7em);
+  top: calc(100% + 0.1em);
   padding: 0.5em;
   border-radius: 0.5em;
   box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
@@ -436,6 +429,21 @@ h1 {
   opacity: 0;
   transform: translateY(-1em);
   transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+.p4-vega__ui--dropdown-menu-item {
+  padding: 0.5em;
+  font-size: 1.3rem;
+  color: hsl(240, 67%, 90%);
+}
+.p4-vega__ui--dropdown-menu-item:hover {
+  background-color: hsl(203, 92%, 63%);
+  border-radius: 0.5em;
+}
+.p4-vega__ui--dropdown-menu.active {
+  display: block;
+}
+.p4-vega__ui--dropdown.active + .p4-vega__ui--dropdown-btn, .p4-vega__ui--dropdown-btn:hover {
+  background-color: hsl(203, 92%, 63%);
 }
 .p4-vega__ui--dropdown.active > .p4-vega__ui--dropdown-btn + .p4-vega__ui--dropdown-menu {
   opacity: 1;
