@@ -1,5 +1,5 @@
-class EventListenerManager {
-    static init() {
+export default class EventListenerManager {
+    public static init() {
         this.initSidebarToggle();
         this.initTokenVerification();
         this.initLogoutButton();
@@ -65,7 +65,7 @@ class EventListenerManager {
     }
 
     private static initLogoutButton() {
-        const logoutButton = document.getElementById('logoutButton') as HTMLElement;
+        const logoutButton = document.querySelector('[data-logout-btn]') as HTMLElement;
         if (logoutButton) {
             logoutButton.addEventListener('click', (event) => {
                 event.preventDefault();
@@ -78,5 +78,3 @@ class EventListenerManager {
     }
 
 }
-
-export default EventListenerManager;

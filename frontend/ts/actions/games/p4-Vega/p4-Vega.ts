@@ -1,16 +1,16 @@
 // Utilities
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
-import { getRandomInt } from "../../../utils/random";
-import gameOver from "../../../utils/gameOver";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
+import { getRandomInt } from '../../../utils/random';
+import gameOver from '../../../utils/gameOver';
 
 // Helpers
-import Dropdown from "../../../helpers/Dropdown";
+import Dropdown from '../../../helpers/Dropdown';
 
 // Game elements
-import P4 from "./classes/P4";
-import Water from "./classes/Water";
-import BlackHole from "./classes/BlackHole";
-import Sky from "./classes/Sky";
+import P4 from './classes/P4';
+import Water from './classes/Water';
+import BlackHole from './classes/BlackHole';
+import Sky from './classes/Sky';
 
 // Entity data
 import p4Data from './data/p4.json';
@@ -20,10 +20,9 @@ import bhRedData from './data/bhRed.json'
 import bhYellowData from './data/bhYellow.json'
 
 // Libraries
+import Swal from 'sweetalert2';
 import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
-import Swal from "sweetalert2";
-
 
 export default async function p4Vega() {
     /////////////////// Setup PixiJS renderer ////////////////// 
@@ -34,8 +33,8 @@ export default async function p4Vega() {
     });
     // Set canvas properties
     const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
-    canvas.className = "p4-vega__canvas";
-    canvas.id = "p4-canvas";
+    canvas.className = 'p4-vega__canvas';
+    canvas.id = 'p4-canvas';
     // Add the canvas to the DOM
     document.querySelector('[data-p4-vega]')!.appendChild(canvas);
     // Create stage
@@ -44,7 +43,7 @@ export default async function p4Vega() {
     /////////////////// UI //////////////////
     // Background music checkbox
     // Get the checkbox element
-    const bgMusicCheckbox = document.querySelector('[data-bg-music-playing]') as HTMLInputElement;
+    const bgMusicCheckbox: HTMLInputElement = document.querySelector('[data-bg-music-playing]') as HTMLInputElement;
     // Play or stop the music based on the checkbox state
     const toggleBackgroundMusic = (): void => {
         if (bgMusicCheckbox.checked) {
@@ -69,7 +68,7 @@ export default async function p4Vega() {
     const load = async () => {
         // Background music
         window.p4MusicPlayer = new Tone.Player({
-            url: "./assets/audio/bg-sound-p4.mp3",
+            url: './assets/audio/bg-sound-p4.mp3',
             loop: true,
             autostart: true,
         }).toDestination();
@@ -223,24 +222,24 @@ export default async function p4Vega() {
     // User input
     const handleKeydown = (key: Event): void => {
         switch ((<KeyboardEvent>key).code) {
-            case "ArrowRight":
+            case 'ArrowRight':
                 key.preventDefault();
                 p4.isMovingRight = true;
                 break;
-            case "ArrowLeft":
+            case 'ArrowLeft':
                 key.preventDefault();
                 p4.isMovingLeft = true;
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 key.preventDefault();
                 p4.isMovingUp = true;
                 break;
-            case "ArrowDown":
+            case 'ArrowDown':
                 key.preventDefault();
                 p4.isMovingDown = true;
                 break;
             // Restart game
-            case "Space":
+            case 'Space':
                 key.preventDefault();
                 if (!gameLive) restart();
                 break;
@@ -250,19 +249,19 @@ export default async function p4Vega() {
     }
     const handleKeyup = (key: Event): void => {
         switch ((<KeyboardEvent>key).code) {
-            case "ArrowRight":
+            case 'ArrowRight':
                 key.preventDefault();
                 p4.isMovingRight = false;
                 break;
-            case "ArrowLeft":
+            case 'ArrowLeft':
                 key.preventDefault();
                 p4.isMovingLeft = false;
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 key.preventDefault();
                 p4.isMovingUp = false;
                 break;
-            case "ArrowDown":
+            case 'ArrowDown':
                 key.preventDefault();
                 p4.isMovingDown = false;
                 break;
@@ -270,10 +269,10 @@ export default async function p4Vega() {
                 break;
         }
     }
-    document.addEventListener("keyup", handleKeyup);
-    document.addEventListener("keydown", handleKeydown);
+    document.addEventListener('keyup', handleKeyup);
+    document.addEventListener('keydown', handleKeydown);
 
-    let componentId = "p4-vega";
+    let componentId = 'p4-vega';
     if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });

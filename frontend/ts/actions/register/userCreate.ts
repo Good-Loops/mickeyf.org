@@ -10,9 +10,9 @@ export default function userCreate(): IUserCreate {
             user_password: ""
         },
         createUser: function (): void {
-            const user_name: string = (<HTMLInputElement>document.getElementById('user-name')).value;
-            const email: string = (<HTMLInputElement>document.getElementById('email')).value;
-            const user_password: string = (<HTMLInputElement>document.getElementById('password')).value;
+            const user_name: string = (<HTMLInputElement>document.querySelector('[data-user-name]')).value;
+            const email: string = (<HTMLInputElement>document.querySelector('[data-email]')).value;
+            const user_password: string = (<HTMLInputElement>document.querySelector('[data-password]')).value;
 
             const environment: string = process.env.NODE_ENV as string; // Determine environment
             const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
