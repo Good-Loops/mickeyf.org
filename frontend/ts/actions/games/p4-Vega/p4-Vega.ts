@@ -168,6 +168,8 @@ export default async function p4Vega() {
     // Restart game
     const restart = async () => {
         gameLive = true;
+        // Clear black hole array
+        BlackHole.bHAnimArray = [];
         // Clear stage
         p4.destroy();
         water.destroy();
