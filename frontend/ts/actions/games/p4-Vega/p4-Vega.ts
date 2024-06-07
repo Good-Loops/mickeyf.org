@@ -3,6 +3,9 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
 import { getRandomInt } from "../../../utils/random";
 import gameOver from "../../../utils/gameOver";
 
+// Helpers
+import Dropdown from "../../../helpers/Dropdown";
+
 // Game elements
 import P4 from "./classes/P4";
 import Water from "./classes/Water";
@@ -53,35 +56,8 @@ export default async function p4Vega() {
     // Add an event listener to the checkbox to toggle music on change
     bgMusicCheckbox.addEventListener('change', toggleBackgroundMusic);
 
-    // Toggle dropdown menu for key selection
-    const toggleDropdown = (event: Event): void => {
-        const isDropdownBtn: boolean = (event.target as Element).matches('[data-dropdown-btn]')
-                                        || (event.target as Element).matches('[data-selected-key]')
-                                        || (event.target as Element).matches('[data-dropdown]');
-        if (!isDropdownBtn && (event.target as Element).closest('[data-dropdown]') !== null) return;
-
-        let currentDropdown: Element;
-        currentDropdown = (event.target as Element).closest('[data-dropdown]') as Element;
-        if(currentDropdown) currentDropdown.classList.toggle('active');
-
-        document.querySelectorAll('[data-dropdown].active').forEach(dropdown => {
-            if (dropdown === currentDropdown) return;
-            dropdown.classList.remove('active');
-        });
-    }
-    document.addEventListener('click', toggleDropdown);
-
-    // Toggle key selection
-    const toggleKeySelection = (event: Event): void => {
-        const selectedKey: string = (event.target as Element).getAttribute('data-item') as string;
-        const dropdown: Element = document.querySelector('.p4-vega__ui--dropdown') as Element;
-
-        if (selectedKey) {
-            document.querySelector('[data-selected-key]')!.textContent = selectedKey;
-            dropdown.classList.remove('active');
-        }
-    }
-    document.addEventListener('click', toggleKeySelection);
+    document.addEventListener('click', Dropdown.toggle);
+    document.addEventListener('click', Dropdown.toggleKeySelection);
 
     ////////////////// Globals //////////////////
     // Game state
@@ -302,6 +278,6 @@ export default async function p4Vega() {
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
     window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleBackgroundMusic });
-    window.eventListeners[componentId].push({ element: document, event: 'click', handler: toggleDropdown });
-    window.eventListeners[componentId].push({ element: document, event: 'click', handler: toggleKeySelection });
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: Dropdown.toggle });
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: Dropdown.toggleKeySelection });
 }
