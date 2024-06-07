@@ -37,14 +37,14 @@ export default async function p4Vega() {
     canvas.className = "p4-vega__canvas";
     canvas.id = "p4-canvas";
     // Add the canvas to the DOM
-    document.getElementById("p4-vega")!.appendChild(canvas);
+    document.querySelector('[data-p4-vega]')!.appendChild(canvas);
     // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
 
     /////////////////// UI //////////////////
     // Background music checkbox
     // Get the checkbox element
-    const bgMusicCheckbox = document.getElementById("bg-music-playing") as HTMLInputElement;
+    const bgMusicCheckbox = document.querySelector('[data-bg-music-playing]') as HTMLInputElement;
     // Play or stop the music based on the checkbox state
     const toggleBackgroundMusic = (): void => {
         if (bgMusicCheckbox.checked) {
@@ -76,14 +76,14 @@ export default async function p4Vega() {
         
         // Set game state
         gameLive = true;
-        // Background
         sky = new Sky(stage);
+        // Background
         // Get images
-        const p4Image: HTMLImageElement = document.getElementById('p4') as HTMLImageElement;
-        const waterImage: HTMLImageElement = document.getElementById('water') as HTMLImageElement;
-        const bhBlueImage: HTMLImageElement = document.getElementById('bhBlue') as HTMLImageElement;
-        const bhRedImage: HTMLImageElement = document.getElementById('bhRed') as HTMLImageElement;
-        const bhYellowImage: HTMLImageElement = document.getElementById('bhYellow') as HTMLImageElement;
+        const p4Image: HTMLImageElement = document.querySelector('[data-p4]') as HTMLImageElement;
+        const waterImage: HTMLImageElement = document.querySelector('[data-water]') as HTMLImageElement;
+        const bhBlueImage: HTMLImageElement = document.querySelector('[data-bhBlue]') as HTMLImageElement;
+        const bhRedImage: HTMLImageElement = document.querySelector('[data-bhRed]') as HTMLImageElement;
+        const bhYellowImage: HTMLImageElement = document.querySelector('[data-bhYellow]') as HTMLImageElement;
         // Load images as textures
         const p4Texture: PIXI.Texture = await PIXI.Assets.load(p4Image) as PIXI.Texture;
         const waterTexture: PIXI.Texture = await PIXI.Assets.load(waterImage) as PIXI.Texture;

@@ -3,20 +3,20 @@ import p4Vega from "../../actions/games/p4-Vega/p4-Vega";
 function component() {
     const render = () => {
         return /*html*/`
-            <section class="p4-vega" id="p4-vega">
+            <section class="p4-vega" data-p4-vega>
                 <h1 class="p4-vega__title u-canvas-title">p4-Vega</h1>
-                <img id="p4" src="./sprites/p4Vega/p4.png" style="display: none;">
-                <img id="water" src="./sprites/p4Vega/water.png" style="display: none;">
-                <img id="bhBlue" src="./sprites/p4Vega/bhBlue.png" style="display: none;">
-                <img id="bhRed" src="./sprites/p4Vega/bhRed.png" style="display: none;">
-                <img id="bhYellow" src="./sprites/p4Vega/bhYellow.png" style="display: none;">
+                <img src="./sprites/p4Vega/p4.png" style="display: none;" data-p4>
+                <img src="./sprites/p4Vega/water.png" style="display: none;" data-water>
+                <img src="./sprites/p4Vega/bhBlue.png" style="display: none;" data-bhBlue>
+                <img src="./sprites/p4Vega/bhRed.png" style="display: none;" data-bhRed>
+                <img src="./sprites/p4Vega/bhYellow.png" style="display: none;" data-bhYellow>
                 <div class="p4-vega__ui">
                     <label class="p4-vega__ui--option">
-                        <input class="p4-vega__ui--checkbox" id="bg-music-playing" type="checkbox" checked>
+                        <input class="p4-vega__ui--checkbox" type="checkbox" checked data-bg-music-playing>
                         <span class="p4-vega__ui--option-btn">Background Music</span>
                     </label>
                     <label class="p4-vega__ui--option">
-                        <input class="p4-vega__ui--checkbox" id="musical-notes-playing" type="checkbox">
+                        <input class="p4-vega__ui--checkbox" type="checkbox" data-musical-notes-playing>
                         <span class="p4-vega__ui--option-btn">Notes Playing</span>
                     </label>
                     <div class="p4-vega__ui--dropdown" data-dropdown>
