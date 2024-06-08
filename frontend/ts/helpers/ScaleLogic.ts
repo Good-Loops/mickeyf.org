@@ -46,7 +46,7 @@ class ScaleLogic {
         const notes = ScaleLogic.selectedScale.notes;
 
         // Determine the function to get the next note based on the scale
-        const getNextNoteFunctionG = ScaleLogic[`getNextNoteFor${ScaleLogic.selectedScale.name}`]; 
+        const getNextNoteFunction = ScaleLogic[`getNextNoteFor${ScaleLogic.selectedScale.name}`]; 
 
         if (typeof getNextNoteFunction === 'function') {
             return getNextNoteFunction(notes, lastPlayedNote!, isFirstNote);
