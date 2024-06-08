@@ -57,6 +57,7 @@ export default async function p4Vega() {
 
     document.addEventListener('click', Dropdown.toggle);
     document.addEventListener('click', Dropdown.toggleKeySelection);
+    document.addEventListener('click', Dropdown.toggleScaleSelection);
 
     ////////////////// Globals //////////////////
     // Game state
@@ -281,4 +282,5 @@ export default async function p4Vega() {
     window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleBackgroundMusic });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: Dropdown.toggle });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: Dropdown.toggleKeySelection });
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: Dropdown.toggleScaleSelection });
 }

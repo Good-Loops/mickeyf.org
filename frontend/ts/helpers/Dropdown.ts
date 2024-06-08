@@ -3,10 +3,11 @@
 export default class Dropdown {
     // The toggle method toggles the active class of a dropdown element
     public static toggle = (event: Event): void => {
-        // Check if the event target is a dropdown button, selected key element, or a dropdown element
+        // Check if the event target is a dropdown button, selected element, or a dropdown element
         const isDropdownBtn: boolean = (event.target as Element).matches('[data-dropdown-btn]')
+                                        || (event.target as Element).matches('[data-dropdown]')
                                         || (event.target as Element).matches('[data-selected-key]')
-                                        || (event.target as Element).matches('[data-dropdown]');
+                                        || (event.target as Element).matches('[data-selected-scale]');
 
         // If the event target is not a dropdown button, selected key element, or a dropdown element
         // and the target is not null, return
@@ -39,6 +40,20 @@ export default class Dropdown {
         // text content to the selected key
         if (selectedKey) {
             document.querySelector('[data-selected-key]')!.textContent = selectedKey;
+            dropdown.classList.remove('active');
+        }
+    }
+
+    public static toggleScaleSelection = (event: Event): void => {
+        // Get the selected scale as a string from the event target
+        const selectedScale: string = (event.target as Element).getAttribute('data-item') as string;
+        // Get the dropdown element
+        const dropdown: Element = document.querySelector('[data-dropdown]') as Element;
+
+        // If there is a selected scale, set the selected scale 
+        // text content to the selected scale
+        if (selectedScale) {
+            document.querySelector('[data-selected-scale]')!.textContent = selectedScale;
             dropdown.classList.remove('active');
         }
     }

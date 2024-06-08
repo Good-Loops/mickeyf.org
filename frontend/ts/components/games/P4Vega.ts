@@ -36,6 +36,41 @@ function component() {
                             <div class="p4-vega__ui--dropdown-menu-item" data-item="B">B</div>
                         </div>
                     </div>
+                    <div class="p4-vega__ui--dropdown" data-dropdown>
+                        <button class="p4-vega__ui--dropdown-btn" data-dropdown-btn>Scale: &nbsp;<span data-selected-scale>Major Scale</span></button>
+                        <div class="p4-vega__ui--dropdown-menu">
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Major Scale">Major Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Minor Scale">Minor Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Pentatonic Scale">Pentatonic Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Blues Scale">Blues Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Dorian Scale">Dorian Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Mixolydian Scale">Mixolydian Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Phrygian Scale">Phrygian Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Lydian Scale">Lydian Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Locrian Scale">Locrian Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Chromatic Scale">Chromatic Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Harmonic Major Scale">Harmonic Major Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Melodic Minor Scale">Melodic Minor Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Whole Tone Scale">Whole Tone Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Hungarian Minor Scale">Hungarian Minor Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Double Harmonic Scale">Double Harmonic Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Neapolitan Major Scale">Neapolitan Major Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Neapolitan Minor Scale">Neapolitan Minor Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Augmented Scale">Augmented Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Hexatonic Scale">Hexatonic Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Enigmatic Scale">Enigmatic Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Spanish Gypsy Scale">Spanish Gypsy Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Hirajoshi Scale">Hirajoshi Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Balinese Pelog Scale">Balinese Pelog Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Egyptian Scale">Egyptian Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Hungarian Gypsy Scale">Hungarian Gypsy Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Persian Scale">Persian Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Tritone Scale">Tritone Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Flamenco Scale">Flamenco Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Iwato Scale">Iwato Scale</div>
+                            <div class="p4-vega__ui--dropdown-menu-item" data-item="Blues Heptatonic Scale">Blues Heptatonic Scale</div>
+                        </div>
+                    </div>
                 </div>
             </section>   
         `;
