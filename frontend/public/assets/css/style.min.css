@@ -367,6 +367,7 @@ h1 {
   grid-auto-rows: max-content;
   grid-auto-flow: row;
   gap: 1em;
+  max-height: min-content;
 }
 .p4-vega__ui--option {
   display: grid;
@@ -419,6 +420,9 @@ h1 {
 }
 .p4-vega__ui--dropdown-menu {
   cursor: url("../img/select.cur"), auto;
+  max-height: 10em;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: absolute;
   left: 4em;
   top: calc(100% + 0.1em);

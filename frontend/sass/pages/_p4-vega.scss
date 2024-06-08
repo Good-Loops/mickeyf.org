@@ -17,6 +17,8 @@
         grid-auto-flow: row;
         gap: 1em;
 
+        max-height: min-content;
+
         &--option {
             display: grid;
             grid-auto-columns: max-content;
@@ -51,6 +53,10 @@
 
             &-menu {
                 cursor: $cursor-hover;
+
+                max-height: 10em;
+                overflow-y: auto; 
+                overflow-x: hidden; 
 
                 position: absolute;
                 left: 4em;
