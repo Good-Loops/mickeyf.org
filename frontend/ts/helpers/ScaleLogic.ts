@@ -6,9 +6,7 @@ interface Scale {
     notes: number[];
 }
 
-class ScaleLogic {
-
-    [key: string]: (notes: number[], lastPlayedNote: number, isFirstNote: boolean) => number | undefined;
+export default class ScaleLogic {
 
     // Default selected scale
     private static selectedScale: Scale = { name: 'Major', notes: scales['Major'].notes };
@@ -43,19 +41,113 @@ class ScaleLogic {
     }
 
     public static getNote(lastPlayedNote?: number, isFirstNote: boolean = false): number | undefined {
-        const notes = ScaleLogic.selectedScale.notes;
+        let note: number = 0;
 
-        // Determine the function to get the next note based on the scale
-        const getNextNoteFunction = ScaleLogic[`getNextNoteFor${ScaleLogic.selectedScale.name}`]; 
-
-        if (typeof getNextNoteFunction === 'function') {
-            return getNextNoteFunction(notes, lastPlayedNote!, isFirstNote);
+        switch(ScaleLogic.selectedScale.name) {
+            case 'Major':
+                note = ScaleLogic.getNoteMajor(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Minor':
+                // note = ScaleLogic.getNoteMinor(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Pentatonic':
+                // note = ScaleLogic.getNotePentatonic(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Blues':
+                // note = ScaleLogic.getNoteBlues(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Dorian':
+                // note = ScaleLogic.getNoteDorian(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Mixolydian':
+                // note = ScaleLogic.getNoteMixolydian(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Phrygian':
+                // note = ScaleLogic.getNotePhrygian(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Lydian':
+                // note = ScaleLogic.getNoteLydian(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Locrian':
+                // note = ScaleLogic.getNoteLocrian(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Chromatic':
+                // note = ScaleLogic.getNoteChromatic(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Harmonic Major':
+                // note = ScaleLogic.getNoteHarmonicMajor(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Melodic Minor':
+                // note = ScaleLogic.getNoteMelodicMinor(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Whole Tone':
+                // note = ScaleLogic.getNoteWholeTone(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Hungarian Minor':
+                // note = ScaleLogic.getNoteHungarianMinor(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Double Harmonic':
+                // note = ScaleLogic.getNoteDoubleHarmonic(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Neapolitan Major':
+                // note = ScaleLogic.getNoteNeapolitanMajor(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Neapolitan Minor':
+                // note = ScaleLogic.getNoteNeapolitanMinor(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Augmented':
+                // note = ScaleLogic.getNoteAugmented(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Hexatonic':
+                // note = ScaleLogic.getNoteHexatonic(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Enigmatic':
+                // note = ScaleLogic.getNoteEnigmatic(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Spanish Gypsy':
+                // note = ScaleLogic.getNoteSpanishGypsy(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Hirajoshi':
+                // note = ScaleLogic.getNoteHirajoshi(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Balinese Pelog':
+                // note = ScaleLogic.getNoteBalinesePelog(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Egyptian':
+                // note = ScaleLogic.getNoteEgyptian(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Hungarian Gypsy':
+                // note = ScaleLogic.getNoteHungarianGypsy(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Persian':
+                // note = ScaleLogic.getNotePersian(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Tritone':
+                // note = ScaleLogic.getNoteTritone(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Flamenco':
+                // note = ScaleLogic.getNoteFlamenco(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Iwato':
+                // note = ScaleLogic.getNoteIwato(lastPlayedNote, isFirstNote)!;
+                break;
+            case 'Blues Heptatonic':
+                // note = ScaleLogic.getNoteBluesHeptatonic(lastPlayedNote, isFirstNote)!;
+                break;
+            default:
+                console.error('Scale not found');
         }
+
+        return note;
     }
 
-    public static getNextNoteForMajor(notes: number[], lastPlayedNote: number, isFirstNote: boolean): number | undefined {
+    private static getNoteMajor(lastPlayedNote?: number, isFirstNote: boolean = false): number | undefined {
+        const notes = ScaleLogic.selectedScale.notes;
+
+        if (isFirstNote) {
+            return notes[0];
+        }
+
         return 0;
     }
 }
-
-export default ScaleLogic;
