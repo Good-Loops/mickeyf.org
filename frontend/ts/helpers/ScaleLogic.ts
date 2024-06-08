@@ -7,9 +7,8 @@ interface Scale {
 }
 
 class ScaleLogic {
-
     // Default selected scale
-    private static selectedScale: Scale = { name: 'Major Scale', notes: scales['Major Scale'].notes };
+    private static selectedScale: Scale = { name: 'Major', notes: scales['Major'].notes };
 
     // Key mapping for calculating half tone differences
     private static keyMapping: { [key: string]: number } = {

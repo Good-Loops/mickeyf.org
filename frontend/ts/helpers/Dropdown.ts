@@ -32,7 +32,7 @@ export default class Dropdown {
     // The toggleKeySelection method sets the selected key text content to the selected key
     public static toggleKeySelection = (event: Event): void => {
         // Get the selected key as a string from the event target
-        const selectedKey: string = (event.target as Element).getAttribute('data-item') as string;
+        const selectedKey: string = (event.target as Element).getAttribute('data-key') as string;
         // Get the dropdown element
         const dropdown: Element = document.querySelector('[data-dropdown]') as Element;
 
@@ -46,7 +46,7 @@ export default class Dropdown {
 
     public static toggleScaleSelection = (event: Event): void => {
         // Get the selected scale as a string from the event target
-        const selectedScale: string = (event.target as Element).getAttribute('data-item') as string;
+        const selectedScale: string = (event.target as Element).getAttribute('data-scale') as string;
         // Get the dropdown element
         const dropdown: Element = document.querySelector('[data-dropdown]') as Element;
 
