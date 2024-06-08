@@ -70,31 +70,31 @@ export default class Water extends Entity {
             notes = scales['Minor'].notes;
             break;
         case 'Pentatonic':
-            notes = scales['Pentatonic Scale'].notes;
+            notes = scales['Pentatonic'].notes;
             break;
         case 'Blues':
-            notes = scales['Blues Scale'].notes;
+            notes = scales['Blues'].notes;
             break;
         case 'Dorian':
-            notes = scales['Dorian Mode'].notes;
-            break;
-        case 'Phrygian':
-            notes = scales['Phrygian Mode'].notes;
-            break;
-        case 'Lydian':
-            notes = scales['Lydian Mode'].notes;
+            notes = scales['Dorian'].notes;
             break;
         case 'Mixolydian':
-            notes = scales['Mixolydian Mode'].notes;
+            notes = scales['Mixolydian'].notes;
             break;
-        case 'Aeolian':
-            notes = scales['Aeolian Mode'].notes;
+        case 'Phrygian':
+            notes = scales['Phrygian'].notes;
+            break;
+        case 'Lydian':
+            notes = scales['Lydian'].notes;
             break;
         case 'Locrian':
-            notes = scales['Locrian Mode'].notes;
+            notes = scales['Locrian'].notes;
             break;
-        case 'Harmonic Minor':
-            notes = scales['Harmonic Minor'].notes;
+        case 'Chromatic':
+            notes = scales['Chromatic'].notes;
+            break;
+        case 'Harmonic Major':
+            notes = scales['Harmonic Major'].notes;
             break;
         case 'Melodic Minor':
             notes = scales['Melodic Minor'].notes;
@@ -102,56 +102,53 @@ export default class Water extends Entity {
         case 'Whole Tone':
             notes = scales['Whole Tone'].notes;
             break;
-        case 'Diminished':
-            notes = scales['Diminished'].notes;
-            break;
-        case 'Chromatic':
-            notes = scales['Chromatic'].notes;
-            break;
-        case 'Major Pentatonic':
-            notes = scales['Major Pentatonic'].notes;
-            break;
-        case 'Minor Pentatonic':
-            notes = scales['Minor Pentatonic'].notes;
-            break;
-        case 'Bebop Major':
-            notes = scales['Bebop Major'].notes;
-            break;
-        case 'Bebop Minor':
-            notes = scales['Bebop Minor'].notes;
-            break;
-        case 'Bebop Dominant':
-            notes = scales['Bebop Dominant'].notes;
-            break;
         case 'Hungarian Minor':
             notes = scales['Hungarian Minor'].notes;
             break;
-        case 'Persian':
-            notes = scales['Persian'].notes;
-            break;
-        case 'Arabian':
-            notes = scales['Arabian'].notes;
-            break;
-        case 'Byzantine':
-            notes = scales['Byzantine'].notes;
-            break;
-        case 'Japanese':
-            notes = scales['Japanese'].notes;
-            break;
-        case 'Egyptian':
-            notes = scales['Egyptian'].notes;
-            break;
-        case 'Balinese':
-            notes = scales['Balinese'].notes;
-            break;
-        case 'Hindu':
-            notes = scales['Hindu'].notes;
+        case 'Double Harmonic':
+            notes = scales['Double Harmonic'].notes;
             break;
         case 'Neapolitan Major':
             notes = scales['Neapolitan Major'].notes;
             break;
         case 'Neapolitan Minor':
             notes = scales['Neapolitan Minor'].notes;
+            break;
+        case 'Augmented':
+            notes = scales['Augmented'].notes;
+            break;
+        case 'Hexatonic':
+            notes = scales['Hexatonic'].notes;
+            break;
+        case 'Spanish Gypsy':
+            notes = scales['Spanish Gypsy'].notes;
+            break;
+        case 'Hirajoshi':
+            notes = scales['Hirajoshi'].notes;
+            break;
+        case 'Balinese Pelog':
+            notes = scales['Balinese Pelog'].notes;
+            break;
+        case 'Egyptian':
+            notes = scales['Egyptian'].notes;
+            break;
+        case 'Hungarian Gypsy':
+            notes = scales['Hungarian Gypsy'].notes;
+            break;
+        case 'Persian':
+            notes = scales['Persian'].notes;
+            break;
+        case 'Tritone':
+            notes = scales['Tritone'].notes;
+            break;
+        case 'Flamenco':
+            notes = scales['Flamenco'].notes;
+            break;
+        case 'Iwato':
+            notes = scales['Iwato'].notes;
+            break;
+        case 'Blues Heptatonic':
+            notes = scales['Blues Heptatonic'].notes;
             break;
         default:
             notes = scales['Major'].notes;
