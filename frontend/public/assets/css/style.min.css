@@ -367,7 +367,8 @@ h1 {
   grid-auto-rows: max-content;
   grid-auto-flow: row;
   gap: 1em;
-  max-height: min-content;
+  max-height: fit-content;
+  margin-right: -2em;
 }
 .p4-vega__ui--option {
   display: grid;
@@ -401,6 +402,12 @@ h1 {
 .p4-vega__ui--checkbox:checked {
   background-color: hsl(120, 73%, 75%);
 }
+.p4-vega__ui--dropdown-grid {
+  display: grid;
+  grid-auto-columns: max-content;
+  grid-auto-flow: column;
+  gap: 0.5em;
+}
 .p4-vega__ui--dropdown {
   cursor: url("../img/select.cur"), auto;
   box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
@@ -420,19 +427,23 @@ h1 {
 }
 .p4-vega__ui--dropdown-menu {
   cursor: url("../img/select.cur"), auto;
-  max-height: 10em;
+  max-height: 20em;
   overflow-y: auto;
   overflow-x: hidden;
   position: absolute;
-  left: 4em;
-  top: calc(100% + 0.1em);
+  left: 0;
+  top: 100%;
   padding: 0.5em;
-  border-radius: 0.5em;
+  border-bottom-left-radius: 0.5em;
+  border-bottom-right-radius: 0.5em;
   box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
   pointer-events: none;
   opacity: 0;
   transform: translateY(-1em);
   transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+.p4-vega__ui--dropdown-menu-keys {
+  white-space: nowrap;
 }
 .p4-vega__ui--dropdown-menu-item {
   padding: 0.5em;

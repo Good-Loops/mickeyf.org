@@ -17,7 +17,9 @@
         grid-auto-flow: row;
         gap: 1em;
 
-        max-height: min-content;
+        max-height: fit-content;
+
+        margin-right: -2em;
 
         &--option {
             display: grid;
@@ -46,6 +48,13 @@
             }
         }
 
+        &--dropdown-grid {
+            display: grid;
+            grid-auto-columns: max-content;
+            grid-auto-flow: column;
+            gap: .5em;
+        }
+
         &--dropdown {
             @include default-option;
 
@@ -54,26 +63,30 @@
             &-menu {
                 cursor: $cursor-hover;
 
-                max-height: 10em;
+                max-height: 20em;
                 overflow-y: auto; 
                 overflow-x: hidden; 
 
                 position: absolute;
-                left: 4em;
-                top: calc(100% + .1em);
+                left: 0;
+                top: 100%;
 
                 padding: .5em;
 
-                border-radius: $border-radius-s;
+                border-bottom-left-radius: $border-radius-s;
+                border-bottom-right-radius: $border-radius-s;
 
                 box-shadow: $darl-box-shadow-s;
-
 
                 pointer-events: none;
                 opacity: 0;
                 transform: translateY(-1em);
                 transition: opacity .15s ease-in-out,
                             transform .15s ease-in-out;
+
+                &-keys {
+                    white-space: nowrap;
+                }
 
                 &-item {
                     padding: .5em;
