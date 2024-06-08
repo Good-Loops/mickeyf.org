@@ -20,6 +20,7 @@ export default class Water extends Entity {
     public waterAnim: PIXI.AnimatedSprite;
 
     private synth: Tone.Synth;
+    private lastKey?: string;
     private lastPlayedNote?: number;
 
     constructor(stage: PIXI.Container<PIXI.ContainerChild>, waterAnim: PIXI.AnimatedSprite) {
@@ -63,9 +64,10 @@ export default class Water extends Entity {
         const selectedScale: string = selectedScaleElement.textContent || 'Major';
         // Get the selected key
         const selectedKey: string = selectedKeyElement.textContent || 'C';
+        this.lastKey = selectedKey; // Update the last key
 
         // Use ScaleLogic to get the appropriate notes
-        ScaleLogic.getNotesForScale(selectedKey, selectedScale);
+        ScaleLogic.getNotesForScale(selectedKey, selectedScale, this.lastKey);
 
         // Determine if this is the first note
         const isFirstNote = !this.lastPlayedNote;

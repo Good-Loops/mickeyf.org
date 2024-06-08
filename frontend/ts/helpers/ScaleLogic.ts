@@ -18,7 +18,7 @@ class ScaleLogic {
         'A#/Bb': 10, 'B': 11
     };
 
-    public static getNotesForScale(selectedKey: string, scaleName: string, previousKey?:string): number[] {
+    public static getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
         // Define an array to store the note numbers
         let notes: number[] = scales[scaleName]?.notes || scales['Major Scale'].notes;
 
@@ -26,7 +26,7 @@ class ScaleLogic {
         ScaleLogic.selectedScale = { name: scaleName, notes };
 
         // Transpose the notes according to the selected key
-        let halfTones: number = ScaleLogic.keyMapping[selectedKey] - ScaleLogic.keyMapping[previousKey || selectedKey];
+        let halfTones: number = ScaleLogic.keyMapping[selectedKey] - ScaleLogic.keyMapping[lastKey || selectedKey];
 
         // Determine if the transposition is up or down
         let up: boolean = halfTones >= 0;
