@@ -7,6 +7,9 @@ interface Scale {
 }
 
 class ScaleLogic {
+
+    [key: string]: (notes: number[], lastPlayedNote: number, isFirstNote: boolean) => number | undefined;
+
     // Default selected scale
     private static selectedScale: Scale = { name: 'Major', notes: scales['Major'].notes };
 
@@ -42,21 +45,16 @@ class ScaleLogic {
     public static getNote(lastPlayedNote?: number, isFirstNote: boolean = false): number | undefined {
         const notes = ScaleLogic.selectedScale.notes;
 
-        if (isFirstNote) {
-            // Return the first note based on the scale's logic
-            return notes[0]; // Usually the tonic note
-        } else if (lastPlayedNote) {
-            // Return a note based on the last played note and the scale's logic
-            const lastNoteIndex = notes.indexOf(lastPlayedNote);
-            if (lastNoteIndex === -1) return notes[0]; // If last played note is not in the scale, return the first note
+        // Determine the function to get the next note based on the scale
+        const getNextNoteFunctionG = ScaleLogic[`getNextNoteFor${ScaleLogic.selectedScale.name}`]; 
 
-            // Example logic: return the next note in the scale
-            const nextNoteIndex = (lastNoteIndex + 1) % notes.length;
-            return notes[nextNoteIndex];
-        } else {
-            // If no lastPlayedNote and not the first note, just return the first note
-            return notes[0];
+        if (typeof getNextNoteFunction === 'function') {
+            return getNextNoteFunction(notes, lastPlayedNote!, isFirstNote);
         }
+    }
+
+    public static getNextNoteForMajor(notes: number[], lastPlayedNote: number, isFirstNote: boolean): number | undefined {
+        return 0;
     }
 }
 
