@@ -60,6 +60,10 @@
 
             position: relative;
 
+            &-btn {
+                display: flex; // Add this line
+            }
+
             &-menu {
                 cursor: $cursor-hover;
 

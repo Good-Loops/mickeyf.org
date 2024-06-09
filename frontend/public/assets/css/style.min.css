@@ -115,6 +115,15 @@ h1 {
   box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
 }
 
+.u-truncate {
+  flex: 0 1 auto;
+  width: 5em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
 .nav {
   font-size: 2rem;
   display: flex;
@@ -424,6 +433,9 @@ h1 {
   white-space: nowrap;
   color: hsl(240, 67%, 90%);
   font-size: 1.3rem;
+}
+.p4-vega__ui--dropdown-btn {
+  display: flex;
 }
 .p4-vega__ui--dropdown-menu {
   cursor: url("../img/select.cur"), auto;
