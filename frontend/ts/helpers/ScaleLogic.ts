@@ -20,7 +20,7 @@ export default class ScaleLogic {
 
     public static getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
         // Define an array to store the note numbers
-        let notes: number[] = scales[scaleName]?.notes || scales['Major Scale'].notes;
+        let notes: number[] = scales[scaleName]?.notes || scales['Major'].notes;
 
         // Set the selected scale
         ScaleLogic.selectedScale = { name: scaleName, notes };
@@ -40,7 +40,7 @@ export default class ScaleLogic {
         return transposedNotes;
     }
 
-    public static getNote(lastPlayedNote?: number, isFirstNote: boolean = false): number | undefined {
+    public static getNote(lastPlayedNote?: number, isFirstNote: boolean = false): number {
         let note: number = 0;
 
         switch(ScaleLogic.selectedScale.name) {
@@ -141,13 +141,31 @@ export default class ScaleLogic {
         return note;
     }
 
-    private static getNoteMajor(lastPlayedNote?: number, isFirstNote: boolean = false): number | undefined {
-        const notes = ScaleLogic.selectedScale.notes;
+    private static getNoteMajor(lastPlayedNote?: number, isFirstNote: boolean = false): number {
+        const notes: number[] = ScaleLogic.selectedScale.notes;
 
         if (isFirstNote) {
+            // If it's the first note, return the tonic (first note of the scale)
             return notes[0];
         }
 
-        return 0;
+        // Determine possible next notes based on the last played note
+        const possibleNextNotes: number[] = notes.filter(note => ScaleLogic.isValidInterval(note, lastPlayedNote!));
+
+        // Select a random next note from the possible notes
+        const randomIndex: number = Math.floor(Math.random() * possibleNextNotes.length);
+
+        // Return the selected note
+        const note: number = possibleNextNotes[randomIndex];
+
+        return note;
+    }
+
+    private static isValidInterval(note: number, lastPlayedNote: number): boolean {
+        const interval: number = Math.abs(Math.floor((note - lastPlayedNote + 12) % 12)); // Ensure interval is positive
+        const validIntervals: number[] = [2, 4, 5, 7, 9, 11]; // Whole steps, perfect fifths, and major seventh
+        const isValid: boolean = validIntervals.includes(interval); // Check if the interval is valid
+
+        return isValid;
     }
 }

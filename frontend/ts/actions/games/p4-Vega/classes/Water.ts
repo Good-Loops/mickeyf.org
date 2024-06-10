@@ -36,13 +36,14 @@ export default class Water extends Entity {
 
     public update(waterAnim: PIXI.AnimatedSprite, p4: P4, stage: PIXI.Container<PIXI.ContainerChild>): void {
         if (checkCollision(p4.p4Anim, waterAnim)) {
+            this.playSound();
+            
+            new BlackHole(stage, p4.p4Anim);
+
             waterAnim.x = getRandomX(waterAnim.width + Entity.gap);
             waterAnim.y = getRandomY(waterAnim.height + Entity.gap);
 
             p4.totalWater += 10;
-            new BlackHole(stage, p4.p4Anim);
-
-            this.playSound();
         }
     }
 
@@ -77,6 +78,6 @@ export default class Water extends Entity {
         this.lastPlayedNote = note; // Update the last played note
 
         // Play the note
-        this.synth.triggerAttackRelease(note, '4n');
+        this.synth.triggerAttackRelease(note, 1);
     }
 }
