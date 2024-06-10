@@ -55,9 +55,22 @@ export default async function p4Vega() {
     // Add an event listener to the checkbox to toggle music on change
     bgMusicCheckbox.addEventListener('change', toggleBackgroundMusic);
 
-    document.addEventListener('click', Dropdown.toggle);
-    document.addEventListener('click', Dropdown.toggleKeySelection);
-    document.addEventListener('click', Dropdown.toggleScaleSelection);
+    // Create instances of Dropdowns for scales and keys
+    new Dropdown('data-dropdown-scales', 'data-dropdown-btn', 'data-selected-scale');
+    new Dropdown('data-dropdown-keys', 'data-dropdown-btn', 'data-selected-key');
+
+    const dropdownHandlers = {
+        toggleScalesDropdown: Dropdown.toggle('data-dropdown-scales', 'data-dropdown-btn'),
+        toggleKeysDropdown: Dropdown.toggle('data-dropdown-keys', 'data-dropdown-btn'),
+        toggleScaleSelection: Dropdown.toggleSelection('data-dropdown-scales', 'data-selected-scale', 'data-scale'),
+        toggleKeySelection: Dropdown.toggleSelection('data-dropdown-keys', 'data-selected-key', 'data-key')
+    };
+
+    // Binding event listeners using static methods
+    document.addEventListener('click', dropdownHandlers.toggleScalesDropdown);
+    document.addEventListener('click', dropdownHandlers.toggleKeysDropdown);
+    document.addEventListener('click', dropdownHandlers.toggleScaleSelection);
+    document.addEventListener('click', dropdownHandlers.toggleKeySelection);
 
     ////////////////// Globals //////////////////
     // Game state
@@ -280,7 +293,8 @@ export default async function p4Vega() {
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
     window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleBackgroundMusic });
-    window.eventListeners[componentId].push({ element: document, event: 'click', handler: Dropdown.toggle });
-    window.eventListeners[componentId].push({ element: document, event: 'click', handler: Dropdown.toggleKeySelection });
-    window.eventListeners[componentId].push({ element: document, event: 'click', handler: Dropdown.toggleScaleSelection });
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScalesDropdown });
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeysDropdown });
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScaleSelection });
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeySelection });
 }
