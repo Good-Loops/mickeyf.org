@@ -17,15 +17,15 @@ export default class Dropdown {
         // Get the closest dropdown element to the event target
         let currentDropdown: Element = (event.target as Element).closest('[data-dropdown]') as Element;
 
-        // If there is a dropdown element, toggle the active class
-        if (currentDropdown) currentDropdown.classList.toggle('active');
-
-        // Get all dropdown elements with the active class
-        document.querySelectorAll('[data-dropdown].active').forEach(dropdown => {
-            // If the dropdown element is the same as the current dropdown, return
-            if (dropdown === currentDropdown) return;
-            // Otherwise, remove the active class from the dropdown element
-            else dropdown.classList.remove('active');
+        const allDropdowns: NodeListOf<Element> = document.querySelectorAll('[data-dropdown]');
+        allDropdowns.forEach(dropdown => {
+            if (dropdown === currentDropdown) {
+                // Toggle the active class only for the clicked dropdown
+                dropdown.classList.toggle('active');
+            } else {
+                // Remove the active class for all other dropdowns
+                dropdown.classList.remove('active');
+            }
         });
     }
 
@@ -45,16 +45,20 @@ export default class Dropdown {
     }
 
     public static toggleScaleSelection = (event: Event): void => {
+        console.log('toggleScaleSelection called'); 
         // Get the selected scale as a string from the event target
         const selectedScale: string = (event.target as Element).getAttribute('data-scale') as string;
+        console.log('selectedScale:', selectedScale); 
         // Get the dropdown element
         const dropdown: Element = document.querySelector('[data-dropdown]') as Element;
+        console.log('dropdown:', dropdown);
 
         // If there is a selected scale, set the selected scale 
         // text content to the selected scale
         if (selectedScale) {
             document.querySelector('[data-selected-scale]')!.textContent = selectedScale;
             dropdown.classList.remove('active');
+            console.log('dropdown active class removed');
         }
     }
 }
