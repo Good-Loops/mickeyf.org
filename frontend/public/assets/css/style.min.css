@@ -117,7 +117,7 @@ h1 {
 
 .u-truncate {
   flex: 0 1 auto;
-  width: 5em;
+  width: 3em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

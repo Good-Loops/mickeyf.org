@@ -21,7 +21,7 @@ function component() {
                     </label>
                     <div class='p4-vega__ui--dropdown-grid'>
                         <div class='p4-vega__ui--dropdown' data-dropdown>
-                            <button class='p4-vega__ui--dropdown-btn' data-dropdown-btn>Key: &nbsp;<span data-selected-key>C</span></button>
+                            <button class='p4-vega__ui--dropdown-btn' data-dropdown-btn>Key: &nbsp;<span class='u-truncate' data-selected-key>C</span></button>
                             <div class='p4-vega__ui--dropdown-menu p4-vega__ui--dropdown-menu-keys'>
                                 <div class='p4-vega__ui--dropdown-menu-item' data-key='C'>C</div>
                                 <div class='p4-vega__ui--dropdown-menu-item' data-key='C#/Db'>C#/Db</div>
