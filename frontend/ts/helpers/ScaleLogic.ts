@@ -3,13 +3,13 @@ import transpose from '../utils/transpose';
 
 interface Scale {
     name: string;
-    notes: number[];
+    transposedNotes: number[];
 }
 
 export default class ScaleLogic {
 
     // Default selected scale
-    private static selectedScale: Scale = { name: 'Major', notes: scales['Major'].notes };
+    private static selectedScale: Scale = { name: 'Major', transposedNotes: scales['Major'].notes };
 
     // Key mapping for calculating half tone differences
     private static keyMapping: { [key: string]: number } = {
@@ -21,21 +21,22 @@ export default class ScaleLogic {
     public static getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
         // Define an array to store the note numbers
         let notes: number[] = scales[scaleName]?.notes || scales['Major'].notes;
-
-        // Set the selected scale
-        ScaleLogic.selectedScale = { name: scaleName, notes };
+        console.log('scaleName:', scaleName);
 
         // Transpose the notes according to the selected key
+        console.log('ScaleLogic.keyMapping[selectedKey]:', ScaleLogic.keyMapping[selectedKey], 'ScaleLogic.keyMapping[lastKey]:', ScaleLogic.keyMapping[lastKey!]);
         let halfTones: number = ScaleLogic.keyMapping[selectedKey] - ScaleLogic.keyMapping[lastKey || selectedKey];
-
-        // Determine if the transposition is up or down
-        let up: boolean = halfTones >= 0;
 
         // Get the absolute value of the halfTones
         halfTones = Math.abs(halfTones);
+        console.log('halfTones:', halfTones);
 
         // Transpose the note numbers
-        const transposedNotes: number[] = transpose(notes, halfTones, up);
+        const transposedNotes: number[] = transpose(notes, halfTones, false);
+        console.log('transposedNotes:', transposedNotes);
+
+        // Set the selected scale
+        ScaleLogic.selectedScale = { name: scaleName, transposedNotes };
 
         return transposedNotes;
     }
@@ -142,7 +143,7 @@ export default class ScaleLogic {
     }
 
     private static getNoteMajor(lastPlayedNote?: number, isFirstNote: boolean = false): number {
-        const notes: number[] = ScaleLogic.selectedScale.notes;
+        const notes: number[] = ScaleLogic.selectedScale.transposedNotes;
 
         if (isFirstNote) {
             // If it's the first note, return the tonic (first note of the scale)

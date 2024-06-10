@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from './constants';
-import P4 from '../actions/games/p4-Vega/classes/P4'
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
+import P4 from '../p4-Vega/classes/P4'
 import WebFont from 'webfontloader';
 
 // Remember to create a helpers folder for this type of function (avoids repetition)
@@ -26,7 +26,7 @@ function createBackgroundForText(texts: PIXI.Text[], padding: number, color: num
     const x = CANVAS_WIDTH * .5 - width / 2;
 
     const background = new PIXI.Graphics();
-    background.fill({color, alpha});
+    background.fill({ color, alpha });
     background.roundRect(x, minY, width, height, borderRadius);
     background.fill();
     return background;

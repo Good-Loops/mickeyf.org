@@ -1,7 +1,7 @@
 // Utilities
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
 import { getRandomInt } from '../../../utils/random';
-import gameOver from '../../../utils/gameOver';
+import gameOver from '../utils/gameOver';
 
 // Helpers
 import Dropdown from '../../../helpers/Dropdown';
@@ -86,7 +86,7 @@ export default async function p4Vega() {
             loop: true,
             autostart: true,
         }).toDestination();
-        
+
         // Set game state
         gameLive = true;
         sky = new Sky(stage);
@@ -237,26 +237,22 @@ export default async function p4Vega() {
 
     // User input
     const handleKeydown = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
             case 'ArrowRight':
-                key.preventDefault();
                 p4.isMovingRight = true;
                 break;
             case 'ArrowLeft':
-                key.preventDefault();
                 p4.isMovingLeft = true;
                 break;
             case 'ArrowUp':
-                key.preventDefault();
                 p4.isMovingUp = true;
                 break;
             case 'ArrowDown':
-                key.preventDefault();
                 p4.isMovingDown = true;
                 break;
             // Restart game
             case 'Space':
-                key.preventDefault();
                 if (!gameLive) restart();
                 break;
             default:
@@ -264,21 +260,18 @@ export default async function p4Vega() {
         }
     }
     const handleKeyup = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
             case 'ArrowRight':
-                key.preventDefault();
                 p4.isMovingRight = false;
                 break;
             case 'ArrowLeft':
-                key.preventDefault();
                 p4.isMovingLeft = false;
                 break;
             case 'ArrowUp':
-                key.preventDefault();
                 p4.isMovingUp = false;
                 break;
             case 'ArrowDown':
-                key.preventDefault();
                 p4.isMovingDown = false;
                 break;
             default:

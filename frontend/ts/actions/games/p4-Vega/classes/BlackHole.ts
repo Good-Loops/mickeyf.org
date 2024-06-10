@@ -2,7 +2,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../../utils/constants";
 import { getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../../utils/random";
 import checkCollision from "../../../../utils/checkCollision";
 
-import Entity from "../../classes/Entity";
+import Entity from "../../helpers/Entity";
 import P4 from "./P4";
 
 import * as PIXI from 'pixi.js';
@@ -26,7 +26,7 @@ export default class BlackHole extends Entity {
 
         // Make sure that the black hole animations are not repeated.
         let index: number;
-        do { 
+        do {
             index = getRandomInt(0, BlackHole.bHAnimArray.length - 1);
         } while (BlackHole.addedIndexes.includes(index));
         BlackHole.addedIndexes.push(index);
