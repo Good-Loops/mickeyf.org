@@ -456,6 +456,7 @@ h1 {
 }
 .p4-vega__ui--dropdown-menu-keys {
   white-space: nowrap;
+  left: 3em;
 }
 .p4-vega__ui--dropdown-menu-item {
   padding: 0.5em;
