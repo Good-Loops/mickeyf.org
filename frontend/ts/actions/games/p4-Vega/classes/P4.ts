@@ -1,10 +1,10 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../../utils/constants"
-import Entity from "../../classes/Entity"
+import Entity from "../../helpers/Entity"
 import * as PIXI from 'pixi.js';
 
 export default class P4 extends Entity {
     private startX: number = Entity.gap;
-    private startY: number  = CANVAS_HEIGHT * .5;
+    private startY: number = CANVAS_HEIGHT * .5;
 
     private speed: number = 8;
 
@@ -15,14 +15,14 @@ export default class P4 extends Entity {
     public isMovingRight: boolean = false;
     public isMovingLeft: boolean = false;
     public isMovingUp: boolean = false;
-    public isMovingDown: boolean= false;
+    public isMovingDown: boolean = false;
 
     constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
         super(p4Anim);
         stage.addChild(p4Anim);
 
         this.p4Anim = p4Anim;
-        
+
         p4Anim.x = this.startX;
         p4Anim.y = this.startY;
     }

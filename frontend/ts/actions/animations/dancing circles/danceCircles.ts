@@ -25,7 +25,7 @@ export default async function danceCircles() {
     canvas.id = 'dc-canvas';
 
     // Add the canvas to the DOM
-    document.getElementById('dancing-circles')!.append(canvas);
+    document.querySelector('[data-dancing-circles]')!.append(canvas);
 
     // Create stage
     const stage: PIXI.Container = new PIXI.Container();
@@ -43,9 +43,9 @@ export default async function danceCircles() {
     // Stop animation
     let stop: boolean = true;
 
-    // For input audio
-    const fileInput: HTMLInputElement = document.getElementById("file-upload") as HTMLInputElement;
-    const uploadButton: HTMLLabelElement = document.getElementById("upload-button") as HTMLLabelElement;
+    // Get elements for audio handling
+    const uploadButton: HTMLLabelElement = document.querySelector('[data-upload-button]') as HTMLLabelElement;
+    const fileInput: HTMLInputElement = document.querySelector('[data-file-upload]') as HTMLInputElement;
 
     // Circles updating color per call
     const numCircs: number = 2;
@@ -159,9 +159,9 @@ export default async function danceCircles() {
     }
 
     deltaTime = 0, lastTime = 0,
-    updateTimer = 0, updateInterval = 1000,
-    updateOnPitchTimer = 0, updateOnPitchInterval = 10,
-    drawTimer = 0, drawInterval = 40;
+        updateTimer = 0, updateInterval = 1000,
+        updateOnPitchTimer = 0, updateOnPitchInterval = 10,
+        drawTimer = 0, drawInterval = 40;
     const draw = (): void => {
         // Clear the stage
         stage.removeChildren();
@@ -208,11 +208,11 @@ export default async function danceCircles() {
                 brightness: 1.0,
                 threshold: 0.5,
                 blur: 1,
-                quality: 1, 
+                quality: 1,
             });
-               
+
             graphics.filters = [blurFilter, bloomFilter];
-            
+
             stage.addChild(graphics);
         });
 
@@ -222,14 +222,14 @@ export default async function danceCircles() {
 
     const step = (timeStamp: number): void => {
         if (stop) return;
-        
+
         deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
-        
+
         updateTimer += deltaTime;
         updateOnPitchTimer += deltaTime;
         drawTimer += deltaTime;
-        
+
         if (updateTimer >= updateInterval) {
             update(numCircs);
             updateTimer = 0;

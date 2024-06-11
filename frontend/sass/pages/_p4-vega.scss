@@ -17,47 +17,108 @@
         grid-auto-flow: row;
         gap: 1em;
 
+        max-height: fit-content;
+
+        margin-right: -2em;
+
         &--option {
             display: grid;
             grid-auto-columns: max-content;
             grid-auto-flow: column;
             gap: .5em;
 
-            box-shadow: $darl-box-shadow-s;
+            @include default-option;
+        }
 
-            padding-block: .5em;
-            padding-inline: 1em;
+        &--checkbox {
+            appearance: none;
+            border-radius: 50%;
+    
+            width: .5em;
+            height: .5em;
+    
+            background-color: $white-darker;
+    
+            align-self: center;
 
-            border-radius: $default-border-radius;
+            cursor: $cursor-hover;
+    
+            &:checked {
+                background-color: $secondary;
+            }
+        }
 
-            transition: background-color .3s;
+        &--dropdown-grid {
+            display: grid;
+            grid-auto-columns: max-content;
+            grid-auto-flow: column;
+            gap: .5em;
+        }
 
-            &:hover {
-                background-color: $primary-darker;
-                cursor: $cursor-hover;
+        &--dropdown {
+            @include default-option;
+
+            position: relative;
+
+            &-btn {
+                display: flex;
             }
 
-            &-input {
-                appearance: none;
-                border-radius: 50%;
+            &-menu {
+                cursor: $cursor-hover;
 
-                width: .5em;
-                height: .5em;
+                max-height: 20em;
+                overflow-y: auto; 
+                overflow-x: hidden; 
 
-                background-color: $white-darker;
+                position: absolute;
+                left: 0;
+                top: 100%;
 
-                align-self: center;
+                padding: .5em;
 
-                &:checked {
-                    background-color: $secondary;
+                border-bottom-left-radius: $border-radius-s;
+                border-bottom-right-radius: $border-radius-s;
+
+                box-shadow: $darl-box-shadow-s;
+
+                pointer-events: none;
+                opacity: 0;
+                transform: translateY(-1em);
+                transition: opacity .15s ease-in-out,
+                            transform .15s ease-in-out;
+
+                &-keys {
+                    white-space: nowrap;
+                    left: 3em;
+                }
+
+                &-item {
+                    padding: .5em;
+                    font-size: $font-size-xxs;
+                    color: $white-darker;
+
+                    &:hover {
+                        background-color: $primary-darker;
+                        border-radius: $border-radius-s;
+                    }
+                }
+
+                &.active {
+                    display: block;
                 }
             }
+        }
 
-            &-title {
-                white-space: nowrap;
-                color: $white-darker;
-                font-size: $font-size-xxs;
-            }
+        &--dropdown.active + &--dropdown-btn,
+        &--dropdown-btn:hover {
+            background-color: $primary-darker;
+        }
+
+        &--dropdown.active > &--dropdown-btn + &--dropdown-menu {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
         }
     }
 

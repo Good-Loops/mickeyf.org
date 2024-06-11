@@ -54,7 +54,7 @@ function matchRoute(requestedRoute: string) {
 
 // Load the component based on the requested route
 export const loadComponent = async (requestedRoute: string, params?: any): Promise<void> => {
-    const content = document.querySelector("#content") as HTMLDivElement;
+    const content = document.querySelector('[data-content]') as HTMLDivElement;
 
     if (!content) {
         console.error("The #content element does not exist in your HTML.");

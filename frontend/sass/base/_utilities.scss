@@ -15,3 +15,12 @@
 
     box-shadow: $darl-box-shadow-s;
 }
+
+.u-truncate {
+    flex: 0 1 auto;
+    width: 3em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}

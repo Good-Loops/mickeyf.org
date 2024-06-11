@@ -27,7 +27,7 @@ const initObserver = (): MutationObserver => {
     const observer = new MutationObserver((mutations) => { // Callback function to execute when a mutation is observed
         mutations.forEach((mutation) => { // Iterate over each mutation
             if (mutation.removedNodes) { // Check if nodes were removed, that is, if the mutation is a removal
-                const content = document.getElementById("content"); // Get the content element
+                const content = document.querySelector('[data-content]'); // Get the content element
                 mutation.removedNodes.forEach((node) => { // Iterate over each removed node
                     if (mutation.target === content && (<Element>node).id) {
                         const componentId = (<Element>node).id;

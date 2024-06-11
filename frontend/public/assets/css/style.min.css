@@ -56,8 +56,17 @@ html {
 }
 
 body {
-  background-image: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
   cursor: url("../img/normal.cur"), auto;
+  background-image: linear-gradient(to bottom right, hsl(203, 92%, 65%) 30%, hsl(120, 73%, 75%) 90%);
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background-color: transparent;
+  border: none;
+  cursor: url("../img/select.cur"), auto;
 }
 
 canvas {
@@ -104,6 +113,15 @@ h1 {
   border-bottom: 0.15em double rgba(234, 234, 251, 0.3);
   border-radius: 0.4em;
   box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
+}
+
+.u-truncate {
+  flex: 0 1 auto;
+  width: 3em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
 }
 
 .nav {
@@ -358,12 +376,15 @@ h1 {
   grid-auto-rows: max-content;
   grid-auto-flow: row;
   gap: 1em;
+  max-height: fit-content;
+  margin-right: -2em;
 }
 .p4-vega__ui--option {
   display: grid;
   grid-auto-columns: max-content;
   grid-auto-flow: column;
   gap: 0.5em;
+  cursor: url("../img/select.cur"), auto;
   box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
   padding-block: 0.5em;
   padding-inline: 1em;
@@ -372,23 +393,90 @@ h1 {
 }
 .p4-vega__ui--option:hover {
   background-color: hsl(203, 92%, 63%);
-  cursor: url("../img/select.cur"), auto;
 }
-.p4-vega__ui--option-input {
+.p4-vega__ui--option-btn {
+  white-space: nowrap;
+  color: hsl(240, 67%, 90%);
+  font-size: 1.3rem;
+}
+.p4-vega__ui--checkbox {
   appearance: none;
   border-radius: 50%;
   width: 0.5em;
   height: 0.5em;
   background-color: hsl(240, 67%, 90%);
   align-self: center;
+  cursor: url("../img/select.cur"), auto;
 }
-.p4-vega__ui--option-input:checked {
+.p4-vega__ui--checkbox:checked {
   background-color: hsl(120, 73%, 75%);
 }
-.p4-vega__ui--option-title {
+.p4-vega__ui--dropdown-grid {
+  display: grid;
+  grid-auto-columns: max-content;
+  grid-auto-flow: column;
+  gap: 0.5em;
+}
+.p4-vega__ui--dropdown {
+  cursor: url("../img/select.cur"), auto;
+  box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
+  padding-block: 0.5em;
+  padding-inline: 1em;
+  border-radius: 0.8em;
+  transition: background-color 0.3s;
+  position: relative;
+}
+.p4-vega__ui--dropdown:hover {
+  background-color: hsl(203, 92%, 63%);
+}
+.p4-vega__ui--dropdown-btn {
   white-space: nowrap;
   color: hsl(240, 67%, 90%);
   font-size: 1.3rem;
+}
+.p4-vega__ui--dropdown-btn {
+  display: flex;
+}
+.p4-vega__ui--dropdown-menu {
+  cursor: url("../img/select.cur"), auto;
+  max-height: 20em;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  padding: 0.5em;
+  border-bottom-left-radius: 0.5em;
+  border-bottom-right-radius: 0.5em;
+  box-shadow: 0 0.3em 0.4em rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-1em);
+  transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+.p4-vega__ui--dropdown-menu-keys {
+  white-space: nowrap;
+  left: 3em;
+}
+.p4-vega__ui--dropdown-menu-item {
+  padding: 0.5em;
+  font-size: 1.3rem;
+  color: hsl(240, 67%, 90%);
+}
+.p4-vega__ui--dropdown-menu-item:hover {
+  background-color: hsl(203, 92%, 63%);
+  border-radius: 0.5em;
+}
+.p4-vega__ui--dropdown-menu.active {
+  display: block;
+}
+.p4-vega__ui--dropdown.active + .p4-vega__ui--dropdown-btn, .p4-vega__ui--dropdown-btn:hover {
+  background-color: hsl(203, 92%, 63%);
+}
+.p4-vega__ui--dropdown.active > .p4-vega__ui--dropdown-btn + .p4-vega__ui--dropdown-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 .p4-vega__canvas {
   box-shadow: 0.3em 0.3em 0.8em hsl(203, 92%, 65%), -0.3em -0.3em 1em hsl(120, 73%, 75%);
