@@ -84,7 +84,6 @@ export default async function p4Vega() {
         window.p4MusicPlayer = new Tone.Player({
             url: './assets/audio/bg-sound-p4.mp3',
             loop: true,
-            autostart: true,
         }).toDestination();
 
         // Set game state

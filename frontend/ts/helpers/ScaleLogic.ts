@@ -153,20 +153,46 @@ export default class ScaleLogic {
         // Determine possible next notes based on the last played note
         const possibleNextNotes: number[] = notes.filter(note => ScaleLogic.isValidInterval(note, lastPlayedNote!));
 
-        // Select a random next note from the possible notes
-        const randomIndex: number = Math.floor(Math.random() * possibleNextNotes.length);
+        // Get chord tones of the current harmony
+        const validChordTones: number[] = ScaleLogic.getChordTones();
+        // Get non-chord tones
+        const nonChordTones: number[] = possibleNextNotes.filter(note => !validChordTones.includes(note));
 
-        // Return the selected note
-        const note: number = possibleNextNotes[randomIndex];
+        // Randomly decide whether to use a chord tone or a non-chord tone
+        const useChordTone: boolean = Math.random() > 0.5; // 50% chance
 
-        return note;
+        let nextNote: number;
+        if (useChordTone) {
+            // Select a random chord tone
+            const randomChordIndex: number = Math.floor(Math.random() * validChordTones.length);
+            nextNote = validChordTones[randomChordIndex];
+        } else {
+            // Select a random non-chord tone
+            const randomNonChordIndex: number = Math.floor(Math.random() * nonChordTones.length);
+            nextNote = nonChordTones[randomNonChordIndex];
+        }
+
+        // Ensure the next note is in the possibleNextNotes to avoid invalid intervals
+        if (!possibleNextNotes.includes(nextNote)) {
+            const randomIndex: number = Math.floor(Math.random() * possibleNextNotes.length);
+            nextNote = possibleNextNotes[randomIndex];
+        }
+
+        return nextNote;
     }
 
     private static isValidInterval(note: number, lastPlayedNote: number): boolean {
         const interval: number = Math.abs(Math.floor((note - lastPlayedNote + 12) % 12)); // Ensure interval is positive
         const validIntervals: number[] = [2, 4, 5, 7, 9, 11]; // Whole steps, perfect fifths, and major seventh
-        const isValid: boolean = validIntervals.includes(interval); // Check if the interval is valid
+        return validIntervals.includes(interval); // Check if the interval is valid
+    }
 
-        return isValid;
+    // Assume getChordTones method exists
+    private static getChordTones(): number[] {
+        const tonic: number = ScaleLogic.selectedScale.transposedNotes[0];
+        const third: number = ScaleLogic.selectedScale.transposedNotes[2];
+        const fifth: number = ScaleLogic.selectedScale.transposedNotes[4];
+        const seventh: number = ScaleLogic.selectedScale.transposedNotes[6];
+        return [tonic, third, fifth, seventh];
     }
 }

@@ -19,10 +19,11 @@ export default class Water extends Entity {
 
     public waterAnim: PIXI.AnimatedSprite;
 
-    private synth: Tone.Synth;
+    private synth: Tone.MembraneSynth;
+    
     private selectedKeyElement: Element = document.querySelector('[data-selected-key]') as Element;
     private selectedKey: string = 'C';
-    private lastKey?: string;
+    private lastKey: string = 'C';
     private lastPlayedNote?: number;
 
 
@@ -31,7 +32,7 @@ export default class Water extends Entity {
         stage.addChild(waterAnim);
 
         this.waterAnim = waterAnim;
-        this.synth = new Tone.Synth().toDestination(); // Initialize the synth
+        this.synth = new Tone.MembraneSynth().toDestination(); // Initialize the synth
 
         waterAnim.x = this.startX - waterAnim.width;
         waterAnim.y = this.startY;
@@ -58,10 +59,12 @@ export default class Water extends Entity {
             console.log('Selected Key:', this.selectedKey);
 
             // Update the last key only if the selected key has changed
+            console.log('Before update - lastKey:', this.lastKey, 'selectedKey:', this.selectedKey);
             if (this.lastKey !== this.selectedKey) {
                 this.lastKey = this.selectedKey;
                 console.log('lastKey: ', this.lastKey);
             }
+            console.log('After update - lastKey:', this.lastKey);
         }
     }
 
@@ -92,6 +95,6 @@ export default class Water extends Entity {
         console.log('Note:', note);
 
         // Play the note
-        this.synth.triggerAttackRelease(note, 1);
+        this.synth.triggerAttackRelease(note, 2);
     }
 }
