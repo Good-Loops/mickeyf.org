@@ -1,10 +1,10 @@
-type Tone = {
+type Key = {
     frequency: number;
     characteristics: string;
     knownFor: string;
 };
 
-const tones: { [key: string]: Tone } = {
+const keys: { [key: string]: Key } = {
     "C3": {
         frequency: 261.63,
         characteristics: "Neutral, balanced, foundational.",
@@ -67,4 +67,4 @@ const tones: { [key: string]: Tone } = {
     }
 };
 
-export default tones;
+export default keys;
