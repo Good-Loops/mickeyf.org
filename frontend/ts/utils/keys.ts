@@ -2,68 +2,81 @@ type Key = {
     frequency: number;
     characteristics: string;
     knownFor: string;
+    semitone: number;
 };
 
 const keys: { [key: string]: Key } = {
-    "C3": {
+    'C': {
         frequency: 261.63,
-        characteristics: "Neutral, balanced, foundational.",
-        knownFor: "Often considered the starting point for Western music theory, making it a common key for beginners. It's also the key in which most piano music is written due to its lack of sharps and flats."
+        characteristics: 'Neutral, balanced, foundational.',
+        knownFor: 'Often considered the starting point for Western music theory, making it a common key for beginners. It\'s also the key in which most piano music is written due to its lack of sharps and flats.',
+        semitone: 0
     },
-    "C#3 / Db3": {
+    'C#/Db': {
         frequency: 277.18,
-        characteristics: "Sharp, intense, and slightly dissonant.",
-        knownFor: "Used in genres that want to evoke a sense of tension or brightness. It's common in jazz and contemporary classical music."
+        characteristics: 'Sharp, intense, and slightly dissonant.',
+        knownFor: 'Used in genres that want to evoke a sense of tension or brightness. It\'s common in jazz and contemporary classical music.',
+        semitone: 1
     },
-    "D3": {
+    'D': {
         frequency: 293.66,
-        characteristics: "Bright, open, and uplifting.",
-        knownFor: "Often associated with triumph and joy. Popular in classical and folk music, and often used for string instruments due to their resonance."
+        characteristics: 'Bright, open, and uplifting.',
+        knownFor: 'Often associated with triumph and joy. Popular in classical and folk music, and often used for string instruments due to their resonance.',
+        semitone: 2
     },
-    "D#3 / Eb3": {
+    'D#/Eb': {
         frequency: 311.13,
-        characteristics: "Mellow, rich, and expressive.",
-        knownFor: "Known for its warm sound, often used in jazz, blues, and ballads."
+        characteristics: 'Mellow, rich, and expressive.',
+        knownFor: 'Known for its warm sound, often used in jazz, blues, and ballads.',
+        semitone: 3
     },
-    "E3": {
+    'E': {
         frequency: 329.63,
-        characteristics: "Strong, clear, and resonant.",
-        knownFor: "Common in rock and pop music, often chosen for its strong, resonant sound on guitar and piano."
+        characteristics: 'Strong, clear, and resonant.',
+        knownFor: 'Common in rock and pop music, often chosen for its strong, resonant sound on guitar and piano.',
+        semitone: 4
     },
-    "F3": {
+    'F': {
         frequency: 349.23,
-        characteristics: "Calm, serious, and somewhat somber.",
-        knownFor: "Often associated with pastoral or reflective music, frequently used in classical and religious compositions."
+        characteristics: 'Calm, serious, and somewhat somber.',
+        knownFor: 'Often associated with pastoral or reflective music, frequently used in classical and religious compositions.',
+        semitone: 5
     },
-    "F#3 / Gb3": {
+    'F#/Gb': {
         frequency: 370.00,
-        characteristics: "Bright, tense, and slightly sharp.",
-        knownFor: "Used in genres that require a sense of tension or brightness, such as modern classical music and some rock genres."
+        characteristics: 'Bright, tense, and slightly sharp.',
+        knownFor: 'Used in genres that require a sense of tension or brightness, such as modern classical music and some rock genres.',
+        semitone: 6
     },
-    "G3": {
+    'G': {
         frequency: 392.00,
-        characteristics: "Warm, full, and natural.",
-        knownFor: "A favorite key in folk music and classical compositions, often associated with a natural, earthy quality."
+        characteristics: 'Warm, full, and natural.',
+        knownFor: 'A favorite key in folk music and classical compositions, often associated with a natural, earthy quality.',
+        semitone: 7
     },
-    "G#3 / Ab3": {
+    'G#/Ab': {
         frequency: 415.30,
-        characteristics: "Dark, rich, and somewhat mysterious.",
-        knownFor: "Used in jazz and blues for its expressive and somewhat melancholic sound."
+        characteristics: 'Dark, rich, and somewhat mysterious.',
+        knownFor: 'Used in jazz and blues for its expressive and somewhat melancholic sound.',
+        semitone: 8
     },
-    "A3": {
+    'A': {
         frequency: 440.00,
-        characteristics: "Clear, bright, and straightforward.",
-        knownFor: "The standard pitch for tuning musical instruments. Common in a wide range of genres including classical, rock, and pop."
+        characteristics: 'Clear, bright, and straightforward.',
+        knownFor: 'The standard pitch for tuning musical instruments. Common in a wide range of genres including classical, rock, and pop.',
+        semitone: 9
     },
-    "A#3 / Bb3": {
+    'A#/Bb': {
         frequency: 466.16,
-        characteristics: "Bold, warm, and rich.",
-        knownFor: "Popular in jazz and blues, known for its warm, rich sound that is both bold and expressive."
+        characteristics: 'Bold, warm, and rich.',
+        knownFor: 'Popular in jazz and blues, known for its warm, rich sound that is both bold and expressive.',
+        semitone: 10
     },
-    "B3": {
+    'B': {
         frequency: 493.88,
-        characteristics: "Bright, strong, and slightly tense.",
-        knownFor: "Often used in classical and religious music for its strong, bright sound. It's also common in rock and pop."
+        characteristics: 'Bright, strong, and slightly tense.',
+        knownFor: 'Often used in classical and religious music for its strong, bright sound. It\'s also common in rock and pop.',
+        semitone: 11
     }
 };
 

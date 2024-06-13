@@ -1,53 +1,49 @@
 import scales from '../utils/scales';
+import keys from '../utils/keys';
 import transpose from '../utils/transpose';
 
 interface Scale {
     name: string;
-    transposedNotes: number[];
+    notes: number[];
 }
 
 export default class ScaleLogic {
 
     // Default selected scale
-    private static selectedScale: Scale = { name: 'Major', transposedNotes: scales['Major'].notes };
-
-    // Key mapping for calculating half tone differences
-    private static keyMapping: { [key: string]: number } = {
-        'C': 0, 'C#/Db': 1, 'D': 2, 'D#/Eb': 3, 'E': 4,
-        'F': 5, 'F#/Gb': 6, 'G': 7, 'G#/Ab': 8, 'A': 9,
-        'A#/Bb': 10, 'B': 11
-    };
+    private static selectedScale: Scale = { name: 'Major', notes: scales['Major'].notes };
 
     public static getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
         // Define an array to store the note numbers
         let notes: number[] = scales[scaleName]?.notes || scales['Major'].notes;
-        console.log('scaleName:', scaleName);
 
-        // Transpose the notes according to the selected key
-        console.log('ScaleLogic.keyMapping[selectedKey]:', ScaleLogic.keyMapping[selectedKey], 'ScaleLogic.keyMapping[lastKey]:', ScaleLogic.keyMapping[lastKey!]);
-        let halfTones: number = ScaleLogic.keyMapping[selectedKey] - ScaleLogic.keyMapping[lastKey || selectedKey];
+        // Transpose the note numbers if the selected key is different from the last key
+        if (selectedKey !== lastKey) {
+            // Transpose the notes according to the selected key
+            let halfTones: number = keys[selectedKey].semitone - keys[lastKey || selectedKey].semitone;
+            console.log('halfTones:', halfTones, 'selectedKey:', selectedKey, 'lastKey:', lastKey);
 
-        // Ensure the difference is within the range of -11 to 11
-        if (halfTones > 6) {
-            halfTones -= 12;
-        } else if (halfTones < -6) {
-            halfTones += 12;
+            // Ensure the difference is within the range of -11 to 11
+            if (halfTones > 6) {
+                halfTones -= 12;
+            } else if (halfTones < -6) {
+                halfTones += 12;
+            }
+
+            // Determine whether to transpose up or down
+            const transposeUp: boolean = halfTones >= 0;
+
+            // Get the absolute value of the halfTones
+            halfTones = Math.abs(halfTones);
+
+        
+            notes = transpose(notes, halfTones, transposeUp);
         }
-
-        const transposeUp: boolean = halfTones >= 0;
-
-        // Get the absolute value of the halfTones
-        halfTones = Math.abs(halfTones);
-        console.log('halfTones:', halfTones);
-
-        // Transpose the note numbers
-        const transposedNotes: number[] = transpose(notes, halfTones, transposeUp);
-        console.log('transposedNotes:', transposedNotes);
+        console.log('transposedNotes:', notes);
 
         // Set the selected scale
-        ScaleLogic.selectedScale = { name: scaleName, transposedNotes };
+        ScaleLogic.selectedScale = { name: scaleName, notes };
 
-        return transposedNotes;
+        return notes;
     }
 
     public static getNote(lastPlayedNote?: number, isFirstNote: boolean = false): number {
@@ -152,7 +148,7 @@ export default class ScaleLogic {
     }
 
     private static getNoteMajor(lastPlayedNote?: number, isFirstNote: boolean = false): number {
-        const notes: number[] = ScaleLogic.selectedScale.transposedNotes;
+        const notes: number[] = ScaleLogic.selectedScale.notes;
 
         if (isFirstNote) {
             // If it's the first note, return the tonic (first note of the scale)
@@ -198,10 +194,10 @@ export default class ScaleLogic {
 
     // Assume getChordTones method exists
     private static getChordTones(): number[] {
-        const tonic: number = ScaleLogic.selectedScale.transposedNotes[0];
-        const third: number = ScaleLogic.selectedScale.transposedNotes[2];
-        const fifth: number = ScaleLogic.selectedScale.transposedNotes[4];
-        const seventh: number = ScaleLogic.selectedScale.transposedNotes[6];
+        const tonic: number = ScaleLogic.selectedScale.notes[0];
+        const third: number = ScaleLogic.selectedScale.notes[2];
+        const fifth: number = ScaleLogic.selectedScale.notes[4];
+        const seventh: number = ScaleLogic.selectedScale.notes[6];
         return [tonic, third, fifth, seventh];
     }
 }

@@ -1,3 +1,5 @@
+import keys from '../utils/keys';
+
 const transpose = (notes: number[], halfTones: number, up: boolean): number[] => {
     const semitoneRatio = Math.pow(2, 1 / 12);
 
