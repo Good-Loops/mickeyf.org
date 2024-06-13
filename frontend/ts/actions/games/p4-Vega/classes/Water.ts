@@ -21,7 +21,6 @@ export default class Water extends Entity {
 
     private synth: Tone.MembraneSynth;
     
-    private selectedKeyElement: Element = document.querySelector('[data-selected-key]') as Element;
     private selectedKey: string = 'C';
     private lastKey: string = 'C';
     private lastPlayedNote?: number;
@@ -48,23 +47,6 @@ export default class Water extends Entity {
             waterAnim.y = getRandomY(waterAnim.height + Entity.gap);
 
             p4.totalWater += 10;
-
-            // Check if the selected key element exists
-            if (!this.selectedKeyElement) {
-                console.error('Selected key not found');
-                return;
-            }
-            // Update selected key
-            this.selectedKey = this.selectedKeyElement.textContent || 'C';
-            console.log('Selected Key:', this.selectedKey);
-
-            // Update the last key only if the selected key has changed
-            console.log('Before update - lastKey:', this.lastKey, 'selectedKey:', this.selectedKey);
-            if (this.lastKey !== this.selectedKey) {
-                this.lastKey = this.selectedKey;
-                console.log('lastKey: ', this.lastKey);
-            }
-            console.log('After update - lastKey:', this.lastKey);
         }
     }
 
@@ -75,13 +57,17 @@ export default class Water extends Entity {
     private playSound(): void {
         // Get the selected scale from the UI
         const selectedScaleElement: Element = document.querySelector('[data-selected-scale]') as Element;
-        // Check if the selected scale element exists
-        if (!selectedScaleElement) {
-            console.error('Selected scale not found');
-            return;
-        }
         // Get the selected scale
         const selectedScale: string = selectedScaleElement.textContent || 'Major';
+
+        // Update the last key only if the selected key has changed
+        if (this.lastKey !== this.selectedKey) {
+            this.lastKey = this.selectedKey;
+        }
+        // Get the selected key from the UI
+        const selectedKeyElement: Element = document.querySelector('[data-selected-key]') as Element;
+        // Get the selected key
+        this.selectedKey = selectedKeyElement.textContent || 'C';
 
         // Use ScaleLogic to get the appropriate notes
         ScaleLogic.getNotesForScale(this.selectedKey, selectedScale, this.lastKey);
@@ -92,7 +78,6 @@ export default class Water extends Entity {
         // Get the next note to play
         const note: number = ScaleLogic.getNote(this.lastPlayedNote, isFirstNote) as number;
         this.lastPlayedNote = note; // Update the last played note
-        console.log('Note:', note);
 
         // Play the note
         this.synth.triggerAttackRelease(note, 2);

@@ -27,12 +27,21 @@ export default class ScaleLogic {
         console.log('ScaleLogic.keyMapping[selectedKey]:', ScaleLogic.keyMapping[selectedKey], 'ScaleLogic.keyMapping[lastKey]:', ScaleLogic.keyMapping[lastKey!]);
         let halfTones: number = ScaleLogic.keyMapping[selectedKey] - ScaleLogic.keyMapping[lastKey || selectedKey];
 
+        // Ensure the difference is within the range of -11 to 11
+        if (halfTones > 6) {
+            halfTones -= 12;
+        } else if (halfTones < -6) {
+            halfTones += 12;
+        }
+
+        const transposeUp: boolean = halfTones >= 0;
+
         // Get the absolute value of the halfTones
         halfTones = Math.abs(halfTones);
         console.log('halfTones:', halfTones);
 
         // Transpose the note numbers
-        const transposedNotes: number[] = transpose(notes, halfTones, false);
+        const transposedNotes: number[] = transpose(notes, halfTones, transposeUp);
         console.log('transposedNotes:', transposedNotes);
 
         // Set the selected scale
