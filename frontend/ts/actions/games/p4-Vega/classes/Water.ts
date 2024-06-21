@@ -60,11 +60,6 @@ export default class Water extends Entity {
         // Get the selected scale
         const selectedScale: string = selectedScaleElement.textContent || 'Major';
 
-        // Update the last key only if the selected key has changed
-        if (this.lastKey !== this.selectedKey) {
-            this.lastKey = this.selectedKey;
-        }
-
         // Get the selected key from the UI
         const selectedKeyElement: Element = document.querySelector('[data-selected-key]') as Element;
         // Get the selected key
@@ -72,6 +67,11 @@ export default class Water extends Entity {
 
         // Use ScaleLogic to get the appropriate notes
         ScaleLogic.getNotesForScale(this.selectedKey, selectedScale, this.lastKey);
+
+        // Update the last key only if the selected key has changed
+        if (this.lastKey !== this.selectedKey) {
+            this.lastKey = this.selectedKey;
+        }
 
         // Determine if this is the first note
         const isFirstNote = !this.lastPlayedNote;
