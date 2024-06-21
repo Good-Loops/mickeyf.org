@@ -43,7 +43,7 @@ function component() {
                                 <div class='p4-vega__ui--dropdown-menu-item' data-scale='Major'>Major</div>
                                 <div class='p4-vega__ui--dropdown-menu-item' data-scale='Minor'>Minor</div>
                                 <div class='p4-vega__ui--dropdown-menu-item' data-scale='Pentatonic'>Pentatonic</div>
-                                <div class='p4-vega__ui--dropdown-menu-item' data-scale='Blues'>Blues</div>
+                                <!-- <div class='p4-vega__ui--dropdown-menu-item' data-scale='Blues'>Blues</div>
                                 <div class='p4-vega__ui--dropdown-menu-item' data-scale='Dorian'>Dorian</div>
                                 <div class='p4-vega__ui--dropdown-menu-item' data-scale='Mixolydian'>Mixolydian</div>
                                 <div class='p4-vega__ui--dropdown-menu-item' data-scale='Phrygian'>Phrygian</div>
@@ -69,7 +69,7 @@ function component() {
                                 <div class='p4-vega__ui--dropdown-menu-item' data-scale='Tritone'>Tritone</div>
                                 <div class='p4-vega__ui--dropdown-menu-item' data-scale='Flamenco'>Flamenco</div>
                                 <div class='p4-vega__ui--dropdown-menu-item' data-scale='Iwato'>Iwato</div>
-                                <div class='p4-vega__ui--dropdown-menu-item' data-scale='Blues Heptatonic'>Blues Heptatonic</div>
+                                <div class='p4-vega__ui--dropdown-menu-item' data-scale='Blues Heptatonic'>Blues Heptatonic</div> -->
                             </div>
                         </div>
                     </div>

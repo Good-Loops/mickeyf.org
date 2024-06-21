@@ -55,6 +55,16 @@ export default async function p4Vega() {
     // Add an event listener to the checkbox to toggle music on change
     bgMusicCheckbox.addEventListener('change', toggleBackgroundMusic);
 
+    // Musical notes playing checkbox
+    // Get the checkbox element
+    const notesPlayingCheckbox: HTMLInputElement = document.querySelector('[data-musical-notes-playing]') as HTMLInputElement;
+    // Determine if notes are playing based on the checkbox state
+    let notesPlaying: boolean = notesPlayingCheckbox.checked;
+    const toggleNotesPlaying = (): void => {
+        notesPlaying = notesPlayingCheckbox.checked;
+    };
+    notesPlayingCheckbox.addEventListener('change', toggleNotesPlaying);
+
     // Create instances of Dropdowns for scales and keys
     new Dropdown('data-dropdown-scales', 'data-dropdown-btn', 'data-selected-scale');
     new Dropdown('data-dropdown-keys', 'data-dropdown-btn', 'data-selected-key');
@@ -146,7 +156,7 @@ export default async function p4Vega() {
         // Update game elements
         sky.update();
         p4.update(p4.p4Anim);
-        water.update(water.waterAnim, p4, stage);
+        water.update(water.waterAnim, p4, notesPlaying, stage);
         for (let i = 0; i < BlackHole.bHArray.length; i++) {
             let blackHole = BlackHole.bHArray[i];
             gameLive = blackHole.update(p4, gameLive);
@@ -280,8 +290,14 @@ export default async function p4Vega() {
     document.addEventListener('keyup', handleKeyup);
     document.addEventListener('keydown', handleKeydown);
 
+    // Define the component ID for event listeners
     let componentId = 'p4-vega';
-    if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
+    
+    // Check if the event listeners array for the component ID exists, if not, create it
+    if (!window.eventListeners[componentId]) { 
+        window.eventListeners[componentId] = []; 
+    }
+
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
     window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleBackgroundMusic });
@@ -289,4 +305,5 @@ export default async function p4Vega() {
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeysDropdown });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScaleSelection });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeySelection });
+    window.eventListeners[componentId].push({ element: notesPlayingCheckbox, event: 'change', handler: toggleNotesPlaying });
 }

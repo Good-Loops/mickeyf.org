@@ -37,9 +37,9 @@ export default class Water extends Entity {
         waterAnim.y = this.startY;
     }
 
-    public update(waterAnim: PIXI.AnimatedSprite, p4: P4, stage: PIXI.Container<PIXI.ContainerChild>): void {
+    public update(waterAnim: PIXI.AnimatedSprite, p4: P4, notesPlaying: boolean, stage: PIXI.Container<PIXI.ContainerChild>): void {
         if (checkCollision(p4.p4Anim, waterAnim)) {
-            this.playSound();
+            if (notesPlaying) this.playSound();
 
             new BlackHole(stage, p4.p4Anim);
 
