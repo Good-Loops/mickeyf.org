@@ -443,8 +443,8 @@ h1 {
   overflow-y: auto;
   overflow-x: hidden;
   position: absolute;
-  left: 0;
-  top: 100%;
+  left: 1em;
+  top: 95%;
   padding: 0.5em;
   border-bottom-left-radius: 0.5em;
   border-bottom-right-radius: 0.5em;
