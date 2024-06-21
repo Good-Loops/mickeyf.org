@@ -269,6 +269,8 @@ export default async function p4Vega() {
                 break;
         }
     }
+    document.addEventListener('keydown', handleKeydown);
+    
     const handleKeyup = (key: Event): void => {
         key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
@@ -289,7 +291,6 @@ export default async function p4Vega() {
         }
     }
     document.addEventListener('keyup', handleKeyup);
-    document.addEventListener('keydown', handleKeydown);
 
     // Define the component ID for event listeners
     let componentId = 'p4-vega';
@@ -299,12 +300,16 @@ export default async function p4Vega() {
         window.eventListeners[componentId] = []; 
     }
 
+    // Key events
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
+    // Checkboxes
     window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleBackgroundMusic });
+    window.eventListeners[componentId].push({ element: notesPlayingCheckbox, event: 'change', handler: toggleNotesPlaying });
+    // Dropdowns
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScalesDropdown });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeysDropdown });
+    // Dropdown selections
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScaleSelection });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeySelection });
-    window.eventListeners[componentId].push({ element: notesPlayingCheckbox, event: 'change', handler: toggleNotesPlaying });
 }
