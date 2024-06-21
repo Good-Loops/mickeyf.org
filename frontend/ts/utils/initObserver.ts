@@ -1,5 +1,5 @@
-import * as PIXI from "pixi.js";
-import * as Tone from "tone";
+import * as PIXI from 'pixi.js';
+import * as Tone from 'tone';
 
 // Stop animation function
 const stopAnimation = (animationId: number | null): void => {
@@ -27,18 +27,19 @@ const initObserver = (): MutationObserver => {
     const observer = new MutationObserver((mutations) => { // Callback function to execute when a mutation is observed
         mutations.forEach((mutation) => { // Iterate over each mutation
             if (mutation.removedNodes) { // Check if nodes were removed, that is, if the mutation is a removal
-                const content = document.querySelector('[data-content]'); // Get the content element
+                const content: HTMLElement = document.querySelector('[data-content]') as HTMLElement; // Get the content element
                 mutation.removedNodes.forEach((node) => { // Iterate over each removed node
                     if (mutation.target === content && (<Element>node).id) {
                         const componentId = (<Element>node).id;
+                        console.log(`Component ${componentId} removed`);
                         switch (componentId) {
-                            case "home":
+                            case 'home':
                                 stopAnimation(window.homeAnimationID);
                                 break;
-                            case "dancing-circles":
+                            case 'dancing-circles':
                                 stopAnimation(window.dcAnimationID);
                                 break;
-                            case "p4-vega":
+                            case 'p4-vega':
                                 stopTicker(window.p4GameTicker);
                                 stopBackgroundMusic(window.p4MusicPlayer);
                         }
