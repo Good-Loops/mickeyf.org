@@ -12,33 +12,40 @@ export default class ScaleLogic {
     // Default selected scale
     private static selectedScale: Scale = { name: 'Major', notes: scales['Major'].notes };
 
+    // Default halfTones
+    private static halfTones: number = 0;
+
     public static getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
-        // Define an array to store the note numbers
+        // Define an array to store the notes
         let notes: number[] = scales[scaleName]?.notes || scales['Major'].notes;
 
-        // Transpose the note numbers if the selected key is different from the last key
-        if (selectedKey !== lastKey) {
+        // Update halfTones and transpose only if the key has changed
+        if (lastKey !== selectedKey) {
             // Transpose the notes according to the selected key
-            let halfTones: number = keys[selectedKey].semitone - keys[lastKey || selectedKey].semitone;
-            console.log('halfTones:', halfTones, 'selectedKey:', selectedKey, 'lastKey:', lastKey);
+            this.halfTones = keys[selectedKey].semitone - keys[lastKey || selectedKey].semitone;
 
-            // Ensure the difference is within the range of -11 to 11
-            if (halfTones > 6) {
-                halfTones -= 12;
-            } else if (halfTones < -6) {
-                halfTones += 12;
+            console.log('halfTones:', this.halfTones, 'selectedKey:', selectedKey, 'lastKey:', lastKey);
+
+            if (this.halfTones > 6) {
+                this.halfTones -= 12;
+            } else if (this.halfTones < -6) {
+                this.halfTones += 12;
             }
 
             // Determine whether to transpose up or down
-            const transposeUp: boolean = halfTones >= 0;
+            const transposeUp: boolean = keys[selectedKey].semitone > keys[lastKey || selectedKey].semitone;
+            console.log('transposeUp:', transposeUp);
 
             // Get the absolute value of the halfTones
-            halfTones = Math.abs(halfTones);
+            this.halfTones = Math.abs(this.halfTones);
 
-        
-            notes = transpose(notes, halfTones, transposeUp);
+            notes = transpose(notes, this.halfTones, transposeUp);
+
+            // Reset halfTones
+            this.halfTones = 0;
+
+            console.log('notes:', notes);
         }
-        console.log('transposedNotes:', notes);
 
         // Set the selected scale
         ScaleLogic.selectedScale = { name: scaleName, notes };

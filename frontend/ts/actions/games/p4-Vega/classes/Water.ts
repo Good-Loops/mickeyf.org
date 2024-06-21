@@ -64,6 +64,7 @@ export default class Water extends Entity {
         if (this.lastKey !== this.selectedKey) {
             this.lastKey = this.selectedKey;
         }
+
         // Get the selected key from the UI
         const selectedKeyElement: Element = document.querySelector('[data-selected-key]') as Element;
         // Get the selected key
@@ -80,6 +81,6 @@ export default class Water extends Entity {
         this.lastPlayedNote = note; // Update the last played note
 
         // Play the note
-        this.synth.triggerAttackRelease(note, 2);
+        this.synth.triggerAttackRelease(note, 1);
     }
 }
