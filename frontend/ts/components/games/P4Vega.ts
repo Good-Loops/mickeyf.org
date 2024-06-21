@@ -12,7 +12,7 @@ function component() {
                 <img src='./sprites/p4Vega/bhYellow.png' style='display: none;' data-bhYellow>
                 <div class='p4-vega__ui'>
                     <label class='p4-vega__ui--option' data-checkbox>
-                        <input class='p4-vega__ui--checkbox' type='checkbox' checked data-bg-music-playing>
+                        <input class='p4-vega__ui--checkbox' type='checkbox' data-bg-music-playing>
                         <span class='p4-vega__ui--option-btn'>Background Music</span>
                     </label>
                     <label class='p4-vega__ui--option' data-checkbox>

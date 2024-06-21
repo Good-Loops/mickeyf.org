@@ -44,6 +44,11 @@ export default async function p4Vega() {
     // Background music checkbox
     // Get the checkbox element
     const bgMusicCheckbox: HTMLInputElement = document.querySelector('[data-bg-music-playing]') as HTMLInputElement;
+    // Background music player
+    window.p4MusicPlayer = new Tone.Player({
+        url: './assets/audio/bg-sound-p4.mp3',
+        loop: true,
+    }).toDestination();
     // Play or stop the music based on the checkbox state
     const toggleBackgroundMusic = (): void => {
         if (bgMusicCheckbox.checked) {
@@ -90,11 +95,7 @@ export default async function p4Vega() {
 
     // Load game assets
     const load = async () => {
-        // Background music
-        window.p4MusicPlayer = new Tone.Player({
-            url: './assets/audio/bg-sound-p4.mp3',
-            loop: true,
-        }).toDestination();
+        toggleBackgroundMusic();
 
         // Set game state
         gameLive = true;

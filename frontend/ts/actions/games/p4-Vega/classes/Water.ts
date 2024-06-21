@@ -81,6 +81,6 @@ export default class Water extends Entity {
         this.lastPlayedNote = note; // Update the last played note
 
         // Play the note
-        this.synth.triggerAttackRelease(note, 1, Tone.now());
+        this.synth.triggerAttackRelease(note, .8, Tone.now());
     }
 }
