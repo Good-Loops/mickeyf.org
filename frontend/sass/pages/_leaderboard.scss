@@ -2,8 +2,8 @@
 
 .leaderboard {
     @include default-component;
-    padding: 2rem;
-    padding-inline: 4rem;
+    padding-block: 2rem;
+    padding-inline: 8rem;
 
     border-radius: .8em;
 
@@ -17,7 +17,7 @@
     }
 
     &__list-item {
-        font-size: 3.5rem;
+        font-size: 3em;
         font-weight: 900;
         font-family: $subheading-font;
         

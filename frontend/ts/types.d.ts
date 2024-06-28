@@ -39,5 +39,8 @@ declare global {
         homeAnimationID: number | null;
         dcAnimationID: number | null;
         p4GameTicker: PIXI.Ticker | null;
+
+        // Previous path
+        previousPath: string;
     }
 }

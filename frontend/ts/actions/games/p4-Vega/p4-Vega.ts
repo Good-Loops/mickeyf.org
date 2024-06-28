@@ -44,6 +44,11 @@ export default async function p4Vega() {
     // Background music checkbox
     // Get the checkbox element
     const bgMusicCheckbox: HTMLInputElement = document.querySelector('[data-bg-music-playing]') as HTMLInputElement;
+    // Background music player
+    window.p4MusicPlayer = new Tone.Player({
+        url: './assets/audio/bg-sound-p4.mp3',
+        loop: true,
+    }).toDestination();
     // Play or stop the music based on the checkbox state
     const toggleBackgroundMusic = (): void => {
         if (bgMusicCheckbox.checked) {
@@ -54,6 +59,16 @@ export default async function p4Vega() {
     };
     // Add an event listener to the checkbox to toggle music on change
     bgMusicCheckbox.addEventListener('change', toggleBackgroundMusic);
+
+    // Musical notes playing checkbox
+    // Get the checkbox element
+    const notesPlayingCheckbox: HTMLInputElement = document.querySelector('[data-musical-notes-playing]') as HTMLInputElement;
+    // Determine if notes are playing based on the checkbox state
+    let notesPlaying: boolean = notesPlayingCheckbox.checked;
+    const toggleNotesPlaying = (): void => {
+        notesPlaying = notesPlayingCheckbox.checked;
+    };
+    notesPlayingCheckbox.addEventListener('change', toggleNotesPlaying);
 
     // Create instances of Dropdowns for scales and keys
     new Dropdown('data-dropdown-scales', 'data-dropdown-btn', 'data-selected-scale');
@@ -80,12 +95,7 @@ export default async function p4Vega() {
 
     // Load game assets
     const load = async () => {
-        // Background music
-        window.p4MusicPlayer = new Tone.Player({
-            url: './assets/audio/bg-sound-p4.mp3',
-            loop: true,
-            autostart: true,
-        }).toDestination();
+        toggleBackgroundMusic();
 
         // Set game state
         gameLive = true;
@@ -147,7 +157,7 @@ export default async function p4Vega() {
         // Update game elements
         sky.update();
         p4.update(p4.p4Anim);
-        water.update(water.waterAnim, p4, stage);
+        water.update(water.waterAnim, p4, notesPlaying, stage);
         for (let i = 0; i < BlackHole.bHArray.length; i++) {
             let blackHole = BlackHole.bHArray[i];
             gameLive = blackHole.update(p4, gameLive);
@@ -155,7 +165,6 @@ export default async function p4Vega() {
 
         // Check for game over
         if (!gameLive) {
-            // console.log(p4, BlackHole.bHArray);
             ticker.stop();
             if (window.isLoggedIn) { await submitScore(); }
             gameOverTexts = await gameOver(gameLive, p4);
@@ -259,6 +268,8 @@ export default async function p4Vega() {
                 break;
         }
     }
+    document.addEventListener('keydown', handleKeydown);
+    
     const handleKeyup = (key: Event): void => {
         key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
@@ -279,15 +290,25 @@ export default async function p4Vega() {
         }
     }
     document.addEventListener('keyup', handleKeyup);
-    document.addEventListener('keydown', handleKeydown);
 
-    let componentId = 'p4-vega';
-    if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
+    // Define the component ID for event listeners
+    let componentId = 'p4-Vega';
+    
+    // Check if the event listeners array for the component ID exists, if not, create it
+    if (!window.eventListeners[componentId]) { 
+        window.eventListeners[componentId] = []; 
+    }
+
+    // Key events
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
+    // Checkboxes
     window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleBackgroundMusic });
+    window.eventListeners[componentId].push({ element: notesPlayingCheckbox, event: 'change', handler: toggleNotesPlaying });
+    // Dropdowns
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScalesDropdown });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeysDropdown });
+    // Dropdown selections
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScaleSelection });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeySelection });
 }

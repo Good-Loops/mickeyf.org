@@ -5,5 +5,6 @@ export interface ILeaderboardEntry {
 
 export default interface ILeaderboard {
     leaderboard: ILeaderboardEntry[];
+    isLoading: boolean;
     fetchLeaderboard: () => void;
 }

@@ -1,29 +1,24 @@
 // Load environment variables from .env file
 require('dotenv').config(); 
-
 // Import Alpine.js and Page.js
 import Alpine from "alpinejs";
 import page from "page";
 // Import custom modules
 import setupRoutes from './utils/setUpRoutes';
-import initGlobals from "./utils/initGlobals";
-import initObserver from './utils/initObserver';
 import EventListenerManager from './helpers/EventListenerManager';
-
-// Initialize global variables
-initGlobals();
+// Initializes global variables
+import "./utils/initGlobals";
+// Cleans up the page on component change
+import "./helpers/RouteChange";
 // Define routes using Page.js
 setupRoutes(page);
 // Start Alpine.js and Page.js
 Alpine.start();
 page.start();
-// Initialize mutation observer
-initObserver();
-// Initialize event listener manager
+// Initialize event listener manager for global event listeners
 document.addEventListener('DOMContentLoaded', () => {
     EventListenerManager.init();
 });
-
 ///////// FIREBASE CONFIGURATION //////////
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
