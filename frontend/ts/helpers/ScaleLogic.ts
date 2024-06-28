@@ -24,8 +24,6 @@ export default class ScaleLogic {
             // Transpose the notes according to the selected key
             this.halfTones = keys[selectedKey].semitone - keys[lastKey || selectedKey].semitone;
 
-            // console.log('halfTones:', this.halfTones, 'selectedKey:', selectedKey, 'lastKey:', lastKey);
-
             if (this.halfTones > 6) {
                 this.halfTones -= 12;
             } else if (this.halfTones < -6) {
@@ -36,8 +34,6 @@ export default class ScaleLogic {
 
             // Reset halfTones
             this.halfTones = 0;
-
-            // console.log('notes:', notes);
         }
 
         // Set the selected scale

@@ -35,21 +35,21 @@ class RouteChange {
     private stopAnimation(animationId: number | null): void {
         if (animationId) {
             cancelAnimationFrame(animationId);
-            console.log('Animation stopped');
+            // console.log('Animation stopped');
         }
     }
 
     private stopTicker(ticker: PIXI.Ticker | null): void {
         if (ticker) {
             ticker.stop();
-            console.log('Ticker stopped');
+            // console.log('Ticker stopped');
         }
     }
 
     private stopBackgroundMusic(Player: Tone.Player | null): void {
         if (Player) {
             Player.stop();
-            console.log('Background music stopped');
+            // console.log('Background music stopped');
         }
     }
 
@@ -57,14 +57,14 @@ class RouteChange {
         if (window.eventListeners[componentId]) {
             window.eventListeners[componentId].forEach(({ element, event, handler }) => {
                 element.removeEventListener(event, handler);
-                console.log('Removed event listener: ', event, 'from', element, 'with handler', handler, 'for component', componentId);
+                // console.log('Removed event listener: ', event, 'from', element, 'with handler', handler, 'for component', componentId);
             });
             delete window.eventListeners[componentId];
         }
     }
 
     private cleanupGeneric(componentId: string, animationOrTicker: number | PIXI.Ticker | null, player?: Tone.Player | null) {
-        console.log(`Cleaning up ${componentId}`);
+        // console.log(`Cleaning up ${componentId}`);
 
         if (animationOrTicker instanceof PIXI.Ticker) {
             this.stopTicker(animationOrTicker);

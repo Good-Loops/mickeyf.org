@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 export default function leaderboard(): ILeaderboard {
     return {
         leaderboard: [] as ILeaderboardEntry[],
+        isLoading: true,
 
         /**
          * Fetches the leaderboard data from the server.
@@ -46,6 +47,8 @@ export default function leaderboard(): ILeaderboard {
                     text: 'An error occurred while fetching the leaderboard',
                     icon: 'error',
                 });
+            } finally {
+                this.isLoading = false;  // Set isLoading to false once data is fetched
             }
         },
     };

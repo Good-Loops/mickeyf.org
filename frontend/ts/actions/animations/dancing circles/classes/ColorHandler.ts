@@ -34,7 +34,7 @@ export default class ColorHandler {
         const match: RegExpMatchArray = hslStr.match(hslRegex) as RegExpExecArray;
 
         if (!match) {
-            console.log(hslStr);
+            // console.log(hslStr);
             throw new Error("Invalid HSL string format");
         }
 

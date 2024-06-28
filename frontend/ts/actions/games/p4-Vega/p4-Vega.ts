@@ -165,7 +165,6 @@ export default async function p4Vega() {
 
         // Check for game over
         if (!gameLive) {
-            // console.log(p4, BlackHole.bHArray);
             ticker.stop();
             if (window.isLoggedIn) { await submitScore(); }
             gameOverTexts = await gameOver(gameLive, p4);

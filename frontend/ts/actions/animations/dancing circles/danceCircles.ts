@@ -188,7 +188,6 @@ export default async function danceCircles() {
                 circle.convColor(true, false); // Convert to RGB
             }
             else {
-                // console.log(elem.color);
                 throw new Error("Browser Not Compatible");
             }
 

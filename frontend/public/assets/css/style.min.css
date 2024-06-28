@@ -896,8 +896,8 @@ h1 {
   display: grid;
   row-gap: 10rem;
   justify-items: center;
-  padding: 2rem;
-  padding-inline: 4rem;
+  padding-block: 2rem;
+  padding-inline: 8rem;
   border-radius: 0.8em;
   background-image: linear-gradient(to top left, rgba(133, 205, 250, 0.8) 35%, rgba(145, 238, 145, 0.8) 70%);
   box-shadow: 0 0.4em 0.8em rgba(0, 0, 0, 0.1);
@@ -915,7 +915,7 @@ h1 {
   list-style-type: decimal;
 }
 .leaderboard__list-item {
-  font-size: 3.5rem;
+  font-size: 3em;
   font-weight: 900;
   font-family: "Roboto", sans-serif;
   padding: 0.5rem 0.8rem;
