@@ -25,4 +25,4 @@ const initGlobals = () => {
     window.isLoggedIn = false;
 };
 
-export default initGlobals;
+export default initGlobals();
