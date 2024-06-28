@@ -1,8 +1,10 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../../utils/constants";
 import { getRandomBoolean, getRandomInt, getRandomX, getRandomY } from "../../../../utils/random";
 import checkCollision from "../../../../utils/checkCollision";
-import Entity from "../../classes/Entity";
+
+import Entity from "../../helpers/Entity";
 import P4 from "./P4";
+
 import * as PIXI from 'pixi.js';
 
 // Constants
@@ -24,7 +26,7 @@ export default class BlackHole extends Entity {
 
         // Make sure that the black hole animations are not repeated.
         let index: number;
-        do { 
+        do {
             index = getRandomInt(0, BlackHole.bHAnimArray.length - 1);
         } while (BlackHole.addedIndexes.includes(index));
         BlackHole.addedIndexes.push(index);
@@ -48,9 +50,9 @@ export default class BlackHole extends Entity {
     // Initializes the pool with a given size, stage, animation array, and player animation.
     private determineDirection(): void {
         if (getRandomBoolean()) {
-            this.vX = Math.floor(Math.random() * (VELOCITY_MAX - VELOCITY_MIN) + VELOCITY_MIN);
+            this.vX = getRandomInt(VELOCITY_MIN, VELOCITY_MAX);
         } else {
-            this.vY = Math.floor(Math.random() * (VELOCITY_MAX - VELOCITY_MIN) + VELOCITY_MIN);
+            this.vY = getRandomInt(VELOCITY_MIN, VELOCITY_MAX);
         }
     }
 

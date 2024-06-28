@@ -22,21 +22,31 @@ body {
 // which includes padding and border in the element's total width and height
 html {
     font-size: 62.5%;
-
     box-sizing: border-box;
-
     user-select: none;
 }
 
 body {
-    background-image: $page-bg-gradient;
     cursor: $cursor;
+    background-image: $page-bg-gradient;
+}
+
+button {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+
+    background-color: transparent;
+
+    border: none;
+
+    cursor: $cursor-hover;
 }
 
 canvas {
     width: 60vw;
     box-sizing: content-box;
-    border-radius: .8em;
+    border-radius: $default-border-radius;
 }
 
 a {

@@ -1,18 +1,18 @@
 // Main Components
-import Home from "../components/Home";
-import Games from "../components/Games";
-import Animations from "../components/Animations";
-import SocialMedia from "../components/SocialMedia";
-import Register from "../components/Register";
-import Login from "../components/Login";
-import Leaderboard from "../components/Leaderboard";
-import Error404 from "../components/Error404";
+import Home from '../components/Home';
+import Games from '../components/Games';
+import Animations from '../components/Animations';
+import SocialMedia from '../components/SocialMedia';
+import Register from '../components/Register';
+import Login from '../components/Login';
+import Leaderboard from '../components/Leaderboard';
+import Error404 from '../components/Error404';
 
 // Animations
-import DanceCircles from "../components/animations/DanceCircles";
+import DanceCircles from '../components/animations/DanceCircles';
 
 // Games
-import P4Vega from "../components/games/P4Vega";
+import P4Vega from '../components/games/P4Vega';
 
 interface ComponentInterface { // Define the component interface
     render: (params?: any) => string | Promise<string>;
@@ -21,20 +21,20 @@ interface ComponentInterface { // Define the component interface
 
 const routes: Record<string, ComponentInterface> = {
     // Main Components
-    "/": Home,
-    "/games": Games,
-    "/animations": Animations,
-    "/socialmedia": SocialMedia,
-    "/signup": Register,
-    "/login": Login,
-    "/leaderboard": Leaderboard,
-    "/error": Error404,
+    '/': Home,
+    '/games': Games,
+    '/animations': Animations,
+    '/socialmedia': SocialMedia,
+    '/signup': Register,
+    '/login': Login,
+    '/leaderboard': Leaderboard,
+    '/error': Error404,
 
     // Animations
-    "/dancing-circles": DanceCircles,
+    '/dancing-circles': DanceCircles,
 
     // Games
-    "/p4-Vega": P4Vega,
+    '/p4-Vega': P4Vega,
 }
 
 // Utility function to match dynamic routes
@@ -49,15 +49,15 @@ function matchRoute(requestedRoute: string) {
             return route;
         }
     }
-    return "/error"; // default to error route if no match found
+    return '/error'; // default to error route if no match found
 }
 
 // Load the component based on the requested route
 export const loadComponent = async (requestedRoute: string, params?: any): Promise<void> => {
-    const content = document.querySelector("#content") as HTMLDivElement;
+    const content = document.querySelector('[data-content]') as HTMLDivElement;
 
     if (!content) {
-        console.error("The #content element does not exist in your HTML.");
+        console.error('The #content element does not exist in your HTML.');
         return;
     }
 
@@ -70,8 +70,8 @@ export const loadComponent = async (requestedRoute: string, params?: any): Promi
         content.innerHTML = await component.render(params);
         component.action?.(params);
     } catch (error) {
-        console.error("Error rendering the component:", error);
+        console.error('Error rendering the component:', error);
         content.innerHTML = '<div>Error loading page. Please try again.</div>'; // Friendly error message
-        content.innerHTML = await Error404.render(); // Render a full error component
+        content.innerHTML = Error404.render(); // Render a full error component
     }
 };

@@ -2,11 +2,130 @@
 
 .p4-vega {
     display: grid;
-    gap: 2em;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 3em;
+
+    &__title {
+        grid-column: 2 / 3;
+    }
+
+    &__ui {
+        grid-column: 1 / 2;
+
+        display: grid;
+        grid-auto-rows: max-content;
+        grid-auto-flow: row;
+        gap: 1em;
+
+        max-height: fit-content;
+
+        margin-right: -2em;
+
+        &--option {
+            display: grid;
+            grid-auto-columns: max-content;
+            grid-auto-flow: column;
+            gap: .5em;
+
+            @include default-option;
+        }
+
+        &--checkbox {
+            appearance: none;
+            border-radius: 50%;
+    
+            width: .5em;
+            height: .5em;
+    
+            background-color: $white-darker;
+    
+            align-self: center;
+
+            cursor: $cursor-hover;
+    
+            &:checked {
+                background-color: $secondary;
+            }
+        }
+
+        &--dropdown-grid {
+            display: grid;
+            grid-auto-columns: max-content;
+            grid-auto-flow: column;
+            gap: .5em;
+        }
+
+        &--dropdown {
+            @include default-option;
+
+            position: relative;
+
+            &-btn {
+                display: flex;
+            }
+
+            &-menu {
+                cursor: $cursor-hover;
+
+                max-height: 20em;
+                overflow-y: auto; 
+                overflow-x: hidden; 
+
+                position: absolute;
+                left: 1em;
+                top: 95%;
+
+                padding: .5em;
+
+                border-bottom-left-radius: $border-radius-s;
+                border-bottom-right-radius: $border-radius-s;
+
+                box-shadow: $darl-box-shadow-s;
+
+                pointer-events: none;
+                opacity: 0;
+                transform: translateY(-1em);
+                transition: opacity .15s ease-in-out,
+                            transform .15s ease-in-out;
+
+                &-keys {
+                    white-space: nowrap;
+                    left: 3em;
+                }
+
+                &-item {
+                    padding: .5em;
+                    font-size: $font-size-xxs;
+                    color: $white-darker;
+
+                    &:hover {
+                        background-color: $primary-darker;
+                        border-radius: $border-radius-s;
+                    }
+                }
+
+                &.active {
+                    display: block;
+                }
+            }
+        }
+
+        &--dropdown.active + &--dropdown-btn,
+        &--dropdown-btn:hover {
+            background-color: $primary-darker;
+        }
+
+        &--dropdown.active > &--dropdown-btn + &--dropdown-menu {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+    }
 
     &__canvas {
         @include canvas-shadow-effect;
         justify-self: center;
+        grid-column: 2 / 3;
     }
 
     &__img {

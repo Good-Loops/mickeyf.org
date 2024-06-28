@@ -1,13 +1,16 @@
 // Utilities
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
-import { getRandomInt } from "../../../utils/random";
-import gameOver from "../../../utils/gameOver";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
+import { getRandomInt } from '../../../utils/random';
+import gameOver from '../utils/gameOver';
+
+// Helpers
+import Dropdown from '../../../helpers/Dropdown';
 
 // Game elements
-import P4 from "./classes/P4";
-import Water from "./classes/Water";
-import BlackHole from "./classes/BlackHole";
-import Sky from "./classes/Sky";
+import P4 from './classes/P4';
+import Water from './classes/Water';
+import BlackHole from './classes/BlackHole';
+import Sky from './classes/Sky';
 
 // Entity data
 import p4Data from './data/p4.json';
@@ -17,8 +20,9 @@ import bhRedData from './data/bhRed.json'
 import bhYellowData from './data/bhYellow.json'
 
 // Libraries
+import Swal from 'sweetalert2';
+import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
-import Swal from "sweetalert2";
 
 export default async function p4Vega() {
     /////////////////// Setup PixiJS renderer ////////////////// 
@@ -29,12 +33,59 @@ export default async function p4Vega() {
     });
     // Set canvas properties
     const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
-    canvas.className = "p4-vega__canvas";
-    canvas.id = "p4-canvas";
+    canvas.className = 'p4-vega__canvas';
+    canvas.id = 'p4-canvas';
     // Add the canvas to the DOM
-    document.getElementById("p4-vega")!.appendChild(canvas);
+    document.querySelector('[data-p4-vega]')!.appendChild(canvas);
     // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
+
+    /////////////////// UI //////////////////
+    // Background music checkbox
+    // Get the checkbox element
+    const bgMusicCheckbox: HTMLInputElement = document.querySelector('[data-bg-music-playing]') as HTMLInputElement;
+    // Background music player
+    window.p4MusicPlayer = new Tone.Player({
+        url: './assets/audio/bg-sound-p4.mp3',
+        loop: true,
+    }).toDestination();
+    // Play or stop the music based on the checkbox state
+    const toggleBackgroundMusic = (): void => {
+        if (bgMusicCheckbox.checked) {
+            window.p4MusicPlayer.start();
+        } else {
+            window.p4MusicPlayer.stop();
+        }
+    };
+    // Add an event listener to the checkbox to toggle music on change
+    bgMusicCheckbox.addEventListener('change', toggleBackgroundMusic);
+
+    // Musical notes playing checkbox
+    // Get the checkbox element
+    const notesPlayingCheckbox: HTMLInputElement = document.querySelector('[data-musical-notes-playing]') as HTMLInputElement;
+    // Determine if notes are playing based on the checkbox state
+    let notesPlaying: boolean = notesPlayingCheckbox.checked;
+    const toggleNotesPlaying = (): void => {
+        notesPlaying = notesPlayingCheckbox.checked;
+    };
+    notesPlayingCheckbox.addEventListener('change', toggleNotesPlaying);
+
+    // Create instances of Dropdowns for scales and keys
+    new Dropdown('data-dropdown-scales', 'data-dropdown-btn', 'data-selected-scale');
+    new Dropdown('data-dropdown-keys', 'data-dropdown-btn', 'data-selected-key');
+
+    const dropdownHandlers = {
+        toggleScalesDropdown: Dropdown.toggle('data-dropdown-scales', 'data-dropdown-btn'),
+        toggleKeysDropdown: Dropdown.toggle('data-dropdown-keys', 'data-dropdown-btn'),
+        toggleScaleSelection: Dropdown.toggleSelection('data-dropdown-scales', 'data-selected-scale', 'data-scale'),
+        toggleKeySelection: Dropdown.toggleSelection('data-dropdown-keys', 'data-selected-key', 'data-key')
+    };
+
+    // Binding event listeners using static methods
+    document.addEventListener('click', dropdownHandlers.toggleScalesDropdown);
+    document.addEventListener('click', dropdownHandlers.toggleKeysDropdown);
+    document.addEventListener('click', dropdownHandlers.toggleScaleSelection);
+    document.addEventListener('click', dropdownHandlers.toggleKeySelection);
 
     ////////////////// Globals //////////////////
     // Game state
@@ -44,16 +95,18 @@ export default async function p4Vega() {
 
     // Load game assets
     const load = async () => {
+        toggleBackgroundMusic();
+
         // Set game state
         gameLive = true;
-        // Background
         sky = new Sky(stage);
+        // Background
         // Get images
-        const p4Image: HTMLImageElement = document.getElementById('p4') as HTMLImageElement;
-        const waterImage: HTMLImageElement = document.getElementById('water') as HTMLImageElement;
-        const bhBlueImage: HTMLImageElement = document.getElementById('bhBlue') as HTMLImageElement;
-        const bhRedImage: HTMLImageElement = document.getElementById('bhRed') as HTMLImageElement;
-        const bhYellowImage: HTMLImageElement = document.getElementById('bhYellow') as HTMLImageElement;
+        const p4Image: HTMLImageElement = document.querySelector('[data-p4]') as HTMLImageElement;
+        const waterImage: HTMLImageElement = document.querySelector('[data-water]') as HTMLImageElement;
+        const bhBlueImage: HTMLImageElement = document.querySelector('[data-bhBlue]') as HTMLImageElement;
+        const bhRedImage: HTMLImageElement = document.querySelector('[data-bhRed]') as HTMLImageElement;
+        const bhYellowImage: HTMLImageElement = document.querySelector('[data-bhYellow]') as HTMLImageElement;
         // Load images as textures
         const p4Texture: PIXI.Texture = await PIXI.Assets.load(p4Image) as PIXI.Texture;
         const waterTexture: PIXI.Texture = await PIXI.Assets.load(waterImage) as PIXI.Texture;
@@ -104,7 +157,7 @@ export default async function p4Vega() {
         // Update game elements
         sky.update();
         p4.update(p4.p4Anim);
-        water.update(water.waterAnim, p4, stage);
+        water.update(water.waterAnim, p4, notesPlaying, stage);
         for (let i = 0; i < BlackHole.bHArray.length; i++) {
             let blackHole = BlackHole.bHArray[i];
             gameLive = blackHole.update(p4, gameLive);
@@ -138,11 +191,15 @@ export default async function p4Vega() {
     // Restart game
     const restart = async () => {
         gameLive = true;
+        // Clear black hole array
+        BlackHole.bHAnimArray = [];
         // Clear stage
         p4.destroy();
         water.destroy();
         BlackHole.destroy();
         stage.removeChildren();
+        // Stop music
+        window.p4MusicPlayer.stop();
         // Load game assets
         await load();
         ticker.start();
@@ -189,59 +246,69 @@ export default async function p4Vega() {
 
     // User input
     const handleKeydown = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
-            case "ArrowRight":
-                key.preventDefault();
+            case 'ArrowRight':
                 p4.isMovingRight = true;
                 break;
-            case "ArrowLeft":
-                key.preventDefault();
+            case 'ArrowLeft':
                 p4.isMovingLeft = true;
                 break;
-            case "ArrowUp":
-                key.preventDefault();
+            case 'ArrowUp':
                 p4.isMovingUp = true;
                 break;
-            case "ArrowDown":
-                key.preventDefault();
+            case 'ArrowDown':
                 p4.isMovingDown = true;
                 break;
             // Restart game
-            case "Space":
-                key.preventDefault();
+            case 'Space':
                 if (!gameLive) restart();
                 break;
             default:
                 break;
         }
     }
+    document.addEventListener('keydown', handleKeydown);
+    
     const handleKeyup = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
-            case "ArrowRight":
-                key.preventDefault();
+            case 'ArrowRight':
                 p4.isMovingRight = false;
                 break;
-            case "ArrowLeft":
-                key.preventDefault();
+            case 'ArrowLeft':
                 p4.isMovingLeft = false;
                 break;
-            case "ArrowUp":
-                key.preventDefault();
+            case 'ArrowUp':
                 p4.isMovingUp = false;
                 break;
-            case "ArrowDown":
-                key.preventDefault();
+            case 'ArrowDown':
                 p4.isMovingDown = false;
                 break;
             default:
                 break;
         }
     }
-    document.addEventListener("keyup", handleKeyup);
-    document.addEventListener("keydown", handleKeydown);
+    document.addEventListener('keyup', handleKeyup);
 
-    let componentId = "p4-vega";
-    if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
+    // Define the component ID for event listeners
+    let componentId = 'p4-Vega';
+    
+    // Check if the event listeners array for the component ID exists, if not, create it
+    if (!window.eventListeners[componentId]) { 
+        window.eventListeners[componentId] = []; 
+    }
+
+    // Key events
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
+    // Checkboxes
+    window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleBackgroundMusic });
+    window.eventListeners[componentId].push({ element: notesPlayingCheckbox, event: 'change', handler: toggleNotesPlaying });
+    // Dropdowns
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScalesDropdown });
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeysDropdown });
+    // Dropdown selections
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScaleSelection });
+    window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeySelection });
 }

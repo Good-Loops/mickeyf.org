@@ -5,9 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>mickeyf.org (Alpha 0.3.0)</title>
+
+    <title>mickeyf.org (Alpha 0.4.0)</title>
+
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <link rel="stylesheet" type="text/css" href="assets/css/style.min.css">
+    
+    <script src="dist/main.min.js" defer></script>
 </head>
 
 <body>
@@ -24,7 +28,7 @@
                 <li class="nav__item login-signup"><a class="nav__link" href="/login">Log in</a></li>
                 <li class="nav__item login-signup"><a class="nav__link" href="/signup">Sign up</a></li>
                 <li class="nav__item logged-in-message"></li>
-                <li class="nav__item logout"><a class="nav__link" href="#" id="logoutButton">Log out</a></li>
+                <li class="nav__item logout"><a class="nav__link" href="#" data-logout-btn>Log out</a></li>
             </ul>
         </nav>
         <!-- For "smaller" screens -->
@@ -42,26 +46,24 @@
             <nav class="menu__nav">
                 <ul class="menu__nav__list">
                     <li class="menu__nav__item"><a class="menu__nav__link" href="/">Home</a></li>
-                    <li class="menu__nav__item"><a class="menu__nav__link" href="/games">Games</a></li>
-                    <li class="menu__nav__item"><a class="menu__nav__link" href="/animations">Animations</a></li>
+                    <!-- <li class="menu__nav__item"><a class="menu__nav__link" href="/games">Games</a></li> (not ready for mobile) -->
+                    <!-- <li class="menu__nav__item"><a class="menu__nav__link" href="/animations">Animations</a></li> (not ready for mobile) -->
                     <li class="menu__nav__item"><a class="menu__nav__link" href="/socialmedia">Social Media</a></li>
                     <li class="menu__nav__item"><a class="menu__nav__link" href="/leaderboard">Leaderboard</a></li>
                     <li class="menu__nav__item login-signup"><a class="menu__nav__link" href="/login">Log in</a></li>
                     <li class="menu__nav__item login-signup"><a class="menu__nav__link" href="/signup">Sign up</a></li>
                     <li class="menu__nav__item logged-in-message"></li>
-                    <li class="menu__nav__item logout"><a class="nav__link" href="#" id="logoutButton">Log out</a></li>
+                    <li class="menu__nav__item logout"><a class="nav__link" href="#" data-logout-btn>Log out</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
     <main class="main">
-        <div class="main__content" id="content"></div>
+        <div class="main__content" data-content></div>
     </main>
 
     <footer class="footer">
     </footer>
-
-    <script src="dist/main.min.js"></script>
 </body>
 </html>

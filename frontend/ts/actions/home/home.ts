@@ -1,15 +1,16 @@
 export default async function home() {
     const addQuote = (quote: string) => {
-        const quotesContainer = document.getElementById('quotes-container');
+        const quotesContainer = document.querySelector('[data-quotes-container]');
 
         if (quotesContainer) {
+            // Create quote element
             const quoteElement = document.createElement('div');
             quoteElement.className = 'quote';
             quoteElement.textContent = quote;
 
             // Position the quote at a random location
             const x = Math.random() * (window.innerWidth - 200);
-            const y = Math.random() * (window.innerHeight - 100);
+            const y = Math.random() * (window.innerHeight - 300);
 
             quoteElement.style.position = 'absolute';
             quoteElement.style.left = `${x}px`;
