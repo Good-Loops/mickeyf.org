@@ -7,8 +7,11 @@ import page from "page";
 // Import custom modules
 import setupRoutes from './utils/setUpRoutes';
 import initGlobals from "./utils/initGlobals";
-import initObserver from './utils/initObserver';
 import EventListenerManager from './helpers/EventListenerManager';
+
+// TODO: Exporting single instance with other helpers
+// Cleans up the page on route change
+import "./helpers/RouteChange";
 
 // Initialize global variables
 initGlobals();
@@ -17,8 +20,7 @@ setupRoutes(page);
 // Start Alpine.js and Page.js
 Alpine.start();
 page.start();
-// Initialize mutation observer
-initObserver();
+
 // Initialize event listener manager
 document.addEventListener('DOMContentLoaded', () => {
     EventListenerManager.init();

@@ -293,7 +293,7 @@ export default async function p4Vega() {
     document.addEventListener('keyup', handleKeyup);
 
     // Define the component ID for event listeners
-    let componentId = 'p4-vega';
+    let componentId = 'p4-Vega';
     
     // Check if the event listeners array for the component ID exists, if not, create it
     if (!window.eventListeners[componentId]) { 
