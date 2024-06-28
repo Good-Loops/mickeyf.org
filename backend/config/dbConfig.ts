@@ -31,17 +31,17 @@ pool.getConnection()
 // Add logging for connection management
 // Log a message when a new database connection is established
 pool.on('connection', (connection) => {
-    // console.log('New DB Connection established');
+    console.log('New DB Connection established');
 });
 
 // Log a message when a connection is acquired from the connection pool
 pool.on('acquire', (connection) => {
-    // console.log('Connection %d acquired', connection.threadId);
+    console.log('Connection %d acquired', connection.threadId);
 });
 
 // Log a message when a connection is released back to the connection pool
 pool.on('release', (connection) => {
-    // console.log('Connection %d released', connection.threadId);
+    console.log('Connection %d released', connection.threadId);
 });
 
 export default pool;
