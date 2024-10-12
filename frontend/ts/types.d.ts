@@ -24,7 +24,7 @@ declare global {
         // Global methods
         userCreate: () => IUserCreate; // For user sign up
         userLogin: () => IUserLogin; // For user login
-        leaderboard: () => ILeaderboard; // For retrieving leaderboard data  
+        leaderboard: () => ILeaderboard; // For retrieving leaderboard data 
 
         // Global variables
         isLoggedIn: boolean;

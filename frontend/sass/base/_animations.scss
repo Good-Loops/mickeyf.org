@@ -14,6 +14,9 @@
     }
 }
 
+.floating {
+    animation: float 3s ease-in-out infinite;
+}
 
 @keyframes glow {
     from {
@@ -37,12 +40,7 @@
                 0 0 70px $primary, 
                 0 0 100px $primary;
     }
-}   
-            
-.floating {
-    animation: float 3s ease-in-out infinite;
 }
-
 
 .glowing {
     animation: glow 1.5s infinite alternate;
@@ -50,4 +48,50 @@
 
 .glowing-floating {
     animation: glow 1.5s infinite alternate, float 3s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 2s ease-in-out;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.fade-out {
+    animation: fadeOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.fade-in-out {
+    animation: fadeInOut 2s ease-in-out infinite;
 }

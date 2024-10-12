@@ -1,43 +1,6 @@
 export default async function home() {
-    const addQuote = (quote: string) => {
-        const quotesContainer = document.querySelector('[data-quotes-container]');
-
-        if (quotesContainer) {
-            // Create quote element
-            const quoteElement = document.createElement('div');
-            quoteElement.className = 'quote';
-            quoteElement.textContent = quote;
-
-            // Position the quote at a random location
-            const x = Math.random() * (window.innerWidth - 200);
-            const y = Math.random() * (window.innerHeight - 300);
-
-            quoteElement.style.position = 'absolute';
-            quoteElement.style.left = `${x}px`;
-            quoteElement.style.top = `${y}px`;
-
-            quotesContainer.appendChild(quoteElement);
-
-            // Fade in
-            quoteElement.style.opacity = '0';
-            setTimeout(() => {
-                quoteElement.style.transition = 'opacity 2s';
-                quoteElement.style.opacity = '.9';
-            }, 100);
-
-            // Fade out
-            setTimeout(() => {
-                quoteElement.style.transition = 'opacity 2s';
-                quoteElement.style.opacity = '0';
-                setTimeout(() => {
-                    quoteElement.remove();
-                }, 2000);
-            }, 4000);
-        }
-    };
-
     // Quotes
-    const quotes = [
+    const quotes: string[] = [
         '"The only way to make sense out of change is to plunge into it." -Alan Watts',
         '"Man suffers only because he takes seriously what the gods made for fun." -Alan Watts',
         '"You are an aperture through which the universe is looking at and exploring itself." -Alan Watts',
@@ -101,15 +64,33 @@ export default async function home() {
         '"It does not matter how slowly you go as long as you do not stop." -Confucius'
     ];
 
+    const quotesContainer: HTMLElement = document.querySelector('[data-quotes-container]') as HTMLElement;
+    
+    // Pick a random quote
+    const randomQuote: string = quotes[Math.floor(Math.random() * quotes.length)] as string;
 
-    const showQuote = () => {
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        addQuote(randomQuote);
+    // Create a quote element
+    const quote: HTMLElement = document.createElement('div') as HTMLElement;
+    // Add quote class to the quote element
+    quote.classList.add('quote');
+    
+    // Add the quote to the quote element
+    quote.innerHTML = randomQuote;
 
-        window.homeAnimationID = requestAnimationFrame(() => {
-            setTimeout(showQuote, 5000); // Wait 5 seconds before showing the next quote
-        });
-    };
+    // Add the quote element to the quotes container
+    quotesContainer.appendChild(quote);
 
-    showQuote();
+    // Get the dimensions of the quotesContainer
+    let containerWidth = quotesContainer.offsetWidth;
+    let containerHeight = quotesContainer.offsetHeight;
+
+    // Get the dimensions of the quote
+    let quoteWidth = quote.offsetWidth;
+    let quoteHeight = quote.offsetHeight;
+
+    // Position the quote element randomly within the container's boundaries
+    quote.style.left = `${Math.floor(Math.random() * (containerWidth - quoteWidth))}px`;
+    quote.style.top = `${Math.floor(Math.random() * (containerHeight - quoteHeight))}px`;
+
+    quote.classList.add('fade-in');
 }

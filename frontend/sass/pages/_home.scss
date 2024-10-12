@@ -9,15 +9,25 @@
         font-weight: 600;
         font-family: $subheading-font;
     }
+
+    &__quotes-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        width: 90vw;
+        height: 85vh;
+    }
 }
 
 .quote {
+    position: relative;
+
+    width: fit-content;
+
     color: $white;
     font-size: $font-size-xs;
-    text-align: center;
 
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-
-    opacity: 0;
-    transition: opacity 2s;
 }

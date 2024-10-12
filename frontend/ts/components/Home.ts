@@ -5,7 +5,7 @@ function component() {
         return /*html*/`
             <section class='home'>
                 <h1 class='home__welcome-message glowing-floating'>Welcome!<br> Glad you're here</h1>
-                <div class='home__quotes-container' data-quotes-container></div>
+                <div class='home__quotes-container' data-quotes-container aria-live="polite"></div>
             </section>
         `;
     }

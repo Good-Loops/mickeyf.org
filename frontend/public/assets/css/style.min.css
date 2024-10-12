@@ -14,6 +14,10 @@
     transform: translateY(0px);
   }
 }
+.floating {
+  animation: float 3s ease-in-out infinite;
+}
+
 @keyframes glow {
   from {
     text-shadow: 0 0 5px hsl(240, 67%, 95%), 0 0 10px hsl(240, 67%, 95%), 0 0 15px hsl(240, 67%, 95%), 0 0 20px hsl(203, 92%, 75%), 0 0 30px hsl(203, 92%, 75%), 0 0 40px hsl(203, 92%, 75%), 0 0 55px hsl(203, 92%, 75%), 0 0 75px hsl(203, 92%, 75%);
@@ -22,16 +26,51 @@
     text-shadow: 0 0 10px hsl(240, 67%, 95%), 0 0 15px hsl(240, 67%, 95%), 0 0 20px hsl(240, 67%, 95%), 0 0 25px hsl(203, 92%, 75%), 0 0 35px hsl(203, 92%, 75%), 0 0 50px hsl(203, 92%, 75%), 0 0 70px hsl(203, 92%, 75%), 0 0 100px hsl(203, 92%, 75%);
   }
 }
-.floating {
-  animation: float 3s ease-in-out infinite;
-}
-
 .glowing {
   animation: glow 1.5s infinite alternate;
 }
 
 .glowing-floating {
   animation: glow 1.5s infinite alternate, float 3s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.fade-in {
+  animation: fadeIn 2s ease-in-out;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fade-out {
+  animation: fadeOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fade-in-out {
+  animation: fadeInOut 2s ease-in-out infinite;
 }
 
 *,
@@ -303,14 +342,21 @@ h1 {
   font-weight: 600;
   font-family: "Roboto", sans-serif;
 }
+.home__quotes-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  height: 85vh;
+}
 
 .quote {
+  position: relative;
+  width: fit-content;
   color: hsl(240, 67%, 95%);
   font-size: 2rem;
-  text-align: center;
   text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transition: opacity 2s;
 }
 
 .games {

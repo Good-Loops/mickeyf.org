@@ -63,13 +63,13 @@ class RouteChange {
         }
     }
 
-    private cleanupGeneric(componentId: string, animationOrTicker: number | PIXI.Ticker | null, player?: Tone.Player | null) {
+    private cleanupGeneric(componentId: string, animationIDOrTicker: number | PIXI.Ticker | null, player?: Tone.Player): void {
         // console.log(`Cleaning up ${componentId}`);
 
-        if (animationOrTicker instanceof PIXI.Ticker) {
-            this.stopTicker(animationOrTicker);
+        if (animationIDOrTicker instanceof PIXI.Ticker) {
+            this.stopTicker(animationIDOrTicker);
         } else {
-            this.stopAnimation(animationOrTicker as number | null);
+            this.stopAnimation(animationIDOrTicker as number | null);
         }
 
         if (player) {
