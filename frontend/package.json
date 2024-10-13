@@ -19,8 +19,10 @@
         "build": "npm-run-all copy:html build:*"
     },
     "dependencies": {
+        "@capacitor/android": "^6.1.2",
         "@capacitor/cli": "^6.1.2",
         "@capacitor/core": "^6.1.2",
+        "@capacitor/ios": "^6.1.2",
         "alpinejs": "^3.13.8",
         "buffer": "^6.0.3",
         "cors": "^2.8.5",
