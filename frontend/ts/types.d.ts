@@ -33,12 +33,12 @@ declare global {
         eventListeners: Record<string, EventListenerRecord[]>;
 
         // Players
-        p4MusicPlayer: Tone.Player | null;
+        p4MusicPlayer: Tone.Player;
 
         // Animation IDs
-        homeAnimationID: number | null;
-        dcAnimationID: number | null;
-        p4GameTicker: PIXI.Ticker | null;
+        homeAnimationID: number;
+        dcAnimationID: number;
+        p4GameTicker: PIXI.Ticker;
 
         // Previous path
         previousPath: string;

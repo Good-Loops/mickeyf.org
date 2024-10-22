@@ -13,73 +13,61 @@ class RouteChange {
     private initRouteChangeListener() {
         page('*', (ctx, next) => {
             const currentPath: string = ctx.path;
-            // Execute cleanup for the previous route
+            // Execute cleanup for previous component
             const previousPath: string = window.previousPath;
             if (previousPath && this.cleanupFunctions[previousPath]) {
                 this.cleanupFunctions[previousPath]();
             }
-            // Save the current path as the previous path for the next route change
             window.previousPath = currentPath;
             next();
         });
     }
 
     private registerCleanupFunctions() {
-        // Register cleanup functions for specific routes
-        this.cleanupFunctions['/p4-Vega'] = () => this.cleanupGeneric('p4-Vega', window.p4GameTicker, window.p4MusicPlayer);
-        this.cleanupFunctions['/dancing-circles'] = () => this.cleanupGeneric('dancing-circles', window.dcAnimationID);
-        this.cleanupFunctions['/home'] = () => this.cleanupGeneric('home', window.homeAnimationID);
-        // Add more routes and their cleanup functions here if needed
+        this.cleanupFunctions['/p4-Vega'] = () => this.cleanup('p4-Vega', window.p4GameTicker, window.p4MusicPlayer);
+        this.cleanupFunctions['/dancing-circles'] = () => this.cleanup('dancing-circles', window.dcAnimationID);
     }
 
-    private stopAnimation(animationId: number | null): void {
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-            // console.log('Animation stopped');
+    private stopAnimation(animationID: number): void {
+        if (animationID) {
+            cancelAnimationFrame(animationID);
         }
     }
 
-    private stopTicker(ticker: PIXI.Ticker | null): void {
+    private stopTicker(ticker: PIXI.Ticker): void {
         if (ticker) {
             ticker.stop();
-            // console.log('Ticker stopped');
         }
     }
 
-    private stopBackgroundMusic(Player: Tone.Player | null): void {
+    private stopBackgroundMusic(Player: Tone.Player): void {
         if (Player) {
             Player.stop();
-            // console.log('Background music stopped');
         }
     }
 
-    private removeEventListeners(componentId: string) {
-        if (window.eventListeners[componentId]) {
-            window.eventListeners[componentId].forEach(({ element, event, handler }) => {
+    private removeEventListeners(componentID: string) {
+        if (window.eventListeners[componentID]) {
+            window.eventListeners[componentID].forEach(({ element, event, handler }) => {
                 element.removeEventListener(event, handler);
-                // console.log('Removed event listener: ', event, 'from', element, 'with handler', handler, 'for component', componentId);
             });
-            delete window.eventListeners[componentId];
+            delete window.eventListeners[componentID];
         }
     }
 
-    private cleanupGeneric(componentId: string, animationIDOrTicker: number | PIXI.Ticker | null, player?: Tone.Player): void {
-        // console.log(`Cleaning up ${componentId}`);
-
+    private cleanup(componentID: string, animationIDOrTicker?: number | PIXI.Ticker, player?: Tone.Player): void {
         if (animationIDOrTicker instanceof PIXI.Ticker) {
-            this.stopTicker(animationIDOrTicker);
+            this.stopTicker(animationIDOrTicker as PIXI.Ticker);
         } else {
-            this.stopAnimation(animationIDOrTicker as number | null);
+            this.stopAnimation(animationIDOrTicker as number);
         }
 
         if (player) {
             this.stopBackgroundMusic(player);
         }
 
-        this.removeEventListeners(componentId);
+        this.removeEventListeners(componentID);
     }
-
-    // Add more cleanup methods for other routes if needed
 }
 
 export default new RouteChange(); // Export a single instance
