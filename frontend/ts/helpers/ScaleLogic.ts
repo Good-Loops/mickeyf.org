@@ -9,14 +9,11 @@ interface Scale {
 
 export default class ScaleLogic {
 
-    // Default selected scale
     private static selectedScale: Scale = { name: 'Major', notes: scales['Major'].notes };
 
-    // Default halfTones
     private static halfTones: number = 0;
 
     public static getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
-        // Define an array to store the notes
         let notes: number[] = scales[scaleName]?.notes || scales['Major'].notes;
 
         // Update halfTones and transpose only if the key has changed

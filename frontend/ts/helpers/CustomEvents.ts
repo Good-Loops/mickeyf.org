@@ -1,4 +1,4 @@
-export default class EventListenerManager {
+export default class CustomEvents {
     public static init() {
         this.initSidebarToggle();
         this.initTokenVerification();
@@ -35,32 +35,32 @@ export default class EventListenerManager {
                     'Authorization': `Bearer ${token}`,
                 },
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.loggedIn) {
-                    window.isLoggedIn = true;
-                    // Hide login and signup links
-                    const loginSignupItems = document.getElementsByClassName('login-signup') as HTMLCollectionOf<HTMLElement>;
-                    Array.from(loginSignupItems).forEach(function (item) {
-                        item.style.display = 'none';
-                    });
-                    // Show logged in message
-                    const username = localStorage.getItem('user_name');
-                    const loggedInMessages = document.getElementsByClassName('logged-in-message') as HTMLCollectionOf<HTMLElement>;
-                    Array.from(loggedInMessages).forEach(function (item) {
-                        item.style.display = 'list-item';
-                        item.innerText = `Logged in as: ${username}`;
-                    });
-                    // Show log out button
-                    const logoutItems = document.getElementsByClassName('logout') as HTMLCollectionOf<HTMLElement>;
-                    Array.from(logoutItems).forEach(function (item) {
-                        item.style.display = 'list-item';
-                    });
-                } else {
-                    window.isLoggedIn = false;
-                }
-            })
-            .catch(error => console.error('Error verifying token:', error));
+                .then(response => response.json())
+                .then(data => {
+                    if (data.loggedIn) {
+                        window.isLoggedIn = true;
+                        // Hide login and signup links
+                        const loginSignupItems = document.getElementsByClassName('login-signup') as HTMLCollectionOf<HTMLElement>;
+                        Array.from(loginSignupItems).forEach(function (item) {
+                            item.style.display = 'none';
+                        });
+                        // Show logged in message
+                        const username = localStorage.getItem('user_name');
+                        const loggedInMessages = document.getElementsByClassName('logged-in-message') as HTMLCollectionOf<HTMLElement>;
+                        Array.from(loggedInMessages).forEach(function (item) {
+                            item.style.display = 'list-item';
+                            item.innerText = `Logged in as: ${username}`;
+                        });
+                        // Show log out button
+                        const logoutItems = document.getElementsByClassName('logout') as HTMLCollectionOf<HTMLElement>;
+                        Array.from(logoutItems).forEach(function (item) {
+                            item.style.display = 'list-item';
+                        });
+                    } else {
+                        window.isLoggedIn = false;
+                    }
+                })
+                .catch(error => console.error('Error verifying token:', error));
         }
     }
 
