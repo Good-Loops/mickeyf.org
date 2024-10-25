@@ -55,26 +55,21 @@ export default class Water extends Entity {
     }
 
     private playSound(): void {
-        // Get the selected scale from the UI
         const selectedScaleElement: Element = document.querySelector('[data-selected-scale]') as Element;
-        // Get the selected scale
         const selectedScale: string = selectedScaleElement.textContent || 'Major';
-
-        // Get the selected key from the UI
         const selectedKeyElement: Element = document.querySelector('[data-selected-key]') as Element;
-        // Get the selected key
+
         this.selectedKey = selectedKeyElement.textContent || 'C';
 
-        // Use ScaleLogic to get the appropriate notes
         ScaleLogic.getNotesForScale(this.selectedKey, selectedScale, this.lastKey);
 
-        // Update the last key only if the selected key has changed
+        // Update last key only if the selected key has changed
         if (this.lastKey !== this.selectedKey) {
             this.lastKey = this.selectedKey;
         }
 
-        // Determine if this is the first note
-        const isFirstNote = !this.lastPlayedNote;
+        // Determine if there's been a note played
+        const isFirstNote: boolean = !this.lastPlayedNote as boolean;
 
         // Get the next note to play
         const note: number = ScaleLogic.getNote(this.lastPlayedNote, isFirstNote) as number;

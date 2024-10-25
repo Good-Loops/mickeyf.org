@@ -99,8 +99,9 @@ export default async function p4Vega() {
 
         // Set game state
         gameLive = true;
-        sky = new Sky(stage);
         // Background
+        sky = new Sky(stage);
+
         // Get images
         const p4Image: HTMLImageElement = document.querySelector('[data-p4]') as HTMLImageElement;
         const waterImage: HTMLImageElement = document.querySelector('[data-water]') as HTMLImageElement;
@@ -146,15 +147,12 @@ export default async function p4Vega() {
         }
         new BlackHole(stage, p4Anim); // Add initial black hole
 
-        // Create game elements
         p4 = new P4(stage, p4Anim);
         water = new Water(stage, waterAnim);
 
     }
 
-    // Update game state
     const update = async () => {
-        // Update game elements
         sky.update();
         p4.update(p4.p4Anim);
         water.update(water.waterAnim, p4, notesPlaying, stage);
@@ -163,7 +161,6 @@ export default async function p4Vega() {
             gameLive = blackHole.update(p4, gameLive);
         }
 
-        // Check for game over
         if (!gameLive) {
             ticker.stop();
             if (window.isLoggedIn) { await submitScore(); }
@@ -173,22 +170,18 @@ export default async function p4Vega() {
         }
     }
 
-    // Render the game
     const render = async () => {
         renderer.render(stage);
     }
 
-    // Game loop
     const ticker = new PIXI.Ticker();
     window.p4GameTicker = ticker;
     ticker.add(update);
     ticker.add(render);
 
-    // Start game
     await load();
     ticker.start();
 
-    // Restart game
     const restart = async () => {
         gameLive = true;
         // Clear black hole array
@@ -208,7 +201,6 @@ export default async function p4Vega() {
     const environment: string = process.env.NODE_ENV as string; // Determine environment
     const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
-    // Submit score
     const submitScore = async () => {
         const p4_score = p4.totalWater;
         const storedToken = localStorage.getItem('sessionToken'); // Retrieve the token from local storage
@@ -244,7 +236,6 @@ export default async function p4Vega() {
         }).catch((error) => console.error('Fetch error:', error));
     }
 
-    // User input
     const handleKeydown = (key: Event): void => {
         key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
