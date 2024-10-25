@@ -2,14 +2,22 @@ import scales from '../utils/scales';
 import keys from '../utils/keys';
 import transpose from '../utils/transpose';
 
-interface Scale {
+import * as Tone from 'tone';
+
+type scale = {
     name: string;
     notes: number[];
 }
 
 export default class ScaleLogic {
 
-    private static selectedScale: Scale = { name: 'Major', notes: scales['Major'].notes };
+    public static synth: Tone.MembraneSynth = new Tone.MembraneSynth().toDestination(); // Initialize the synth;
+
+    private static selectedKey: string = 'C';
+    private static lastKey: string = 'C';
+    private static lastPlayedNote?: number;
+
+    private static selectedScale: scale = { name: 'Major', notes: scales['Major'].notes };
 
     private static halfTones: number = 0;
 
@@ -157,5 +165,31 @@ export default class ScaleLogic {
 
         const scaleType: string = ScaleLogic.selectedScale.name;
         return scaleCommonChordTones[scaleType]?.map(index => notes[index]) || [];
+    }
+
+    public static playNote(): void {
+        const selectedScaleElement: Element = document.querySelector('[data-selected-scale]') as Element;
+        const selectedScale: string = selectedScaleElement.textContent || 'Major';
+
+        const selectedKeyElement: Element = document.querySelector('[data-selected-key]') as Element;
+
+        let selectedKey = selectedKeyElement.textContent || 'C';
+
+        ScaleLogic.getNotesForScale(selectedKey, selectedScale, this.lastKey);
+
+        // Update last key only if the selected key has changed
+        if (this.lastKey !== this.selectedKey) {
+            this.lastKey = this.selectedKey;
+        }
+
+        // Determine if there's been a note played
+        const isFirstNote: boolean = !this.lastPlayedNote as boolean;
+
+        // Get the next note to play
+        const note: number = ScaleLogic.getNote(this.lastPlayedNote, isFirstNote) as number;
+        this.lastPlayedNote = note; // Update the last played note
+
+        // Play the note
+        this.synth?.triggerAttackRelease(note, .8, Tone.now());
     }
 }
