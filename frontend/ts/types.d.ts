@@ -26,21 +26,20 @@ declare global {
         userLogin: () => IUserLogin; // For user login
         leaderboard: () => ILeaderboard; // For retrieving leaderboard data 
 
-        // Global variables
         isLoggedIn: boolean;
-        
-        // Event listener manager
+
         eventListeners: Record<string, EventListenerRecord[]>;
 
-        // Players
         p4MusicPlayer: Tone.Player;
 
-        // Animation IDs
-        homeAnimationID: number;
-        dcAnimationID: number;
+        dancingCirclesAnimationID: number;
         p4GameTicker: PIXI.Ticker;
 
-        // Previous path
         previousPath: string;
+    }
+
+    interface Global {
+        __PIXI_RENDERER__: PIXI.Renderer;
+        __PIXI_STAGE__: PIXI.Container;
     }
 }

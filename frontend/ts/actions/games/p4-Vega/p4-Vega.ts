@@ -94,7 +94,7 @@ export default async function p4Vega() {
     let sky: Sky, p4: P4, water: Water;
 
     // Load game assets
-    const load = async () => {
+    const load = async (): Promise<void> => {
         toggleBackgroundMusic();
 
         // Set game state
@@ -152,7 +152,7 @@ export default async function p4Vega() {
 
     }
 
-    const update = async () => {
+    const update = async (): Promise<void> => {
         sky.update();
         p4.update(p4.p4Anim);
         water.update(water.waterAnim, p4, notesPlaying, stage);
@@ -170,7 +170,7 @@ export default async function p4Vega() {
         }
     }
 
-    const render = async () => {
+    const render = async (): Promise<void> => {
         renderer.render(stage);
     }
 
@@ -182,7 +182,7 @@ export default async function p4Vega() {
     await load();
     ticker.start();
 
-    const restart = async () => {
+    const restart = async (): Promise<void> => {
         gameLive = true;
         // Clear black hole array
         BlackHole.bHAnimArray = [];
@@ -283,7 +283,7 @@ export default async function p4Vega() {
     document.addEventListener('keyup', handleKeyup);
 
     // Define the component ID for event listeners
-    let componentId = 'p4-Vega';
+    const componentId = 'p4-Vega';
     
     // Check if the event listeners array for the component ID exists, if not, create it
     if (!window.eventListeners[componentId]) { 

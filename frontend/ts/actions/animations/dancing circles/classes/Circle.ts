@@ -1,4 +1,4 @@
-import { getRandomX, getRandomY } from "../../../../utils/random"; 
+import { getRandomX, getRandomY } from "../../../../utils/random";
 import lerp from "../../../../utils/lerp";
 import ColorHandler from "./ColorHandler";
 
@@ -12,25 +12,22 @@ export default class Circle {
     public targetY: number = getRandomY(this.baseR, Circle.gap);
     public color: string = ColorHandler.getRandomColor(Circle.minS, Circle.maxS, Circle.minL, Circle.maxL, true);
     public targetColor: string = ColorHandler.getRandomColor(Circle.minS, Circle.maxS, Circle.minL, Circle.maxL, true);
-    public startAngle: number = 0;
-    public endAngle: number = 2 * Math.PI;
-    public counterclockwise: boolean = false;
 
     public static minS: number = 95;
     public static maxS: number = 100;
     public static minL: number = 60;
     public static maxL: number = 80;
 
-    public static circles: Circle[];
+    public static circleArray: Circle[];
     public static circlesLength: number = 12;
-    public static gap: number = 2;
+    public static gap: number = 14;
 
     public static startingBaseR: number;
     public static prevR: number;
     public static adjustR: number = .13;
 
     constructor() {
-        Circle.circles.push(this);
+        Circle.circleArray.push(this);
     }
 
     private getBaseR(): number {

@@ -2,7 +2,7 @@ import page from 'page';
 import * as PIXI from 'pixi.js';
 import * as Tone from 'tone';
 
-class RouteChange {
+class ComponentChange {
     private cleanupFunctions: { [key: string]: () => void } = {};
 
     constructor() {
@@ -25,7 +25,7 @@ class RouteChange {
 
     private registerCleanupFunctions() {
         this.cleanupFunctions['/p4-Vega'] = () => this.cleanup('p4-Vega', window.p4GameTicker, window.p4MusicPlayer);
-        this.cleanupFunctions['/dancing-circles'] = () => this.cleanup('dancing-circles', window.dcAnimationID);
+        this.cleanupFunctions['/dancing-circles'] = () => this.cleanup('dancing-circles', window.dancingCirclesAnimationID);
     }
 
     private stopAnimation(animationID: number): void {
@@ -70,4 +70,4 @@ class RouteChange {
     }
 }
 
-export default new RouteChange(); // Export a single instance
+export default new ComponentChange()

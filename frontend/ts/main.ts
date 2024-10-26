@@ -9,7 +9,7 @@ import CustomEvents from './helpers/CustomEvents';
 // Initializes global variables
 import "./utils/initGlobals";
 // Cleans up the page on component change
-import "./helpers/RouteChange";
+import "./helpers/ComponentChange";
 // Define routes using Page.js
 setupRoutes(page);
 // Start Alpine.js and Page.js
