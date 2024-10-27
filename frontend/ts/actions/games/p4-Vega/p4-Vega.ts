@@ -5,6 +5,7 @@ import gameOver from '../utils/gameOver';
 
 // Helpers
 import Dropdown from '../../../helpers/Dropdown';
+import FullscreenButton from '../../../helpers/FullscreenButton';
 
 // Game elements
 import P4 from './classes/P4';
@@ -35,8 +36,14 @@ export default async function p4Vega() {
     const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
     canvas.className = 'p4-vega__canvas';
     canvas.id = 'p4-canvas';
+
+    const sectionAttribute: string = '[data-p4-vega]';
+
     // Add the canvas to the DOM
-    document.querySelector('[data-p4-vega]')!.appendChild(canvas);
+    document.querySelector(sectionAttribute)!.appendChild(canvas);
+
+    new FullscreenButton(canvas, sectionAttribute);
+
     // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
 
@@ -260,7 +267,7 @@ export default async function p4Vega() {
         }
     }
     document.addEventListener('keydown', handleKeydown);
-    
+
     const handleKeyup = (key: Event): void => {
         key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
@@ -284,10 +291,10 @@ export default async function p4Vega() {
 
     // Define the component ID for event listeners
     const componentId = 'p4-Vega';
-    
+
     // Check if the event listeners array for the component ID exists, if not, create it
-    if (!window.eventListeners[componentId]) { 
-        window.eventListeners[componentId] = []; 
+    if (!window.eventListeners[componentId]) {
+        window.eventListeners[componentId] = [];
     }
 
     // Key events

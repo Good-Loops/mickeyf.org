@@ -7,6 +7,8 @@ import AudioHandler from "./classes/AudioHandler";
 
 import * as PIXI from "pixi.js";
 
+import FullscreenButton from "../../../helpers/FullscreenButton";
+
 export default async function danceCircles(): Promise<void> {
 
     const renderer: PIXI.Renderer = await PIXI.autoDetectRenderer({
@@ -20,7 +22,11 @@ export default async function danceCircles(): Promise<void> {
     canvas.className = 'dancing-circles__canvas';
     canvas.id = 'dc-canvas';
 
-    document.querySelector('[data-dancing-circles]')!.append(canvas);
+    const sectionAttribute: string = '[data-dancing-circles]';
+
+    document.querySelector(sectionAttribute)!.append(canvas);
+
+    new FullscreenButton(canvas, sectionAttribute);
 
     const stage: PIXI.Container = new PIXI.Container();
 
@@ -175,7 +181,7 @@ export default async function danceCircles(): Promise<void> {
 
             graphics.circle(circle.x, circle.y, circle.currentR);
             graphics.fill(ColorHandler.convertHSLtoHSLA(circle.color, .7));
-            
+
             stage.addChild(graphics);
         });
 

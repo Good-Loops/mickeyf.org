@@ -11,7 +11,7 @@ type scale = {
 
 export default class ScaleLogic {
 
-    public static synth: Tone.MembraneSynth = new Tone.MembraneSynth().toDestination(); // Initialize the synth;
+    private static synth: Tone.MembraneSynth = new Tone.MembraneSynth().toDestination(); // Initialize the synth;
 
     private static selectedKey: string = 'C';
     private static lastKey: string = 'C';
@@ -21,7 +21,7 @@ export default class ScaleLogic {
 
     private static halfTones: number = 0;
 
-    public static getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
+    private static getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
         let notes: number[] = scales[scaleName]?.notes || scales['Major'].notes;
 
         // Update halfTones and transpose only if the key has changed
@@ -47,7 +47,7 @@ export default class ScaleLogic {
         return notes;
     }
 
-    public static getNote(lastPlayedNote?: number, isFirstNote: boolean = false): number {
+    private static getNote(lastPlayedNote?: number, isFirstNote: boolean = false): number {
         if (isFirstNote) {
             return ScaleLogic.selectedScale.notes[0];
         }
