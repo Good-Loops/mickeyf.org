@@ -4,15 +4,15 @@ export default class FullscreenButton {
     private targetElement: HTMLElement;
     private fullscreenButton: HTMLButtonElement;
 
-    constructor(canvas: HTMLElement, sectionAttribute: string) {
+    constructor(canvas: HTMLElement, sectionDataAttribute: string) {
         this.targetElement = canvas;
 
         // Create the fullscreen button
         this.fullscreenButton = document.createElement('button');
         this.fullscreenButton.textContent = 'Fullscreen';
-        this.fullscreenButton.className = 'fullscreen-button';
+        this.fullscreenButton.className = 'fullscreen-btn';
 
-        document.querySelector(sectionAttribute)!.append(this.fullscreenButton);
+        document.querySelector(sectionDataAttribute)!.append(this.fullscreenButton);
 
         // Attach event listeners
         this.attachEventListeners();

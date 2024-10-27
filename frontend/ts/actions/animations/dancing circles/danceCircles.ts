@@ -22,11 +22,11 @@ export default async function danceCircles(): Promise<void> {
     canvas.className = 'dancing-circles__canvas';
     canvas.id = 'dc-canvas';
 
-    const sectionAttribute: string = '[data-dancing-circles]';
+    const sectionDataAttribute: string = '[data-dancing-circles]';
 
-    document.querySelector(sectionAttribute)!.append(canvas);
+    document.querySelector(sectionDataAttribute)!.append(canvas);
 
-    new FullscreenButton(canvas, sectionAttribute);
+    new FullscreenButton(canvas, sectionDataAttribute);
 
     const stage: PIXI.Container = new PIXI.Container();
 

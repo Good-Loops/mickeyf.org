@@ -37,12 +37,12 @@ export default async function p4Vega() {
     canvas.className = 'p4-vega__canvas';
     canvas.id = 'p4-canvas';
 
-    const sectionAttribute: string = '[data-p4-vega]';
+    const sectionDataAttribute: string = '[data-p4-vega]';
 
     // Add the canvas to the DOM
-    document.querySelector(sectionAttribute)!.appendChild(canvas);
+    document.querySelector(sectionDataAttribute)!.appendChild(canvas);
 
-    new FullscreenButton(canvas, sectionAttribute);
+    new FullscreenButton(canvas, sectionDataAttribute);
 
     // Create stage
     const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();

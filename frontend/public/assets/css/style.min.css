@@ -310,6 +310,12 @@ h1 {
   display: block;
 }
 
+.fullscreen-btn {
+  width: fit-content;
+  height: fit-content;
+  color: hsl(240, 67%, 95%);
+}
+
 .header {
   min-height: 5vh;
 }
