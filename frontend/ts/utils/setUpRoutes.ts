@@ -22,6 +22,7 @@ const setUpRoutes = (page: Page) => {
     
     // Animations
     page('/dancing-circles', () => loadComponent('/dancing-circles'));
+    page('/dancing-fractals', () => loadComponent('/dancing-fractals'));
     
     // User unique component
     // page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));

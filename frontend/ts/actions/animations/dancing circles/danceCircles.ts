@@ -7,7 +7,7 @@ import AudioHandler from "./classes/AudioHandler";
 
 import * as PIXI from "pixi.js";
 
-export default async function danceCircles() {
+export default async function danceCircles(): Promise<void> {
 
     const renderer: PIXI.Renderer = await PIXI.autoDetectRenderer({
         width: CANVAS_WIDTH,
@@ -15,7 +15,6 @@ export default async function danceCircles() {
         backgroundColor: 0x1099bb,
         antialias: true
     });
-    (globalThis as any).__PIXI_RENDERER__ = renderer;
 
     const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
     canvas.className = 'dancing-circles__canvas';
@@ -24,7 +23,6 @@ export default async function danceCircles() {
     document.querySelector('[data-dancing-circles]')!.append(canvas);
 
     const stage: PIXI.Container = new PIXI.Container();
-    (globalThis as any).__PIXI_STAGE__ = stage;
 
     let canvasTargetColor: string;
     let canvasBgColor: string;
@@ -181,7 +179,6 @@ export default async function danceCircles() {
             stage.addChild(graphics);
         });
 
-        // Render the stage
         renderer.render(stage);
     }
 

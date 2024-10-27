@@ -41,5 +41,6 @@ declare global {
     interface Global {
         __PIXI_RENDERER__: PIXI.Renderer;
         __PIXI_STAGE__: PIXI.Container;
+        __PIXI_APP__: PIXI.Application;
     }
 }

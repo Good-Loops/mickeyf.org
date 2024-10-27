@@ -131,7 +131,7 @@ $bps-social-media: (
         'width': $bp-5xl,
         'selectors': (
             '.social-media__grid': (
-                'column-gap': 2rem,
+                'column-gap': 2em,
             ),
             '.social-media__grid-anchor': (
                 'scale': .8,
@@ -142,11 +142,11 @@ $bps-social-media: (
         'width': $bp-3xl,
         'selectors': (
             '.social-media__title': ( 
-                'margin-bottom': -5rem,
+                'margin-bottom': -5em,
             ),
             '.social-media__grid': (
                 'grid-template-rows': 1fr 1fr,    
-                'column-gap': 0rem,
+                'column-gap': 0em,
             ),
             '.social-media__grid-anchor': (
                 'scale': .7,
@@ -166,12 +166,12 @@ $bps-social-media: (
         'selectors': (
             '.social-media__grid-anchor': (
                 'scale': .5,
-                'margin': -2rem,
+                'margin': -2em,
             ),
             '.social-media__title': (
                 'font-size': $font-size-s,
                 'display': inline-block,
-                'padding-inline': 3rem,
+                'padding-inline': 3em,
                 'text-align': center,
             ),
         )
@@ -187,7 +187,7 @@ $bps-social-media: (
             ),
             '.social-media__grid-anchor': (
                 'scale': .4,
-                'margin-block': -5rem,
+                'margin-block': -5em,
             ),
         )
     ),

@@ -1,7 +1,7 @@
 import danceCircles from '../../actions/animations/dancing circles/danceCircles';
 
 function component() {
-    const render = () => {
+    const render = (): string => {
         return /*html*/`
             <section class='dancing-circles' data-dancing-circles>
                 <h1 class='u-canvas-title'>Dancing Circles</h1>
@@ -11,7 +11,7 @@ function component() {
         `;
     }
 
-    const action = async () => {
+    const action = async (): Promise<void> => {
         await danceCircles();
     }
 

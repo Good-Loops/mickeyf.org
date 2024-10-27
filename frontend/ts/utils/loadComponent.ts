@@ -10,6 +10,7 @@ import Error404 from '../components/Error404';
 
 // Animations
 import DanceCircles from '../components/animations/DanceCircles';
+import DanceFractals from '../components/animations/DanceFractals';
 
 // Games
 import P4Vega from '../components/games/P4Vega';
@@ -32,6 +33,7 @@ const routes: Record<string, ComponentInterface> = {
 
     // Animations
     '/dancing-circles': DanceCircles,
+    '/dancing-fractals': DanceFractals,
 
     // Games
     '/p4-Vega': P4Vega,
