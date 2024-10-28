@@ -7,8 +7,10 @@ function component() {
                     <ul class='leaderboard__list'>
                         <template x-for='entry in leaderboard' :key='entry.user_name'>
                             <li class='leaderboard__list-item'>
-                                <span class='leaderboard__user-name' x-text='entry.user_name'></span>
-                                <span class='leaderboard__score' x-text='entry.p4_score'></span>
+                                <div class='leaderboard__item-container'>
+                                    <span class='leaderboard__user-name' x-text='entry.user_name'></span>
+                                    <span class='leaderboard__score' x-text='entry.p4_score'></span>
+                                </div>
                             </li>
                         </template>
                     </ul>

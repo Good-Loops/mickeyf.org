@@ -16,6 +16,11 @@
         list-style-type: decimal;
     }
 
+    &__item-container {
+        display: flex;
+    }
+
+
     &__list-item {
         font-size: 3em;
         font-weight: 900;
@@ -27,5 +32,9 @@
         box-shadow: $dark-box-shadow;
 
         border-radius: .2em;
+    }
+
+    &__score {
+        margin-left: auto;
     }
 }

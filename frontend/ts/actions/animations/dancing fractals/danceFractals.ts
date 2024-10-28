@@ -21,23 +21,44 @@ export default async function danceFractals(): Promise<void> {
 
     new FullscreenButton(app.canvas, sectionDataAttribute);
 
-    const line: Graphics = new Graphics();
+    const graphics: Graphics = new Graphics();
 
-    line.moveTo(200, 200);
-    line.lineTo(300, 300);
-    line.stroke({ color: 0xff0000, width: 30 });
+    let midX: number = app.screen.width / 2;
+    let midY: number = app.screen.height / 2;
 
-    app.stage.addChild(line);
+    let lineSize: number = 400;
+    let angle: number = 0;
 
-    const rectangle: Graphics = new Graphics();
+    function drawLine(angle: number) {
+        const endX = midX + lineSize * Math.cos(angle);
+        const endY = midY + lineSize * Math.sin(angle);
 
-    rectangle.rect(0, 0, 50, 50).fill(0x6688ff);
-    rectangle.pivot.set(25, 25);
-    rectangle.position.set(200, 400);
+        graphics.moveTo(midX, midY);
+        graphics.lineTo(endX, endY);
+        graphics.stroke({ color: 0x00aa55, width: 10 });
 
-    app.stage.addChild(rectangle);
+    }
+
+    // for(let angle = 0; angle < Math.PI * 2; angle += 0.1) {  
+    //     drawLine(angle);
+    // }
+
+    app.stage.addChild(graphics);
+
+    // const rectangle: Graphics = new Graphics();
+
+    // rectangle.rect(0, 0, 50, 50).fill(0x6688ff);
+    // rectangle.pivot.set(25, 25);
+    // rectangle.position.set(200, 400);
+
+    // app.stage.addChild(rectangle);
+
+    let seconds: number = 0;
 
     app.ticker.add((time: Ticker) => {
-        rectangle.rotation += 0.01;
+        seconds += time.deltaMS / 1000;
+        graphics.clear();
+
+        drawLine(angle + seconds);
     });
 }

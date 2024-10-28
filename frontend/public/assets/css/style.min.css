@@ -842,6 +842,9 @@ h1 {
   text-shadow: 0 0 0.15em hsl(240, 67%, 95%);
   list-style-type: decimal;
 }
+.leaderboard__item-container {
+  display: flex;
+}
 .leaderboard__list-item {
   font-size: 3em;
   font-weight: 900;
@@ -850,6 +853,9 @@ h1 {
   margin: 0.5rem 0;
   box-shadow: 0 0.4em 0.8em rgba(0, 0, 0, 0.1);
   border-radius: 0.2em;
+}
+.leaderboard__score {
+  margin-left: auto;
 }
 
 .login {
