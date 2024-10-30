@@ -25,151 +25,144 @@ export default async function danceFractals(): Promise<void> {
     let line: Graphics = new Graphics();
     
     app.stage.addChild(line);
+
+    // Constants for angles in radians
+    const ANGLE_30_DEGREES: number = Math.PI / 6; // 30 degrees
+    const ANGLE_90_DEGREES: number = Math.PI / 2; // 90 degrees
+
+    /**
+     * Recursively draws a fractal tree.
+     *
+     * @param startX - Starting x-coordinate (horizontal position)
+     * @param startY - Starting y-coordinate (vertical position)
+     * @param angle - Current angle in radians
+     * @param depth - Current depth (controls recursion)
+     */
+    const drawTree = (
+        startX: number,
+        startY: number,
+        angle: number,
+        depth: number
+    ): void => {
+        // Stop recursion when depth is 0
+        if (depth === 0) return;
+
+        // Length of the branch decreases with depth
+        const branchLength = depth * 10;
+
+        // Calculate end point of the branch
+        const endX = startX + Math.cos(angle) * branchLength;
+        const endY = startY + Math.sin(angle) * branchLength;
+
+        // Draw the branch from (startX, startY) to (endX, endY)
+        line.moveTo(startX, startY);
+        line.lineTo(endX, endY);
+        line.stroke({ color: 0xffffff, width: depth, cap: 'round' });
+
+        // Draw left and right sub-branches with adjusted angles and reduced depth
+        drawTree(endX, endY, angle - ANGLE_30_DEGREES, depth - 1); // Left branch
+        drawTree(endX, endY, angle + ANGLE_30_DEGREES, depth - 1); // Right branch
+    };
+
+    // Begin drawing from the bottom center of the screen, pointing upwards
+    drawTree(app.screen.width / 2, app.screen.height, -ANGLE_90_DEGREES, 10);
+
+    // TODO: Draw a different fractal using recursion
+
     
-    const centerY: number = app.screen.height / 2;
+    // const centerY: number = app.screen.height / 2;
 
-    // /////// Branch A
-    // // Middle Line A
-    // line.moveTo(0, centerY);
+    // const drawTree = (startX: number, startY: number, levels: number): void => {
 
-    // line.lineTo(200, centerY);
+    //     let lineWidth = 10;
 
-    // // Upper Line A 
-    // line.moveTo(100, centerY);
+    //     let rootLength: number = 200;
 
-    // line.lineTo(100 + 140, centerY - 40);
+    //     let branchGrowX: number = 140; 
+    //     let branchGrowY: number = 40;
 
-    // // Lower Line A
-    // line.moveTo(100, centerY);
-    
-    // line.lineTo(100 + 140, centerY + 40);
+    //     let middleStartX: number = startX;
+    //     let middleStartY: number = startY;
 
-    // /////// Branch B
-    // // Middle Line B (Half length of root middle line)
-    // line.moveTo(100 + 140, centerY - 40);
+    //     let middleEndX: number = startX + rootLength;
+    //     let middleEndY: number = middleStartY;
 
-    // line.lineTo(100 + 140 + 100, centerY - 40);
+    //     let upperStartX: number = (startX + rootLength) / 2;
+    //     let upperStartY: number = startY;
 
-    // // Upper Line B
-    // line.moveTo(100 + 140 + 50, centerY - 40);
+    //     let upperEndX: number = ((startX + rootLength) / 2) + branchGrowX;
+    //     let upperEndY: number = startY - branchGrowY;
 
-    // line.lineTo(100 + 140 + 50 + 70, centerY - 40 - 20);
+    //     let lowerStartX: number = (startX + rootLength) / 2;
+    //     let lowerEndX: number = ((startX + rootLength) / 2) + branchGrowX;
 
-    // // Lower Line B
-    // line.moveTo(100 + 140 + 50, centerY - 40);
+    //     let lowerStartY: number = startY;
+    //     let lowerEndY: number = startY + branchGrowY;
 
-    // line.lineTo(100 + 140 + 50 + 70, centerY - 40 + 20);
+    //     let up: boolean = true;
 
-    // /////// Branch C
-    // // Middle Line C
-    // line.moveTo(100 + 140, centerY + 40);
+    //     for(let i: number = 0; i < levels; i++) {
+    //         // Middle
+    //         line.moveTo(middleStartX, middleStartY);
 
-    // line.lineTo(100 + 140 + 100, centerY + 40);
+    //         line.lineTo(middleEndX, middleEndY);
 
-    // // Upper Line C
-    // line.moveTo(100 + 140 + 50, centerY + 40);
+    //         // Upper
+    //         line.moveTo(upperStartX, upperStartY);
 
-    // line.lineTo(100 + 140 + 50 + 70, centerY + 40 - 20);
+    //         line.lineTo(upperEndX, upperEndY);
 
-    // // Lower Line C
-    // line.moveTo(100 + 140 + 50, centerY + 40);
+    //         // Lower
+    //         line.moveTo(lowerStartX, lowerStartY)
 
-    // line.lineTo(100 + 140 + 50 + 70, centerY + 40 + 20);
+    //         line.lineTo(lowerEndX, lowerEndY);
 
-    // line.stroke({ color: 0xffffff, width: 10, cap: 'round' });
+    //         if(up) {
+    //             middleStartX = upperEndX;
+    //             middleStartY = upperEndY;
 
-    const drawTree = (startX: number, startY: number, levels: number): void => {
+    //             middleEndX = upperEndX + (rootLength / 2);
+    //             middleEndY = middleStartY;
 
-        let lineWidth = 10;
+    //             upperStartX = upperEndX + (rootLength / 4);
+    //             upperStartY = middleStartY;
 
-        let rootLength: number = 200;
+    //             upperEndX = upperStartX + (branchGrowX / 2);
+    //             upperEndY = upperStartY - (branchGrowY / 2);
 
-        let branchGrowX: number = 140; 
-        let branchGrowY: number = 40;
+    //             lowerStartX = upperStartX;
+    //             lowerStartY = upperStartY;
 
-        let middleStartX: number = startX;
-        let middleStartY: number = startY;
+    //             lowerEndX = upperEndX;
+    //             lowerEndY = upperStartY + (branchGrowY / 2);
 
-        let middleEndX: number = startX + rootLength;
-        let middleEndY: number = middleStartY;
+    //             up = false;
+    //         } else {
+    //             middleStartX = lowerEndX;
+    //             middleStartY = lowerEndY;
 
-        let upperStartX: number = (startX + rootLength) / 2;
-        let upperStartY: number = startY;
+    //             middleEndX = lowerEndX + (rootLength / 2);
+    //             middleEndY = middleStartY;
 
-        let upperEndX: number = ((startX + rootLength) / 2) + branchGrowX;
-        let upperEndY: number = startY - branchGrowY;
+    //             upperStartX = lowerEndX + (rootLength / 4);
+    //             upperStartY = middleStartY;
 
-        let lowerStartX: number = (startX + rootLength) / 2;
-        let lowerEndX: number = ((startX + rootLength) / 2) + branchGrowX;
+    //             upperEndX = upperStartX + (branchGrowX / 2);
+    //             upperEndY = upperStartY - (branchGrowY / 2);
 
-        let lowerStartY: number = startY;
-        let lowerEndY: number = startY + branchGrowY;
+    //             lowerStartX = upperStartX;
+    //             lowerStartY = upperStartY;
 
-        let up: boolean = true;
+    //             lowerEndX = upperEndX;
+    //             lowerEndY = upperStartY + (branchGrowY / 2);
 
-        for(let i: number = 0; i < levels; i++) {
-            // Middle
-            line.moveTo(middleStartX, middleStartY);
+    //             up = true;
+    //         }
 
-            line.lineTo(middleEndX, middleEndY);
+    //         line.stroke({ color: 0xffffff, width: lineWidth, cap: 'round' });
+    //         lineWidth -= .5;
+    //     }         
+    // }
 
-            // Upper
-            line.moveTo(upperStartX, upperStartY);
-
-            line.lineTo(upperEndX, upperEndY);
-
-            // Lower
-            line.moveTo(lowerStartX, lowerStartY)
-
-            line.lineTo(lowerEndX, lowerEndY);
-
-            if(up) {
-                middleStartX = upperEndX;
-                middleStartY = upperEndY;
-
-                middleEndX = upperEndX + (rootLength / 2);
-                middleEndY = middleStartY;
-
-                upperStartX = upperEndX + (rootLength / 4);
-                upperStartY = middleStartY;
-
-                upperEndX = upperStartX + (branchGrowX / 2);
-                upperEndY = upperStartY - (branchGrowY / 2);
-
-                lowerStartX = upperStartX;
-                lowerStartY = upperStartY;
-
-                lowerEndX = upperEndX;
-                lowerEndY = upperStartY + (branchGrowY / 2);
-
-                up = false;
-            } else {
-                middleStartX = lowerEndX;
-                middleStartY = lowerEndY;
-
-                middleEndX = lowerEndX + (rootLength / 2);
-                middleEndY = middleStartY;
-
-                upperStartX = lowerEndX + (rootLength / 4);
-                upperStartY = middleStartY;
-
-                upperEndX = upperStartX + (branchGrowX / 2);
-                upperEndY = upperStartY - (branchGrowY / 2);
-
-                lowerStartX = upperStartX;
-                lowerStartY = upperStartY;
-
-                lowerEndX = upperEndX;
-                lowerEndY = upperStartY + (branchGrowY / 2);
-
-                up = true;
-            }
-
-            line.stroke({ color: 0xffffff, width: lineWidth, cap: 'round' });
-
-            lineWidth -= 1.2;
-        }         
-    }
-
-    drawTree(0, centerY, 10);
+    // drawTree(0, centerY, 20);
 }
