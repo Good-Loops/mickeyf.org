@@ -1,4 +1,4 @@
-import { Application, Graphics, StrokeStyle } from 'pixi.js';
+import { Application, Graphics, StrokeStyle, Ticker } from 'pixi.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
 
 import FullscreenButton from '../../../helpers/FullscreenButton';
@@ -21,148 +21,38 @@ export default async function danceFractals(): Promise<void> {
 
     new FullscreenButton(app.canvas, sectionDataAttribute);
 
+    const centerX = app.screen.width / 2;
+    const centerY = app.screen.height / 2;
     
-    let line: Graphics = new Graphics();
+    const lineArray: Graphics[] = [];
     
-    app.stage.addChild(line);
+    for (let i = 0; i < 20; i++) {
+        const line: Graphics = new Graphics();
 
-    // Constants for angles in radians
-    const ANGLE_30_DEGREES: number = Math.PI / 6; // 30 degrees
-    const ANGLE_90_DEGREES: number = Math.PI / 2; // 90 degrees
-
-    /**
-     * Recursively draws a fractal tree.
-     *
-     * @param startX - Starting x-coordinate (horizontal position)
-     * @param startY - Starting y-coordinate (vertical position)
-     * @param angle - Current angle in radians
-     * @param depth - Current depth (controls recursion)
-     */
-    const drawTree = (
-        startX: number,
-        startY: number,
-        angle: number,
-        depth: number
-    ): void => {
-        // Stop recursion when depth is 0
-        if (depth === 0) return;
-
-        // Length of the branch decreases with depth
-        const branchLength = depth * 10;
-
-        // Calculate end point of the branch
-        const endX = startX + Math.cos(angle) * branchLength;
-        const endY = startY + Math.sin(angle) * branchLength;
-
-        // Draw the branch from (startX, startY) to (endX, endY)
-        line.moveTo(startX, startY);
-        line.lineTo(endX, endY);
-        line.stroke({ color: 0xffffff, width: depth, cap: 'round' });
-
-        // Draw left and right sub-branches with adjusted angles and reduced depth
-        drawTree(endX, endY, angle - ANGLE_30_DEGREES, depth - 1); // Left branch
-        drawTree(endX, endY, angle + ANGLE_30_DEGREES, depth - 1); // Right branch
-    };
-
-    // Begin drawing from the bottom center of the screen, pointing upwards
-    drawTree(app.screen.width / 2, app.screen.height, -ANGLE_90_DEGREES, 10);
-
-    // TODO: Draw a different fractal using recursion
-
+        lineArray.push(line);
+        line.x = centerX;
+        line.y = centerY;
+        
+        app.stage.addChild(line);
+    }
     
-    // const centerY: number = app.screen.height / 2;
+    let angle = 0;
+    let radius = 300;
 
-    // const drawTree = (startX: number, startY: number, levels: number): void => {
+    app.ticker.add(() => {
+        angle += 0.01;
 
-    //     let lineWidth = 10;
+        for (let i = 0; i < lineArray.length; i++) {
+            const line = lineArray[i];
 
-    //     let rootLength: number = 200;
+            const x = radius / (i + 3) * Math.cos(angle * (i + 1));
+            const y = radius / (i - 1) * Math.sin(angle * (i + 2));
 
-    //     let branchGrowX: number = 140; 
-    //     let branchGrowY: number = 40;
-
-    //     let middleStartX: number = startX;
-    //     let middleStartY: number = startY;
-
-    //     let middleEndX: number = startX + rootLength;
-    //     let middleEndY: number = middleStartY;
-
-    //     let upperStartX: number = (startX + rootLength) / 2;
-    //     let upperStartY: number = startY;
-
-    //     let upperEndX: number = ((startX + rootLength) / 2) + branchGrowX;
-    //     let upperEndY: number = startY - branchGrowY;
-
-    //     let lowerStartX: number = (startX + rootLength) / 2;
-    //     let lowerEndX: number = ((startX + rootLength) / 2) + branchGrowX;
-
-    //     let lowerStartY: number = startY;
-    //     let lowerEndY: number = startY + branchGrowY;
-
-    //     let up: boolean = true;
-
-    //     for(let i: number = 0; i < levels; i++) {
-    //         // Middle
-    //         line.moveTo(middleStartX, middleStartY);
-
-    //         line.lineTo(middleEndX, middleEndY);
-
-    //         // Upper
-    //         line.moveTo(upperStartX, upperStartY);
-
-    //         line.lineTo(upperEndX, upperEndY);
-
-    //         // Lower
-    //         line.moveTo(lowerStartX, lowerStartY)
-
-    //         line.lineTo(lowerEndX, lowerEndY);
-
-    //         if(up) {
-    //             middleStartX = upperEndX;
-    //             middleStartY = upperEndY;
-
-    //             middleEndX = upperEndX + (rootLength / 2);
-    //             middleEndY = middleStartY;
-
-    //             upperStartX = upperEndX + (rootLength / 4);
-    //             upperStartY = middleStartY;
-
-    //             upperEndX = upperStartX + (branchGrowX / 2);
-    //             upperEndY = upperStartY - (branchGrowY / 2);
-
-    //             lowerStartX = upperStartX;
-    //             lowerStartY = upperStartY;
-
-    //             lowerEndX = upperEndX;
-    //             lowerEndY = upperStartY + (branchGrowY / 2);
-
-    //             up = false;
-    //         } else {
-    //             middleStartX = lowerEndX;
-    //             middleStartY = lowerEndY;
-
-    //             middleEndX = lowerEndX + (rootLength / 2);
-    //             middleEndY = middleStartY;
-
-    //             upperStartX = lowerEndX + (rootLength / 4);
-    //             upperStartY = middleStartY;
-
-    //             upperEndX = upperStartX + (branchGrowX / 2);
-    //             upperEndY = upperStartY - (branchGrowY / 2);
-
-    //             lowerStartX = upperStartX;
-    //             lowerStartY = upperStartY;
-
-    //             lowerEndX = upperEndX;
-    //             lowerEndY = upperStartY + (branchGrowY / 2);
-
-    //             up = true;
-    //         }
-
-    //         line.stroke({ color: 0xffffff, width: lineWidth, cap: 'round' });
-    //         lineWidth -= .5;
-    //     }         
-    // }
-
-    // drawTree(0, centerY, 20);
+            line
+                .clear()
+                .moveTo(x, y)
+                .lineTo(0, 0)
+                .stroke({ color: 0xffffff, width: 10, cap: 'round' });
+        }
+    });
 }
