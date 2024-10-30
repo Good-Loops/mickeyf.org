@@ -647,7 +647,7 @@ h1 {
 
 .social-media {
   display: grid;
-  row-gap: 4rem;
+  row-gap: 8em;
   justify-items: center;
 }
 .social-media__title {
@@ -660,7 +660,6 @@ h1 {
 .social-media__grid {
   display: grid;
   grid-auto-flow: column;
-  column-gap: 8rem;
 }
 .social-media__grid-btn--tiktok {
   padding: 0.5em;
@@ -674,8 +673,9 @@ h1 {
   transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s;
   z-index: 2;
   user-select: none;
-  padding-block: 5rem;
-  padding-inline: 0.05rem;
+  padding-block: 2em;
+  width: 13em;
+  scale: 0.8;
   fill: hsl(203, 92%, 90%);
 }
 .social-media__grid-btn--tiktok:hover {
@@ -701,8 +701,9 @@ h1 {
   transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s;
   z-index: 2;
   user-select: none;
-  padding-block: 5rem;
-  padding-inline: 0.05rem;
+  padding-block: 2em;
+  width: 13em;
+  scale: 0.8;
   fill: hsl(203, 92%, 90%);
 }
 .social-media__grid-btn--instagram:hover {
@@ -728,8 +729,9 @@ h1 {
   transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s;
   z-index: 2;
   user-select: none;
-  padding-block: 5rem;
-  padding-inline: 0.05rem;
+  padding-block: 2em;
+  width: 13em;
+  scale: 0.8;
   fill: hsl(203, 92%, 90%);
 }
 .social-media__grid-btn--youtube:hover {
@@ -755,8 +757,9 @@ h1 {
   transition: box-shadow 0.5s linear, scale 0.7s linear, text-shadow 1s ease-in-out, color 1.5s, border-color 2s;
   z-index: 2;
   user-select: none;
-  padding-block: 5rem;
-  padding-inline: 0.05rem;
+  padding-block: 2em;
+  width: 13em;
+  scale: 0.8;
   fill: hsl(203, 92%, 90%);
 }
 .social-media__grid-btn--github:hover {
