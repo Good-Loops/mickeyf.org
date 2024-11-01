@@ -1,12 +1,9 @@
-// Libraries
 import Alpine from 'alpinejs';
 import page from 'page';
 
-// Interfaces
 import IUserCreate from './register/interfaces/IUserCreate';
 import IUserLogin from './login/Interfaces/IUserLogin';
 
-// Event listener Record
 type EventListenerRecord = { // For storing event listeners for each component
     element: Document | Element,
     event: string,
@@ -17,23 +14,21 @@ type EventListenerRecord = { // For storing event listeners for each component
 // making them accessible globally
 declare global {
     interface Window {
-        // Libraries
         Alpine: typeof Alpine;
         page: typeof page;
 
-        // Global methods
-        userCreate: () => IUserCreate; // For user sign up
-        userLogin: () => IUserLogin; // For user login
-        leaderboard: () => ILeaderboard; // For retrieving leaderboard data 
+        userCreate: () => IUserCreate; 
+        userLogin: () => IUserLogin;
+        leaderboard: () => ILeaderboard;
 
         isLoggedIn: boolean;
 
         eventListeners: Record<string, EventListenerRecord[]>;
 
+        p4GameTicker: PIXI.Ticker;
         p4MusicPlayer: Tone.Player;
 
         dancingCirclesAnimationID: number;
-        p4GameTicker: PIXI.Ticker;
 
         previousPath: string;
     }
