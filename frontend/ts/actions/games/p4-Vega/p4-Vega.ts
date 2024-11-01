@@ -25,7 +25,7 @@ import Swal from 'sweetalert2';
 import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
 
-export default async function p4Vega() {
+export default async function p4Vega(): Promise<void> {
     /////////////////// Setup PixiJS renderer ////////////////// 
     const renderer = await PIXI.autoDetectRenderer({
         width: CANVAS_WIDTH,

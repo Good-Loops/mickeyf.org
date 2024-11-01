@@ -24,8 +24,13 @@ export default async function danceFractals(): Promise<void> {
     const centerX: number = app.screen.width / 2;
     const centerY: number = app.screen.height / 2;
 
-    // Define a color palette
-    const colorPalette = [
+    type Color = {
+        h: number;
+        s: number;
+        l: number;
+    }
+
+    const colorPalette: Color[] = [
         { h: 3, s: 80, l: 85 },
         { h: 5, s: 80, l: 85 },
         { h: 8, s: 80, l: 85 },
@@ -37,7 +42,6 @@ export default async function danceFractals(): Promise<void> {
         { h: 225, s: 80, l: 85 },
         { h: 230, s: 80, l: 85 },
         { h: 235, s: 80, l: 85 },
-        // Add more blue tones
         { h: 240, s: 80, l: 85 },
         { h: 245, s: 80, l: 85 },
         { h: 250, s: 80, l: 85 },
@@ -45,7 +49,7 @@ export default async function danceFractals(): Promise<void> {
         { h: 260, s: 80, l: 85 },
     ];
 
-    function getRandomColorFromPalette() {
+    const getRandomColorFromPalette = (): Color => {
         return colorPalette[Math.floor(Math.random() * colorPalette.length)];
     }
 
@@ -64,29 +68,29 @@ export default async function danceFractals(): Promise<void> {
         app.stage.addChild(line);
     }
 
-    let seedAlpha = 0.3;
-    let currentSeedColor = getRandomColorFromPalette();
-    let targetSeedColor = getRandomColorFromPalette();
+    let seedAlpha: number = 0.3;
+    let currentSeedColor: Color = getRandomColorFromPalette();
+    let targetSeedColor: Color = getRandomColorFromPalette();
 
     ////////////////////////////////////////////////////////////////////////
 
     const flowers: Graphics[][] = [];
-    const flowerAmount: number = 50;
-    const lineAmountFlower: number = 15;
+    const flowerAmount: number = 100;
+    const lineAmountFlower: number = 10;
 
     const currentFlowerColors: any[] = [];
     const targetFlowerColors: any[] = [];
 
     
-    let spiralRadius = 0;
+    let spiralRadius: number = 0;
     
     for (let i = 0; i < flowerAmount; i++) {
         const flower: Graphics[] = [];
 
-        spiralRadius += 10; // Increase radius to create the spiral effect
+        spiralRadius += 4; // Increase radius to create the spiral effect
         let angle = i * Math.PI * 2 / flowerAmount;
 
-        let x = centerX + spiralRadius * Math.cos(angle);
+        let x = centerX - 100 + spiralRadius * Math.cos(angle);
         let y = centerY + spiralRadius * Math.sin(angle);
 
         for (let j = 0; j < lineAmountFlower; j++) {
@@ -105,7 +109,7 @@ export default async function danceFractals(): Promise<void> {
         targetFlowerColors.push(getRandomColorFromPalette());
     }
 
-    let flowerAlpha = 0.3;
+    let flowerAlpha: number = 0.3;
 
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -124,12 +128,12 @@ export default async function danceFractals(): Promise<void> {
 
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    let angle = 0;
+    let angle: number = 0;
 
-    let colorChangeCounter = 0;
-    const colorChangeInterval = 50;
+    let colorChangeCounter: number = 0;
+    const colorChangeInterval: number = 50;
 
-    function interpolateColor(current: any, target: any, factor: number) {
+    const interpolateColor = (current: any, target: any, factor: number): Color => {
         return {
             h: current.h + (target.h - current.h) * factor,
             s: current.s + (target.s - current.s) * factor,
@@ -137,10 +141,12 @@ export default async function danceFractals(): Promise<void> {
         };
     }
 
-    function hslToString(color: any) {
+    const  hslToString = (color: Color) => {
         try {
             return `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
         } catch {
+            console.error("Invalid color object: ", color);
+            console.error("Returning white color instead");
             return "hsl(0, 0%, 100%)";
         }
     }
@@ -161,13 +167,13 @@ export default async function danceFractals(): Promise<void> {
             colorChangeCounter = 0;
         }
 
-        const factor = colorChangeCounter / colorChangeInterval;
+        const factor: number = colorChangeCounter / colorChangeInterval;
         currentSeedColor = interpolateColor(currentSeedColor, targetSeedColor, factor);
 
-        const seedColor = hslToString(currentSeedColor);
+        const seedColor: string = hslToString(currentSeedColor);
 
-        let seedWidth = 7 + 3 * Math.sin(time.lastTime / 800);
-        let seedRadius = 300 + 120 * Math.sin(time.lastTime / 800);
+        let seedWidth: number = 7 + 3 * Math.sin(time.lastTime / 800);
+        let seedRadius: number = 400 + 120 * Math.sin(time.lastTime / 800);
 
         seed.forEach((seedLine, seedIndex) => {
             seedLine.clear();
@@ -176,11 +182,11 @@ export default async function danceFractals(): Promise<void> {
             seedLine.stroke({ color: seedColor, width: seedWidth, alpha: seedAlpha });
         });
 
-        let flowerWidth = 8 + 3 * Math.sin(time.lastTime / 500);
-        let flowerRadius = 100 + 50 * Math.cos((time.lastTime / 800) + 10);
+        let flowerWidth: number = 8 + 3 * Math.sin((time.lastTime / 500) * 2 + 3);
+        let flowerRadius: number = 100 + 50 * Math.cos((time.lastTime / 800) + 10);
 
-        flowers.forEach((flower, flowerIndex) => {
-            const flowerColor = hslToString(currentFlowerColors[flowerIndex]);
+        flowers.forEach((flower, flowerIndex): void => {
+            const flowerColor: string = hslToString(currentFlowerColors[flowerIndex]);
             flower.forEach((line, flowerLineIndex) => {
                 line.clear();
                 line.moveTo(0, 0);
@@ -189,21 +195,21 @@ export default async function danceFractals(): Promise<void> {
             });
         });
 
-        let treeSpinnerWidth = 10 + 3 * Math.sin(time.lastTime / 500);
-        let treeSpinnerRadius = 200 + 50 * Math.cos((time.lastTime / 800) + 10);
+        let treeSpinnerWidth: number = 10 + 3 * Math.sin(time.lastTime / 500);
+        let treeSpinnerRadius: number = 50 * Math.cos((time.lastTime / 800) + 10);
 
-        treeSpinner.forEach((line, index) => {
-            const treeSpinnerColor = hslToString(currentFlowerColors[index % flowerAmount]);
+        treeSpinner.forEach((line, index): void => {
+            const treeSpinnerColor: string = hslToString(currentFlowerColors[index % flowerAmount]);
             line.clear();
             line.moveTo(0, 0);
             line.lineTo(treeSpinnerRadius * Math.cos(angle + (index * 3)) - Math.sin(index), treeSpinnerRadius * Math.sin(angle + index))
-            const points = 20; // Number of points for the star
-            const step = Math.PI / points; // Angle step for each point
+            const points: number = 60; // Number of points for the star
+            const step: number = Math.PI * Math.PI / points; // Angle step for each point
 
             for (let i = 0; i < 2 * points; i++) {
-                const angle = i * step * step;
-                const x = treeSpinnerRadius * Math.cos(angle + (index * 3)) - Math.sin(index);
-                const y = treeSpinnerRadius * Math.sin(angle + index) + Math.sin(index);
+                const angle: number = i * step * step;
+                const x: number = treeSpinnerRadius * (Math.cos(angle + (index * 4)) - Math.sin(angle + index)) * 2;
+                const y: number = treeSpinnerRadius * (Math.sin(angle + index) + Math.sin(index)) * 3;
                 line.lineTo(x, y);
             }
             line.stroke({ color: treeSpinnerColor, width: treeSpinnerWidth, alpha: flowerAlpha });
