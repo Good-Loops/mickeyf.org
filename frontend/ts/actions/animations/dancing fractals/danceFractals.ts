@@ -3,6 +3,59 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
 
 import FullscreenButton from '../../../helpers/FullscreenButton';
 
+type color = {
+    h: number;
+    s: number;
+    l: number;
+}
+
+type drawConfig = {
+    color?: string;
+    width: number;
+    radius: number;
+}
+
+class ColorManager {
+    currentColors: color[];
+    targetColors: color[];
+    colorPalette: color[];
+
+    constructor(colorPalette: color[], size: number) {
+        this.colorPalette = colorPalette;
+        this.currentColors = Array.from({ length: size }, () => this.getRandomColorFromPalette());
+        this.targetColors = Array.from({ length: size }, () => this.getRandomColorFromPalette());
+    }
+
+    getRandomColorFromPalette(): color {
+        return this.colorPalette[Math.floor(Math.random() * this.colorPalette.length)];
+    }
+
+    interpolateColors(factor: number): void {
+        this.currentColors = this.currentColors.map((current, index) => {
+            const target = this.targetColors[index];
+            return {
+                h: current.h + (target.h - current.h) * factor,
+                s: current.s + (target.s - current.s) * factor,
+                l: current.l + (target.l - current.l) * factor
+            };
+        });
+    }
+
+    updateTargetColors(): void {
+        this.targetColors = this.targetColors.map(() => this.getRandomColorFromPalette());
+    }
+
+    hslToString(color: color): string {
+        try {
+            return `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
+        } catch {
+            console.error('Invalid color object: ', color);
+            console.error('Returning white color instead');
+            return 'hsl(0, 0%, 100%)';
+        }
+    }
+}
+
 export default async function danceFractals(): Promise<void> {
 
     const app: Application = new Application();
@@ -24,18 +77,6 @@ export default async function danceFractals(): Promise<void> {
     const centerX: number = app.screen.width / 2;
     const centerY: number = app.screen.height / 2;
 
-    type color = {
-        h: number;
-        s: number;
-        l: number;
-    }
-
-    type drawConfig = {
-        color: string;
-        width: number;
-        radius: number;
-    }
-
     const colorPalette: color[] = [
         { h: 3, s: 80, l: 85 },
         { h: 5, s: 80, l: 85 },
@@ -55,14 +96,13 @@ export default async function danceFractals(): Promise<void> {
         { h: 260, s: 80, l: 85 },
     ];
 
-    const getRandomColorFromPalette = (): color => {
-        return colorPalette[Math.floor(Math.random() * colorPalette.length)];
-    }
-
     /////////////////////////////////////////////////////////////////////////////////
 
     const seed: Graphics[] = [];
     const seedLines: number = 50;
+
+    const seedAlpha: number = 0.3;
+    const seedColorManager = new ColorManager(colorPalette, seedLines);
 
     for (let i = 0; i < seedLines; i++) {
         const line: Graphics = new Graphics();
@@ -74,15 +114,12 @@ export default async function danceFractals(): Promise<void> {
         app.stage.addChild(line);
     }
 
-    const seedAlpha: number = 0.3;
-    let currentSeedColor: color = getRandomColorFromPalette();
-    let targetSeedColor: color = getRandomColorFromPalette();
-
     const drawSeed = (drawConfig: drawConfig) => {
         seed.forEach((seedLine: Graphics, seedIndex: number): void => {
             seedLine.clear();
             seedLine.moveTo(0, 0);
-            seedLine.lineTo(drawConfig.radius * Math.cos(angle + (seedIndex * 2)) - Math.sin(drawConfig.radius) - seedIndex, drawConfig.radius * Math.sin(angle + seedIndex));
+
+            seedLine.lineTo(drawConfig.radius * Math.cos(angleAlpha + (seedIndex * 2)) - Math.sin(drawConfig.radius) - seedIndex, drawConfig.radius * Math.sin(angleAlpha + seedIndex));
             seedLine.stroke({ color: drawConfig.color, width: drawConfig.width, alpha: seedAlpha });
         });
     }
@@ -92,9 +129,9 @@ export default async function danceFractals(): Promise<void> {
     const flowers: Graphics[][] = [];
     const flowerAmount: number = 100;
     const flowerLines: number = 10;
+    const flowerColorManager = new ColorManager(colorPalette, flowerAmount);
 
-    const currentFlowerColors: color[] = [];
-    const targetFlowerColors: color[] = [];
+    const flowerAlpha: number = 0.3;
 
     let spiralRadius: number = 0;
     const spiralIncrement: number = 5;
@@ -119,20 +156,18 @@ export default async function danceFractals(): Promise<void> {
         }
 
         flowers.push(flower);
-
-        currentFlowerColors.push(getRandomColorFromPalette());
-        targetFlowerColors.push(getRandomColorFromPalette());
     }
-
-    const flowerAlpha: number = 0.3;
 
     const drawFlowers = (drawConfig: drawConfig): void => {
         flowers.forEach((flower: Graphics[], flowerIndex: number): void => {
-            const flowerColor: string = hslToString(currentFlowerColors[flowerIndex]);
+
+            const flowerColor: string = flowerColorManager.hslToString(flowerColorManager.currentColors[flowerIndex]);
+
             flower.forEach((line: Graphics, flowerLineIndex: number) => {
                 line.clear();
                 line.moveTo(0, 0);
-                line.lineTo((drawConfig.radius * 1.2) * Math.cos(angle + (flowerLineIndex * 3)) - Math.sin(flowerIndex), drawConfig.radius * Math.sin(angle + flowerLineIndex * flowerIndex) + 1.2);
+
+                line.lineTo((drawConfig.radius * 1.2) * Math.cos(angleAlpha + (flowerLineIndex * 3)) - Math.sin(flowerIndex), drawConfig.radius * Math.sin(angleAlpha + flowerLineIndex * flowerIndex) + 1.2);
                 line.stroke({ color: flowerColor, width: drawConfig.width, alpha: flowerAlpha });
             });
         });
@@ -142,6 +177,7 @@ export default async function danceFractals(): Promise<void> {
 
     const randomShape: Graphics[] = [];
     const randomShapeLines: number = 20;
+    const randomShapeColorManager = new ColorManager(colorPalette, randomShapeLines);
 
     for (let i = 0; i < randomShapeLines; i++) {
         const line: Graphics = new Graphics();
@@ -155,11 +191,11 @@ export default async function danceFractals(): Promise<void> {
 
     const drawRandomShape = (drawConfig: drawConfig): void => {
         randomShape.forEach((line, index): void => {
-            const randomShapeColor: string = hslToString(currentFlowerColors[index % flowerAmount]);
+            const randomShapeColor: string = randomShapeColorManager.hslToString(randomShapeColorManager.currentColors[index]);
 
             line.clear();
             line.moveTo(0, 0);
-            line.lineTo(drawConfig.radius * Math.cos(angle + (index * 3)) - Math.sin(index), drawConfig.radius * Math.sin(angle + index))
+            line.lineTo(drawConfig.radius * Math.cos(angleAlpha + (index * 3)) - Math.sin(index), drawConfig.radius * Math.sin(angleAlpha + index))
 
             const points: number = 15;
             const step: number = Math.PI * Math.PI / points;
@@ -179,49 +215,30 @@ export default async function danceFractals(): Promise<void> {
 
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    let angle: number = 0;
+    let angleAlpha: number = 0;
 
     const colorChangeInterval: number = 50;
     let colorChangeCounter: number = 0;
 
-    const interpolateColor = (current: any, target: any, factor: number): color => {
-        return {
-            h: current.h + (target.h - current.h) * factor,
-            s: current.s + (target.s - current.s) * factor,
-            l: current.l + (target.l - current.l) * factor
-        };
-    }
-
-    const hslToString = (color: color): string => {
-        try {
-            return `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
-        } catch {
-            console.error('Invalid color object: ', color);
-            console.error('Returning white color instead');
-            return 'hsl(0, 0%, 100%)';
-        }
-    }
-
     app.ticker.add((time: Ticker): void => {
-        angle += 0.01;
+        angleAlpha += 0.01;
 
         colorChangeCounter += time.deltaMS / 100;
 
         if (colorChangeCounter >= colorChangeInterval) {
-
-            targetSeedColor = getRandomColorFromPalette();
-
-            for (let i = 0; i < flowerAmount; i++) {
-                targetFlowerColors[i] = getRandomColorFromPalette();
-            }
-
+            seedColorManager.updateTargetColors();
+            flowerColorManager.updateTargetColors();
+            randomShapeColorManager.updateTargetColors();
             colorChangeCounter = 0;
         }
 
         const interpolationFactor: number = colorChangeCounter / colorChangeInterval;
+        seedColorManager.interpolateColors(interpolationFactor);
+        flowerColorManager.interpolateColors(interpolationFactor);
+        randomShapeColorManager.interpolateColors(interpolationFactor);
 
-        currentSeedColor = interpolateColor(currentSeedColor, targetSeedColor, interpolationFactor);
-        const seedColor: string = hslToString(currentSeedColor);
+        ////////////////////////////////////////////////////////////////
+        const seedColor: string = seedColorManager.hslToString(seedColorManager.currentColors[0]);
         const seedWidth: number = 7 + 3 * Math.sin(time.lastTime / 800);
         const seedLineRadius: number = 400 + 120 * Math.sin(time.lastTime / 800);
 
@@ -232,33 +249,23 @@ export default async function danceFractals(): Promise<void> {
         }
 
         drawSeed(seedConfig);
+
         ////////////////////////////////////////////////////////////////
-
-        for (let i = 0; i < flowerAmount; i++) {
-            currentFlowerColors[i] = interpolateColor(currentFlowerColors[i], targetFlowerColors[i], interpolationFactor);
-        }
-
         const flowerWidth: number = 8 + 3 * Math.sin((time.lastTime / 500) * 2 + 3);
         const flowerRadius: number = 100 + 50 * Math.cos((time.lastTime / 800) + 10);
 
         const flowersConfig: drawConfig = {
-            color: "",
             width: flowerWidth,
             radius: flowerRadius
         }
 
         drawFlowers(flowersConfig);
+
         ////////////////////////////////////////////////////////////////
-
-        for (let i = 0; i < randomShapeLines; i++) {
-            currentFlowerColors[i % flowerAmount] = interpolateColor(currentFlowerColors[i % flowerAmount], targetFlowerColors[i % flowerAmount], interpolationFactor);
-        }
-
         const randomShapeWidth: number = 10 + 3 * Math.sin(time.lastTime / 500);
         const randomShapeRadius: number = 50 * Math.cos((time.lastTime / 800) + 10);
 
         const randomShapeConfig: drawConfig = {
-            color: "",
             width: randomShapeWidth,
             radius: randomShapeRadius
         }
