@@ -24,7 +24,7 @@ const setUpRoutes = (page: Page) => {
     page('/dancing-circles', () => loadComponent('/dancing-circles'));
     page('/dancing-fractals', () => loadComponent('/dancing-fractals'));
     
-    // User unique component
+    // TODO: User unique component
     // page('/user/:id', ctx => loadComponent('/user/:id', { id: ctx.params.id }));
 
     // Error page must be the last route because it is a catch-all route

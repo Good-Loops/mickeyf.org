@@ -211,7 +211,7 @@ export default async function danceCircles(): Promise<void> {
             drawTimer = 0;
         }
 
-        window.dancingCirclesAnimationID = requestAnimationFrame(step);
+        window.danceCirclesAnimationID = requestAnimationFrame(step);
     }
 
     load();

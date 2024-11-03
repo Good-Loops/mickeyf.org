@@ -15,7 +15,7 @@ declare global {
         Alpine: typeof Alpine;
         page: typeof page;
 
-        userCreate: () => IUserCreate; 
+        userCreate: () => IUserCreate;
         userLogin: () => IUserLogin;
         leaderboard: () => ILeaderboard;
 
@@ -26,7 +26,9 @@ declare global {
         p4GameTicker: PIXI.Ticker;
         p4MusicPlayer: Tone.Player;
 
-        dancingCirclesAnimationID: number;
+        danceCirclesAnimationID: number;
+
+        danceFractalsTicker: PIXI.Ticker;
 
         previousPath: string;
     }

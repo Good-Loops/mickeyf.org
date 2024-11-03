@@ -7,6 +7,8 @@ import ColorManager from '../helpers/ColorManager';
 
 import { color, drawConfig } from '../animations.types';
 
+// TODO: Understand how variables affect the animation
+
 export default async function danceFractals(): Promise<void> {
 
     const app: Application = new Application();
@@ -212,7 +214,7 @@ export default async function danceFractals(): Promise<void> {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // TODO: STAR
+    // TODO: Stars
 
     let angleTheta: number = 0;
 
@@ -220,6 +222,7 @@ export default async function danceFractals(): Promise<void> {
     let colorChangeCounter: number = 0;
 
     app.ticker.add((time: Ticker): void => {
+
         angleTheta += .01;
 
         colorChangeCounter += time.deltaMS / 100;
@@ -279,4 +282,6 @@ export default async function danceFractals(): Promise<void> {
 
         fractalWidth = 15 * Math.sin(angleTheta);
     });
+
+    window.danceFractalsTicker = app.ticker;
 }

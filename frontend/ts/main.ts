@@ -8,8 +8,8 @@ import setupRoutes from './utils/setUpRoutes';
 import CustomEvents from './helpers/CustomEvents';
 // Initializes global variables
 import "./utils/initGlobals";
-// Cleans up the page on component change
-import "./helpers/ComponentChange";
+// Cleans up the page on route change
+import "./helpers/RouteChangeListener";
 // Define routes using Page.js
 setupRoutes(page);
 // Start Alpine.js and Page.js

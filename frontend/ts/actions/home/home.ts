@@ -1,3 +1,5 @@
+// TODO: Figure out what causes lag in title animation
+
 export default async function home() {
     // Quotes
     const quotes: string[] = [
