@@ -4,14 +4,19 @@ import page from 'page';
 import IUserCreate from './register/interfaces/IUserCreate';
 import IUserLogin from './login/Interfaces/IUserLogin';
 
-type EventListenerRecord = { // For storing event listeners for each component
+type Key = {
+    frequency: number;
+    characteristics: string;
+    knownFor: string;
+    semitone: number;
+};
+
+type EventListenerRecord = {
     element: Document | Element,
     event: string,
     handler: (event: Event) => void
 };
 
-// For adding custom properties/methods to the window object
-// making them accessible globally
 declare global {
     interface Window {
         Alpine: typeof Alpine;

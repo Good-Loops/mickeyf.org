@@ -1,4 +1,4 @@
-import { Application, Color, Graphics, Ticker } from 'pixi.js';
+import { Application, Graphics, Ticker } from 'pixi.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
 
 import FullscreenButton from '../../../helpers/FullscreenButton';
@@ -30,19 +30,6 @@ export default async function danceFractals(): Promise<void> {
         { h: 3, s: 80, l: 85 },
         { h: 5, s: 80, l: 85 },
         { h: 8, s: 80, l: 85 },
-        { h: 90, s: 80, l: 85 },
-        { h: 95, s: 80, l: 85 },
-        { h: 100, s: 80, l: 85 },
-        { h: 110, s: 80, l: 85 },
-        { h: 220, s: 80, l: 85 },
-        { h: 225, s: 80, l: 85 },
-        { h: 230, s: 80, l: 85 },
-        { h: 235, s: 80, l: 85 },
-        { h: 240, s: 80, l: 85 },
-        { h: 245, s: 80, l: 85 },
-        { h: 250, s: 80, l: 85 },
-        { h: 255, s: 80, l: 85 },
-        { h: 260, s: 80, l: 85 },
     ];
 
     /////////////////////////////////////////////////////////////////////////////////
