@@ -11,7 +11,7 @@ MickeyF.org is a dynamic web platform designed to entertain and educate, featuri
 
 ## Using the Website
 
-Access [MickeyF.org](https://mickeyf.org) directly from your browser to discover all that it has to offer. Create an account to save your progress in games and see how you rank on leaderboards.
+Access [mickeyf.org](https://mickeyf.org) directly from your browser to discover all that it has to offer. Create an account to save your progress in games and see how you rank on leaderboards.
 
 ## Educational Content
 
