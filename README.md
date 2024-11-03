@@ -1,4 +1,4 @@
-# mickeyf.org / BeatCalc WebApp (Full Release)
+# mickeyf.org / BeatCalc WebApp (full release)
 
 MickeyF.org is a dynamic web platform designed to entertain and educate, featuring a curated selection of games, animations, and educational resources focused on music and math. The site aims to be a resource for learning, offering users the ability to explore new concepts through interactive content.
 
