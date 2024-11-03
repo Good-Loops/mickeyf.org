@@ -1,4 +1,4 @@
-type Key = {
+interface Key {
     frequency: number;
     characteristics: string;
     knownFor: string;

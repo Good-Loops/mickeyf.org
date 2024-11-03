@@ -4,7 +4,7 @@ import page from 'page';
 import IUserCreate from './register/interfaces/IUserCreate';
 import IUserLogin from './login/Interfaces/IUserLogin';
 
-type EventListenerRecord = {
+interface EventListenerRecord {
     element: Document | Element,
     event: string,
     handler: (event: Event) => void

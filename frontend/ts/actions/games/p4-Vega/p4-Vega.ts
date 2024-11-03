@@ -25,6 +25,8 @@ import Swal from 'sweetalert2';
 import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
 
+// TODO: Use module for entities
+
 export default async function p4Vega(): Promise<void> {
     /////////////////// Setup PixiJS renderer ////////////////// 
     const renderer = await PIXI.autoDetectRenderer({

@@ -1,4 +1,4 @@
-type Scale = {
+interface Scale {
     description: string;
     notes: number[];
 };
