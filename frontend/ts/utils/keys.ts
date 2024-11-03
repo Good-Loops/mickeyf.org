@@ -1,4 +1,9 @@
-import { Key } from "ts/types";
+type Key = {
+    frequency: number;
+    characteristics: string;
+    knownFor: string;
+    semitone: number;
+};
 
 const keys: { [key: string]: Key } = {
     'C': {

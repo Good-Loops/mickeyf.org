@@ -1,3 +1,4 @@
+import { color } from "../animations.types";
 
 export default class ColorManager {
     public currentColors: color[];
@@ -15,12 +16,12 @@ export default class ColorManager {
     }
 
     public interpolateColors(factor: number): void {
-        this.currentColors = this.currentColors.map((current: color, index: number) => {
+        this.currentColors = this.currentColors.map((currentColor: color, index: number): color => {
             const target: color = this.targetColors[index];
             return {
-                h: current.h + (target.h - current.h) * factor,
-                s: current.s + (target.s - current.s) * factor,
-                l: current.l + (target.l - current.l) * factor
+                hue: currentColor.hue + (target.hue - currentColor.hue) * factor,
+                saturation: currentColor.saturation + (target.saturation - currentColor.saturation) * factor,
+                lightness: currentColor.lightness + (target.lightness - currentColor.lightness) * factor
             };
         });
     }
@@ -31,7 +32,7 @@ export default class ColorManager {
 
     public hslToString(color: color): string {
         try {
-            return `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
+            return `hsl(${color.hue}, ${color.saturation}%, ${color.lightness}%)`;
         } catch {
             console.error('Invalid color object: ', color);
             console.error('Returning white color instead');

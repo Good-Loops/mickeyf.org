@@ -1,5 +1,3 @@
-// FullscreenButton.ts
-
 export default class FullscreenButton {
     private targetElement: HTMLElement;
     private fullscreenButton: HTMLButtonElement;

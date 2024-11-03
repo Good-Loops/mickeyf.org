@@ -16,8 +16,8 @@ import DanceFractals from '../components/animations/DanceFractals';
 import P4Vega from '../components/games/P4Vega';
 
 interface ComponentInterface { // Define the component interface
-    render: (params?: any) => string | Promise<string>;
-    action?: (params?: any) => void;
+    render: (params?: unknown) => string | Promise<string>;
+    action?: (params?: unknown) => void;
 }
 
 const routes: Record<string, ComponentInterface> = {
@@ -55,7 +55,7 @@ function matchRoute(requestedRoute: string) {
 }
 
 // Load the component based on the requested route
-export const loadComponent = async (requestedRoute: string, params?: any): Promise<void> => {
+export const loadComponent = async (requestedRoute: string, params?: unknown): Promise<void> => {
     const content = document.querySelector('[data-content]') as HTMLDivElement;
 
     if (!content) {

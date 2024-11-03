@@ -1,7 +1,6 @@
 import * as PIXI from "pixi.js";
-import IEntity from "../interfaces/IEntity";
 
-export default abstract class Entity implements IEntity {
+export default abstract class Entity {
     anim: PIXI.AnimatedSprite;
 
     public static gap: number = 10;

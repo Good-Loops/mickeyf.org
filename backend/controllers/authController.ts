@@ -11,7 +11,7 @@ const authController = (req: Request, res: Response) => {
         const token = authHeader.split(' ')[1];
 
         // Verify the token
-        jwt.verify(token, process.env.SESSION_SECRET!, (err: any, decoded: any) => {
+        jwt.verify(token, process.env.SESSION_SECRET!, (err: unknown, decoded: unknown) => {
             if (err) {
                 // If an error occurred, the token is not valid
                 res.json({ loggedIn: false });

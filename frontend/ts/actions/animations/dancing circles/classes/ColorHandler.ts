@@ -106,36 +106,36 @@ export default class ColorHandler {
     }
 
     // Hertz to HSL String
-    public static convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: number, maxL: number): any {
+    public static convertHertzToHSL(hertz: number, minS: number, maxS: number, minL: number, maxL: number): string {
         // Hearing range
         if (hertz < 20) hertz = 20;
         if (hertz > 20e3) hertz = 20e3;
 
         // Visible light range
-        const tHertz = (hertz % 389) + 1;
+        const tHertz: number = (hertz % 389) + 1;
 
-        const rangeAmp = 7;
-        const percentage = (tHertz * .00257) * rangeAmp;
+        const rangeAmp: number = 7;
+        const percentage: number = (tHertz * .00257) * rangeAmp;
 
-        const h = 360 * percentage;
+        const hue: number = 360 * percentage;
 
-        const randomHSL = this.getRandomColor(minS, maxS, minL, maxL, true);
-        const randomHSLh = randomHSL.substring(4, randomHSL.length - 1).split(",")[0];
-        const newHSL = randomHSL.replace(randomHSLh, h.toString());
+        const randomHSL: string = this.getRandomColor(minS, maxS, minL, maxL, true);
+        const randomHSLhue: string = randomHSL.substring(4, randomHSL.length - 1).split(",")[0];
+        const newHSL: string = randomHSL.replace(randomHSLhue, hue.toString());
 
         return newHSL;
     }
 
     // Get random hsl/rgb value inside chosen spectrum
     public static getRandomColor(minS: number = 0, maxS: number = 100, minL: number = 0, maxL: number = 100, isHsl: boolean = true): string {
-        const h: number = (Math.random() * 360) | 0;
-        const s: number = getRandomInt(minS, maxS);
-        const l: number = getRandomInt(minL, maxL);
+        const hue: number = (Math.random() * 360) | 0;
+        const saturation: number = getRandomInt(minS, maxS);
+        const lightness: number = getRandomInt(minL, maxL);
 
-        if (isHsl && typeof CSS !== 'undefined' && CSS.supports('color', `hsl(${h}, ${s}%, ${l}%)`)) {
-            return `hsl(${h}, ${s}%, ${l}%)`; // use HSL
+        if (isHsl && typeof CSS !== 'undefined' && CSS.supports('color', `hsl(${hue}, ${saturation}%, ${lightness}%)`)) {
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`; // use HSL
         } else {
-            const [r, g, b]: number[] = this.convertHSLtoRGB(h / 360, s / 100, l / 100);
+            const [r, g, b]: number[] = this.convertHSLtoRGB(hue / 360, saturation / 100, lightness / 100);
             return `rgb(${r}, ${g}, ${b})`; // use RGB fallback
         }
     }

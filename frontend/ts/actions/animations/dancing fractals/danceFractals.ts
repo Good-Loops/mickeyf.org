@@ -5,6 +5,8 @@ import FullscreenButton from '../../../helpers/FullscreenButton';
 
 import ColorManager from '../helpers/ColorManager';
 
+import { color, drawConfig } from '../animations.types';
+
 export default async function danceFractals(): Promise<void> {
 
     const app: Application = new Application();
@@ -27,9 +29,9 @@ export default async function danceFractals(): Promise<void> {
     const centerY: number = app.screen.height / 2;
 
     const colorPalette: color[] = [
-        { h: 3, s: 80, l: 85 },
-        { h: 5, s: 80, l: 85 },
-        { h: 8, s: 80, l: 85 },
+        { hue: 3, saturation: 80, lightness: 85 },
+        { hue: 5, saturation: 80, lightness: 85 },
+        { hue: 8, saturation: 80, lightness: 85 },
     ];
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +74,7 @@ export default async function danceFractals(): Promise<void> {
 
     let spiralRadius: number = 0;
     const spiralIncrement: number = 8;
-    
+
     for (let i = 0; i < flowerAmount; i++) {
         const flower: Graphics[] = [];
 
@@ -145,7 +147,7 @@ export default async function danceFractals(): Promise<void> {
 
                 const x: number = drawConfig.radius * (Math.cos(angle + (index * 4)) - Math.sin(angle + index)) * 2;
                 const y: number = drawConfig.radius * (Math.sin(angle + index) + Math.sin(index)) * 3;
-                
+
                 line.lineTo(x, y);
             }
 
@@ -206,7 +208,7 @@ export default async function danceFractals(): Promise<void> {
 
         const fractalColor = fractalColorManager.hslToString(fractalColorManager.currentColors[depth]);
 
-        line.stroke({color: fractalColor, alpha: fractalAlpha, width: fractalWidth});
+        line.stroke({ color: fractalColor, alpha: fractalAlpha, width: fractalWidth });
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -271,7 +273,7 @@ export default async function danceFractals(): Promise<void> {
 
         //////////////////////////////////////////////////////////////////////
         firstLine.clear();
-        for(let i = 0; i < 2; i++) {
+        for (let i = 0; i < 2; i++) {
             drawFractal(firstLine, 10 * i, 400 * i, app.canvas.width / i * 10, app.canvas.height / i, fractalLevels);
         }
 

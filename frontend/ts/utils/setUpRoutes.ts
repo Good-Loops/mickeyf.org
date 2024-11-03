@@ -3,7 +3,7 @@ import { loadComponent } from '../utils/loadComponent';
 // The Page interface is used to define the page 
 // function that is used to set up routes for the application. 
 interface Page {
-    (path: string, callback: (ctx?: any) => void): void;
+    (path: string, callback: (ctx?: unknown) => void): void;
 }
 
 // The setUpRoutes function is used to set up the routes for the application.
