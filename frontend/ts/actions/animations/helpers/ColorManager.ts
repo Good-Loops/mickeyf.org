@@ -1,5 +1,6 @@
 import { color } from "../animations.types";
 
+// TODO: Use this in dance circles
 export default class ColorManager {
     public currentColors: color[];
     private targetColors: color[];

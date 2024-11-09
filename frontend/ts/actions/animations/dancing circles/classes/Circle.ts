@@ -3,28 +3,28 @@ import lerp from "../../../../utils/lerp";
 import ColorHandler from "./ColorHandler";
 
 export default class Circle {
-    public baseR: number = this.getBaseR();
-    public currentR: number = this.baseR;
-    public targetR: number = this.baseR;
-    public x: number = getRandomX(this.baseR, Circle.gap);
-    public y: number = getRandomY(this.baseR, Circle.gap);
-    public targetX: number = getRandomX(this.baseR, Circle.gap);
-    public targetY: number = getRandomY(this.baseR, Circle.gap);
-    public color: string = ColorHandler.getRandomColor(Circle.minS, Circle.maxS, Circle.minL, Circle.maxL, true);
-    public targetColor: string = ColorHandler.getRandomColor(Circle.minS, Circle.maxS, Circle.minL, Circle.maxL, true);
+    public baseR = this.getBaseR();
+    public currentR = this.baseR;
+    public targetR = this.baseR;
+    public x = getRandomX(this.baseR, Circle.gap);
+    public y = getRandomY(this.baseR, Circle.gap);
+    public targetX = getRandomX(this.baseR, Circle.gap);
+    public targetY = getRandomY(this.baseR, Circle.gap);
+    public color = ColorHandler.getRandomColor(Circle.minS, Circle.maxS, Circle.minL, Circle.maxL, true);
+    public targetColor = ColorHandler.getRandomColor(Circle.minS, Circle.maxS, Circle.minL, Circle.maxL, true);
 
-    public static minS: number = 95;
-    public static maxS: number = 100;
-    public static minL: number = 60;
-    public static maxL: number = 80;
+    public static minS = 95;
+    public static maxS = 100;
+    public static minL = 60;
+    public static maxL = 80;
 
     public static circleArray: Circle[];
-    public static circlesLength: number = 12;
-    public static gap: number = 14;
+    public static circlesLength = 12;
+    public static gap = 14;
 
     public static startingBaseR: number;
     public static prevR: number;
-    public static adjustR: number = .13;
+    public static adjustR = .13;
 
     constructor() {
         Circle.circleArray.push(this);
@@ -36,9 +36,9 @@ export default class Circle {
         return Circle.startingBaseR;
     }
 
-    public convColor(isTColor: boolean, isRtoH: boolean): void {
-        const colorToConvert: string = isTColor ? this.targetColor : this.color;
-        const convertedColor: string = isRtoH ? ColorHandler.convertRGBtoHSL(colorToConvert) : ColorHandler.convertHSLStrToRGBStr(colorToConvert);
+    public convColor(isTColor: boolean, isRtoH: boolean) {
+        const colorToConvert = isTColor ? this.targetColor : this.color;
+        const convertedColor = isRtoH ? ColorHandler.convertRGBtoHSL(colorToConvert) : ColorHandler.convertHSLStrToRGBStr(colorToConvert);
         if (isTColor) {
             this.targetColor = convertedColor;
         } else {
@@ -46,16 +46,16 @@ export default class Circle {
         }
     }
 
-    public lerpColor(): void {
+    public lerpColor() {
         const t = .03;
         this.color = ColorHandler.lerpColor(this.color, this.targetColor, t);
     }
 
-    public lerpPosition(isX: boolean): void {
-        const t: number = .01;
-        const axis: number = isX ? this.x : this.y;
-        const tAxis: number = isX ? this.targetX : this.targetY;
-        const position: number = lerp(axis, tAxis, t);
+    public lerpPosition(isX: boolean) {
+        const t = .01;
+        const axis = isX ? this.x : this.y;
+        const tAxis = isX ? this.targetX : this.targetY;
+        const position = lerp(axis, tAxis, t);
 
         if (isX) {
             this.x = position;
@@ -64,8 +64,8 @@ export default class Circle {
         }
     }
 
-    public lerpRadius(): void {
-        const t: number = .2;
+    public lerpRadius() {
+        const t = .2;
         this.currentR = lerp(this.currentR, this.targetR, t);
     }
 }

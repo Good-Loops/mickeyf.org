@@ -1,57 +1,52 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
-import { getRandomIndexArr, getRandomX, getRandomY } from "../../../utils/random";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
+import { getRandomIndexArr, getRandomX, getRandomY } from '../../../utils/random';
 
-import ColorHandler from "./classes/ColorHandler";
-import Circle from "./classes/Circle";
-import AudioHandler from "./classes/AudioHandler";
+import ColorHandler from './classes/ColorHandler';
+import Circle from './classes/Circle';
+import AudioHandler from './classes/AudioHandler';
 
-import * as PIXI from "pixi.js";
+import * as PIXI from 'pixi.js';
 
-import FullscreenButton from "../../../helpers/FullscreenButton";
+import FullscreenButton from '../../../helpers/FullscreenButton';
 
-export default async function danceCircles(): Promise<void> {
+export default async function danceCircles() {
 
-    const renderer: PIXI.Renderer = await PIXI.autoDetectRenderer({
+    const renderer = await PIXI.autoDetectRenderer({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
         backgroundColor: 0x1099bb,
         antialias: true
     });
 
-    const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
+    const canvas = renderer.view.canvas as HTMLCanvasElement;
     canvas.className = 'dancing-circles__canvas';
     canvas.id = 'dc-canvas';
 
-    const sectionDataAttribute: string = '[data-dancing-circles]';
+    const sectionDataAttribute = '[data-dancing-circles]';
 
     document.querySelector(sectionDataAttribute)!.append(canvas);
 
     new FullscreenButton(canvas, sectionDataAttribute);
 
-    const stage: PIXI.Container = new PIXI.Container();
+    const stage = new PIXI.Container();
 
     let canvasTargetColor: string;
     let canvasBgColor: string;
-    // Min/Max Saturation
-    const canvasMinS: number = 65;
-    const canvasMaxS: number = 75;
-    // Min/Max Lightness
-    const canvasMinL: number = 40;
-    const canvasMaxL: number = 60;
+    const canvasMinS = 65;
+    const canvasMaxS = 75;
+    const canvasMinL = 40;
+    const canvasMaxL = 60;
 
-    // Stop animation
-    let stop: boolean = true;
+    let stop = true;
 
-    // Get elements for audio handling
-    const uploadButton: HTMLLabelElement = document.querySelector('[data-upload-button]') as HTMLLabelElement;
-    const fileInput: HTMLInputElement = document.querySelector('[data-file-upload]') as HTMLInputElement;
+    const uploadButton = document.querySelector('[data-upload-button]') as HTMLLabelElement;
+    const fileInput = document.querySelector('[data-file-upload]') as HTMLInputElement;
 
-    // Circles updating color per call
-    const numCircs: number = 2;
+    const colorChangingCircles = 2;
 
     AudioHandler.processAudio(fileInput, uploadButton);
 
-    const load = (): void => {
+    const load = () => {
         stop = false;
 
         canvas.style.backgroundColor = ColorHandler.getRandomColor(canvasMinS,
@@ -67,21 +62,21 @@ export default async function danceCircles(): Promise<void> {
         Circle.startingBaseR = 50;
         Circle.prevR = 8;
         Circle.circleArray = [];
-        for (let i: number = 0; i < Circle.circlesLength; i++) {
+        for (let i = 0; i < Circle.circlesLength; i++) {
             new Circle();
         }
         // Sort circles in order of increasing radius
         Circle.circleArray.sort((a, b) => b.currentR - a.currentR);
     }
 
-    const update = (numCircs: number): void => {
+    const update = (numCircs: number) => {
         canvasTargetColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
 
         // Get an array random indexes from the Circle.circles array
         const randomIndexArr: number[] = getRandomIndexArr(Circle.circlesLength);
-        for (let i: number = 0; i < numCircs; i++) {
+        for (let i = 0; i < numCircs; i++) {
             // Get circle at random index
             const circle: Circle = Circle.circleArray[randomIndexArr[i]];
             circle.targetX = getRandomX(circle.currentR, Circle.gap);
@@ -104,13 +99,12 @@ export default async function danceCircles(): Promise<void> {
     let increaseRTimer = adjustRInterval,
         decreaseRTimer = adjustRInterval * .5,
         even = true;
-    const updateOnPitch = (): void => {
+    const updateOnPitch = () => {
         if (AudioHandler.playing) {
-            // Update color base on pitch
+            // Update color based on pitch
             if (colorTimer >= colorInterval) {
                 const randomIndexArr: number[] = getRandomIndexArr(Circle.circlesLength);
-                for (let i: number = 0; i < Circle.circlesLength; i++) {
-                    // Get circle at random index
+                for (let i = 0; i < Circle.circlesLength; i++) {
                     const circle: Circle = Circle.circleArray[randomIndexArr[i]];
                     circle.targetColor = ColorHandler.convertHertzToHSL(Math.round(AudioHandler.pitch),
                         Circle.minS, Circle.maxS, Circle.minL, Circle.maxL
@@ -147,36 +141,40 @@ export default async function danceCircles(): Promise<void> {
         }
     }
 
-    let deltaTime: number = 0, lastTime: number = 0,
-        updateTimer: number = 0, updateInterval: number = 1000,
-        updateOnPitchTimer: number = 0, updateOnPitchInterval: number = 10,
-        drawTimer: number = 0, drawInterval: number = 40;
-    const draw = (): void => {
+    let deltaTime = 0, lastTime = 0,
+        updateTimer = 0, updateInterval = 1000,
+        updateOnPitchTimer = 0, updateOnPitchInterval = 10,
+        drawTimer = 0, drawInterval = 40;
+    const draw = () => {
         stage.removeChildren();
 
-        renderer.background.color = ColorHandler.lerpColor(canvasBgColor, canvasTargetColor, 0.02);
+        renderer.background.color = ColorHandler.lerpColor(canvasBgColor, canvasTargetColor, .02);
         canvasBgColor = ColorHandler.convertRGBtoHSL(canvas.style.backgroundColor);
 
         const graphics = new PIXI.Graphics();
 
-        Circle.circleArray.forEach((circle: Circle): void => {
+        Circle.circleArray.forEach((circle: Circle) => {
 
-            circle.lerpRadius(); // Lerp Radius
-            circle.lerpPosition(true); // Lerp X
-            circle.lerpPosition(false); // Lerp Y
+            circle.lerpRadius();
 
-            if (circle.color[0] === "h" && circle.targetColor[0] === "h") {
+            let isX = true; 
+            circle.lerpPosition(isX);
+            isX = false;
+            circle.lerpPosition(isX);
+
+            // TODO: Refactor this logic
+            if (circle.color[0] === 'h' && circle.targetColor[0] === 'h') {
                 circle.lerpColor();
             }
-            else if (circle.color[0] === "r" && circle.targetColor[0] === "r") {
-                circle.convColor(false, true); // Convert to HSL
-                circle.convColor(true, true); // Convert to HSL
+            else if (circle.color[0] === 'r' && circle.targetColor[0] === 'r') {
+                circle.convColor(false, true);
+                circle.convColor(true, true);
 
                 circle.lerpColor();
-                circle.convColor(true, false); // Convert to RGB
+                circle.convColor(true, false);
             }
             else {
-                throw new Error("Environment Not Compatible");
+                throw new Error('Environment Not Compatible');
             }
 
             graphics.circle(circle.x, circle.y, circle.currentR);
@@ -188,7 +186,7 @@ export default async function danceCircles(): Promise<void> {
         renderer.render(stage);
     }
 
-    const step = (timeStamp: number): void => {
+    const step = (timeStamp: number) => {
         if (stop) return;
 
         deltaTime = timeStamp - lastTime;
@@ -199,7 +197,7 @@ export default async function danceCircles(): Promise<void> {
         drawTimer += deltaTime;
 
         if (updateTimer >= updateInterval) {
-            update(numCircs);
+            update(colorChangingCircles);
             updateTimer = 0;
         }
         if (updateOnPitchTimer >= updateOnPitchInterval) {
