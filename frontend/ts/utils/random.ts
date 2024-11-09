@@ -12,7 +12,7 @@ export function getRandomInt(min: number, max: number): number {
 
 // Returns a random x value within the canvas width
 export function getRandomX(width: number, gap: number = 0): number {
-    let x: number = (Math.random() * (CANVAS_WIDTH - width + gap));
+    let x = (Math.random() * (CANVAS_WIDTH - width + gap));
     if (x < width - gap) {
         x += width - x;
     }
@@ -21,7 +21,7 @@ export function getRandomX(width: number, gap: number = 0): number {
 
 // Returns a random y value within the canvas height
 export function getRandomY(width: number, gap: number = 0): number {
-    let y: number = (Math.random() * (CANVAS_HEIGHT - width + gap));
+    let y = (Math.random() * (CANVAS_HEIGHT - width + gap));
     if (y < width - gap) {
         y += width - y;
     }

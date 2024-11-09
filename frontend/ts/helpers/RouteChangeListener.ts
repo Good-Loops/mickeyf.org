@@ -19,8 +19,8 @@ class RouteChangeListener {
     // Initialize route change listener
     private initRouteChangeListener() {
         page('*', (ctx, next) => {
-            const currentPath: string = ctx.path;
-            const previousPath: string = window.previousPath;
+            const currentPath = ctx.path;
+            const previousPath = window.previousPath;
 
             if (previousPath) {
                 this.executeCleanup(previousPath);

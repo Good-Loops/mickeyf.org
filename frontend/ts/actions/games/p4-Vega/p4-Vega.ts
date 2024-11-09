@@ -26,39 +26,28 @@ import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
 
 // TODO: Use module for entities
-
 export default async function p4Vega(): Promise<void> {
-    /////////////////// Setup PixiJS renderer ////////////////// 
     const renderer = await PIXI.autoDetectRenderer({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
         backgroundColor: 0x0d0033,
     });
-    // Set canvas properties
+
     const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
     canvas.className = 'p4-vega__canvas';
     canvas.id = 'p4-canvas';
-
     const sectionDataAttribute: string = '[data-p4-vega]';
-
-    // Add the canvas to the DOM
     document.querySelector(sectionDataAttribute)!.appendChild(canvas);
+    
+    const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
 
     new FullscreenButton(canvas, sectionDataAttribute);
 
-    // Create stage
-    const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
-
-    /////////////////// UI //////////////////
-    // Background music checkbox
-    // Get the checkbox element
-    const bgMusicCheckbox: HTMLInputElement = document.querySelector('[data-bg-music-playing]') as HTMLInputElement;
-    // Background music player
+    const bgMusicCheckbox  = document.querySelector('[data-bg-music-playing]') as HTMLInputElement;
     window.p4MusicPlayer = new Tone.Player({
         url: './assets/audio/bg-sound-p4.mp3',
         loop: true,
     }).toDestination();
-    // Play or stop the music based on the checkbox state
     const toggleBackgroundMusic = (): void => {
         if (bgMusicCheckbox.checked) {
             window.p4MusicPlayer.start();
@@ -66,20 +55,15 @@ export default async function p4Vega(): Promise<void> {
             window.p4MusicPlayer.stop();
         }
     };
-    // Add an event listener to the checkbox to toggle music on change
     bgMusicCheckbox.addEventListener('change', toggleBackgroundMusic);
 
-    // Musical notes playing checkbox
-    // Get the checkbox element
-    const notesPlayingCheckbox: HTMLInputElement = document.querySelector('[data-musical-notes-playing]') as HTMLInputElement;
-    // Determine if notes are playing based on the checkbox state
-    let notesPlaying: boolean = notesPlayingCheckbox.checked;
+    const notesPlayingCheckbox = document.querySelector('[data-musical-notes-playing]') as HTMLInputElement;
+    let notesPlaying = false;
     const toggleNotesPlaying = (): void => {
         notesPlaying = notesPlayingCheckbox.checked;
     };
     notesPlayingCheckbox.addEventListener('change', toggleNotesPlaying);
 
-    // Create instances of Dropdowns for scales and keys
     new Dropdown('data-dropdown-scales', 'data-dropdown-btn', 'data-selected-scale');
     new Dropdown('data-dropdown-keys', 'data-dropdown-btn', 'data-selected-key');
 
@@ -90,55 +74,50 @@ export default async function p4Vega(): Promise<void> {
         toggleKeySelection: Dropdown.toggleSelection('data-dropdown-keys', 'data-selected-key', 'data-key')
     };
 
-    // Binding event listeners using static methods
     document.addEventListener('click', dropdownHandlers.toggleScalesDropdown);
     document.addEventListener('click', dropdownHandlers.toggleKeysDropdown);
     document.addEventListener('click', dropdownHandlers.toggleScaleSelection);
     document.addEventListener('click', dropdownHandlers.toggleKeySelection);
 
-    ////////////////// Globals //////////////////
-    // Game state
-    let gameLive: boolean, gameOverTexts: PIXI.ContainerChild[] = [];
-    // Game elements
-    let sky: Sky, p4: P4, water: Water;
+    let gameLive: boolean, 
+        gameOverTexts: PIXI.ContainerChild[] = [],
+        sky: Sky, 
+        p4: P4, 
+        water: Water;
 
-    // Load game assets
     const load = async (): Promise<void> => {
         toggleBackgroundMusic();
 
-        // Set game state
         gameLive = true;
-        // Background
+
         sky = new Sky(stage);
 
-        // Get images
-        const p4Image: HTMLImageElement = document.querySelector('[data-p4]') as HTMLImageElement;
-        const waterImage: HTMLImageElement = document.querySelector('[data-water]') as HTMLImageElement;
-        const bhBlueImage: HTMLImageElement = document.querySelector('[data-bhBlue]') as HTMLImageElement;
-        const bhRedImage: HTMLImageElement = document.querySelector('[data-bhRed]') as HTMLImageElement;
-        const bhYellowImage: HTMLImageElement = document.querySelector('[data-bhYellow]') as HTMLImageElement;
-        // Load images as textures
-        const p4Texture: PIXI.Texture = await PIXI.Assets.load(p4Image) as PIXI.Texture;
-        const waterTexture: PIXI.Texture = await PIXI.Assets.load(waterImage) as PIXI.Texture;
-        const bhBlueTexture: PIXI.Texture = await PIXI.Assets.load(bhBlueImage) as PIXI.Texture;
-        const bhRedTexture: PIXI.Texture = await PIXI.Assets.load(bhRedImage) as PIXI.Texture;
-        const bhYellowTexture: PIXI.Texture = await PIXI.Assets.load(bhYellowImage) as PIXI.Texture;
-        // Load and parse spritesheets
-        const p4Spritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(p4Texture, p4Data);
+        const p4Image  = document.querySelector('[data-p4]') as HTMLImageElement;
+        const waterImage = document.querySelector('[data-water]') as HTMLImageElement;
+        const bhBlueImage = document.querySelector('[data-bhBlue]') as HTMLImageElement;
+        const bhRedImage = document.querySelector('[data-bhRed]') as HTMLImageElement;
+        const bhYellowImage = document.querySelector('[data-bhYellow]') as HTMLImageElement;
+
+        const p4Texture = await PIXI.Assets.load(p4Image) as PIXI.Texture;
+        const waterTexture = await PIXI.Assets.load(waterImage) as PIXI.Texture;
+        const bhBlueTexture = await PIXI.Assets.load(bhBlueImage) as PIXI.Texture;
+        const bhRedTexture = await PIXI.Assets.load(bhRedImage) as PIXI.Texture;
+        const bhYellowTexture = await PIXI.Assets.load(bhYellowImage) as PIXI.Texture;
+
+        const p4Spritesheet = new PIXI.Spritesheet(p4Texture, p4Data);
         await p4Spritesheet.parse();
-        const waterSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(waterTexture, waterData);
+        const waterSpritesheet = new PIXI.Spritesheet(waterTexture, waterData);
         await waterSpritesheet.parse();
-        const bhBlueSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhBlueTexture, bhBlueData);
+        const bhBlueSpritesheet = new PIXI.Spritesheet(bhBlueTexture, bhBlueData);
         await bhBlueSpritesheet.parse();
-        const bhRedSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhRedTexture, bhRedData);
+        const bhRedSpritesheet = new PIXI.Spritesheet(bhRedTexture, bhRedData);
         await bhRedSpritesheet.parse();
-        const bhYellowSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhYellowTexture, bhYellowData);
+        const bhYellowSpritesheet = new PIXI.Spritesheet(bhYellowTexture, bhYellowData);
         await bhYellowSpritesheet.parse();
-        // Create animated sprites
+
         const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
         const waterAnim = new PIXI.AnimatedSprite(waterSpritesheet.animations.water);
 
-        // Create pool of 100 black holes with random colors
         for (let blackHoleIndex = 0; blackHoleIndex < 100; blackHoleIndex++) {
             let bhAnim: PIXI.AnimatedSprite;
             switch (getRandomInt(0, 2)) {
@@ -154,7 +133,7 @@ export default async function p4Vega(): Promise<void> {
             }
             BlackHole.bHAnimArray.push(bhAnim!);
         }
-        new BlackHole(stage, p4Anim); // Add initial black hole
+        new BlackHole(stage, p4Anim);
 
         p4 = new P4(stage, p4Anim);
         water = new Water(stage, waterAnim);
@@ -193,32 +172,33 @@ export default async function p4Vega(): Promise<void> {
 
     const restart = async (): Promise<void> => {
         gameLive = true;
-        // Clear black hole array
+
         BlackHole.bHAnimArray = [];
-        // Clear stage
+
         p4.destroy();
         water.destroy();
         BlackHole.destroy();
         stage.removeChildren();
-        // Stop music
+
         window.p4MusicPlayer.stop();
-        // Load game assets
+
         await load();
         ticker.start();
     }
 
-    const environment: string = process.env.NODE_ENV as string; // Determine environment
-    const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+    const environment = process.env.NODE_ENV as string;
+    const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!;
 
     const submitScore = async () => {
         const p4_score = p4.totalWater;
-        const storedToken = localStorage.getItem('sessionToken'); // Retrieve the token from local storage
-        const loggedInUsername = localStorage.getItem('user_name'); // Retrieve the user data from local storage
+
+        const storedToken = localStorage.getItem('sessionToken');
+        const loggedInUsername = localStorage.getItem('user_name');
 
         await fetch(`${apiUrl}/api/users`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${storedToken}`, // Include the token in the Authorization header
+                'Authorization': `Bearer ${storedToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -260,7 +240,6 @@ export default async function p4Vega(): Promise<void> {
             case 'ArrowDown':
                 p4.isMovingDown = true;
                 break;
-            // Restart game
             case 'Space':
                 if (!gameLive) restart();
                 break;
@@ -291,24 +270,21 @@ export default async function p4Vega(): Promise<void> {
     }
     document.addEventListener('keyup', handleKeyup);
 
-    // Define the component ID for event listeners
     const componentId = 'p4-Vega';
 
-    // Check if the event listeners array for the component ID exists, if not, create it
     if (!window.eventListeners[componentId]) {
         window.eventListeners[componentId] = [];
     }
 
-    // Key events
     window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
     window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
-    // Checkboxes
+
     window.eventListeners[componentId].push({ element: bgMusicCheckbox, event: 'change', handler: toggleBackgroundMusic });
     window.eventListeners[componentId].push({ element: notesPlayingCheckbox, event: 'change', handler: toggleNotesPlaying });
-    // Dropdowns
+
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScalesDropdown });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeysDropdown });
-    // Dropdown selections
+
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleScaleSelection });
     window.eventListeners[componentId].push({ element: document, event: 'click', handler: dropdownHandlers.toggleKeySelection });
 }

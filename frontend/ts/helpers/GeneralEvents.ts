@@ -1,4 +1,4 @@
-export default class CustomEvents {
+export default class GeneralEvents {
     public static init() {
         this.initSidebarToggle();
         this.initTokenVerification();
@@ -25,8 +25,8 @@ export default class CustomEvents {
     private static initTokenVerification() {
         const token = localStorage.getItem('sessionToken');
 
-        const environment: string = process.env.NODE_ENV as string; // Determine environment
-        const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+        const environment = process.env.NODE_ENV as string; // Determine environment
+        const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
         if (token) {
             fetch(`${apiUrl}/auth/verify-token`, {

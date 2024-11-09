@@ -5,7 +5,7 @@ import userLogIn from "../actions/login/userLogin";
 import userCreate from "../actions/register/userCreate";
 import leaderboard from "../actions/leaderboard/leaderboard";
 
-const initGlobals = (): void => {
+const initWindowGlobals = (): void => {
     window.page = page;
     window.Alpine = Alpine;
 
@@ -18,4 +18,4 @@ const initGlobals = (): void => {
     window.isLoggedIn = false;
 };
 
-export default initGlobals();
+export default initWindowGlobals();

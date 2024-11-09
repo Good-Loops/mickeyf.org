@@ -1,28 +1,25 @@
-// Load environment variables from .env file
 require('dotenv').config();
-// Import Alpine.js and Page.js
+
 import Alpine from "alpinejs";
-import page from "page";
-// Import custom modules
-import setupRoutes from './utils/setUpRoutes';
-import CustomEvents from './helpers/CustomEvents';
-// Initializes global variables
-import "./utils/initGlobals";
-// Cleans up the page on route change
-import "./helpers/RouteChangeListener";
-// Define routes using Page.js
-setupRoutes(page);
-// Start Alpine.js and Page.js
 Alpine.start();
+
+import page from "page";
+import setupRoutes from './utils/setUpRoutes';
+setupRoutes(page);
 page.start();
-// Initialize event listener manager for global event listeners
+
+import GeneralEvents from './helpers/GeneralEvents';
 document.addEventListener('DOMContentLoaded', () => {
-    CustomEvents.init();
+    GeneralEvents.init();
 });
+
+import "./utils/initWindowGlobals";
+
+import "./helpers/RouteChangeListener";
+
 ///////// FIREBASE CONFIGURATION //////////
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-// Add SDKs for Firebase products that you want to use
+// Add SDKs for Firebase products here:
 // https://firebase.google.com/docs/web/setup#available-libraries
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,

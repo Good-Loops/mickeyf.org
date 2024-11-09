@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js";
 
+// TODO: Review this class
 export default abstract class Entity {
     anim: PIXI.AnimatedSprite;
 
@@ -13,7 +14,6 @@ export default abstract class Entity {
 
     constructor(anim: PIXI.AnimatedSprite) {
         this.anim = anim;
-
         this.play(this.anim);
     }
 }

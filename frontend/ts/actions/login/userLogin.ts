@@ -5,11 +5,11 @@ import Swal from 'sweetalert2';
 export default function userLogin(): IUserLogin {
     return {
         loginUser: async function (): Promise<void> {
-            const user_name: string = (<HTMLInputElement>document.querySelector('[data-user_name]')).value;
-            const user_password: string = (<HTMLInputElement>document.querySelector('[data-password]')).value;
+            const user_name = (<HTMLInputElement>document.querySelector('[data-user_name]')).value;
+            const user_password = (<HTMLInputElement>document.querySelector('[data-password]')).value;
 
-            const environment: string = process.env.NODE_ENV as string; // Determine environment
-            const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+            const environment = process.env.NODE_ENV as string; // Determine environment
+            const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
             try {
                 const loginResponse = await fetch(`${apiUrl}/api/users`, {

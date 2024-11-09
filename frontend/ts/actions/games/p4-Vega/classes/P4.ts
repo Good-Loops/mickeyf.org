@@ -3,19 +3,19 @@ import Entity from "../../helpers/Entity"
 import * as PIXI from 'pixi.js';
 
 export default class P4 extends Entity {
-    private startX: number = Entity.gap;
-    private startY: number = CANVAS_HEIGHT * .5;
+    private startX = Entity.gap;
+    private startY = CANVAS_HEIGHT * .5;
 
-    private speed: number = 8;
+    private speed = 8;
 
     public p4Anim: PIXI.AnimatedSprite;
 
-    public totalWater: number = 0;
+    public totalWater = 0;
 
-    public isMovingRight: boolean = false;
-    public isMovingLeft: boolean = false;
-    public isMovingUp: boolean = false;
-    public isMovingDown: boolean = false;
+    public isMovingRight = false;
+    public isMovingLeft = false;
+    public isMovingUp = false;
+    public isMovingDown = false;
 
     constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
         super(p4Anim);
@@ -27,8 +27,7 @@ export default class P4 extends Entity {
         p4Anim.y = this.startY;
     }
 
-    public update(p4Anim: PIXI.AnimatedSprite): void {
-        // Movement
+    public update(p4Anim: PIXI.AnimatedSprite) {
         if (this.isMovingRight) {
             p4Anim.x += this.speed;
         }
@@ -42,7 +41,6 @@ export default class P4 extends Entity {
             p4Anim.y += this.speed;
         }
 
-        // World bounds
         if (p4Anim.x + p4Anim.width > CANVAS_WIDTH) {
             p4Anim.x -= this.speed;
         }
@@ -57,7 +55,7 @@ export default class P4 extends Entity {
         }
     }
 
-    public destroy(): void {
+    public destroy() {
         this.p4Anim.destroy();
     }
 }

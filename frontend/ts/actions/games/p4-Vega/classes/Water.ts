@@ -1,8 +1,8 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../../utils/constants';
 import { getRandomX, getRandomY } from '../../../../utils/random';
-import checkCollision from '../../../../utils/checkCollision';
+import isColliding from '../../../../utils/isColliding';
 
-import ScaleLogic from '../../../../helpers/ScaleLogic';
+import NoteSelector from '../../../../helpers/NoteSelector';
 
 import Entity from '../../helpers/Entity';
 
@@ -10,12 +10,13 @@ import BlackHole from './BlackHole';
 import P4 from './P4';
 
 import * as PIXI from 'pixi.js';
-import * as Tone from 'tone';
 
 export default class Water extends Entity {
 
-    private startX: number = CANVAS_WIDTH - Entity.gap;
-    private startY: number = CANVAS_HEIGHT * .5;
+    private startX = CANVAS_WIDTH - Entity.gap;
+    private startY = CANVAS_HEIGHT * .5;
+
+    private noteSelector = new NoteSelector();
 
     public waterAnim: PIXI.AnimatedSprite;
 
@@ -29,9 +30,9 @@ export default class Water extends Entity {
         waterAnim.y = this.startY;
     }
 
-    public update(waterAnim: PIXI.AnimatedSprite, p4: P4, notesPlaying: boolean, stage: PIXI.Container<PIXI.ContainerChild>): void {
-        if (checkCollision(p4.p4Anim, waterAnim)) {
-            if (notesPlaying) ScaleLogic.playNote();
+    public update(waterAnim: PIXI.AnimatedSprite, p4: P4, notesPlaying: boolean, stage: PIXI.Container<PIXI.ContainerChild>) {
+        if (isColliding(p4.p4Anim, waterAnim)) {
+            if (notesPlaying) this.noteSelector.playNote();
 
             new BlackHole(stage, p4.p4Anim);
 
@@ -42,7 +43,7 @@ export default class Water extends Entity {
         }
     }
 
-    public destroy(): void {
+    public destroy() {
         this.waterAnim.destroy();
     }
 }

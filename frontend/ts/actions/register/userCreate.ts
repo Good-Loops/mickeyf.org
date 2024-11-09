@@ -1,5 +1,7 @@
 import { INVALID_EMAIL, INVALID_PASSWORD, EMPTY_FIELDS, DUPLICATE_USER } from "../../utils/constants";
+
 import IUserCreate from "./interfaces/IUserCreate";
+
 import Swal from 'sweetalert2';
 
 export default function userCreate(): IUserCreate {
@@ -10,12 +12,12 @@ export default function userCreate(): IUserCreate {
             user_password: ""
         },
         createUser: function (): void {
-            const user_name: string = (<HTMLInputElement>document.querySelector('[data-user-name]')).value;
-            const email: string = (<HTMLInputElement>document.querySelector('[data-email]')).value;
-            const user_password: string = (<HTMLInputElement>document.querySelector('[data-password]')).value;
+            const user_name = (<HTMLInputElement>document.querySelector('[data-user-name]')).value;
+            const email = (<HTMLInputElement>document.querySelector('[data-email]')).value;
+            const user_password = (<HTMLInputElement>document.querySelector('[data-password]')).value;
 
-            const environment: string = process.env.NODE_ENV as string; // Determine environment
-            const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+            const environment = process.env.NODE_ENV as string; // Determine environment
+            const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
 
             fetch(`${apiUrl}/api/users`, {
                 method: 'POST',

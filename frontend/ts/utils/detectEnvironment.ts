@@ -7,13 +7,13 @@ interface Environment {
 }
 
 export const detectEnvironment = (): Environment => {
-    const userAgent: string = navigator.userAgent;
+    const userAgent = navigator.userAgent;
 
-    const isApp: boolean = window.location.href.includes('app=true');
-    const isMobile: boolean = /Mobi|Android|iPhone|iPad|iPod/i.test(userAgent);
+    const isApp = window.location.href.includes('app=true');
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(userAgent);
 
-    const isIOS: boolean = /iPhone|iPad|iPod/i.test(userAgent);
-    const isAndroid: boolean = /Android/i.test(userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+    const isAndroid = /Android/i.test(userAgent);
 
     return {
         isApp,

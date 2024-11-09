@@ -15,7 +15,7 @@ export default class ColorManager {
         return this.colorPalette[Math.floor(Math.random() * this.colorPalette.length)];
     }
 
-    public interpolateColors(factor: number): void {
+    public interpolateColors(factor: number) {
         this.currentColors = this.currentColors.map((currentColor: color, index: number): color => {
             const target: color = this.targetColors[index];
             return {
@@ -26,7 +26,7 @@ export default class ColorManager {
         });
     }
 
-    public updateTargetColors(): void {
+    public updateTargetColors() {
         this.targetColors = this.targetColors.map(() => this.getRandomColorFromPalette());
     }
 

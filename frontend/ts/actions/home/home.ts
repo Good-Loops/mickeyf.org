@@ -1,8 +1,6 @@
-// TODO: Figure out what causes lag in title animation
-
+// TODO: Figure out what causes lag in title animation on mobile app
 export default async function home() {
-    // Quotes
-    const quotes: string[] = [
+    const quotes = [
         '"The only way to make sense out of change is to plunge into it." -Alan Watts',
         '"Man suffers only because he takes seriously what the gods made for fun." -Alan Watts',
         '"You are an aperture through which the universe is looking at and exploring itself." -Alan Watts',
@@ -66,13 +64,11 @@ export default async function home() {
         '"It does not matter how slowly you go as long as you do not stop." -Confucius'
     ];
 
-    const quotesContainer: HTMLElement = document.querySelector('[data-quotes-container]') as HTMLElement;
+    const quotesContainer = document.querySelector('[data-quotes-container]') as HTMLElement;
     
-    // Pick a random quote
-    const randomQuote: string = quotes[Math.floor(Math.random() * quotes.length)] as string;
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)] as string;
 
-    // Create a quote element
-    const quote: HTMLElement = document.createElement('div') as HTMLElement;
+    const quote = document.createElement('div') as HTMLElement;
     // Add quote class to the quote element
     quote.classList.add('quote');
     

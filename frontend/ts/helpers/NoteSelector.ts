@@ -9,20 +9,20 @@ type scale = {
     notes: number[];
 }
 
-export default class ScaleLogic {
+export default class NoteSelector {
 
-    private static synth: Tone.MembraneSynth = new Tone.MembraneSynth().toDestination(); // Initialize the synth;
+    private synth = new Tone.MembraneSynth().toDestination(); // Initialize the synth;
 
-    private static selectedKey: string = 'C';
-    private static lastKey: string = 'C';
-    private static lastPlayedNote?: number;
+    private selectedKey = 'C';
+    private lastKey = 'C';
+    private lastPlayedNote?: number;
 
-    private static selectedScale: scale = { name: 'Major', notes: scales['Major'].notes };
+    private selectedScale: scale = { name: 'Major', notes: scales['Major'].notes };
 
-    private static halfTones: number = 0;
+    private halfTones = 0;
 
-    private static getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
-        let notes: number[] = scales[scaleName]?.notes || scales['Major'].notes;
+    private getNotesForScale(selectedKey: string, scaleName: string, lastKey?:string): number[] {
+        let notes = scales[scaleName]?.notes || scales['Major'].notes;
 
         // Update halfTones and transpose only if the key has changed
         if (lastKey !== selectedKey) {
@@ -42,42 +42,42 @@ export default class ScaleLogic {
         }
 
         // Set the selected scale
-        ScaleLogic.selectedScale = { name: scaleName, notes };
+        this.selectedScale = { name: scaleName, notes };
 
         return notes;
     }
 
-    private static getNote(lastPlayedNote?: number, isFirstNote: boolean = false): number {
+    private getNote(lastPlayedNote?: number, isFirstNote: boolean = false): number {
         if (isFirstNote) {
-            return ScaleLogic.selectedScale.notes[0];
+            return this.selectedScale.notes[0];
         }
 
-        const notes: number[] = ScaleLogic.selectedScale.notes;
-        const possibleNextNotes: number[] = notes.filter(note => ScaleLogic.isValidInterval(note, lastPlayedNote!));
-        const validChordTones: number[] = ScaleLogic.getCommonChordTones();
-        const nonChordTones: number[] = possibleNextNotes.filter(note => !validChordTones.includes(note));
+        const notes = this.selectedScale.notes;
+        const possibleNextNotes = notes.filter(note => this.isValidInterval(note, lastPlayedNote!));
+        const validChordTones = this.getCommonChordTones();
+        const nonChordTones = possibleNextNotes.filter(note => !validChordTones.includes(note));
 
-        const useChordTone: boolean = Math.random() > 0.5;
+        const useChordTone = Math.random() > 0.5;
         let nextNote: number;
 
         if (useChordTone) {
-            const randomChordIndex: number = Math.floor(Math.random() * validChordTones.length);
+            const randomChordIndex = Math.floor(Math.random() * validChordTones.length);
             nextNote = validChordTones[randomChordIndex];
         } else {
-            const randomNonChordIndex: number = Math.floor(Math.random() * nonChordTones.length);
+            const randomNonChordIndex = Math.floor(Math.random() * nonChordTones.length);
             nextNote = nonChordTones[randomNonChordIndex];
         }
 
         if (!possibleNextNotes.includes(nextNote)) {
-            const randomIndex: number = Math.floor(Math.random() * possibleNextNotes.length);
+            const randomIndex = Math.floor(Math.random() * possibleNextNotes.length);
             nextNote = possibleNextNotes[randomIndex];
         }
 
         return nextNote;
     }
 
-    private static isValidInterval(note: number, lastPlayedNote: number): boolean {
-        const interval: number = Math.abs(Math.floor((note - lastPlayedNote + 12) % 12));
+    private isValidInterval(note: number, lastPlayedNote: number): boolean {
+        const interval = Math.abs(Math.floor((note - lastPlayedNote + 12) % 12));
         const validIntervals: { [key: string]: number[] } = {
             'Major': [2, 4, 5, 7, 9, 11],
             'Minor': [2, 3, 5, 7, 8, 10],
@@ -111,12 +111,12 @@ export default class ScaleLogic {
             'Blues Heptatonic': [2, 3, 5, 6, 7, 10], // Seven-note blues scale
         };
 
-        const scaleType: string = ScaleLogic.selectedScale.name;
+        const scaleType = this.selectedScale.name;
         return validIntervals[scaleType]?.includes(interval) || false;
     }
 
-    private static getCommonChordTones(): number[] {
-        const notes: number[] = ScaleLogic.selectedScale.notes;
+    private getCommonChordTones(): number[] {
+        const notes = this.selectedScale.notes;
         
         const chordTonePatterns: { [key: string]: number[] } = {
             'standardFour': [0, 2, 4, 6], // Root, third, fifth, seventh
@@ -162,34 +162,30 @@ export default class ScaleLogic {
             'Blues Heptatonic': chordTonePatterns['standardFour'],
         };
 
-
-        const scaleType: string = ScaleLogic.selectedScale.name;
+        const scaleType = this.selectedScale.name;
         return scaleCommonChordTones[scaleType]?.map(index => notes[index]) || [];
     }
 
-    public static playNote(): void {
-        const selectedScaleElement: Element = document.querySelector('[data-selected-scale]') as Element;
-        const selectedScale: string = selectedScaleElement.textContent || 'Major';
+    public playNote(): void {
 
-        const selectedKeyElement: Element = document.querySelector('[data-selected-key]') as Element;
+        const selectedScaleElement = document.querySelector('[data-selected-scale]') as Element;
+        const selectedScale = selectedScaleElement.textContent || 'Major';
+
+        const selectedKeyElement = document.querySelector('[data-selected-key]') as Element;
 
         let selectedKey = selectedKeyElement.textContent || 'C';
 
-        ScaleLogic.getNotesForScale(selectedKey, selectedScale, this.lastKey);
+        this.getNotesForScale(selectedKey, selectedScale, this.lastKey);
 
-        // Update last key only if the selected key has changed
         if (this.lastKey !== this.selectedKey) {
             this.lastKey = this.selectedKey;
         }
 
-        // Determine if there's been a note played
-        const isFirstNote: boolean = !this.lastPlayedNote as boolean;
+        const isFirstNote = !this.lastPlayedNote as boolean;
 
-        // Get the next note to play
-        const note: number = ScaleLogic.getNote(this.lastPlayedNote, isFirstNote) as number;
-        this.lastPlayedNote = note; // Update the last played note
+        const note = this.getNote(this.lastPlayedNote, isFirstNote) as number;
+        this.lastPlayedNote = note;
 
-        // Play the note
         this.synth?.triggerAttackRelease(note, .8, Tone.now());
     }
 }
