@@ -1,13 +1,13 @@
 import { PitchDetector } from "pitchy";
 
 export default class AudioHandler {
-    public static pitch: number;
-    public static clarity: number; 
-    public static volume: number;
-    public static duration: number;  
-    public static playing: boolean;
+    static pitch: number;
+    static clarity: number; 
+    static volume: number;
+    static duration: number;  
+    static playing: boolean;
     
-    public static getVolumePercentage = (volume: number): number => {
+    static getVolumePercentage = (volume: number): number => {
         let volumePercentage = (((volume + 40) * .016) * 100); 
         if(volume < -40) {
             volumePercentage = 0;
@@ -17,7 +17,7 @@ export default class AudioHandler {
         return volumePercentage;
     }
 
-    public static processAudio = (fileInput: HTMLInputElement, uploadButton: HTMLLabelElement): void => {
+    static processAudio = (fileInput: HTMLInputElement, uploadButton: HTMLLabelElement): void => {
         const process = (): void => {
             // add "playing" class to button when audio starts playing
             uploadButton.classList.add("playing");
@@ -26,12 +26,12 @@ export default class AudioHandler {
             fileInput.disabled = true;
             uploadButton.style.cursor = "url('./assets/img/notallowed.cur'), auto";
 
-            const files: FileList = fileInput.files as FileList;
-            const file: File = files[0] as File;
-            const music: HTMLAudioElement = new Audio(URL.createObjectURL(file));
+            const files = fileInput.files as FileList;
+            const file = files[0] as File;
+            const music = new Audio(URL.createObjectURL(file));
 
             let i = 0;
-            function getCurrentPitch(analyserNode: AnalyserNode, detector: PitchDetector<Float32Array>, input: Float32Array, sampleRate: number) {
+            function getCurrentPitch(analyserNode: AnalyserNode, detector: PitchDetector<Float32Array>, input: Float32Array, sampleRate: number): void {
                 if (music.ended || (AudioHandler.volume < -1000 && AudioHandler.volume != -Infinity)) {
                     AudioHandler.volume = -Infinity;
                     AudioHandler.playing = false;
@@ -62,23 +62,17 @@ export default class AudioHandler {
                 window.setTimeout(() => getCurrentPitch(analyserNode, detector, input, sampleRate), 1000 / 60);
             }
 
-            // Create Audio Context
-            const audioContext: AudioContext = new window.AudioContext;
-            // Create Analyser Node
-            const analyser: AnalyserNode = audioContext.createAnalyser();
-            // Connect audio element to analyser
+            const audioContext = new window.AudioContext;
+            const analyser = audioContext.createAnalyser();
             audioContext.createMediaElementSource(music).connect(analyser);
-            // Connect analyser to destination
-            analyser.connect(audioContext.destination);
-            // Set fftSize
             analyser.fftSize = 2048;
 
             music.load();
             music.play();
             AudioHandler.playing = true;
 
-            const detector: PitchDetector<Float32Array> = PitchDetector.forFloat32Array(analyser.fftSize);
-            const input: Float32Array = new Float32Array(detector.inputLength);
+            const detector = PitchDetector.forFloat32Array(analyser.fftSize);
+            const input = new Float32Array(detector.inputLength);
             getCurrentPitch(analyser, detector, input, audioContext.sampleRate);
         }
         fileInput.addEventListener('change', process);

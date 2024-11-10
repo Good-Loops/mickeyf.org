@@ -46,7 +46,7 @@ export default async function danceCircles() {
 
     AudioHandler.processAudio(fileInput, uploadButton);
 
-    const load = () => {
+    const load = (): void => {
         stop = false;
 
         canvas.style.backgroundColor = ColorHandler.getRandomColor(canvasMinS,
@@ -69,16 +69,16 @@ export default async function danceCircles() {
         Circle.circleArray.sort((a, b) => b.currentR - a.currentR);
     }
 
-    const update = (numCircs: number) => {
+    const update = (numCircs: number): void => {
         canvasTargetColor = ColorHandler.getRandomColor(canvasMinS,
             canvasMaxS, canvasMinL, canvasMaxL, true
         );
 
         // Get an array random indexes from the Circle.circles array
-        const randomIndexArr: number[] = getRandomIndexArr(Circle.circlesLength);
+        const randomIndexArr = getRandomIndexArr(Circle.circlesLength);
         for (let i = 0; i < numCircs; i++) {
             // Get circle at random index
-            const circle: Circle = Circle.circleArray[randomIndexArr[i]];
+            const circle = Circle.circleArray[randomIndexArr[i]];
             circle.targetX = getRandomX(circle.currentR, Circle.gap);
             circle.targetY = getRandomY(circle.currentR, Circle.gap);
             if (!AudioHandler.playing) {
@@ -99,13 +99,13 @@ export default async function danceCircles() {
     let increaseRTimer = adjustRInterval,
         decreaseRTimer = adjustRInterval * .5,
         even = true;
-    const updateOnPitch = () => {
+    const updateOnPitch = (): void => {
         if (AudioHandler.playing) {
             // Update color based on pitch
             if (colorTimer >= colorInterval) {
-                const randomIndexArr: number[] = getRandomIndexArr(Circle.circlesLength);
+                const randomIndexArr = getRandomIndexArr(Circle.circlesLength);
                 for (let i = 0; i < Circle.circlesLength; i++) {
-                    const circle: Circle = Circle.circleArray[randomIndexArr[i]];
+                    const circle = Circle.circleArray[randomIndexArr[i]];
                     circle.targetColor = ColorHandler.convertHertzToHSL(Math.round(AudioHandler.pitch),
                         Circle.minS, Circle.maxS, Circle.minL, Circle.maxL
                     );
@@ -145,7 +145,7 @@ export default async function danceCircles() {
         updateTimer = 0, updateInterval = 1000,
         updateOnPitchTimer = 0, updateOnPitchInterval = 10,
         drawTimer = 0, drawInterval = 40;
-    const draw = () => {
+    const draw = (): void => {
         stage.removeChildren();
 
         renderer.background.color = ColorHandler.lerpColor(canvasBgColor, canvasTargetColor, .02);
@@ -186,7 +186,7 @@ export default async function danceCircles() {
         renderer.render(stage);
     }
 
-    const step = (timeStamp: number) => {
+    const step = (timeStamp: number): void => {
         if (stop) return;
 
         deltaTime = timeStamp - lastTime;
