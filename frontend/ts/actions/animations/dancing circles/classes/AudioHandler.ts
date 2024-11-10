@@ -19,14 +19,12 @@ export default class AudioHandler {
 
     static processAudio = (fileInput: HTMLInputElement, uploadButton: HTMLLabelElement): void => {
         const process = (): void => {
-            console.log('process');
-
             // add "playing" class to button when audio starts playing
             uploadButton.classList.add("playing");
 
             // Disable the file input element while the audio is playing
             fileInput.disabled = true;
-            uploadButton.style.cursor = "url('./assets/img/notallowed.cur'), auto";
+            uploadButton.style.cursor = 'url("./assets/img/notallowed.cur"), auto';
 
             const files = fileInput.files as FileList;
             const file = files[0] as File;
@@ -77,7 +75,7 @@ export default class AudioHandler {
             const input = new Float32Array(detector.inputLength);
             getCurrentPitch(analyser, detector, input, audioContext.sampleRate);
         }
-        fileInput.addEventListener('change', process);
+        uploadButton.addEventListener('click', process);
 
         let componentId = 'dancing-circles';
         if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
