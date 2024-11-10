@@ -11,11 +11,11 @@ import { color, drawConfig } from '../animations.types';
 export default async function danceFractals() {
 
     const app = new Application();
-    (globalThis as any).__PIXI_APP__ = app; // For pixi devtools
+    (globalThis as any).__PIXI_APP__ = app; // pixi devtools
 
     await app.init({
         antialias: true,
-        backgroundColor: "#223344",
+        backgroundColor: '#223344',
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT
     });

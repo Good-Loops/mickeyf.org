@@ -5,35 +5,30 @@ import ColorHandler from './classes/ColorHandler';
 import CircleHandler from './classes/CircleHandler';
 import AudioHandler from './classes/AudioHandler';
 
-import * as PIXI from 'pixi.js';
+import { Application, Graphics } from 'pixi.js';
 
 import FullscreenButton from '../../../helpers/FullscreenButton';
 
 export default async function danceCircles() {
 
-    const renderer = await PIXI.autoDetectRenderer({
+    const app = new Application();
+    (globalThis as any).__PIXI_APP__ = app; // pixi devtools
+
+    await app.init({
+        antialias: true,
+        backgroundColor: 'hsl(220, 90%, 85%)',
         width: CANVAS_WIDTH,
-        height: CANVAS_HEIGHT,
-        antialias: true
+        height: CANVAS_HEIGHT
     });
 
-    const canvas = renderer.view.canvas as HTMLCanvasElement;
+    const canvas = app.canvas;
     canvas.className = 'dancing-circles__canvas';
     canvas.id = 'dc-canvas';
-    let canvasTargetColor: string;
-    const canvasColorSettings = {
-        minSaturation: 65,
-        maxSaturation: 75,
-        minLightness: 40,
-        maxLightness: 60
-    };
 
     const sectionDataAttribute = '[data-dancing-circles]';
     document.querySelector(sectionDataAttribute)!.append(canvas);
 
     new FullscreenButton(canvas, sectionDataAttribute);
-
-    const stage = new PIXI.Container();
 
     let stop: boolean;
 
@@ -51,9 +46,6 @@ export default async function danceCircles() {
     const load = (): void => {
         stop = false;
 
-        canvas.style.backgroundColor = colorHandler.getRandomColor(canvasColorSettings);
-        canvasTargetColor = colorHandler.getRandomColor(canvasColorSettings);
-
         for (let i = 1; i < circleHandler.arrayLength; i++) {
             new CircleHandler(i);
         }
@@ -63,8 +55,6 @@ export default async function danceCircles() {
     }
 
     const update = (numCircs: number): void => {
-        canvasTargetColor = colorHandler.getRandomColor(canvasColorSettings);
-
         const randomIndexArray = getRandomIndexArray(circleHandler.arrayLength);
         for (let i = 0; i < numCircs; i++) {
             const circle = CircleHandler.circleArray[randomIndexArray[i]];
@@ -142,12 +132,9 @@ export default async function danceCircles() {
         drawInterval = 40;
 
     const draw = (): void => {
-        stage.removeChildren();
+        app.stage.removeChildren();
 
-        renderer.background.color = colorHandler.lerpColor(canvas.style.backgroundColor, canvasTargetColor, .02);
-
-        const graphics = new PIXI.Graphics();
-        graphics.clear();
+        const graphics = new Graphics();
 
         CircleHandler.circleArray.forEach((circle: CircleHandler) => {
 
@@ -163,10 +150,8 @@ export default async function danceCircles() {
             graphics.circle(circle.x, circle.y, circle.currentRadius);
             graphics.fill(colorHandler.convertHSLtoHSLA(circle.color, .7));
 
-            stage.addChild(graphics);
+            app.stage.addChild(graphics);
         });
-
-        renderer.render(stage);
     }
 
     const step = (timeStamp: number): void => {
