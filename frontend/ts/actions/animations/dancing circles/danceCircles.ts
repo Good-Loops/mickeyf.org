@@ -34,14 +34,13 @@ export default async function danceCircles() {
 
     const uploadButton = document.querySelector('[data-upload-button]') as HTMLLabelElement;
     const fileInput = document.querySelector('[data-file-upload]') as HTMLInputElement;
+    AudioHandler.processAudio(fileInput, uploadButton);
 
     const colorChangingCircles = 2;
 
     const colorHandler = new ColorHandler();
 
     const circleHandler = new CircleHandler(0);
-
-    AudioHandler.processAudio(fileInput, uploadButton);
 
     const load = (): void => {
         stop = false;

@@ -19,6 +19,8 @@ export default class AudioHandler {
 
     static processAudio = (fileInput: HTMLInputElement, uploadButton: HTMLLabelElement): void => {
         const process = (): void => {
+            console.log('process');
+
             // add "playing" class to button when audio starts playing
             uploadButton.classList.add("playing");
 
