@@ -16,7 +16,7 @@ export default async function danceCircles() {
 
     await app.init({
         antialias: true,
-        backgroundColor: 'hsl(220, 90%, 85%)',
+        backgroundColor: 'hsl(204, 92%, 80%)',
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT
     });
