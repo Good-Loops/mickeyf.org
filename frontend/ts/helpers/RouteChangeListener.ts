@@ -10,8 +10,9 @@ interface CleanupOptions {
 }
 
 // TODO: Add transition between components
-export default class RouteChangeListener {
+class RouteChangeListener {
     constructor() {
+        console.log("RouteChangeListener initialized"); 
         this.initRouteChangeListener();
     }
 
@@ -79,3 +80,5 @@ export default class RouteChangeListener {
         }
     }
 }
+
+export default new RouteChangeListener();

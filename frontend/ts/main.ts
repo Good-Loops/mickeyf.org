@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 import './utils/initWindowGlobals';
 
-import RouteChangeListener from './helpers/RouteChangeListener';
-new RouteChangeListener();
+import './helpers/RouteChangeListener';
+
 
 ///////// FIREBASE CONFIGURATION //////////
 import { initializeApp } from 'firebase/app';
