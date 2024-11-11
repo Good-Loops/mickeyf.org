@@ -45,6 +45,8 @@ export default async function danceCircles() {
     const load = (): void => {
         stop = false;
 
+        CircleHandler.circleArray = [circleHandler];
+
         for (let i = 1; i < circleHandler.arrayLength; i++) {
             new CircleHandler(i);
         }
