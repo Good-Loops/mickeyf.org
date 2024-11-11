@@ -12,31 +12,24 @@ interface CleanupOptions {
 // TODO: Add transition between components
 class RouteChangeListener {
     constructor() {
-        console.log("RouteChangeListener initialized"); 
         this.initRouteChangeListener();
     }
 
     private initRouteChangeListener() {
-        page('/p4-Vega', (ctx, next) => this.handleRouteChange(ctx, next));
-        page('/dancing-circles', (ctx, next) => this.handleRouteChange(ctx, next));
-        page('/dancing-fractals', (ctx, next) => this.handleRouteChange(ctx, next));
-    }
+        page('*', (ctx, next) => {
+            const currentPath = ctx.path;
+            const previousPath = window.previousPath;
 
-    private handleRouteChange(ctx: any, next: any): void {
-        console.log('Route change detected:', ctx.path);
-        const currentPath = ctx.path;
-        const previousPath = window.previousPath;
+            if (previousPath) {
+                this.executeCleanup(previousPath);
+            }
 
-        if (previousPath) {
-            this.executeCleanup(previousPath);
-        }
-
-        window.previousPath = currentPath;
-        next();
+            window.previousPath = currentPath;
+            next();
+        });
     }
 
     private executeCleanup(route: string): void {
-        console.log('route', route);
         switch (route) {
             case '/p4-Vega':
                 console.log('cleanup');
@@ -85,4 +78,4 @@ class RouteChangeListener {
     }
 }
 
-export default new RouteChangeListener();
+export default new RouteChangeListener;

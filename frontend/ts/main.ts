@@ -17,7 +17,6 @@ import './utils/initWindowGlobals';
 
 import './helpers/RouteChangeListener';
 
-
 ///////// FIREBASE CONFIGURATION //////////
 import { initializeApp } from 'firebase/app';
 // Add SDKs for Firebase products here:
