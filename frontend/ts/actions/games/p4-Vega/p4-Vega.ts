@@ -1,26 +1,21 @@
-// Utilities
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
 import { getRandomInt } from '../../../utils/random';
 import gameOver from '../utils/gameOver';
 
-// Helpers
 import Dropdown from '../../../helpers/Dropdown';
 import FullscreenButton from '../../../helpers/FullscreenButton';
 
-// Game elements
 import P4 from './classes/P4';
 import Water from './classes/Water';
 import BlackHole from './classes/BlackHole';
 import Sky from './classes/Sky';
 
-// Entity data
 import p4Data from './data/p4.json';
 import waterData from './data/water.json'
 import bhBlueData from './data/bhBlue.json'
 import bhRedData from './data/bhRed.json'
 import bhYellowData from './data/bhYellow.json'
 
-// Libraries
 import Swal from 'sweetalert2';
 import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
@@ -64,16 +59,14 @@ export default async function p4Vega(): Promise<void> {
     };
     notesPlayingCheckbox.addEventListener('change', toggleNotesPlaying);
 
-    new Dropdown('data-dropdown-scales', 'data-dropdown-btn', 'data-selected-scale');
-    new Dropdown('data-dropdown-keys', 'data-dropdown-btn', 'data-selected-key');
-
+    const scalesDropdown = new Dropdown('data-dropdown-scales', 'data-dropdown-btn', 'data-selected-scale');
+    const keysDropdown = new Dropdown('data-dropdown-keys', 'data-dropdown-btn', 'data-selected-key');
     const dropdownHandlers = {
-        toggleScalesDropdown: Dropdown.toggle('data-dropdown-scales', 'data-dropdown-btn'),
-        toggleKeysDropdown: Dropdown.toggle('data-dropdown-keys', 'data-dropdown-btn'),
-        toggleScaleSelection: Dropdown.toggleSelection('data-dropdown-scales', 'data-selected-scale', 'data-scale'),
-        toggleKeySelection: Dropdown.toggleSelection('data-dropdown-keys', 'data-selected-key', 'data-key')
+        toggleScalesDropdown: scalesDropdown.toggle(),
+        toggleKeysDropdown: keysDropdown.toggle(),
+        toggleScaleSelection: scalesDropdown.toggleSelection('data-scale'),
+        toggleKeySelection: keysDropdown.toggleSelection('data-key')
     };
-
     document.addEventListener('click', dropdownHandlers.toggleScalesDropdown);
     document.addEventListener('click', dropdownHandlers.toggleKeysDropdown);
     document.addEventListener('click', dropdownHandlers.toggleScaleSelection);

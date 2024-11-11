@@ -18,13 +18,9 @@ export default class Water extends Entity {
 
     private noteSelector = new NoteSelector();
 
-    waterAnim: PIXI.AnimatedSprite;
-
-    constructor(stage: PIXI.Container<PIXI.ContainerChild>, waterAnim: PIXI.AnimatedSprite) {
+    constructor(stage: PIXI.Container<PIXI.ContainerChild>, public waterAnim: PIXI.AnimatedSprite) {
         super(waterAnim);
         stage.addChild(waterAnim);
-
-        this.waterAnim = waterAnim;
         
         waterAnim.x = this.startX - waterAnim.width;
         waterAnim.y = this.startY;

@@ -1,16 +1,18 @@
 export default class Dropdown {
-    constructor(private dropdownAttr: string, private buttonAttr: string, private selectedAttr: string) { }
+    constructor(private dropdownDataAttribute: string, 
+                private buttonDataAttribute: string, 
+                private selectedDataAttribute: string) { }
 
-    static toggle(dropdownAttr: string, buttonAttr: string) {
+    toggle() {
         return (event: Event): void => {
-            const isDropdownBtn: boolean = (event.target as Element).matches(`[${buttonAttr}]`)
-                || (event.target as Element).closest(`[${dropdownAttr}]`) !== null;
+            const isDropdownBtn: boolean = (event.target as Element).matches(`[${this.buttonDataAttribute}]`)
+                || (event.target as Element).closest(`[${this.dropdownDataAttribute}]`) !== null;
 
             if (!isDropdownBtn) return;
 
-            let currentDropdown: Element = (event.target as Element).closest(`[${dropdownAttr}]`) as Element;
+            let currentDropdown: Element = (event.target as Element).closest(`[${this.dropdownDataAttribute}]`) as Element;
 
-            const allDropdowns: NodeListOf<Element> = document.querySelectorAll(`[${dropdownAttr}]`);
+            const allDropdowns: NodeListOf<Element> = document.querySelectorAll(`[${this.dropdownDataAttribute}]`);
             allDropdowns.forEach(dropdown => {
                 if (dropdown === currentDropdown) {
                     dropdown.classList.toggle('active');
@@ -21,13 +23,13 @@ export default class Dropdown {
         };
     }
 
-    static toggleSelection(dropdownAttr: string, selectedAttr: string, attributeName: string) {
+    toggleSelection(optionDataAttribute: string) {
         return (event: Event): void => {
-            const selectedItem: string = (event.target as Element).getAttribute(attributeName) as string;
-            const dropdown: Element = (event.target as Element).closest(`[${dropdownAttr}]`) as Element;
+            const selectedItem: string = (event.target as Element).getAttribute(optionDataAttribute) as string;
+            const dropdown: Element = (event.target as Element).closest(`[${this.dropdownDataAttribute}]`) as Element;
 
             if (selectedItem) {
-                dropdown.querySelector(`[${selectedAttr}]`)!.textContent = selectedItem;
+                dropdown.querySelector(`[${this.selectedDataAttribute}]`)!.textContent = selectedItem;
                 dropdown.classList.remove('active');
             }
         };

@@ -10,13 +10,11 @@ interface CleanupOptions {
 }
 
 // TODO: Add transition between components
-
 class RouteChangeListener {
     constructor() {
         this.initRouteChangeListener();
     }
 
-    // Initialize route change listener
     private initRouteChangeListener() {
         page('*', (ctx, next) => {
             const currentPath = ctx.path;
@@ -31,7 +29,6 @@ class RouteChangeListener {
         });
     }
 
-    // Define cleanup functions by component route
     private executeCleanup(route: string): void {
         switch (route) {
             case '/p4-Vega':
@@ -48,7 +45,6 @@ class RouteChangeListener {
         }
     }
 
-    // Cleanup method that takes an object parameter for flexibility and readability
     private cleanup({ route, animationID, ticker, player }: CleanupOptions): void {
         if (ticker) this.stopTicker(ticker);
         if (animationID) this.stopAnimation(animationID);
@@ -69,7 +65,7 @@ class RouteChangeListener {
         player.stop();
     }
 
-    private removeEventListeners(componentID: string) {
+    private removeEventListeners(componentID: string): void {
         if (window.eventListeners[componentID]) {
             window.eventListeners[componentID].forEach(({ element, event, handler }) => {
                 element.removeEventListener(event, handler);

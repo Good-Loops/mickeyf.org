@@ -2,11 +2,9 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../../utils/constants";
 import * as PIXI from "pixi.js";
 
 export default class Sky {
-    private stage: PIXI.Container;
     private stars: PIXI.Graphics[] = [];
 
-    constructor(stage: PIXI.Container) {
-        this.stage = stage;
+    constructor(private stage: PIXI.Container) {
         this.createStars();
     }
 

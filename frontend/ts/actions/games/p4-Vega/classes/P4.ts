@@ -8,8 +8,6 @@ export default class P4 extends Entity {
 
     private speed = 8;
 
-    p4Anim: PIXI.AnimatedSprite;
-
     totalWater = 0;
 
     isMovingRight = false;
@@ -17,11 +15,9 @@ export default class P4 extends Entity {
     isMovingUp = false;
     isMovingDown = false;
 
-    constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
+    constructor(stage: PIXI.Container<PIXI.ContainerChild>, public p4Anim: PIXI.AnimatedSprite) {
         super(p4Anim);
         stage.addChild(p4Anim);
-
-        this.p4Anim = p4Anim;
 
         p4Anim.x = this.startX;
         p4Anim.y = this.startY;
