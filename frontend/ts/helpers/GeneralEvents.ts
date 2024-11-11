@@ -1,5 +1,5 @@
 export default class GeneralEvents {
-    public static init() {
+    static init() {
         this.initSidebarToggle();
         this.initTokenVerification();
         this.initLogoutButton();

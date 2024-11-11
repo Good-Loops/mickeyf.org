@@ -1,8 +1,7 @@
 export default class Dropdown {
     constructor(private dropdownAttr: string, private buttonAttr: string, private selectedAttr: string) { }
 
-    // Static method to toggle the active class of a dropdown element
-    public static toggle(dropdownAttr: string, buttonAttr: string) {
+    static toggle(dropdownAttr: string, buttonAttr: string) {
         return (event: Event): void => {
             const isDropdownBtn: boolean = (event.target as Element).matches(`[${buttonAttr}]`)
                 || (event.target as Element).closest(`[${dropdownAttr}]`) !== null;
@@ -22,8 +21,7 @@ export default class Dropdown {
         };
     }
 
-    // Static method to toggle the selected item and update the dropdown
-    public static toggleSelection(dropdownAttr: string, selectedAttr: string, attributeName: string) {
+    static toggleSelection(dropdownAttr: string, selectedAttr: string, attributeName: string) {
         return (event: Event): void => {
             const selectedItem: string = (event.target as Element).getAttribute(attributeName) as string;
             const dropdown: Element = (event.target as Element).closest(`[${dropdownAttr}]`) as Element;

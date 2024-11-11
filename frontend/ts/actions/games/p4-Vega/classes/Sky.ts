@@ -27,7 +27,7 @@ export default class Sky {
         }
     }
 
-    public update() {
+    update() {
         this.stars.forEach(star => {
             star.x += Math.random() * 0.5 - 0.25;
             star.y += Math.random() * 0.5 - 0.25;
@@ -38,7 +38,7 @@ export default class Sky {
         });
     }
 
-    public destroy() {
+    destroy() {
         this.stars.forEach(star => this.stage.removeChild(star));
     }
 }

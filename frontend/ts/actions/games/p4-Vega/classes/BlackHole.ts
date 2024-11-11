@@ -18,8 +18,8 @@ export default class BlackHole extends Entity {
 
     private static addedIndexes: number[] = [];
 
-    public static bHAnimArray: PIXI.AnimatedSprite[] = [];
-    public static bHArray: BlackHole[] = [];
+    static bHAnimArray: PIXI.AnimatedSprite[] = [];
+    static bHArray: BlackHole[] = [];
 
     constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
 
@@ -62,7 +62,7 @@ export default class BlackHole extends Entity {
         }
     }
 
-    public update(p4: P4, gameLive: boolean): boolean {
+    update(p4: P4, gameLive: boolean): boolean {
         if (isColliding(p4.p4Anim, this.anim)) {
             gameLive = false;
         }
@@ -85,7 +85,7 @@ export default class BlackHole extends Entity {
         return gameLive;
     }
 
-    public static destroy(): void {
+    static destroy(): void {
         for (let i = 0; i < BlackHole.bHAnimArray.length; i++) {
             BlackHole.bHAnimArray[i].destroy();
         }

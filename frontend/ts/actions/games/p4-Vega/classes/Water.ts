@@ -18,7 +18,7 @@ export default class Water extends Entity {
 
     private noteSelector = new NoteSelector();
 
-    public waterAnim: PIXI.AnimatedSprite;
+    waterAnim: PIXI.AnimatedSprite;
 
     constructor(stage: PIXI.Container<PIXI.ContainerChild>, waterAnim: PIXI.AnimatedSprite) {
         super(waterAnim);
@@ -30,7 +30,7 @@ export default class Water extends Entity {
         waterAnim.y = this.startY;
     }
 
-    public update(waterAnim: PIXI.AnimatedSprite, p4: P4, notesPlaying: boolean, stage: PIXI.Container<PIXI.ContainerChild>) {
+    update(waterAnim: PIXI.AnimatedSprite, p4: P4, notesPlaying: boolean, stage: PIXI.Container<PIXI.ContainerChild>) {
         if (isColliding(p4.p4Anim, waterAnim)) {
             if (notesPlaying) this.noteSelector.playNote();
 
@@ -43,7 +43,7 @@ export default class Water extends Entity {
         }
     }
 
-    public destroy() {
+    destroy() {
         this.waterAnim.destroy();
     }
 }

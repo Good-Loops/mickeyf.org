@@ -166,7 +166,7 @@ export default class NoteSelector {
         return scaleCommonChordTones[scaleType]?.map(index => notes[index]) || [];
     }
 
-    public playNote(): void {
+    playNote(): void {
 
         const selectedScaleElement = document.querySelector('[data-selected-scale]') as Element;
         const selectedScale = selectedScaleElement.textContent || 'Major';

@@ -18,7 +18,6 @@ export default class AudioHandler {
     }
 
      static initializeUploadButton(fileInput: HTMLInputElement, uploadButton: HTMLLabelElement): void {
-
         const redirect = (event: Event): void => {
             event.preventDefault();
             fileInput.click();
@@ -38,10 +37,8 @@ export default class AudioHandler {
 
     static processAudio = (fileInput: HTMLInputElement, uploadButton: HTMLLabelElement): void => {
         const process = (): void => {
-            // add "playing" class to button when audio starts playing
             uploadButton.classList.add("playing");
 
-            // Disable the file input element while the audio is playing
             fileInput.disabled = true;
             uploadButton.style.cursor = 'url("./assets/img/notallowed.cur"), auto';
 
@@ -54,7 +51,7 @@ export default class AudioHandler {
                 if (music.ended || (AudioHandler.volume < -1000 && AudioHandler.volume != -Infinity)) {
                     AudioHandler.volume = -Infinity;
                     AudioHandler.playing = false;
-                    // Re-enable the file input element after the audio has finished playing
+
                     fileInput.disabled = false;
                     uploadButton.style.cursor = "url('./assets/img/select.cur'), auto";
                     uploadButton.classList.remove("playing");
@@ -69,13 +66,13 @@ export default class AudioHandler {
                 analyserNode.getFloatTimeDomainData(input);
                 [AudioHandler.pitch, AudioHandler.clarity] = detector.findPitch(input, sampleRate);
 
-                // Get pitch in Hz
+                // pitch in Hz
                 AudioHandler.pitch = Math.round(AudioHandler.pitch * 10) * .1;
                 // Round clarity to nearest whole number
                 AudioHandler.clarity = Math.round(AudioHandler.clarity * 100);
-                // Get volume in decibels
+                // volume in decibels
                 AudioHandler.volume = Math.round(20 * Math.log10(Math.max(...input)));
-                // Get duration in seconds
+                // duration in seconds
                 AudioHandler.duration = music.duration;
 
                 window.setTimeout(() => getCurrentPitch(analyserNode, detector, input, sampleRate), 1000 / 60);

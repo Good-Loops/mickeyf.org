@@ -2,7 +2,7 @@ import { color } from "../animations.types";
 
 // TODO: Use this in dance circles
 export default class ColorManager {
-    public currentColors: color[];
+    currentColors: color[];
     private targetColors: color[];
     private colorPalette: color[];
 
@@ -16,7 +16,7 @@ export default class ColorManager {
         return this.colorPalette[Math.floor(Math.random() * this.colorPalette.length)];
     }
 
-    public interpolateColors(factor: number) {
+    interpolateColors(factor: number) {
         this.currentColors = this.currentColors.map((currentColor: color, index: number): color => {
             const target: color = this.targetColors[index];
             return {
@@ -27,11 +27,11 @@ export default class ColorManager {
         });
     }
 
-    public updateTargetColors() {
+    updateTargetColors(): void {
         this.targetColors = this.targetColors.map(() => this.getRandomColorFromPalette());
     }
 
-    public hslToString(color: color): string {
+    hslToString(color: color): string {
         try {
             return `hsl(${color.hue}, ${color.saturation}%, ${color.lightness}%)`;
         } catch {
