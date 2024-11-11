@@ -30,14 +30,18 @@ class RouteChangeListener {
     }
 
     private executeCleanup(route: string): void {
+        console.log('route', route);
         switch (route) {
             case '/p4-Vega':
+                console.log('cleanup');
                 this.cleanup({ route: route, ticker: window.p4GameTicker, player: window.p4MusicPlayer });
                 break;
             case '/dancing-circles':
+                console.log('cleanup');
                 this.cleanup({ route: route, animationID: window.danceCirclesAnimationID });
                 break;
             case '/dancing-fractals':
+                console.log('cleanup');
                 this.cleanup({ route: route, ticker: window.danceFractalsTicker });
                 break;
             default:

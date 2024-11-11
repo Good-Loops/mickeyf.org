@@ -1,9 +1,9 @@
 require('dotenv').config();
 
-import Alpine from "alpinejs";
+import Alpine from 'alpinejs';
 Alpine.start();
 
-import page from "page";
+import page from 'page';
 import setupRoutes from './utils/setUpRoutes';
 setupRoutes(page);
 page.start();
@@ -13,12 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     GeneralEvents.init();
 });
 
-import "./utils/initWindowGlobals";
+import './utils/initWindowGlobals';
 
-import "./helpers/RouteChangeListener";
+import './helpers/RouteChangeListener';
 
 ///////// FIREBASE CONFIGURATION //////////
-import { initializeApp } from "firebase/app";
+import { initializeApp } from 'firebase/app';
 // Add SDKs for Firebase products here:
 // https://firebase.google.com/docs/web/setup#available-libraries
 const firebaseConfig = {
