@@ -17,6 +17,25 @@ export default class AudioHandler {
         return volumePercentage;
     }
 
+     static initializeUploadButton(fileInput: HTMLInputElement, uploadButton: HTMLLabelElement): void {
+
+        const redirect = (event: Event): void => {
+            event.preventDefault();
+            fileInput.click();
+        }
+        uploadButton.addEventListener('click', redirect);
+            
+        const process = (): void => {
+            AudioHandler.processAudio(fileInput, uploadButton);
+        }
+        fileInput.addEventListener('change', process);
+
+        let componentId = 'dancing-circles';
+        if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
+        window.eventListeners[componentId].push({ element: fileInput, event: 'change', handler: process });
+        window.eventListeners[componentId].push({ element: uploadButton, event: 'click', handler: redirect });
+    }
+
     static processAudio = (fileInput: HTMLInputElement, uploadButton: HTMLLabelElement): void => {
         const process = (): void => {
             // add "playing" class to button when audio starts playing
@@ -75,10 +94,6 @@ export default class AudioHandler {
             const input = new Float32Array(detector.inputLength);
             getCurrentPitch(analyser, detector, input, audioContext.sampleRate);
         }
-        uploadButton.addEventListener('click', process);
-
-        let componentId = 'dancing-circles';
-        if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
-        window.eventListeners[componentId].push({ element: fileInput, event: 'change', handler: process });
+        process();
     }
 }
