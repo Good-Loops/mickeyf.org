@@ -1,4 +1,3 @@
-// Main Components
 import Home from '../components/Home';
 import Games from '../components/Games';
 import Animations from '../components/Animations';
@@ -8,20 +7,18 @@ import Login from '../components/Login';
 import Leaderboard from '../components/Leaderboard';
 import Error404 from '../components/Error404';
 
-// Animations
 import DanceCircles from '../components/animations/DanceCircles';
 import DanceFractals from '../components/animations/DanceFractals';
 
-// Games
 import P4Vega from '../components/games/P4Vega';
 
-interface ComponentInterface { // Define the component interface
+interface ComponentInterface {
     render: (params?: unknown) => string | Promise<string>;
     action?: (params?: unknown) => void;
 }
 
 const routes: Record<string, ComponentInterface> = {
-    // Main Components
+    // General
     '/': Home,
     '/games': Games,
     '/animations': Animations,
@@ -54,7 +51,6 @@ function matchRoute(requestedRoute: string) {
     return '/error'; // default to error route if no match found
 }
 
-// Load the component based on the requested route
 export const loadComponent = async (requestedRoute: string, params?: unknown): Promise<void> => {
     const content = document.querySelector('[data-content]') as HTMLDivElement;
 
@@ -63,7 +59,6 @@ export const loadComponent = async (requestedRoute: string, params?: unknown): P
         return;
     }
 
-    // Match the requested route to the correct route
     const route = matchRoute(requestedRoute);
     const component = routes[route];
 

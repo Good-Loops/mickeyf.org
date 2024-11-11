@@ -10,13 +10,14 @@ interface CleanupOptions {
 }
 
 // TODO: Add transition between components
-class RouteChangeListener {
+export default class RouteChangeListener {
     constructor() {
         this.initRouteChangeListener();
     }
 
     private initRouteChangeListener() {
         page('*', (ctx, next) => {
+            console.log('Route change detected:', ctx.path) // I'm not getting this log
             const currentPath = ctx.path;
             const previousPath = window.previousPath;
 
@@ -78,5 +79,3 @@ class RouteChangeListener {
         }
     }
 }
-
-export default new RouteChangeListener();
