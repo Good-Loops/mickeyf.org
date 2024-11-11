@@ -1,4 +1,3 @@
-import page from 'page';
 import * as PIXI from 'pixi.js';
 import * as Tone from 'tone';
 
@@ -9,46 +8,59 @@ interface CleanupOptions {
     player?: Tone.Player;
 }
 
-// TODO: Add transition between components
 class RouteChangeListener {
+    private previousPath: string;
+
     constructor() {
-        console.log('RouteChangeListener initialized');
+        this.previousPath = window.location.pathname;
         this.initRouteChangeListener();
     }
 
     private initRouteChangeListener() {
-        page('*', (ctx, next) => {
-            const currentPath = ctx.path;
-            const previousPath = window.previousPath;
-
-            console.log('previousPath:', previousPath);
-            console.log('currentPath:', currentPath);
-
-            if (previousPath) {
-                this.executeCleanup(previousPath);
-            }
-
-            window.previousPath = currentPath;
-            next();
+        // Handle browser navigation (back/forward)
+        window.addEventListener('popstate', () => {
+            this.handleRouteChange();
         });
+
+        // Override pushState to detect programmatic route changes
+        const originalPushState = history.pushState;
+        history.pushState = (...args) => {
+            originalPushState.apply(history, args);
+            this.handleRouteChange();
+        };
+
+        // Override replaceState to detect route replacement
+        const originalReplaceState = history.replaceState;
+        history.replaceState = (...args) => {
+            originalReplaceState.apply(history, args);
+            this.handleRouteChange();
+        };
+    }
+
+    private handleRouteChange() {
+        const currentPath = window.location.pathname;
+
+        if (this.previousPath !== currentPath) {
+            // Execute cleanup for the previous path
+            this.executeCleanup(this.previousPath);
+
+            // Update previous path to the current path
+            this.previousPath = currentPath;
+        }
     }
 
     private executeCleanup(route: string): void {
         switch (route) {
             case '/p4-Vega':
-                console.log('cleanup');
                 this.cleanup({ route: route, ticker: window.p4GameTicker, player: window.p4MusicPlayer });
                 break;
             case '/dancing-circles':
-                console.log('cleanup');
                 this.cleanup({ route: route, animationID: window.danceCirclesAnimationID });
                 break;
             case '/dancing-fractals':
-                console.log('cleanup');
                 this.cleanup({ route: route, ticker: window.danceFractalsTicker });
                 break;
             default:
-                console.warn("No specific cleanup for route:", route);
                 break;
         }
     }
@@ -83,4 +95,4 @@ class RouteChangeListener {
     }
 }
 
-export default new RouteChangeListener;
+export default new RouteChangeListener();
