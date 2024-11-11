@@ -12,6 +12,7 @@ interface CleanupOptions {
 // TODO: Add transition between components
 class RouteChangeListener {
     constructor() {
+        console.log('RouteChangeListener initialized');
         this.initRouteChangeListener();
     }
 
@@ -19,6 +20,9 @@ class RouteChangeListener {
         page('*', (ctx, next) => {
             const currentPath = ctx.path;
             const previousPath = window.previousPath;
+
+            console.log('previousPath:', previousPath);
+            console.log('currentPath:', currentPath);
 
             if (previousPath) {
                 this.executeCleanup(previousPath);
@@ -44,6 +48,7 @@ class RouteChangeListener {
                 this.cleanup({ route: route, ticker: window.danceFractalsTicker });
                 break;
             default:
+                console.warn("No specific cleanup for route:", route);
                 break;
         }
     }
