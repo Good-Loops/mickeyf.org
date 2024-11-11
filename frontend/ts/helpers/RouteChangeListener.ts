@@ -17,18 +17,22 @@ class RouteChangeListener {
     }
 
     private initRouteChangeListener() {
-        page('*', (ctx, next) => {
-            console.log('Route change detected:', ctx.path) // I'm not getting this log
-            const currentPath = ctx.path;
-            const previousPath = window.previousPath;
+        page('/p4-Vega', (ctx, next) => this.handleRouteChange(ctx, next));
+        page('/dancing-circles', (ctx, next) => this.handleRouteChange(ctx, next));
+        page('/dancing-fractals', (ctx, next) => this.handleRouteChange(ctx, next));
+    }
 
-            if (previousPath) {
-                this.executeCleanup(previousPath);
-            }
+    private handleRouteChange(ctx: any, next: any): void {
+        console.log('Route change detected:', ctx.path);
+        const currentPath = ctx.path;
+        const previousPath = window.previousPath;
 
-            window.previousPath = currentPath;
-            next();
-        });
+        if (previousPath) {
+            this.executeCleanup(previousPath);
+        }
+
+        window.previousPath = currentPath;
+        next();
     }
 
     private executeCleanup(route: string): void {
