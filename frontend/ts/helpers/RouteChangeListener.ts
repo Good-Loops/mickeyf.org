@@ -17,11 +17,6 @@ class RouteChangeListener {
     }
 
     private initRouteChangeListener() {
-        // Handle browser navigation (back/forward)
-        window.addEventListener('popstate', () => {
-            this.handleRouteChange();
-        });
-
         // Override pushState to detect programmatic route changes
         const originalPushState = history.pushState;
         history.pushState = (...args) => {
@@ -41,10 +36,8 @@ class RouteChangeListener {
         const currentPath = window.location.pathname;
 
         if (this.previousPath !== currentPath) {
-            // Execute cleanup for the previous path
             this.executeCleanup(this.previousPath);
 
-            // Update previous path to the current path
             this.previousPath = currentPath;
         }
     }
