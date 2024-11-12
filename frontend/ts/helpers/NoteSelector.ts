@@ -11,7 +11,7 @@ type scale = {
 
 export default class NoteSelector {
 
-    private synth = new Tone.MembraneSynth().toDestination(); // Initialize the synth;
+    private synth = new Tone.MembraneSynth().toDestination();
 
     private selectedKey = 'C';
     private lastKey = 'C';
@@ -41,7 +41,6 @@ export default class NoteSelector {
             this.halfTones = 0;
         }
 
-        // Set the selected scale
         this.selectedScale = { name: scaleName, notes };
 
         return notes;
@@ -52,7 +51,7 @@ export default class NoteSelector {
             return this.selectedScale.notes[0];
         }
 
-        const notes = this.selectedScale.notes;
+        const { notes }  = this.selectedScale;
         const possibleNextNotes = notes.filter(note => this.isValidInterval(note, lastPlayedNote!));
         const validChordTones = this.getCommonChordTones();
         const nonChordTones = possibleNextNotes.filter(note => !validChordTones.includes(note));
@@ -111,12 +110,12 @@ export default class NoteSelector {
             'Blues Heptatonic': [2, 3, 5, 6, 7, 10], // Seven-note blues scale
         };
 
-        const scaleType = this.selectedScale.name;
-        return validIntervals[scaleType]?.includes(interval) || false;
+        const { name } = this.selectedScale;
+        return validIntervals[name]?.includes(interval) || false;
     }
 
     private getCommonChordTones(): number[] {
-        const notes = this.selectedScale.notes;
+        const { notes } = this.selectedScale;
         
         const chordTonePatterns: { [key: string]: number[] } = {
             'standardFour': [0, 2, 4, 6], // Root, third, fifth, seventh
@@ -162,8 +161,8 @@ export default class NoteSelector {
             'Blues Heptatonic': chordTonePatterns['standardFour'],
         };
 
-        const scaleType = this.selectedScale.name;
-        return scaleCommonChordTones[scaleType]?.map(index => notes[index]) || [];
+        const { name } = this.selectedScale;
+        return scaleCommonChordTones[name]?.map(index => notes[index]) || [];
     }
 
     playNote(): void {

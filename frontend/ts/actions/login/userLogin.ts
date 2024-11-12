@@ -8,8 +8,8 @@ export default function userLogin(): IUserLogin {
             const user_name = (<HTMLInputElement>document.querySelector('[data-user_name]')).value;
             const user_password = (<HTMLInputElement>document.querySelector('[data-password]')).value;
 
-            const environment = process.env.NODE_ENV as string; // Determine environment
-            const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+            const environment = process.env.NODE_ENV as string;
+            const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!;
 
             try {
                 const loginResponse = await fetch(`${apiUrl}/api/users`, {
@@ -42,7 +42,7 @@ export default function userLogin(): IUserLogin {
                         case 'SERVER_ERROR':
                             Swal.fire({
                                 title: 'Server error',
-                                text: loginData.message, // Display the error message from the server
+                                text: loginData.message,
                                 icon: 'error'
                             });
                             break;
@@ -52,19 +52,15 @@ export default function userLogin(): IUserLogin {
                         title: 'Welcome back!',
                         icon: 'success'
                     });
-
-                    // Store the token in local storage
-                    const token = loginData.token; // Make sure the token is included in the response
+                    // Store token
+                    const token = loginData.token;
                     localStorage.setItem('sessionToken', token);
-
-                    // Store the user name in local storage
-                    const user_name = loginData.user_name; // Make sure the user data is included in the response
-                    localStorage.setItem('user_name', user_name); // Convert the user object to a string before storing
-
-                    // Add a delay to ensure the token is stored
+                    // Store user name
+                    const user_name = loginData.user_name;
+                    localStorage.setItem('user_name', user_name);
+                    
                     setTimeout(async () => {
                         try {
-                            // Retrieve the token from local storage
                             const storedToken = localStorage.getItem('sessionToken');
 
                             const verifyResponse = await fetch(`${apiUrl}/auth/verify-token`, {
@@ -81,9 +77,9 @@ export default function userLogin(): IUserLogin {
                             const verifyData = await verifyResponse.json();
 
                             if (verifyData.loggedIn) {
-                                window.isLoggedIn = true; // Set the global variable to true
-                                window.page('/'); // Redirect to the home page
-                                location.reload(); // Reload the page to update the UI
+                                window.isLoggedIn = true;
+                                window.page('/');
+                                location.reload();
                             } else {
                                 window.isLoggedIn = false;
                             }

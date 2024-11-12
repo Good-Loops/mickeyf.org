@@ -2,8 +2,8 @@ import * as PIXI from "pixi.js";
 
 export default abstract class Entity {
 
-    static gap: number = 10;
-    static hitBoxAdjust: number = .8;
+    static gap = 10;
+    static hitBoxAdjust = .8;
     
     constructor(public anim: PIXI.AnimatedSprite) {
         this.play(this.anim);

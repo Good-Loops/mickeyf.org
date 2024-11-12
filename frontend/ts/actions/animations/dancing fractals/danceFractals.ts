@@ -7,7 +7,7 @@ import ColorManager from '../helpers/ColorManager';
 
 import { color, drawConfig } from '../animations.types';
 
-// TODO: Understand how variables affect the animation
+// TODO: Understand how variables affect animation
 export default async function danceFractals() {
 
     const app = new Application();

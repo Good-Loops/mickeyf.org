@@ -21,7 +21,7 @@ export default async function danceCircles() {
         height: CANVAS_HEIGHT
     });
 
-    const canvas = app.canvas;
+    const { canvas } = app;
     canvas.className = 'dancing-circles__canvas';
     canvas.id = 'dc-canvas';
 

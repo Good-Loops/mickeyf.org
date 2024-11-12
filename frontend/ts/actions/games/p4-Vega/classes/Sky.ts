@@ -8,7 +8,7 @@ export default class Sky {
         this.createStars();
     }
 
-    private createStars() {
+    private createStars(): void {
         for (let i = 0; i < 333; i++) {
             const star = new PIXI.Graphics();
             const radius = Math.random() * 2 + 1;
@@ -25,7 +25,7 @@ export default class Sky {
         }
     }
 
-    update() {
+    update(): void {
         this.stars.forEach(star => {
             star.x += Math.random() * 0.5 - 0.25;
             star.y += Math.random() * 0.5 - 0.25;
@@ -36,7 +36,7 @@ export default class Sky {
         });
     }
 
-    destroy() {
+    destroy(): void {
         this.stars.forEach(star => this.stage.removeChild(star));
     }
 }

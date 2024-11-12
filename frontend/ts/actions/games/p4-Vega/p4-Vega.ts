@@ -28,13 +28,13 @@ export default async function p4Vega(): Promise<void> {
         backgroundColor: 0x0d0033,
     });
 
-    const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
+    const canvas = renderer.view.canvas as HTMLCanvasElement;
     canvas.className = 'p4-vega__canvas';
     canvas.id = 'p4-canvas';
-    const sectionDataAttribute: string = '[data-p4-vega]';
+    const sectionDataAttribute = '[data-p4-vega]';
     document.querySelector(sectionDataAttribute)!.appendChild(canvas);
     
-    const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
+    const stage = new PIXI.Container();
 
     new FullscreenButton(canvas, sectionDataAttribute);
 

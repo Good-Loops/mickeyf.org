@@ -5,14 +5,14 @@ export default class Dropdown {
 
     toggle() {
         return (event: Event): void => {
-            const isDropdownBtn: boolean = (event.target as Element).matches(`[${this.buttonDataAttribute}]`)
+            const isDropdownBtn = (event.target as Element).matches(`[${this.buttonDataAttribute}]`)
                 || (event.target as Element).closest(`[${this.dropdownDataAttribute}]`) !== null;
 
             if (!isDropdownBtn) return;
 
-            let currentDropdown: Element = (event.target as Element).closest(`[${this.dropdownDataAttribute}]`) as Element;
+            let currentDropdown = (event.target as Element).closest(`[${this.dropdownDataAttribute}]`) as Element;
 
-            const allDropdowns: NodeListOf<Element> = document.querySelectorAll(`[${this.dropdownDataAttribute}]`);
+            const allDropdowns = document.querySelectorAll(`[${this.dropdownDataAttribute}]`);
             allDropdowns.forEach(dropdown => {
                 if (dropdown === currentDropdown) {
                     dropdown.classList.toggle('active');
@@ -25,8 +25,8 @@ export default class Dropdown {
 
     toggleSelection(optionDataAttribute: string) {
         return (event: Event): void => {
-            const selectedItem: string = (event.target as Element).getAttribute(optionDataAttribute) as string;
-            const dropdown: Element = (event.target as Element).closest(`[${this.dropdownDataAttribute}]`) as Element;
+            const selectedItem = (event.target as Element).getAttribute(optionDataAttribute) as string;
+            const dropdown = (event.target as Element).closest(`[${this.dropdownDataAttribute}]`) as Element;
 
             if (selectedItem) {
                 dropdown.querySelector(`[${this.selectedDataAttribute}]`)!.textContent = selectedItem;

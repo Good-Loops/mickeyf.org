@@ -36,8 +36,7 @@ const routes: Record<string, ComponentInterface> = {
     '/p4-Vega': P4Vega,
 }
 
-// Utility function to match dynamic routes
-function matchRoute(requestedRoute: string) {
+const matchRoute = (requestedRoute: string) => {
     for (const route in routes) {
         if (route.includes(':')) {
             const baseRoute = route.split('/:')[0];
@@ -48,7 +47,7 @@ function matchRoute(requestedRoute: string) {
             return route;
         }
     }
-    return '/error'; // default to error route if no match found
+    return '/error';
 }
 
 export const loadComponent = async (requestedRoute: string, params?: unknown): Promise<void> => {
@@ -62,6 +61,7 @@ export const loadComponent = async (requestedRoute: string, params?: unknown): P
     const route = matchRoute(requestedRoute);
     const component = routes[route];
 
+    // TODO: Review
     try {
         content.innerHTML = '<div>Loading...</div>'; // Optional: display a loading indicator
         content.innerHTML = await component.render(params);

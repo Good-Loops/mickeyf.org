@@ -11,15 +11,11 @@ const semitoneFrequencies = [
  * @returns The transposed array of notes.
  */
 const transpose = (notes: number[], halfTones: number): number[] => {
-    // Transpose the array of notes by the given number of half tones
     return notes.map(note => {
-        // Find the index of the current note in the semitoneFrequencies array
         const currentIndex = semitoneFrequencies.indexOf(note);
         
-        // Calculate the new index by adding the number of half tones and wrapping around the array length
         const newIndex = (currentIndex + halfTones + semitoneFrequencies.length) % semitoneFrequencies.length;
         
-        // Return the transposed note from the semitoneFrequencies array
         return semitoneFrequencies[newIndex];
     });
 }

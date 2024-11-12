@@ -69,24 +69,19 @@ export default async function home() {
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)] as string;
 
     const quote = document.createElement('div') as HTMLElement;
-    // Add quote class to the quote element
+    
     quote.classList.add('quote');
     
-    // Add the quote to the quote element
     quote.innerHTML = randomQuote;
 
-    // Add the quote element to the quotes container
     quotesContainer.appendChild(quote);
 
-    // Get the dimensions of the quotesContainer
     let containerWidth = quotesContainer.offsetWidth;
     let containerHeight = quotesContainer.offsetHeight;
 
-    // Get the dimensions of the quote
     let quoteWidth = quote.offsetWidth;
     let quoteHeight = quote.offsetHeight;
 
-    // Position the quote element randomly within the container's boundaries
     quote.style.left = `${Math.floor(Math.random() * (containerWidth - quoteWidth))}px`;
     quote.style.top = `${Math.floor(Math.random() * (containerHeight - quoteHeight))}px`;
 

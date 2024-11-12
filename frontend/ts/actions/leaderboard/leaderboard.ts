@@ -15,8 +15,8 @@ export default function leaderboard(): ILeaderboard {
          * @throws An error if the HTTP request fails or if the server returns an error.
          */
         fetchLeaderboard: async function (): Promise<void> {
-            const environment = process.env.NODE_ENV as string; // Determine environment
-            const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+            const environment = process.env.NODE_ENV as string;
+            const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!;
             try {
                 const response = await fetch(`${apiUrl}/api/users`, {
                     method: 'POST',
@@ -48,7 +48,7 @@ export default function leaderboard(): ILeaderboard {
                     icon: 'error',
                 });
             } finally {
-                this.isLoading = false;  // Set isLoading to false once data is fetched
+                this.isLoading = false;
             }
         },
     };

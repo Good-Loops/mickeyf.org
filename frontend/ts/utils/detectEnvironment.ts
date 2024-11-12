@@ -7,7 +7,7 @@ interface Environment {
 }
 
 export const detectEnvironment = (): Environment => {
-    const userAgent = navigator.userAgent;
+    const { userAgent } = navigator;
 
     const isApp = window.location.href.includes('app=true');
     const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(userAgent);

@@ -15,7 +15,7 @@ export default class ColorManager {
 
     interpolateColors(factor: number) {
         this.currentColors = this.currentColors.map((currentColor: color, index: number): color => {
-            const target: color = this.targetColors[index];
+            const target = this.targetColors[index];
             return {
                 hue: currentColor.hue + (target.hue - currentColor.hue) * factor,
                 saturation: currentColor.saturation + (target.saturation - currentColor.saturation) * factor,

@@ -10,11 +10,11 @@ export default class GeneralEvents {
         const sideBarButton = document.querySelector('.menu-btn') as HTMLElement;
         const closeButton = document.querySelector('.close-btn') as HTMLElement;
 
-        if (sidebar && sideBarButton && closeButton) { // Check if sidebar, sidebar button, and close button exist
+        if (sidebar && sideBarButton && closeButton) {
             const toggleVisibility = () => {
-                sidebar.classList.toggle('is-visible'); // Toggle sidebar visibility
-                sideBarButton.classList.toggle('is-visible'); // Toggle sidebar button visibility
-                closeButton.classList.toggle('is-visible'); // Toggle close button visibility
+                sidebar.classList.toggle('is-visible');
+                sideBarButton.classList.toggle('is-visible');
+                closeButton.classList.toggle('is-visible');
             };
 
             sideBarButton.addEventListener('click', toggleVisibility);
@@ -25,8 +25,8 @@ export default class GeneralEvents {
     private static initTokenVerification() {
         const token = localStorage.getItem('sessionToken');
 
-        const environment = process.env.NODE_ENV as string; // Determine environment
-        const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
+        const environment = process.env.NODE_ENV as string;
+        const apiUrl = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!;
 
         if (token) {
             fetch(`${apiUrl}/auth/verify-token`, {
@@ -72,7 +72,7 @@ export default class GeneralEvents {
                 localStorage.removeItem('sessionToken');
                 localStorage.removeItem('user_name');
                 window.isLoggedIn = false;
-                location.reload(); // Reload the page to update the UI
+                location.reload();
             });
         }
     }

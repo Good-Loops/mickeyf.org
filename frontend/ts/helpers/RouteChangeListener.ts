@@ -18,16 +18,16 @@ class RouteChangeListener {
 
     private initRouteChangeListener() {
         // Override pushState to detect programmatic route changes
-        const originalPushState = history.pushState;
+        const { pushState } = history;
         history.pushState = (...args) => {
-            originalPushState.apply(history, args);
+            pushState.apply(history, args);
             this.handleRouteChange();
         };
 
         // Override replaceState to detect route replacement
-        const originalReplaceState = history.replaceState;
+        const { replaceState } = history;
         history.replaceState = (...args) => {
-            originalReplaceState.apply(history, args);
+            replaceState.apply(history, args);
             this.handleRouteChange();
         };
     }

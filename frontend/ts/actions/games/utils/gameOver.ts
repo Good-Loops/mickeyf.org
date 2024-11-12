@@ -6,8 +6,8 @@ import P4 from '../p4-Vega/classes/P4'
 
 import WebFont from 'webfontloader';
 
-// Remember to create a helpers folder for this type of function (avoids repetition)
-function centeredSpaceGrotesk(text: string, fontSize: number, fill: number, yPositionOffset: number) {
+// TODO: create options object for the text
+const centeredSpaceGrotesk = (text: string, fontSize: number, fill: number, yPositionOffset: number): PIXI.Text => {
     const newText = new PIXI.Text({
         text: text,
         style: {
@@ -21,7 +21,7 @@ function centeredSpaceGrotesk(text: string, fontSize: number, fill: number, yPos
     return newText;
 }
 
-function createBackgroundForText(texts: PIXI.Text[], padding: number, color: number, alpha: number, borderRadius: number): PIXI.Graphics {
+const createBackgroundForText = (texts: PIXI.Text[], padding: number, color: number, alpha: number, borderRadius: number): PIXI.Graphics => {
     const minY = Math.min(...texts.map(text => text.y - padding));
     const maxY = Math.max(...texts.map(text => text.y + text.height + padding));
     const height = maxY - minY;
@@ -43,14 +43,12 @@ export default function gameOver(gameLive: boolean, p4: P4): Promise<PIXI.Contai
                     families: ['Space Grotesk']
                 },
                 active: () => {
-                    // Create "GAME OVER" text
                     const gameOverText = centeredSpaceGrotesk('GAME OVER', 63, 0xC80000, -20);
                     const totalWaterText = centeredSpaceGrotesk(`Total Water:  ${p4.totalWater}`, 40, 0xFFFFFF, 50);
                     const retryText = centeredSpaceGrotesk('Press space to try again', 40, 0xFFFFFF, 100);
                     const texts = [gameOverText, totalWaterText, retryText];
                     const background = createBackgroundForText(texts, 10, 0xFFFFFF, 0.5, 10);
 
-                    // Resolve the promise with the texts
                     resolve([background, ...texts]);
                 }
             });

@@ -18,13 +18,13 @@ export default class FullscreenButton {
         this.fullscreenButton.addEventListener('click', () => this.enterFullscreen());
 
         document.addEventListener('fullscreenchange', () => this.onFullscreenChange());
-        document.addEventListener('webkitfullscreenchange', () => this.onFullscreenChange()); // For Safari
+        document.addEventListener('webkitfullscreenchange', () => this.onFullscreenChange()); // Safari
     }
 
     private enterFullscreen() {
         if (this.targetElement.requestFullscreen) {
             this.targetElement.requestFullscreen();
-        } else if ((this.targetElement as any).webkitRequestFullscreen) { // Safari compatibility
+        } else if ((this.targetElement as any).webkitRequestFullscreen) { // Safari
             (this.targetElement as any).webkitRequestFullscreen();
         }
     }
