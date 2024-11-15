@@ -2,6 +2,8 @@ import * as PIXI from "pixi.js";
 
 export default abstract class Entity {
 
+    abstract update(): void;
+
     static gap = 10;
     static hitBoxAdjust = .8;
     
