@@ -5,7 +5,7 @@
  * @property {string} description - A brief description of the scale.
  * @property {number[]} notes - An array of MIDI note numbers that make up the scale.
  */
-interface Scale {
+export interface Scale {
     description: string;
     notes: number[];
 };

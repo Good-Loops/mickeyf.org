@@ -21,7 +21,7 @@ interface CleanupOptions {
 /**
  * Class to listen for route changes and handle cleanup of resources.
  */
-class RouteChangeListener {
+export class RouteChangeListener {
     private previousPath: string;
 
     /**

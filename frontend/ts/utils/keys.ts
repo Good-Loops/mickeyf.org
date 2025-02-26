@@ -7,7 +7,7 @@
  * @property {string} knownFor - A brief description of what the key is known for.
  * @property {number} semitone - The number of semitones from a reference pitch (e.g., A4 = 440 Hz).
  */
-interface Key {
+export interface Key {
     frequency: number;
     characteristics: string;
     knownFor: string;

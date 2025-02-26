@@ -6,7 +6,7 @@ import { loadComponent } from '../utils/loadComponent';
  * @param path - The path for the route.
  * @param callback - The callback function to be executed when the route is accessed. The callback receives an optional context parameter.
  */
-interface Page {
+export interface Page {
     (path: string, callback: (ctx?: unknown) => void): void;
 }
 

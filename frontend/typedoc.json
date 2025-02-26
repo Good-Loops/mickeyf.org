@@ -1,0 +1,8 @@
+{
+  "entryPoints": ["ts"],
+  "entryPointStrategy": "expand", 
+  "out": "docs",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": true
+}

@@ -11,7 +11,7 @@ import { getRandomInt } from '../../../../utils/random';
  * @property {number} minLightness - Minimum lightness value for the colors.
  * @property {number} maxLightness - Maximum lightness value for the colors.
  */
-interface Settings {
+export interface Settings {
     hertz?: number;
     minSaturation: number;
     maxSaturation: number;

@@ -8,7 +8,7 @@
  * @property {boolean} isAndroid - Indicates if the environment is an Android device.
  * @property {boolean} isDesktop - Indicates if the environment is a desktop device.
  */
-interface Environment {
+export interface Environment {
     isApp: boolean;
     isMobile: boolean;
     isIOS: boolean;
