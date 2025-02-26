@@ -14,7 +14,7 @@ import * as PIXI from 'pixi.js';
 /**
  * Class representing the water entity in the game.
  */
-export default class Water extends Entity {
+export default class Water extends Entity<PIXI.AnimatedSprite> {
     private startX = CANVAS_WIDTH - Entity.gap;
     private startY = CANVAS_HEIGHT * .5;
 
