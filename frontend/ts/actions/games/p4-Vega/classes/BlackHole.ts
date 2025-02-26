@@ -20,7 +20,7 @@ const VELOCITY_MAX = 4.5;
 /**
  * Class representing a black hole entity in the game.
  */
-export default class BlackHole extends Entity {
+export default class BlackHole extends Entity<PIXI.AnimatedSprite> {
     private vX = 0;
     private vY = 0;
 
