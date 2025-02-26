@@ -1,3 +1,12 @@
+/**
+ * Represents a musical key with specific properties.
+ * 
+ * @interface Key
+ * @property {number} frequency - The frequency of the key in Hertz (Hz).
+ * @property {string} characteristics - Describes the unique characteristics of the key.
+ * @property {string} knownFor - A brief description of what the key is known for.
+ * @property {number} semitone - The number of semitones from a reference pitch (e.g., A4 = 440 Hz).
+ */
 interface Key {
     frequency: number;
     characteristics: string;
@@ -5,6 +14,15 @@ interface Key {
     semitone: number;
 };
 
+/**
+ * An object representing musical keys with their respective properties.
+ * Each key is identified by its name (e.g., 'C', 'C#/Db') and contains the following properties:
+ * 
+ * @property {number} frequency - The frequency of the key in Hertz (Hz).
+ * @property {string} characteristics - A description of the key's sound characteristics.
+ * @property {string} knownFor - A brief description of what the key is commonly known for in music.
+ * @property {number} semitone - The semitone number of the key in the chromatic scale.
+ */
 const keys: { [key: string]: Key } = {
     'C': {
         frequency: 261.63,

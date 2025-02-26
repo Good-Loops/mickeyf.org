@@ -1,6 +1,13 @@
 import * as PIXI from 'pixi.js';
 import Entity from '../actions/games/helpers/Entity';
 
+/**
+ * Checks if two animated sprites are colliding.
+ *
+ * @param animA - The first animated sprite.
+ * @param animB - The second animated sprite.
+ * @returns `true` if the sprites are colliding, `false` otherwise.
+ */
 export default function isColliding(animA: PIXI.AnimatedSprite, animB: PIXI.AnimatedSprite): boolean {
 
     const boundsA = animA.getBounds();

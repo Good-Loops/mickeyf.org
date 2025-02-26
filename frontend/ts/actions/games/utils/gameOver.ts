@@ -6,7 +6,14 @@ import P4 from '../p4-Vega/classes/P4'
 
 import WebFont from 'webfontloader';
 
-// TODO: create options object for the text
+/**
+ * Creates a centered PIXI.Text object with the Space Grotesk font.
+ * @param text - The text to display.
+ * @param fontSize - The font size of the text.
+ * @param fill - The color of the text.
+ * @param yPositionOffset - The vertical offset for the text position.
+ * @returns A PIXI.Text object.
+ */
 const centeredSpaceGrotesk = (text: string, fontSize: number, fill: number, yPositionOffset: number): PIXI.Text => {
     const newText = new PIXI.Text({
         text: text,
@@ -21,6 +28,15 @@ const centeredSpaceGrotesk = (text: string, fontSize: number, fill: number, yPos
     return newText;
 }
 
+/**
+ * Creates a background for the given texts with specified padding, color, alpha, and border radius.
+ * @param texts - An array of PIXI.Text objects.
+ * @param padding - The padding around the texts.
+ * @param color - The color of the background.
+ * @param alpha - The alpha transparency of the background.
+ * @param borderRadius - The border radius of the background.
+ * @returns A PIXI.Graphics object representing the background.
+ */
 const createBackgroundForText = (texts: PIXI.Text[], padding: number, color: number, alpha: number, borderRadius: number): PIXI.Graphics => {
     const minY = Math.min(...texts.map(text => text.y - padding));
     const maxY = Math.max(...texts.map(text => text.y + text.height + padding));
@@ -35,6 +51,12 @@ const createBackgroundForText = (texts: PIXI.Text[], padding: number, color: num
     return background;
 }
 
+/**
+ * Displays the game over screen with the total water collected and a retry message.
+ * @param gameLive - A boolean indicating if the game is still live.
+ * @param p4 - An instance of the P4 class.
+ * @returns A promise that resolves with an array of PIXI.ContainerChild objects.
+ */
 export default function gameOver(gameLive: boolean, p4: P4): Promise<PIXI.ContainerChild[]> {
     return new Promise((resolve) => {
         if (!gameLive) {

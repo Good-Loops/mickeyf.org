@@ -2,6 +2,21 @@ import { getRandomX, getRandomY } from "../../../../utils/random";
 import lerp from "../../../../utils/lerp";
 import ColorHandler from "./ColorHandler";
 
+/**
+ * Represents a handler for managing circle animations.
+ * 
+ * @remarks
+ * This class is responsible for creating and managing circles with various properties such as radius, position, and color.
+ * It provides methods for linear interpolation of these properties to create smooth animations.
+ * 
+ * @example
+ * ```typescript
+ * const circleHandler = new CircleHandler(0);
+ * circleHandler.lerpColor();
+ * circleHandler.lerpPosition(true);
+ * circleHandler.lerpRadius();
+ * ```
+ */
 export default class CircleHandler {
 
     private startBaseRadius = 50;
@@ -34,6 +49,22 @@ export default class CircleHandler {
     color = this.colorHandler.getRandomColor(this.colorSettings);
     targetColor = this.colorHandler.getRandomColor(this.colorSettings);
 
+    /**
+     * Creates an instance of CircleHandler.
+     * 
+     * @param index - The index of the circle, used to calculate the base radius.
+     * 
+     * Initializes the following properties:
+     * - `baseRadius`: The base radius of the circle, calculated using the index.
+     * - `currentRadius`: The current radius of the circle, initially set to the base radius.
+     * - `targetRadius`: The target radius of the circle, initially set to the base radius.
+     * - `x`: The x-coordinate of the circle, randomly generated within a range.
+     * - `y`: The y-coordinate of the circle, randomly generated within a range.
+     * - `targetX`: The target x-coordinate of the circle, randomly generated within a range.
+     * - `targetY`: The target y-coordinate of the circle, randomly generated within a range.
+     * 
+     * Adds the created circle instance to the static `circleArray` of CircleHandler.
+     */
     constructor(index: number) {
         this.baseRadius = this.getBaseRadius(index * 15);
         this.currentRadius = this.baseRadius;
@@ -47,17 +78,34 @@ export default class CircleHandler {
         CircleHandler.circleArray.push(this);
     }
 
+    /**
+     * Calculates and returns the base radius for a circle based on its index.
+     * The base radius is adjusted by the last radius, an adjustment ratio, and the index.
+     * 
+     * @param index - The index of the circle for which the base radius is being calculated.
+     * @returns The calculated base radius for the given index.
+     */
     private getBaseRadius(index: number): number {
         this.startBaseRadius += this.lastRadius * this.adjustmentRatio * index;
         this.lastRadius = this.startBaseRadius;
         return this.startBaseRadius;
     }
 
+    /**
+     * Linearly interpolates the current color towards the target color.
+     * The interpolation factor is fixed at 0.03.
+     * Updates the `color` property of the instance with the interpolated color.
+     */
     lerpColor(): void {
         const interpolationFactor = .03;
         this.color = this.colorHandler.lerpColor(this.color, this.targetColor, interpolationFactor);
     }
 
+    /**
+     * Linearly interpolates the position of the circle along the specified axis (X or Y) towards its target position.
+     *
+     * @param isX - A boolean indicating whether to interpolate the X axis (true) or the Y axis (false).
+     */
     lerpPosition(isX: boolean): void {
         const interpolationFacor = .01;
         const axis = isX ? this.x : this.y;
@@ -71,6 +119,15 @@ export default class CircleHandler {
         }
     }
 
+    /**
+     * Linearly interpolates the current radius towards the target radius.
+     * This method updates the `currentRadius` property by moving it a fraction
+     * of the way towards the `targetRadius` based on a fixed interpolation factor.
+     *
+     * @remarks
+     * The interpolation factor is set to 0.2, meaning the `currentRadius` will
+     * move 20% of the way towards the `targetRadius` each time this method is called.
+     */
     lerpRadius(): void {
         const interpolationFactor = .2;
         this.currentRadius = lerp(this.currentRadius, this.targetRadius, interpolationFactor);

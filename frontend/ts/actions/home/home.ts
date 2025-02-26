@@ -1,4 +1,7 @@
-// TODO: Figure out what causes lag in title animation on mobile app
+/**
+ * Function to display a random quote on the home page.
+ * @returns A promise that resolves when the quote is displayed.
+ */
 export default async function home() {
     const quotes = [
         '"The only way to make sense out of change is to plunge into it." -Alan Watts',
@@ -61,17 +64,21 @@ export default async function home() {
         '"I attribute my success to this: I never gave or took any excuse." -Florence Nightingale',
         '"Life shrinks or expands in proportion to one\'s courage." -Anais Nin',
         '"You must do the things you think you cannot do." -Eleanor Roosevelt',
-        '"It does not matter how slowly you go as long as you do not stop." -Confucius'
+        '"It does not matter how slowly you go as long as you do not stop." -Confucius',
     ];
 
-    const quotesContainer = document.querySelector('[data-quotes-container]') as HTMLElement;
-    
-    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)] as string;
+    const quotesContainer = document.querySelector(
+        '[data-quotes-container]'
+    ) as HTMLElement;
+
+    const randomQuote = quotes[
+        Math.floor(Math.random() * quotes.length)
+    ] as string;
 
     const quote = document.createElement('div') as HTMLElement;
-    
+
     quote.classList.add('quote');
-    
+
     quote.innerHTML = randomQuote;
 
     quotesContainer.appendChild(quote);
@@ -82,8 +89,12 @@ export default async function home() {
     let quoteWidth = quote.offsetWidth;
     let quoteHeight = quote.offsetHeight;
 
-    quote.style.left = `${Math.floor(Math.random() * (containerWidth - quoteWidth))}px`;
-    quote.style.top = `${Math.floor(Math.random() * (containerHeight - quoteHeight))}px`;
+    quote.style.left = `${Math.floor(
+        Math.random() * (containerWidth - quoteWidth)
+    )}px`;
+    quote.style.top = `${Math.floor(
+        Math.random() * (containerHeight - quoteHeight)
+    )}px`;
 
     quote.classList.add('fade-in');
 }

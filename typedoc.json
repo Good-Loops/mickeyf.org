@@ -1,0 +1,9 @@
+{
+  "entryPoints": ["backend", "frontend"],
+  "out": "docs/api",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "hideGenerator": true,
+  "plugin": []
+}

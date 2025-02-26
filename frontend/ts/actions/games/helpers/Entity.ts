@@ -1,17 +1,39 @@
-import * as PIXI from "pixi.js";
+import * as PIXI from 'pixi.js';
 
+/**
+ * Abstract class representing a game entity.
+ */
 export default abstract class Entity {
-  abstract update(...args: any[]): void;
+    /**
+     * Abstract method to update the entity.
+     * @param args - The arguments for the update method.
+     */
+    abstract update(...args: any[]): void;
 
-  static gap = 10;
-  static hitBoxAdjust = 0.8;
+    /**
+     * The gap between entities.
+     */
+    static gap = 10;
 
-  constructor(public anim: PIXI.AnimatedSprite) {
-    this.play(this.anim);
-  }
+    /**
+     * The adjustment factor for the hitbox size.
+     */
+    static hitBoxAdjust = 0.8;
 
-  play(anim: PIXI.AnimatedSprite): void {
-    anim.animationSpeed = 0.1;
-    anim.play();
-  }
+    /**
+     * Creates an instance of Entity.
+     * @param anim - The PIXI.AnimatedSprite representing the entity animation.
+     */
+    constructor(public anim: PIXI.AnimatedSprite) {
+        this.play(this.anim);
+    }
+
+    /**
+     * Plays the entity animation.
+     * @param anim - The PIXI.AnimatedSprite to play.
+     */
+    play(anim: PIXI.AnimatedSprite): void {
+        anim.animationSpeed = 0.1;
+        anim.play();
+    }
 }

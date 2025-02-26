@@ -1,8 +1,52 @@
+/**
+ * Represents a musical scale.
+ * 
+ * @interface Scale
+ * @property {string} description - A brief description of the scale.
+ * @property {number[]} notes - An array of MIDI note numbers that make up the scale.
+ */
 interface Scale {
     description: string;
     notes: number[];
 };
 
+/**
+ * A collection of musical scales with their descriptions and note frequencies.
+ * Each scale is represented by a key-value pair where the key is the name of the scale
+ * and the value is an object containing a description and an array of note frequencies.
+ * 
+ * Scales included:
+ * - Major: Bright, happy, and uplifting. Fundamental to Western music and often used in pop, classical, and folk music.
+ * - Minor: Sad, serious, and introspective. Used widely in classical, rock, and pop music to convey deeper emotions.
+ * - Pentatonic: Simple, versatile, and pleasing. Found in folk, rock, blues, and pop music. Known for its ease of use in improvisation.
+ * - Blues: Gritty, soulful, and expressive. Central to blues, rock, and jazz music. Known for its "blue notes" which add a sense of longing and emotion.
+ * - Dorian: Mellow, jazzy, and slightly brighter than the natural minor scale. Common in jazz, rock, and folk music.
+ * - Mixolydian: Bluesy, relaxed, and slightly tense. Frequently used in rock, blues, and jazz music.
+ * - Phrygian: Exotic, intense, and slightly Spanish-sounding. Used in flamenco, metal, and classical music.
+ * - Lydian: Dreamy, ethereal, and bright. Popular in jazz, classical, and film scores for its unique sound.
+ * - Locrian: Dark, tense, and unresolved. Rarely used but found in jazz and metal for creating dissonance and tension.
+ * - Chromatic: Tense, atonal, and fluid. Used for adding tension, in classical compositions, and for chromatic runs in various genres.
+ * - Harmonic Major: A mix of bright and dark, with a slightly exotic feel. Used in jazz and classical music.
+ * - Melodic Minor: Versatile, with a mix of minor and major qualities. Used in jazz, classical, and modern music for its smooth melodic lines.
+ * - Whole Tone: Mystical, ambiguous, and symmetrical. Used in classical and jazz music to create dreamy and floating atmospheres.
+ * - Hungarian Minor: Exotic, dramatic, and folk-like. Found in Eastern European folk music and classical compositions.
+ * - Double Harmonic: Intense, Eastern-sounding, and exotic. Used in Middle Eastern and Eastern European music.
+ * - Neapolitan Major: Tense, dramatic, and slightly exotic. Used in classical and operatic music.
+ * - Neapolitan Minor: Dark, dramatic, and unique. Found in classical music for its emotional depth.
+ * - Augmented: Dissonant, symmetrical, and otherworldly. Used in jazz and modern classical music.
+ * - Hexatonic: Versatile, simple, and often used in various forms. Found in folk and modern music.
+ * - Enigmatic: Mysterious, unconventional, and ambiguous. Rarely used but found in modern classical music for its unique sound.
+ * - Spanish Gypsy: Exotic, intense, and Flamenco-like. Central to Flamenco music and used in metal and classical compositions.
+ * - Hirajoshi: Eastern, pentatonic, and traditional. Found in Japanese music and used to evoke an Eastern sound.
+ * - Balinese Pelog: Exotic, uneven, and traditional. Used in Indonesian gamelan music.
+ * - Egyptian: Ancient, exotic, and folk-like. Used in Middle Eastern and African music to create an ancient sound.
+ * - Hungarian Gypsy: Rich, exotic, and dramatic. Found in Eastern European folk music and classical compositions.
+ * - Persian: Middle Eastern, tense, and exotic. Used in Persian and Middle Eastern music.
+ * - Tritone: Tense, symmetrical, and dissonant. Found in jazz and modern classical music.
+ * - Flamenco: Passionate, intense, and Spanish. Central to Flamenco music.
+ * - Iwato: Dissonant, exotic, and traditional. Found in Japanese music for creating an unusual sound.
+ * - Blues Heptatonic: Rich, soulful, and expressive. Extends the traditional blues scale with added notes for more melodic options.
+ */
 const scales: { [key: string]: Scale } = {
     'Major': {
         description: 'Bright, happy, and uplifting. Fundamental to Western music and often used in pop, classical, and folk music.',
