@@ -5,7 +5,21 @@ import pool from '../config/dbConfig';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// This function checks the body type and calls the appropriate function
+/**
+ * Main controller function to handle different types of requests.
+ * 
+ * @param req - The request object containing the request data.
+ * @param res - The response object used to send back the desired HTTP response.
+ * 
+ * @returns A promise that resolves to the appropriate response based on the request type.
+ * 
+ * The function handles the following request types:
+ * - 'signup': Calls the `addUser` function to handle user signup.
+ * - 'login': Calls the `loginUser` function to handle user login.
+ * - 'submit_score': Calls the `submitScore` function to handle score submission.
+ * - 'get_leaderboard': Calls the `getLeaderboard` function to retrieve the leaderboard.
+ * - Default: Returns a JSON response with an error message 'INVALID_TYPE' for unsupported request types.
+ */
 const mainController = async (req: Request, res: Response) => {
     switch (req.body.type) {
         case 'signup':
@@ -19,9 +33,43 @@ const mainController = async (req: Request, res: Response) => {
         default:
             return res.json({ error: 'INVALID_TYPE' });
     }
-}
+};
 
-// This function adds a user to the database
+/**
+ * Adds a new user to the database.
+ * 
+ * @param req - The request object containing user details in the body.
+ * @param res - The response object used to send back the appropriate response.
+ * 
+ * @remarks
+ * This function performs several validations on the user input:
+ * - Checks if `user_name` and `email` are provided.
+ * - Ensures `user_password` is between 8 and 16 characters.
+ * - Validates the format of the `email`.
+ * - Checks for duplicate users in the database.
+ * 
+ * If all validations pass, the user's password is hashed and the user is inserted into the database.
+ * 
+ * @returns A JSON response indicating success or the type of error encountered.
+ * 
+ * @example
+ * // Example request body
+ * {
+ *   "user_name": "john_doe",
+ *   "email": "john@example.com",
+ *   "user_password": "securePassword123"
+ * }
+ * 
+ * // Example response on success
+ * {
+ *   "success": true
+ * }
+ * 
+ * // Example response on error
+ * {
+ *   "error": "INVALID_EMAIL"
+ * }
+ */
 const addUser = async (req: Request, res: Response) => {
     // Destructure the request body
     const { user_name, email, user_password } = req.body as IUser;
@@ -64,12 +112,60 @@ const addUser = async (req: Request, res: Response) => {
     }
 };
 
-// This function logs in a user
+/**
+ * Handles user login by verifying credentials and generating a JWT token.
+ *
+ * @param req - The request object containing user credentials in the body.
+ * @param res - The response object used to send back the result of the login attempt.
+ *
+ * @remarks
+ * This function expects the request body to contain `user_name` and `user_password` fields.
+ * It queries the database to find a user with the provided `user_name`, then compares the provided
+ * password with the stored hashed password. If the credentials are correct, it generates a JWT token
+ * and sends it back in the response.
+ *
+ * @throws Will send a JSON response with an error message if an exception occurs during the process.
+ *
+ * @example
+ * // Example request body
+ * {
+ *   "user_name": "exampleUser",
+ *   "user_password": "examplePassword"
+ * }
+ *
+ * // Example response on success
+ * {
+ *   "success": true,
+ *   "token": "jwtTokenHere",
+ *   "user_name": "exampleUser"
+ * }
+ *
+ * // Example response on authentication failure
+ * {
+ *   "error": "AUTH_FAILED"
+ * }
+ *
+ * // Example response on server error
+ * {
+ *   "error": "SERVER_ERROR",
+ *   "message": "Detailed error message"
+ * }
+ */
 const loginUser = async (req: Request, res: Response) => {
     const { user_name, user_password } = req.body as IUser;
     try {
-        const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE user_name = ?', [user_name]);
-        const user: IUser = rows[0] as IUser;
+        async function fetchOne<T>(
+            query: string,
+            values: any[]
+        ): Promise<T | null> {
+            const [rows] = await pool.query<RowDataPacket[]>(query, values);
+            return rows.length > 0 ? (rows[0] as T) : null;
+        }
+
+        const user = await fetchOne<IUser>(
+            'SELECT * FROM users WHERE user_name = ?',
+            [user_name]
+        );
 
         if (user) {
             const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
