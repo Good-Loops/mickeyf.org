@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "jsx": "react-jsx",
         "target": "ES2016",
         "module": "esnext",
         "moduleResolution": "bundler",
@@ -15,7 +16,7 @@
     },
     "include": [
         "**/*.ts"
-    ],
+, "ts/pages/Animations.tsx"    ],
     "exclude": [
         "node_modules"
     ]
