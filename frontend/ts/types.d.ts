@@ -47,11 +47,6 @@ declare global {
         userLogin: () => IUserLogin;
 
         /**
-         * Function to get leaderboard data.
-         */
-        leaderboard: () => ILeaderboard;
-
-        /**
          * Boolean indicating if the user is logged in.
          */
         isLoggedIn: boolean;
