@@ -3,23 +3,19 @@
 .home {
 
     position: relative;
-    min-height: 100vh;
+    width: 80vw;
 
     &__welcome-message {
         color: $primary-mid;
         font-size: $font-size-m;
         text-align: center;
-        margin-top: 5em;
         font-weight: 600;
         font-family: $subheading-font;
     }
 
     &__quotes-container {
-        position: absolute;
+        position: fixed;
         inset: 0;
-        top: 4em;            
-        width: 100%;
-        height: 100%;
         max-width: 90vw;       
         max-height: 85vh;
         margin: 0 auto;        
