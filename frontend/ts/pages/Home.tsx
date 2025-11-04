@@ -64,19 +64,25 @@ const QUOTES = [
   '"It does not matter how slowly you go as long as you do not stop." -Confucius'
 ];
 
+const DISPLAY_MS = 4500;
+const FADE_MS = 2000;
+
 const Home: React.FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [quote, setQuote] = useState<string>("");
   const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [visible, setVisible] = useState<boolean>(false);
+
+  const pickRandomQuote = () =>
+    QUOTES[Math.floor(Math.random() * QUOTES.length)];
 
   useEffect(() => {
-    const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-    setQuote(randomQuote);
+    const first = pickRandomQuote();
+    setQuote(first);
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-    if (!quote) return;
+    if (!containerRef.current || !quote) return;
 
     const container = containerRef.current;
     const containerWidth = container.offsetWidth;
@@ -85,14 +91,33 @@ const Home: React.FC = () => {
     const padding = 20;
     const left = Math.max(
       padding,
-      Math.floor(Math.random() * Math.max(1, containerWidth - 200))
+      Math.floor(Math.random() * Math.max(1, containerWidth - 220))
     );
     const top = Math.max(
       padding,
-      Math.floor(Math.random() * Math.max(1, containerHeight - 80))
+      Math.floor(Math.random() * Math.max(1, containerHeight - 90))
     );
 
     setPos({ top, left });
+  }, [quote]);
+
+  useEffect(() => {
+    if (!quote) return;
+
+    setVisible(true);
+
+    const displayTimer = setTimeout(() => {
+      setVisible(false);
+
+      const fadeTimer = setTimeout(() => {
+        const next = pickRandomQuote();
+        setQuote(next);
+      }, FADE_MS);
+
+      return () => clearTimeout(fadeTimer);
+    }, DISPLAY_MS);
+
+    return () => clearTimeout(displayTimer);
   }, [quote]);
 
   return (
@@ -110,7 +135,7 @@ const Home: React.FC = () => {
       >
         {quote && (
           <div
-            className="quote fade-in"
+            className={`quote ${visible ? "fade-in" : "fade-out"}`}
             style={{
               position: "absolute",
               top: pos.top,
