@@ -7,6 +7,8 @@ import Games from "./pages/Games";
 import Leaderboard from "./pages/Leaderboard";
 import Social from "./pages/Social";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+import NotFound from "./pages/NotFound";
 
 const App: React.FC = () => {
   return (
@@ -20,8 +22,8 @@ const App: React.FC = () => {
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/social" element={<Social />} />
           <Route path="/login" element={<Login />} />
-          {/* <Route path="/register" element={<Register />} /> */}
-          {/* <Route path="*" element={<NotFound />} /> */}
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <footer className="footer">

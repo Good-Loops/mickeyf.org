@@ -4,6 +4,7 @@ import { IUser } from '../types/customTypes';
 import pool from '../config/dbConfig';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { stat } from 'fs';
 
 /**
  * Main controller function to handle different types of requests.
@@ -89,7 +90,7 @@ const addUser = async (req: Request, res: Response) => {
         return res.json({ error: 'INVALID_EMAIL' });
     }
     else if (Array.isArray(result[0]) && result[0].length > 0) {
-        return res.json({ error: 'DUPLICATE_USER' });
+        return res.json({ error: 'DUPLICATE_USER', status: 409 });
     }
 
     // Hash password

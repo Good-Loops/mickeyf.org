@@ -1,8 +1,6 @@
 import Alpine from 'alpinejs';
 import page from 'page';
 
-import IUserCreate from './register/interfaces/IUserCreate';
-
 /**
  * Represents a record of event listeners.
  */
@@ -34,11 +32,6 @@ declare global {
          * page.js.
          */
         page: typeof page;
-
-        /**
-         * Function to create a user.
-         */
-        userCreate: () => IUserCreate;
 
         /**
          * Record of event listeners.
