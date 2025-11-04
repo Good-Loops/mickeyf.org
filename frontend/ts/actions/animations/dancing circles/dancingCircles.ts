@@ -16,7 +16,7 @@ import FullscreenButton from '../../../helpers/FullscreenButton';
 /**
  * Function to initialize and run the dancing circles animation.
  */
-export default async function danceCircles() {
+export default async function dancingCircles() {
     const app = new Application();
     (globalThis as any).__PIXI_APP__ = app; // pixi devtools
 

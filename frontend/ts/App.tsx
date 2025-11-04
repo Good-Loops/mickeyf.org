@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Header from "./Header";
 import Home from "./pages/Home";
 import Animations from "./pages/Animations";
+import DancingCircles from "./pages/animations/DancingCircles";
 import Games from "./pages/Games";
 import Leaderboard from "./pages/Leaderboard";
 import Social from "./pages/Social";
@@ -17,8 +18,12 @@ const App: React.FC = () => {
       <main className="main">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/animations" element={<Animations />} />
+
+          <Route path="/animations/*" element={<Animations />} />
+          <Route path="/animations/dancing-circles" element={<DancingCircles />} />
+          
           <Route path="/games" element={<Games />} />
+          
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/social" element={<Social />} />
           <Route path="/login" element={<Login />} />

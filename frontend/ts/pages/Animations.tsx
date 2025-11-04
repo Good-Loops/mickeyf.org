@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Animations: React.FC = () => {
     return (
@@ -6,14 +7,14 @@ const Animations: React.FC = () => {
             <h1 className="animations__title">Animations</h1>
             <div className="animations__grid">
                 <div className="animations__grid-item">
-                    <a href="/dancing-circles">
+                    <Link to="/animations/dancing-circles">
                         <h3 className="animations__grid-item--dancing-circles floating">Dancing Circles</h3>
-                    </a>
+                    </Link>
                 </div> 
                 <div className="animations__grid-item">
-                    <a href="/dancing-fractals">
+                    <Link to="/animations/dancing-fractals">
                         <h3 className="animations__grid-item--dancing-circles floating">Dancing Fractals</h3>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>
