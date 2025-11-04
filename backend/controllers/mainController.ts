@@ -170,7 +170,17 @@ const loginUser = async (req: Request, res: Response) => {
         if (user) {
             const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
             if (isPasswordCorrect) {
-                const token = jwt.sign({ user_id: user.user_id }, process.env.SESSION_SECRET!, { expiresIn: '4h' });
+                const token = jwt.sign({ user_id: user.user_id, user_name: user.user_name }, process.env.SESSION_SECRET!, { expiresIn: '4h' });
+
+                const isProd = process.env.NODE_ENV === 'production';
+                res.cookie('session', token, {
+                    httpOnly: true,
+                    secure: isProd,      // true on https
+                    sameSite: isProd ? 'none' : 'lax', // if you serve frontend on a different domain with https use 'none'
+                    signed: true,        // because app.ts uses cookieParser(process.env.SESSION_SECRET)
+                    maxAge: 4 * 60 * 60 * 1000, // 4 hours, same as token
+                });
+
                 // Send a JSON response with success status and the token
                 res.json({ success: true, token: token, user_name: user.user_name }); // Include the token in the response
             } else {

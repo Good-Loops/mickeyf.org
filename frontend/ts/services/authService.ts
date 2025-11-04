@@ -1,8 +1,4 @@
-const MODE = import.meta.env.MODE;
-const API_BASE =
-  MODE === 'development'
-    ? import.meta.env.VITE_DEV_API_URL
-    : import.meta.env.VITE_PROD_API_URL;
+import { API_BASE } from '../config/apiConfig';
 
 type LoginPayload = {
     user_name: string;
@@ -25,6 +21,7 @@ export async function loginRequest(
     const resp = await fetch(`${API_BASE}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
             type: 'login',
             user_name: payload.user_name,
@@ -39,12 +36,10 @@ export async function loginRequest(
   return resp.json();
 }
 
-export async function verifyTokenRequest(token: string) {
+export async function verifyRequest() {
     const resp = await fetch(`${API_BASE}/auth/verify-token`, {
         method: 'GET',
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
     });
 
   if (!resp.ok) {

@@ -2,26 +2,46 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 const authController = (req: Request, res: Response) => {
-    // Get the Authorization header
+    const secret = process.env.SESSION_SECRET!;
+
+    // 1) try cookie first (because we set it on login)
+    const signedCookieToken = req.signedCookies?.session;
+
+    if (signedCookieToken) {
+            jwt.verify(signedCookieToken, secret, (err: unknown, decoded: unknown) => {
+            if (err) {
+                return res.json({ loggedIn: false });
+            }
+
+            // decoded will have user_name now because we put it in the token
+            const payload = decoded as { user_id: number; user_name?: string };
+
+            return res.json({
+                loggedIn: true,
+                user_name: payload.user_name ?? null,
+            });
+        });
+        return;
+    }
+
+    // 2) fallback to Authorization header (old behavior)
     const authHeader = req.headers.authorization;
 
-    // Check if the Authorization header is present and formatted correctly
     if (authHeader && authHeader.startsWith('Bearer ')) {
-        // Extract the token from the Authorization header
         const token = authHeader.split(' ')[1];
 
-        // Verify the token
-        jwt.verify(token, process.env.SESSION_SECRET!, (err: unknown, decoded: unknown) => {
+        jwt.verify(token, secret, (err, decoded) => {
             if (err) {
-                // If an error occurred, the token is not valid
                 res.json({ loggedIn: false });
             } else {
-                // If no error occurred, the token is valid
-                res.json({ loggedIn: true });
+                const payload = decoded as { user_id: number; user_name?: string };
+                res.json({
+                    loggedIn: true,
+                    user_name: payload.user_name ?? null,
+                });
             }
         });
     } else {
-        // If the Authorization header is not present or not formatted correctly
         res.json({ loggedIn: false });
     }
 }

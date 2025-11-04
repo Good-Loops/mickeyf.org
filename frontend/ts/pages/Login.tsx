@@ -49,7 +49,7 @@ const Login: React.FC = () => {
             <input
                 className="login__input login__input--btn"
                 type="submit"
-                value={loading ? 'Logging in...' : 'Log in'}
+                value="Log In"
                 disabled={loading}
             />
             </form>

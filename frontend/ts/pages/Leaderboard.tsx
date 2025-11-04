@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
+import { API_BASE } from '../config/apiConfig';
 
 interface LeaderboardEntry {
   user_name: string;
@@ -12,14 +13,9 @@ const Leaderboard: React.FC = () => {
 
 	useEffect(() => {
 		const fetchLeaderboard = async () => {
-			const env = import.meta.env.MODE;
-			const apiUrl =
-				env === 'development'
-				? import.meta.env.VITE_DEV_API_URL
-				: import.meta.env.VITE_PROD_API_URL;
 
 			try {
-				const res = await fetch(`${apiUrl}/api/users`, {
+				const res = await fetch(`${API_BASE}/api/users`, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
