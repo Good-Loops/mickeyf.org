@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Animations from "./pages/Animations";
 import Games from "./pages/Games";
 import Leaderboard from "./pages/Leaderboard";
+import Social from "./pages/Social";
 
 const App: React.FC = () => {
   return (
@@ -44,9 +45,9 @@ const App: React.FC = () => {
           <Route path="/animations" element={<Animations />} />
           <Route path="/games" element={<Games />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/social" element={<Social />} />
           {/* <Route path="/login" element={<Login />} /> */}
           {/* <Route path="/register" element={<Register />} /> */}
-          {/* <Route path="/social" element={<Social />} /> */}
           {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       </main>
