@@ -2,7 +2,6 @@ import Alpine from 'alpinejs';
 import page from 'page';
 
 import IUserCreate from './register/interfaces/IUserCreate';
-import IUserLogin from './login/Interfaces/IUserLogin';
 
 /**
  * Represents a record of event listeners.
@@ -40,16 +39,6 @@ declare global {
          * Function to create a user.
          */
         userCreate: () => IUserCreate;
-
-        /**
-         * Function to login a user.
-         */
-        userLogin: () => IUserLogin;
-
-        /**
-         * Boolean indicating if the user is logged in.
-         */
-        isLoggedIn: boolean;
 
         /**
          * Record of event listeners.
