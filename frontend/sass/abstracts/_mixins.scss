@@ -107,10 +107,10 @@
 
             border: .18em solid $gray-light;
             border-radius: .5em;
-            transition: border 0.7s;
+            transition: all 0.7s;
 
             &:active {
-                transform: scale(.85);
+                transform: scale(.7);
             }
 
             &:hover {
