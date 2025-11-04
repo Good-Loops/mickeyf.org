@@ -4,9 +4,9 @@
 
     @include default-component;
 
-    // &__grid {
-
-    // }
+    &__title {
+        margin-top: 3em;
+    }
 
     &__grid-item {
         font-size: 2rem;

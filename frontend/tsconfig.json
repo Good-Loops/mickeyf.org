@@ -16,7 +16,7 @@
     },
     "include": [
         "**/*.ts"
-, "ts/pages/Animations.tsx"    ],
+, "ts/pages/Animations.tsx", "ts/pages/Games.tsx"    ],
     "exclude": [
         "node_modules"
     ]

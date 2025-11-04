@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, NavLink } from "react-router-dom";
 import Home from "./pages/Home";
 import Animations from "./pages/Animations";
+import Games from "./pages/Games";
 
 const App: React.FC = () => {
   return (
@@ -40,7 +41,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/animations" element={<Animations />} />
-          {/* <Route path="/games" element={<Games />} /> */}
+          <Route path="/games" element={<Games />} />
           {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
           {/* <Route path="/login" element={<Login />} /> */}
           {/* <Route path="/register" element={<Register />} /> */}
