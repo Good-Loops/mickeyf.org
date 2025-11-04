@@ -39,4 +39,3 @@ const firebaseConfig = {
  * Initializes Firebase with the provided configuration.
  */
 initializeApp(firebaseConfig);
-
