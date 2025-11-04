@@ -93,33 +93,39 @@ const Home: React.FC = () => {
 		const quoteHeight = quoteEl?.offsetHeight ?? 90;
 
 		const padding = 20;
+		
+		const header = document.querySelector(".header") as HTMLElement;
+        const headerHeight = header?.offsetHeight ?? 80;
+		const paddingTop = headerHeight + 30;
 
-		// max allowed so we don't go off-screen
 		const maxLeft = Math.max(padding, containerWidth - quoteWidth - padding);
-		const maxTop = Math.max(padding, containerHeight - quoteHeight - padding);
+		const maxTop = Math.max(paddingTop, containerHeight - quoteHeight - padding);
 
 		const left = padding + Math.random() * (maxLeft - padding);
-		const top = padding + Math.random() * (maxTop - padding);
+		const top = paddingTop + Math.random() * (maxTop - paddingTop);
 
 		setPos({ top, left });
   	}, [quote]);
 
 	useEffect(() => {
-		if (!quote) return;
+		if (!quote) setQuote(pickRandomQuote());
+
+		let fadeTimeout: number;
+		const interval = setInterval(() => {
+			setVisible(false);
+
+			fadeTimeout = setTimeout(() => {
+				setQuote(pickRandomQuote());
+				setVisible(true);
+			}, FADE_MS);
+		}, DISPLAY_MS + FADE_MS);
 
 		setVisible(true);
 
-		const displayTimer = setTimeout(() => {
-			setVisible(false);
-
-			const fadeTimer = setTimeout(() => {
-				setQuote(pickRandomQuote());
-			}, FADE_MS);
-
-			return () => clearTimeout(fadeTimer);
-		}, DISPLAY_MS);
-
-		return () => clearTimeout(displayTimer);
+		return () => {
+			clearInterval(interval);
+			clearTimeout(fadeTimeout);
+		};
   	}, [quote]);
 
 	return (

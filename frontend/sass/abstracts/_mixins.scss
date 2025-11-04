@@ -274,6 +274,11 @@
     &:focus {
         text-shadow: $label-text-shadow;
     }
+
+    &:focus:not(:focus-visible),
+    &:active {
+        text-shadow: none;
+    }
 }
 
 // Default nav item styling

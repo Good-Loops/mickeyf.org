@@ -2,6 +2,8 @@
 
 .leaderboard {
     @include default-component;
+    row-gap: 0;
+
     padding-block: 2em;
     padding-inline: 8em;
 
