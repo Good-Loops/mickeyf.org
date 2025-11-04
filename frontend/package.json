@@ -22,7 +22,6 @@
         "firebase": "^10.12.0",
         "http-proxy-middleware": "^3.0.0",
         "os-browserify": "^0.3.0",
-        "page": "^1.11.6",
         "path-browserify": "^1.0.1",
         "pitchy": "^4.0.7",
         "pixi-filters": "^6.0.3",
@@ -38,7 +37,7 @@
     },
     "devDependencies": {
         "@types/alpinejs": "^3.13.10",
-        "@types/node": "^20.12.11",
+        "@types/node": "^20.19.24",
         "@types/page": "^1.11.9",
         "@types/react": "^19.2.2",
         "@types/react-dom": "^19.2.2",
