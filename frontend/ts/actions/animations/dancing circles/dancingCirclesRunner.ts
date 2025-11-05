@@ -38,6 +38,7 @@ export default async function startDancingCircles({
 
     container.append(canvas);
 
+    container.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
     new FullscreenButton(canvas, container);
 
     AudioHandler.initializeUploadButton(fileInput, uploadButton);
