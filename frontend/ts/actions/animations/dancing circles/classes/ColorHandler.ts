@@ -88,8 +88,8 @@ export default class ColorHandler {
      * @returns The interpolated HSL color string.
      */
     lerpColor(start: string, end: string, interpolationFactor: number): string {
-        let separator = ',';
-        let limit = 3;
+        const separator = ',';
+        const limit = 3;
 
         const [hueStart, saturationStart, lightnessStart]: number[] = start
             .substring(4, start.length - 1)

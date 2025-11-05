@@ -109,7 +109,7 @@ export default class AudioHandler {
             function getCurrentPitch(
                 analyserNode: AnalyserNode,
                 detector: PitchDetector<Float32Array>,
-                input: Float32Array,
+                input: Float32Array<ArrayBuffer>,
                 sampleRate: number
             ): void {
                 if (
@@ -171,7 +171,7 @@ export default class AudioHandler {
             AudioHandler.playing = true;
 
             const detector = PitchDetector.forFloat32Array(analyser.fftSize);
-            const input = new Float32Array(detector.inputLength);
+            const input = new Float32Array(new ArrayBuffer(detector.inputLength * Float32Array.BYTES_PER_ELEMENT));
             getCurrentPitch(analyser, detector, input, audioContext.sampleRate);
         };
         process();
