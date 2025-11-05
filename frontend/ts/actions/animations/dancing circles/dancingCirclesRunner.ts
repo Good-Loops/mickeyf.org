@@ -1,55 +1,49 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
 import {
-    getRandomIndexArray,
-    getRandomX,
-    getRandomY,
-} from '../../../utils/random';
+  getRandomIndexArray,
+  getRandomX,
+  getRandomY,
+} from "../../../utils/random";
 
-import ColorHandler from './classes/ColorHandler';
-import CircleHandler from './classes/CircleHandler';
-import AudioHandler from './classes/AudioHandler';
+import ColorHandler from "./classes/ColorHandler";
+import CircleHandler from "./classes/CircleHandler";
+import AudioHandler from "./classes/AudioHandler";
 
-import { Application, Graphics } from 'pixi.js';
+import { Application, Graphics } from "pixi.js";
+import FullscreenButton from "../../../helpers/FullscreenButton";
 
-import FullscreenButton from '../../../helpers/FullscreenButton';
+type DancingCirclesDeps = {
+    container: HTMLElement;
+    uploadButton: HTMLLabelElement;
+    fileInput: HTMLInputElement;
+};
 
-/**
- * Function to initialize and run the dancing circles animation.
- */
-export default async function dancingCircles() {
+export default async function startDancingCircles({
+    container,
+    uploadButton,
+    fileInput,
+}: DancingCirclesDeps) {
     const app = new Application();
-    (globalThis as any).__PIXI_APP__ = app; // pixi devtools
 
     await app.init({
         antialias: true,
-        backgroundColor: 'hsl(204, 92%, 80%)',
+        backgroundColor: "hsl(204, 92%, 80%)",
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
     });
 
     const { canvas } = app;
-    canvas.className = 'dancing-circles__canvas';
-    canvas.id = 'dc-canvas';
+    canvas.className = "dancing-circles__canvas";
+    canvas.id = "dc-canvas";
 
-    const sectionDataAttribute = '[data-dancing-circles]';
-    document.querySelector(sectionDataAttribute)!.append(canvas);
+    container.append(canvas);
 
-    new FullscreenButton(canvas, sectionDataAttribute);
+    new FullscreenButton(canvas, container);
 
-    let stop: boolean;
-
-    const uploadButton = document.querySelector(
-        '[data-upload-button]'
-    ) as HTMLLabelElement;
-    const fileInput = document.querySelector(
-        '[data-file-upload]'
-    ) as HTMLInputElement;
     AudioHandler.initializeUploadButton(fileInput, uploadButton);
 
     const colorChangingCircles = 2;
-
     const colorHandler = new ColorHandler();
-
     const circleHandler = new CircleHandler(0);
 
     /**
@@ -202,6 +196,9 @@ export default async function dancingCircles() {
         });
     };
 
+    let stop = false;
+    const raf = { id: 0 as number };
+
     /**
      * The main animation loop.
      * @param timeStamp - The current timestamp.
@@ -229,9 +226,16 @@ export default async function dancingCircles() {
             drawTimer = 0;
         }
 
-        window.danceCirclesAnimationID = requestAnimationFrame(step);
+        raf.id = requestAnimationFrame(step);
     };
 
     load();
     step(0);
+
+    return () => {
+        stop = true;
+        if (raf.id) cancelAnimationFrame(raf.id);
+        app.destroy(true, { children: true, texture: true });
+        canvas.remove();
+    };
 }

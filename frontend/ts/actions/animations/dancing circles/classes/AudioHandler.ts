@@ -1,4 +1,6 @@
 import { PitchDetector } from "pitchy";
+import notAllowedCursor from "@/assets/cursors/notallowed.cur";
+import selectCursor from "@/assets/cursors/select.cur";
 
 /**
  * A class to handle audio processing and analysis for the dancing circles animation.
@@ -34,46 +36,29 @@ export default class AudioHandler {
 
     /**
      * Initializes the upload button to handle file input and audio processing.
-     *
+     * Redirects clicks on the upload button to the file input element.
+     * 
      * @param fileInput - The HTML input element for file uploads.
      * @param uploadButton - The HTML label element that acts as the upload button.
+     * 
+     * @returns A function to remove the event listeners when no longer needed.
      *
-     * This method sets up event listeners on the provided file input and upload button elements.
-     * When the upload button is clicked, it triggers the file input click event.
-     * When a file is selected, it processes the audio file using the `AudioHandler.processAudio` method.
-     *
-     * Additionally, it registers these event listeners in the global `window.eventListeners` object
-     * under the component ID 'dancing-circles' to keep track of them.
      */
     static initializeUploadButton = (
         fileInput: HTMLInputElement,
         uploadButton: HTMLLabelElement
-    ): void => {
-        const redirect = (event: Event): void => {
-            event.preventDefault();
-            fileInput.click();
+    ): (() => void) => {
+        const handleChange = () => {
+            if (fileInput.files?.length) {
+                AudioHandler.processAudio(fileInput, uploadButton);
+            }
         };
-        uploadButton.addEventListener('click', redirect);
 
-        const process = (): void => {
-            AudioHandler.processAudio(fileInput, uploadButton);
+        fileInput.addEventListener("change", handleChange);
+
+        return () => {
+            fileInput.removeEventListener("change", handleChange);
         };
-        fileInput.addEventListener('change', process);
-
-        let componentId = 'dancing-circles';
-        if (!window.eventListeners[componentId]) {
-            window.eventListeners[componentId] = [];
-        }
-        window.eventListeners[componentId].push({
-            element: fileInput,
-            event: 'change',
-            handler: process,
-        });
-        window.eventListeners[componentId].push({
-            element: uploadButton,
-            event: 'click',
-            handler: redirect,
-        });
     }
 
     /**
@@ -90,90 +75,98 @@ export default class AudioHandler {
      * 5. Updates the AudioHandler properties with the analyzed data.
      * 6. Restores the UI state when the audio ends or the volume drops below a threshold.
      */
-    static processAudio = (
+    static async processAudio(
         fileInput: HTMLInputElement,
         uploadButton: HTMLLabelElement
-    ): void => {
-        const process = (): void => {
-            uploadButton.classList.add('playing');
+    ): Promise<void> {
+        uploadButton.classList.add("playing");
+        fileInput.disabled = true;
+        uploadButton.style.cursor = `url(${notAllowedCursor}), auto`;
 
-            fileInput.disabled = true;
-            uploadButton.style.cursor =
-                'url("./assets/img/notallowed.cur"), auto';
+        const files = fileInput.files as FileList;
+        const file = files[0] as File;
+        const music = new Audio(URL.createObjectURL(file));
 
-            const files = fileInput.files as FileList;
-            const file = files[0] as File;
-            const music = new Audio(URL.createObjectURL(file));
+        const audioContext = new window.AudioContext();
+        await audioContext.resume();
 
-            let i = 0;
-            function getCurrentPitch(
-                analyserNode: AnalyserNode,
-                detector: PitchDetector<Float32Array>,
-                input: Float32Array<ArrayBuffer>,
-                sampleRate: number
-            ): void {
-                if (
-                    music.ended ||
-                    (AudioHandler.volume < -1000 &&
-                        AudioHandler.volume != -Infinity)
-                ) {
-                    AudioHandler.volume = -Infinity;
-                    AudioHandler.playing = false;
+        // analyser
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
 
-                    fileInput.disabled = false;
-                    uploadButton.style.cursor =
-                        "url('./assets/img/select.cur'), auto";
-                    uploadButton.classList.remove('playing');
-                    fileInput.value = '';
-                    i = 0;
-                    return;
-                }
+        // 🔊 connect audio element → analyser → speakers
+        const source = audioContext.createMediaElementSource(music);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
 
-                if (AudioHandler.playing == false) music.pause();
-                else music.play();
+        // start playback
+        music.load();
+        // optionally await play to satisfy autoplay policies
+        try {
+            await music.play();
+        } catch {
+        // if the browser blocks it, we still have the analyser
+        }
+        AudioHandler.playing = true;
 
-                analyserNode.getFloatTimeDomainData(input);
-                [AudioHandler.pitch, AudioHandler.clarity] = detector.findPitch(
-                    input,
-                    sampleRate
-                );
+        // pitch detector
+        const detector = PitchDetector.forFloat32Array(analyser.fftSize);
+        const input = new Float32Array(
+            new ArrayBuffer(detector.inputLength * Float32Array.BYTES_PER_ELEMENT)
+        );
 
-                // pitch in Hz
-                AudioHandler.pitch = Math.round(AudioHandler.pitch * 10) * 0.1;
-                // Round clarity to nearest whole number
-                AudioHandler.clarity = Math.round(AudioHandler.clarity * 100);
-                // volume in decibels
-                AudioHandler.volume = Math.round(
-                    20 * Math.log10(Math.max(...input))
-                );
-                // duration in seconds
-                AudioHandler.duration = music.duration;
+        const getCurrentPitch = (
+            analyserNode: AnalyserNode,
+            detector: PitchDetector<Float32Array>,
+            input: Float32Array<ArrayBuffer>,
+            sampleRate: number
+        ): void => {
+            // stop condition
+            if (
+                music.ended ||
+                (AudioHandler.volume < -1000 && AudioHandler.volume !== -Infinity)
+            ) {
+                AudioHandler.volume = -Infinity;
+                AudioHandler.playing = false;
 
-                window.setTimeout(
-                    () =>
-                        getCurrentPitch(
-                            analyserNode,
-                            detector,
-                            input,
-                            sampleRate
-                        ),
-                    1000 / 60
-                );
+                fileInput.disabled = false;
+                uploadButton.style.cursor = `url(${selectCursor}), auto`;
+                uploadButton.classList.remove("playing");
+                fileInput.value = "";
+                return;
             }
 
-            const audioContext = new window.AudioContext();
-            const analyser = audioContext.createAnalyser();
-            audioContext.createMediaElementSource(music).connect(analyser);
-            analyser.fftSize = 2048;
+            // keep play/pause in sync with AudioHandler.playing
+            if (AudioHandler.playing === false) music.pause();
+            else music.play();
 
-            music.load();
-            music.play();
-            AudioHandler.playing = true;
+            // read audio data
+            analyserNode.getFloatTimeDomainData(input);
+            [AudioHandler.pitch, AudioHandler.clarity] = detector.findPitch(
+                input,
+                sampleRate
+            );
 
-            const detector = PitchDetector.forFloat32Array(analyser.fftSize);
-            const input = new Float32Array(new ArrayBuffer(detector.inputLength * Float32Array.BYTES_PER_ELEMENT));
-            getCurrentPitch(analyser, detector, input, audioContext.sampleRate);
+            // pitch in Hz (rounded)
+            AudioHandler.pitch = Math.round(AudioHandler.pitch * 10) * 0.1;
+            // clarity as percentage
+            AudioHandler.clarity = Math.round(AudioHandler.clarity * 100);
+            // volume in decibels
+            AudioHandler.volume = Math.round(
+                20 * Math.log10(Math.max(...input))
+            );
+            // duration in seconds
+            AudioHandler.duration = music.duration;
+
+            // loop ~60fps
+            window.setTimeout(
+                () =>
+                getCurrentPitch(analyserNode, detector, input, sampleRate),
+                1000 / 60
+            );
         };
-        process();
+
+        // start analysis loop
+        getCurrentPitch(analyser, detector, input, audioContext.sampleRate);
     };
 }

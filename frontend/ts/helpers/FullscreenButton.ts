@@ -8,18 +8,16 @@ export default class FullscreenButton {
     /**
      * Initializes a new instance of the FullscreenButton class.
      * @param canvas - The target element to be displayed in fullscreen.
-     * @param sectionDataAttribute - The data attribute of the section where the fullscreen button will be appended.
+     * @param parent - The container element where the fullscreen button will be appended.
      */
-    constructor(canvas: HTMLElement, sectionDataAttribute: string) {
+    constructor(canvas: HTMLElement, parent: HTMLElement) {
         this.targetElement = canvas;
 
         this.fullscreenButton = document.createElement('button');
         this.fullscreenButton.textContent = 'Fullscreen';
         this.fullscreenButton.className = 'fullscreen-btn';
 
-        document
-            .querySelector(sectionDataAttribute)!
-            .append(this.fullscreenButton);
+        parent.append(this.fullscreenButton);
 
         this.attachEventListeners();
     }
