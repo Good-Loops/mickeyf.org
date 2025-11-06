@@ -22,14 +22,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 'latest'  # You can specify the Node.js version you need
+          node-version: 'latest'  # pin if you want reproducible builds
 
       - name: Install dependencies
         run: npm install
         working-directory: frontend
 
       - name: Build the project
-        run: npm run prod && npm run postbuild
+        run: npm run build
         working-directory: frontend
         env:
           NODE_ENV: 'production'
