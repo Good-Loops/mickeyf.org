@@ -1,0 +1,11 @@
+@use '../abstracts' as *;
+
+.dancing-fractals {
+    display: grid;
+    gap: 2em;
+
+    &__canvas {
+        @include canvas-shadow-effect;
+        justify-self: center;
+    }
+}

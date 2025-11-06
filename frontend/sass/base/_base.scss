@@ -15,6 +15,7 @@ body {
     min-height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
+    cursor: $cursor;
 }
 
 // Settings to set the font-size to 10px for easier rem calculations
@@ -27,7 +28,6 @@ html {
 }
 
 body {
-    cursor: $cursor;
     background-image: $page-bg-gradient;
 }
 

@@ -4,20 +4,27 @@
     
     @include default-component;
 
-    &__grid-item {
-        font-size: 2rem;
+    &__grid {
+    
+        display: grid;
+        grid-auto-flow: column;
+        gap: 4em;
 
-        &--dancing-circles {
-            @include default-btn;
+        &-item {
+            font-size: $font-size-m;
 
-            &:hover {
-                @include default-btn-hover;
+            &--dancing-circles {
+                @include default-btn;
+
+                &:hover {
+                    @include default-btn-hover;
+                }
+
+                &:active {
+                    @include default-btn-active;
+                }
+
             }
-
-            &:active {
-                @include default-btn-active;
-            }
-
         }
     }
 }

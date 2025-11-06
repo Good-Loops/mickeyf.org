@@ -2,11 +2,14 @@
 
 .header {
     min-height: 5vh;
-}
 
-.logged-in-message {
-    display: none;
-    color: $secondary;
+    &__user {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.2rem;
+        color: $secondary;
+    }
 }
 
 .logout {

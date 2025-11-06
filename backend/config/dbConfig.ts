@@ -1,27 +1,33 @@
 import { createPool } from 'mysql2/promise';
 
-// For production
-export const pool = createPool({
-    user: process.env.DB_USER,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASS,
-    socketPath: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+const { DB_USER, DB_PASS, DB_NAME } = process.env;
 
-// For development
+// For production
 // const pool = createPool({
-//     host: 'localhost',
-//     port: 3306,
-//     user: process.env.DB_USER,
-//     database: process.env.DB_NAME,
-//     password: process.env.DB_PASS,
+//     user: DB_USER,
+//     database: DB_NAME,
+//     password: DB_PASS,
+//     socketPath: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
 //     waitForConnections: true,
 //     connectionLimit: 10,
 //     queueLimit: 0
 // });
+
+console.log("DB_USER:", DB_USER);
+console.log("DB_NAME:", DB_NAME);
+console.log("DB_PASS:", DB_PASS);
+
+// For development
+const pool = createPool({
+    host: 'localhost',
+    port: 3306,
+    user: DB_USER,
+    database: DB_NAME,
+    password: DB_PASS,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
 
 // Establish a connection to the database and log a success message if successful, or an error message if failed
 pool.getConnection()

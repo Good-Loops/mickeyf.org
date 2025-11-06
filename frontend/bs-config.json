@@ -4,7 +4,6 @@
         "**/*"
     ],
     "server": {
-        "baseDir": "./public",
-        "open": false
+        "baseDir": "./public"
     }
 }

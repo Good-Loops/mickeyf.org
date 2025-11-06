@@ -2,8 +2,10 @@
 
 .leaderboard {
     @include default-component;
-    padding-block: 2rem;
-    padding-inline: 8rem;
+    row-gap: 0;
+
+    padding-block: 2em;
+    padding-inline: 8em;
 
     border-radius: .8em;
 
@@ -16,16 +18,25 @@
         list-style-type: decimal;
     }
 
+    &__item-container {
+        display: flex;
+    }
+
+
     &__list-item {
-        font-size: 3em;
+        font-size: 3rem;
         font-weight: 900;
         font-family: $subheading-font;
         
-        padding: .5rem .8rem;
-        margin: .5rem 0;
+        padding: .5em .8em;
+        margin: .5em 0;
 
         box-shadow: $dark-box-shadow;
 
         border-radius: .2em;
+    }
+
+    &__score {
+        margin-left: auto;
     }
 }
