@@ -8,7 +8,7 @@ import ColorManager from '../helpers/ColorManager';
 import { color, drawConfig } from '../animations.types';
 
 // TODO: Understand how variables affect animation
-export default async function danceFractals() {
+export default async function dancingFractalsRunner(container: HTMLElement): Promise<() => void> {
 
     const app = new Application();
     (globalThis as any).__PIXI_APP__ = app; // pixi devtools
@@ -20,11 +20,9 @@ export default async function danceFractals() {
         height: CANVAS_HEIGHT
     });
 
-    const sectionDataAttribute = '[data-dancing-fractals]';
+    container.append(app.canvas);
 
-    document.querySelector(sectionDataAttribute)!.append(app.canvas);
-
-    new FullscreenButton(app.canvas, sectionDataAttribute);
+    new FullscreenButton(app.canvas, container);
 
     const centerX = app.screen.width / 2;
     const centerY = app.screen.height / 2;
@@ -282,5 +280,7 @@ export default async function danceFractals() {
         fractalWidth = 15 * Math.sin(angleTheta);
     });
 
-    window.danceFractalsTicker = app.ticker;
+    return (): void => {
+        app.destroy(true, { children: true, texture: true });
+    }
 }

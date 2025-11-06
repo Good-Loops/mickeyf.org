@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import startDancingCircles from "../../actions/animations/dancing circles/dancingCirclesRunner"; 
+import dancingCirclesRunner from "../../actions/animations/dancing circles/dancingCirclesRunner"; 
 
 const DancingCircles: React.FC = () => {
 	const containerRef = useRef<HTMLElement | null>(null);
@@ -12,7 +12,7 @@ const DancingCircles: React.FC = () => {
 		let dispose: (() => void) | undefined;
 
 		(async () => {
-			dispose = await startDancingCircles({
+			dispose = await dancingCirclesRunner({
 				container: containerRef.current!,
 				uploadButton: uploadRef.current!,
 				fileInput: inputRef.current!,

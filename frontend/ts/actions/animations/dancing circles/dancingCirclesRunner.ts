@@ -18,7 +18,7 @@ type DancingCirclesDeps = {
     fileInput: HTMLInputElement;
 };
 
-export default async function startDancingCircles({
+export default async function dancingCirclesRunner({
     container,
     uploadButton,
     fileInput,
