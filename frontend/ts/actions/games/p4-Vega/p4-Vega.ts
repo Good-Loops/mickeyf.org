@@ -2,6 +2,8 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
 import { getRandomInt } from '../../../utils/random';
 import gameOver from '../utils/gameOver';
 
+import { API_BASE } from '../../../config/apiConfig';
+
 import Dropdown from '../../../helpers/Dropdown';
 import FullscreenButton from '../../../helpers/FullscreenButton';
 
@@ -20,10 +22,15 @@ import Swal from 'sweetalert2';
 import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
 
+type P4VegaAuth = {
+  isAuthenticated?: boolean;
+  userName?: string | null;
+};
+
 /**
  * Main function to initialize and run the p4-Vega game.
  */
-export default async function p4Vega(): Promise<void> {
+export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth): Promise<() => void> {
     const renderer = await PIXI.autoDetectRenderer({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
@@ -33,18 +40,18 @@ export default async function p4Vega(): Promise<void> {
     const canvas = renderer.view.canvas as HTMLCanvasElement;
     canvas.className = 'p4-vega__canvas';
     canvas.id = 'p4-canvas';
-    const sectionDataAttribute = '[data-p4-vega]';
-    document.querySelector(sectionDataAttribute)!.appendChild(canvas);
+    container?.appendChild(canvas);
 
     const stage = new PIXI.Container();
 
-    new FullscreenButton(canvas, sectionDataAttribute);
+    container?.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
+    const fullscreenBtn = new FullscreenButton(canvas, container!);
 
     const bgMusicCheckbox = document.querySelector(
         '[data-bg-music-playing]'
     ) as HTMLInputElement;
     window.p4MusicPlayer = new Tone.Player({
-        url: './assets/audio/bg-sound-p4.mp3',
+        url: '/assets/audio/bg-sound-p4.mp3',
         loop: true,
     }).toDestination();
 
@@ -58,7 +65,6 @@ export default async function p4Vega(): Promise<void> {
             window.p4MusicPlayer.stop();
         }
     };
-    bgMusicCheckbox.addEventListener('change', toggleBackgroundMusic);
 
     const notesPlayingCheckbox = document.querySelector(
         '[data-musical-notes-playing]'
@@ -71,7 +77,6 @@ export default async function p4Vega(): Promise<void> {
     const toggleNotesPlaying = (): void => {
         notesPlaying = notesPlayingCheckbox.checked;
     };
-    notesPlayingCheckbox.addEventListener('change', toggleNotesPlaying);
 
     const scalesDropdown = new Dropdown(
         'data-dropdown-scales',
@@ -89,10 +94,6 @@ export default async function p4Vega(): Promise<void> {
         toggleScaleSelection: scalesDropdown.toggleSelection('data-scale'),
         toggleKeySelection: keysDropdown.toggleSelection('data-key'),
     };
-    document.addEventListener('click', dropdownHandlers.toggleScalesDropdown);
-    document.addEventListener('click', dropdownHandlers.toggleKeysDropdown);
-    document.addEventListener('click', dropdownHandlers.toggleScaleSelection);
-    document.addEventListener('click', dropdownHandlers.toggleKeySelection);
 
     let gameLive: boolean,
         gameOverTexts: PIXI.ContainerChild[] = [],
@@ -115,13 +116,13 @@ export default async function p4Vega(): Promise<void> {
             '[data-water]'
         ) as HTMLImageElement;
         const bhBlueImage = document.querySelector(
-            '[data-bhBlue]'
+            '[data-bh-blue]'
         ) as HTMLImageElement;
         const bhRedImage = document.querySelector(
-            '[data-bhRed]'
+            '[data-bh-red]'
         ) as HTMLImageElement;
         const bhYellowImage = document.querySelector(
-            '[data-bhYellow]'
+            '[data-bh-yellow]'
         ) as HTMLImageElement;
 
         const p4Texture = (await PIXI.Assets.load(p4Image)) as PIXI.Texture;
@@ -201,7 +202,8 @@ export default async function p4Vega(): Promise<void> {
 
         if (!gameLive) {
             ticker.stop();
-            if (window.isLoggedIn) {
+            const isAuthenticated = auth?.isAuthenticated || false;
+            if (isAuthenticated) {
                 await submitScore();
             }
             gameOverTexts = await gameOver(gameLive, p4);
@@ -244,27 +246,17 @@ export default async function p4Vega(): Promise<void> {
         ticker.start();
     };
 
-    const environment = process.env.NODE_ENV as string;
-    const apiUrl =
-        environment === 'development'
-            ? process.env.DEV_API_URL!
-            : process.env.PROD_API_URL!;
-
     /**
      * Submits the player's score to the server.
      */
     const submitScore = async () => {
         const p4_score = p4.totalWater;
 
-        const storedToken = localStorage.getItem('sessionToken');
-        const loggedInUsername = localStorage.getItem('user_name');
+        const loggedInUsername = auth?.userName;
 
-        await fetch(`${apiUrl}/api/users`, {
+        await fetch(`${API_BASE}/api/users`, {
             method: 'POST',
-            headers: {
-                Authorization: `Bearer ${storedToken}`,
-                'Content-Type': 'application/json',
-            },
+            credentials: 'include',
             body: JSON.stringify({
                 type: 'submit_score',
                 p4_score: p4_score,
@@ -318,7 +310,6 @@ export default async function p4Vega(): Promise<void> {
                 break;
         }
     };
-    document.addEventListener('keydown', handleKeydown);
 
     /**
      * Handles keyup events for stopping player movement.
@@ -343,55 +334,97 @@ export default async function p4Vega(): Promise<void> {
                 break;
         }
     };
-    document.addEventListener('keyup', handleKeyup);
 
-    const componentId = 'p4-Vega';
+    const registeredListeners: Array<{
+        element: Document | HTMLElement;
+        event: string;
+        handler: EventListener;
+    }> = [];
 
-    if (!window.eventListeners[componentId]) {
-        window.eventListeners[componentId] = [];
-    }
-
-    window.eventListeners[componentId].push({
+    document.addEventListener("keydown", handleKeydown);
+    registeredListeners.push({
         element: document,
-        event: 'keyup',
-        handler: handleKeyup,
-    });
-    window.eventListeners[componentId].push({
-        element: document,
-        event: 'keydown',
+        event: "keydown",
         handler: handleKeydown,
     });
 
-    window.eventListeners[componentId].push({
-        element: bgMusicCheckbox,
-        event: 'change',
-        handler: toggleBackgroundMusic,
-    });
-    window.eventListeners[componentId].push({
-        element: notesPlayingCheckbox,
-        event: 'change',
-        handler: toggleNotesPlaying,
+    document.addEventListener("keyup", handleKeyup);
+    registeredListeners.push({
+        element: document,
+        event: "keyup",
+        handler: handleKeyup,
     });
 
-    window.eventListeners[componentId].push({
+    document.addEventListener("click", dropdownHandlers.toggleScalesDropdown);
+    registeredListeners.push({
         element: document,
-        event: 'click',
+        event: "click",
         handler: dropdownHandlers.toggleScalesDropdown,
     });
-    window.eventListeners[componentId].push({
+
+    document.addEventListener("click", dropdownHandlers.toggleKeysDropdown);
+    registeredListeners.push({
         element: document,
-        event: 'click',
+        event: "click",
         handler: dropdownHandlers.toggleKeysDropdown,
     });
 
-    window.eventListeners[componentId].push({
+    document.addEventListener("click", dropdownHandlers.toggleScaleSelection);
+    registeredListeners.push({
         element: document,
-        event: 'click',
+        event: "click",
         handler: dropdownHandlers.toggleScaleSelection,
     });
-    window.eventListeners[componentId].push({
+
+    document.addEventListener("click", dropdownHandlers.toggleKeySelection);
+    registeredListeners.push({
         element: document,
-        event: 'click',
+        event: "click",
         handler: dropdownHandlers.toggleKeySelection,
     });
+
+    bgMusicCheckbox.addEventListener("change", toggleBackgroundMusic);
+    registeredListeners.push({
+        element: bgMusicCheckbox,
+        event: "change",
+        handler: toggleBackgroundMusic,
+    });
+
+    notesPlayingCheckbox.addEventListener("change", toggleNotesPlaying);
+    registeredListeners.push({
+        element: notesPlayingCheckbox,
+        event: "change",
+        handler: toggleNotesPlaying,
+    });
+
+    return () => {
+        // stop ticker and destroy it
+        ticker.stop();
+        ticker.destroy();
+
+        // stop music
+        if (window.p4MusicPlayer) {
+        window.p4MusicPlayer.stop();
+        }
+
+        // remove PIXI stuff
+        p4?.destroy();
+        water?.destroy();
+        BlackHole.destroy();
+        stage.removeChildren();
+        renderer.destroy(true);
+
+        // remove canvas from DOM
+        canvas.remove();
+
+        // remove event listeners
+        registeredListeners.forEach(({ element, event, handler }) => {
+            element.removeEventListener(event, handler);
+        });
+
+        // destroy fullscreen button if it has a destroy
+        if (typeof (fullscreenBtn as any).destroy === "function") {
+            (fullscreenBtn as any).destroy();
+        }
+    };
 }

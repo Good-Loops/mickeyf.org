@@ -2,9 +2,13 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Header from "./Header";
 import Home from "./pages/Home";
+
 import Animations from "./pages/Animations";
 import DancingCircles from "./pages/animations/DancingCircles";
+
 import Games from "./pages/Games";
+import P4Vega from "./pages/games/P4Vega";
+
 import Leaderboard from "./pages/Leaderboard";
 import Social from "./pages/Social";
 import Login from "./pages/Login";
@@ -22,8 +26,9 @@ const App: React.FC = () => {
           <Route path="/animations/*" element={<Animations />} />
           <Route path="/animations/dancing-circles" element={<DancingCircles />} />
           
-          <Route path="/games" element={<Games />} />
-          
+          <Route path="/games/*" element={<Games />} />
+          <Route path="/games/p4-Vega" element={<P4Vega />} />
+
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/social" element={<Social />} />
           <Route path="/login" element={<Login />} />

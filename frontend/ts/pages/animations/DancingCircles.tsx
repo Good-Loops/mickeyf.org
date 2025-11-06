@@ -2,30 +2,30 @@ import React, { useEffect, useRef } from "react";
 import startDancingCircles from "../../actions/animations/dancing circles/dancingCirclesRunner"; 
 
 const DancingCircles: React.FC = () => {
-	const wrapRef = useRef<HTMLElement | null>(null);
+	const containerRef = useRef<HTMLElement | null>(null);
   	const uploadRef = useRef<HTMLLabelElement | null>(null);
   	const inputRef = useRef<HTMLInputElement | null>(null);
 
 	useEffect(() => {
-		if (!wrapRef.current || !uploadRef.current || !inputRef.current) return;
+		if (!containerRef.current || !uploadRef.current || !inputRef.current) return;
 
-		let cleanup: (() => void) | undefined;
+		let dispose: (() => void) | undefined;
 
 		(async () => {
-			cleanup = await startDancingCircles({
-				container: wrapRef.current!,
+			dispose = await startDancingCircles({
+				container: containerRef.current!,
 				uploadButton: uploadRef.current!,
 				fileInput: inputRef.current!,
 			});
 		})();
 
 		return () => {
-			cleanup?.();
+			dispose?.();
 		};
 	}, []);
 
 	return (
-		<section className="dancing-circles" ref={wrapRef}>
+		<section className="dancing-circles" ref={containerRef}>
 		<h1 className="u-canvas-title">Dancing Circles</h1>
 
 		<label

@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Games: React.FC = () => {
     return (
@@ -6,9 +7,9 @@ const Games: React.FC = () => {
             <h1 className="games__title">Games</h1>
             <div className="games__grid">
                 <div className="games__grid-item">
-                    <a href="/p4-Vega" onClick={(e) => { e.preventDefault(); }}>
+                    <Link to="/games/p4-Vega">
                         <h3 className="games__grid-item--p4 floating">p4-Vega</h3>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>
