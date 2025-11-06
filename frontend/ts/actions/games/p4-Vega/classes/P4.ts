@@ -1,34 +1,44 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../../utils/constants"
-import Entity from "../../helpers/Entity"
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../../utils/constants';
+import Entity from '../../helpers/Entity';
 import * as PIXI from 'pixi.js';
 
+/**
+ * Class representing the player character (P4) in the game.
+ */
 export default class P4 extends Entity {
-    private startX: number = Entity.gap;
-    private startY: number = CANVAS_HEIGHT * .5;
+    private startX = Entity.gap;
+    private startY = CANVAS_HEIGHT * 0.5;
 
-    private speed: number = 8;
+    private speed = 8;
 
-    public p4Anim: PIXI.AnimatedSprite;
+    totalWater = 0;
 
-    public totalWater: number = 0;
+    isMovingRight = false;
+    isMovingLeft = false;
+    isMovingUp = false;
+    isMovingDown = false;
 
-    public isMovingRight: boolean = false;
-    public isMovingLeft: boolean = false;
-    public isMovingUp: boolean = false;
-    public isMovingDown: boolean = false;
-
-    constructor(stage: PIXI.Container<PIXI.ContainerChild>, p4Anim: PIXI.AnimatedSprite) {
+    /**
+     * Creates an instance of P4.
+     * @param stage - The PIXI.Container to add the player animation to.
+     * @param p4Anim - The PIXI.AnimatedSprite representing the player animation.
+     */
+    constructor(
+        stage: PIXI.Container<PIXI.ContainerChild>,
+        public p4Anim: PIXI.AnimatedSprite
+    ) {
         super(p4Anim);
         stage.addChild(p4Anim);
-
-        this.p4Anim = p4Anim;
 
         p4Anim.x = this.startX;
         p4Anim.y = this.startY;
     }
 
-    public update(p4Anim: PIXI.AnimatedSprite): void {
-        // Movement
+    /**
+     * Updates the player character's position based on movement flags.
+     * @param p4Anim - The PIXI.AnimatedSprite representing the player animation.
+     */
+    update(p4Anim: PIXI.AnimatedSprite) {
         if (this.isMovingRight) {
             p4Anim.x += this.speed;
         }
@@ -42,7 +52,6 @@ export default class P4 extends Entity {
             p4Anim.y += this.speed;
         }
 
-        // World bounds
         if (p4Anim.x + p4Anim.width > CANVAS_WIDTH) {
             p4Anim.x -= this.speed;
         }
@@ -57,7 +66,10 @@ export default class P4 extends Entity {
         }
     }
 
-    public destroy(): void {
+    /**
+     * Destroys the player animation.
+     */
+    destroy() {
         this.p4Anim.destroy();
     }
 }

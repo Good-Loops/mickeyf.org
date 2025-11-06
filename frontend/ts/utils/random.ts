@@ -1,39 +1,66 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
-// Returns a random boolean value
-export function getRandomBoolean(): boolean {
+/**
+ * Generates a random boolean value.
+ *
+ * @returns {boolean} A random boolean value, either `true` or `false`.
+ */
+export const getRandomBoolean = (): boolean  => {
     return Math.random() >= 0.5;
 }
 
-// Returns a random integer between min and max
-export function getRandomInt(min: number, max: number): number {
+/**
+ * Generates a random integer between the specified minimum and maximum values, inclusive.
+ *
+ * @param min - The minimum value of the random integer.
+ * @param max - The maximum value of the random integer.
+ * @returns A random integer between `min` and `max`, inclusive.
+ */
+export const getRandomInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Returns a random x value within the canvas width
-export function getRandomX(width: number, gap: number = 0): number {
-    let x: number = (Math.random() * (CANVAS_WIDTH - width + gap));
+/**
+ * Generates a random x-coordinate within the canvas width, ensuring it does not overlap with a specified width and gap.
+ *
+ * @param width - The width of the element to be placed.
+ * @param gap - The optional gap to be maintained from the edges. Defaults to 0.
+ * @returns A random x-coordinate within the allowed range.
+ */
+export const getRandomX = (width: number, gap: number = 0): number => {
+    let x = (Math.random() * (CANVAS_WIDTH - width + gap));
     if (x < width - gap) {
         x += width - x;
     }
     return x;
 }
 
-// Returns a random y value within the canvas height
-export function getRandomY(width: number, gap: number = 0): number {
-    let y: number = (Math.random() * (CANVAS_HEIGHT - width + gap));
+/**
+ * Generates a random Y-coordinate within the canvas height, adjusted by the given width and gap.
+ *
+ * @param width - The width to consider for the random Y-coordinate.
+ * @param gap - The optional gap to adjust the Y-coordinate. Defaults to 0.
+ * @returns A random Y-coordinate within the canvas height, adjusted by the width and gap.
+ */
+export const getRandomY = (width: number, gap: number = 0): number => {
+    let y = (Math.random() * (CANVAS_HEIGHT - width + gap));
     if (y < width - gap) {
         y += width - y;
     }
     return y;
 }
 
-// Returns an array of random indexes from 0 to arrayLength - 1 
-export function getRandomIndexArr(arrayLength: number): number[] {
+/**
+ * Generates an array of random indices with a specified length.
+ * Ensures that no index appears more than twice in the array.
+ *
+ * @param {number} arrayLength - The length of the array to generate.
+ * @returns {number[]} An array of random indices.
+ */
+export const getRandomIndexArray = (arrayLength: number): number[] => {
     let indexArr: number[] = [];
     for (let i: number = 0; i < arrayLength; i++) {
         indexArr.push(getRandomInt(0, arrayLength - 1));
-        // Check for repeats 
         if (indexArr.length > 2) {
             let repeats: number = 0;
             for (let j: number = 0; j < indexArr.length - 1; j++) {

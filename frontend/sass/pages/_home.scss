@@ -2,6 +2,9 @@
 
 .home {
 
+    position: relative;
+    width: 80vw;
+
     &__welcome-message {
         color: $primary-mid;
         font-size: $font-size-m;
@@ -9,15 +12,24 @@
         font-weight: 600;
         font-family: $subheading-font;
     }
+
+    &__quotes-container {
+        position: fixed;
+        inset: 0;
+        max-width: 90vw;       
+        max-height: 85vh;
+        pointer-events: none; 
+    }
 }
 
 .quote {
+    position: relative;
+
+    width: fit-content;
+
     color: $white;
     font-size: $font-size-xs;
-    text-align: center;
+    white-space: nowrap;
 
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-
-    opacity: 0;
-    transition: opacity 2s;
 }

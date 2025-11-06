@@ -21,7 +21,7 @@
 // Default component styling
 @mixin default-component {
     display: grid;
-    row-gap: 10rem;
+    row-gap: 6em;
 
     justify-items: center;
 
@@ -107,10 +107,10 @@
 
             border: .18em solid $gray-light;
             border-radius: .5em;
-            transition: border 0.7s;
+            transition: all 0.7s;
 
             &:active {
-                transform: scale(.85);
+                transform: scale(.7);
             }
 
             &:hover {
@@ -217,8 +217,9 @@
 // Social media button styling
 @mixin social-media-btn {
     @include default-btn;
-    padding-block: 5rem;
-    padding-inline: .05rem;
+    padding-block: 2em;
+    width: 13em;
+    scale: .8;
 
     fill: $primary-light;
 
@@ -272,6 +273,11 @@
     &:hover,
     &:focus {
         text-shadow: $label-text-shadow;
+    }
+
+    &:focus:not(:focus-visible),
+    &:active {
+        text-shadow: none;
     }
 }
 

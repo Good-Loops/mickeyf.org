@@ -46,6 +46,11 @@
             &:checked {
                 background-color: $secondary;
             }
+
+            &:focus {
+                outline: none;
+                box-shadow: none;
+            }
         }
 
         &--dropdown-grid {
