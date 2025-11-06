@@ -2,16 +2,41 @@
 
 .leaderboard {
     @include default-component;
+    row-gap: 0;
+
+    padding-block: 2em;
+    padding-inline: 8em;
+
+    border-radius: .8em;
+
+    background-image: $sidebar-bg-gradient;
+
+    box-shadow: $dark-box-shadow;
 
     &__list {
         @include title-coloring;
-        font-weight: 900;
-
         list-style-type: decimal;
     }
 
+    &__item-container {
+        display: flex;
+    }
+
+
     &__list-item {
-        font-size: $font-size-s;
+        font-size: 3rem;
         font-weight: 900;
+        font-family: $subheading-font;
+        
+        padding: .5em .8em;
+        margin: .5em 0;
+
+        box-shadow: $dark-box-shadow;
+
+        border-radius: .2em;
+    }
+
+    &__score {
+        margin-left: auto;
     }
 }

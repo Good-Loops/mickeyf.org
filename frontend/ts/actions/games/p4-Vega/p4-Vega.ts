@@ -1,247 +1,430 @@
-// Utilities
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
-import { getRandomInt } from "../../../utils/random";
-import gameOver from "../../../utils/gameOver";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
+import { getRandomInt } from '../../../utils/random';
+import gameOver from '../utils/gameOver';
 
-// Game elements
-import P4 from "./classes/P4";
-import Water from "./classes/Water";
-import BlackHole from "./classes/BlackHole";
-import Sky from "./classes/Sky";
+import { API_BASE } from '../../../config/apiConfig';
 
-// Entity data
+import Dropdown from '../../../helpers/Dropdown';
+import FullscreenButton from '../../../helpers/FullscreenButton';
+
+import P4 from './classes/P4';
+import Water from './classes/Water';
+import BlackHole from './classes/BlackHole';
+import Sky from './classes/Sky';
+
 import p4Data from './data/p4.json';
-import waterData from './data/water.json'
-import bhBlueData from './data/bhBlue.json'
-import bhRedData from './data/bhRed.json'
-import bhYellowData from './data/bhYellow.json'
+import waterData from './data/water.json';
+import bhBlueData from './data/bhBlue.json';
+import bhRedData from './data/bhRed.json';
+import bhYellowData from './data/bhYellow.json';
 
-// Libraries
+import Swal from 'sweetalert2';
+import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
-import Swal from "sweetalert2";
 
-export default async function p4Vega() {
-    /////////////////// Setup PixiJS renderer ////////////////// 
+type P4VegaAuth = {
+  isAuthenticated?: boolean;
+  userName?: string | null;
+};
+
+/**
+ * Main function to initialize and run the p4-Vega game.
+ */
+export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth): Promise<() => void> {
     const renderer = await PIXI.autoDetectRenderer({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
         backgroundColor: 0x0d0033,
     });
-    // Set canvas properties
-    const canvas: HTMLCanvasElement = renderer.view.canvas as HTMLCanvasElement;
-    canvas.className = "p4-vega__canvas";
-    canvas.id = "p4-canvas";
-    // Add the canvas to the DOM
-    document.getElementById("p4-vega")!.appendChild(canvas);
-    // Create stage
-    const stage: PIXI.Container<PIXI.ContainerChild> = new PIXI.Container();
 
-    ////////////////// Globals //////////////////
-    // Game state
-    let gameLive: boolean, gameOverTexts: PIXI.ContainerChild[] = [];
-    // Game elements
-    let sky: Sky, p4: P4, water: Water;
+    const canvas = renderer.view.canvas as HTMLCanvasElement;
+    canvas.className = 'p4-vega__canvas';
+    canvas.id = 'p4-canvas';
+    container?.appendChild(canvas);
 
-    // Load game assets
-    const load = async () => {
-        // Set game state
+    const stage = new PIXI.Container();
+
+    container?.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
+    const fullscreenBtn = new FullscreenButton(canvas, container!);
+
+    const bgMusicCheckbox = document.querySelector(
+        '[data-bg-music-playing]'
+    ) as HTMLInputElement;
+    window.p4MusicPlayer = new Tone.Player({
+        url: '/assets/audio/bg-sound-p4.mp3',
+        loop: true,
+    }).toDestination();
+
+    /**
+     * Toggles background music on or off.
+     */
+    const toggleBackgroundMusic = (): void => {
+        if (bgMusicCheckbox.checked) {
+            window.p4MusicPlayer.start();
+        } else {
+            window.p4MusicPlayer.stop();
+        }
+    };
+
+    const notesPlayingCheckbox = document.querySelector(
+        '[data-musical-notes-playing]'
+    ) as HTMLInputElement;
+    let notesPlaying = false;
+
+    /**
+     * Toggles the playing of musical notes on or off.
+     */
+    const toggleNotesPlaying = (): void => {
+        notesPlaying = notesPlayingCheckbox.checked;
+    };
+
+    const scalesDropdown = new Dropdown(
+        'data-dropdown-scales',
+        'data-dropdown-btn',
+        'data-selected-scale'
+    );
+    const keysDropdown = new Dropdown(
+        'data-dropdown-keys',
+        'data-dropdown-btn',
+        'data-selected-key'
+    );
+    const dropdownHandlers = {
+        toggleScalesDropdown: scalesDropdown.toggle(),
+        toggleKeysDropdown: keysDropdown.toggle(),
+        toggleScaleSelection: scalesDropdown.toggleSelection('data-scale'),
+        toggleKeySelection: keysDropdown.toggleSelection('data-key'),
+    };
+
+    let gameLive: boolean,
+        gameOverTexts: PIXI.ContainerChild[] = [],
+        sky: Sky,
+        p4: P4,
+        water: Water;
+
+    /**
+     * Loads game assets and initializes game objects.
+     */
+    const load = async (): Promise<void> => {
+        toggleBackgroundMusic();
+
         gameLive = true;
-        // Background
-        sky = new Sky(stage);
-        // Get images
-        const p4Image: HTMLImageElement = document.getElementById('p4') as HTMLImageElement;
-        const waterImage: HTMLImageElement = document.getElementById('water') as HTMLImageElement;
-        const bhBlueImage: HTMLImageElement = document.getElementById('bhBlue') as HTMLImageElement;
-        const bhRedImage: HTMLImageElement = document.getElementById('bhRed') as HTMLImageElement;
-        const bhYellowImage: HTMLImageElement = document.getElementById('bhYellow') as HTMLImageElement;
-        // Load images as textures
-        const p4Texture: PIXI.Texture = await PIXI.Assets.load(p4Image) as PIXI.Texture;
-        const waterTexture: PIXI.Texture = await PIXI.Assets.load(waterImage) as PIXI.Texture;
-        const bhBlueTexture: PIXI.Texture = await PIXI.Assets.load(bhBlueImage) as PIXI.Texture;
-        const bhRedTexture: PIXI.Texture = await PIXI.Assets.load(bhRedImage) as PIXI.Texture;
-        const bhYellowTexture: PIXI.Texture = await PIXI.Assets.load(bhYellowImage) as PIXI.Texture;
-        // Load and parse spritesheets
-        const p4Spritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(p4Texture, p4Data);
-        await p4Spritesheet.parse();
-        const waterSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(waterTexture, waterData);
-        await waterSpritesheet.parse();
-        const bhBlueSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhBlueTexture, bhBlueData);
-        await bhBlueSpritesheet.parse();
-        const bhRedSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhRedTexture, bhRedData);
-        await bhRedSpritesheet.parse();
-        const bhYellowSpritesheet: PIXI.Spritesheet = new PIXI.Spritesheet(bhYellowTexture, bhYellowData);
-        await bhYellowSpritesheet.parse();
-        // Create animated sprites
-        const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
-        const waterAnim = new PIXI.AnimatedSprite(waterSpritesheet.animations.water);
 
-        // Create pool of 100 black holes with random colors
+        sky = new Sky(stage);
+
+        const p4Image = document.querySelector('[data-p4]') as HTMLImageElement;
+        const waterImage = document.querySelector(
+            '[data-water]'
+        ) as HTMLImageElement;
+        const bhBlueImage = document.querySelector(
+            '[data-bh-blue]'
+        ) as HTMLImageElement;
+        const bhRedImage = document.querySelector(
+            '[data-bh-red]'
+        ) as HTMLImageElement;
+        const bhYellowImage = document.querySelector(
+            '[data-bh-yellow]'
+        ) as HTMLImageElement;
+
+        const p4Texture = (await PIXI.Assets.load(p4Image)) as PIXI.Texture;
+        const waterTexture = (await PIXI.Assets.load(
+            waterImage
+        )) as PIXI.Texture;
+        const bhBlueTexture = (await PIXI.Assets.load(
+            bhBlueImage
+        )) as PIXI.Texture;
+        const bhRedTexture = (await PIXI.Assets.load(
+            bhRedImage
+        )) as PIXI.Texture;
+        const bhYellowTexture = (await PIXI.Assets.load(
+            bhYellowImage
+        )) as PIXI.Texture;
+
+        const p4Spritesheet = new PIXI.Spritesheet(p4Texture, p4Data);
+        await p4Spritesheet.parse();
+        const waterSpritesheet = new PIXI.Spritesheet(waterTexture, waterData);
+        await waterSpritesheet.parse();
+        const bhBlueSpritesheet = new PIXI.Spritesheet(
+            bhBlueTexture,
+            bhBlueData
+        );
+        await bhBlueSpritesheet.parse();
+        const bhRedSpritesheet = new PIXI.Spritesheet(bhRedTexture, bhRedData);
+        await bhRedSpritesheet.parse();
+        const bhYellowSpritesheet = new PIXI.Spritesheet(
+            bhYellowTexture,
+            bhYellowData
+        );
+        await bhYellowSpritesheet.parse();
+
+        const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
+        const waterAnim = new PIXI.AnimatedSprite(
+            waterSpritesheet.animations.water
+        );
+
         for (let blackHoleIndex = 0; blackHoleIndex < 100; blackHoleIndex++) {
             let bhAnim: PIXI.AnimatedSprite;
             switch (getRandomInt(0, 2)) {
                 case 0:
-                    bhAnim = new PIXI.AnimatedSprite(bhBlueSpritesheet.animations.bhBlue);
+                    bhAnim = new PIXI.AnimatedSprite(
+                        bhBlueSpritesheet.animations.bhBlue
+                    );
                     break;
                 case 1:
-                    bhAnim = new PIXI.AnimatedSprite(bhRedSpritesheet.animations.bhRed);
+                    bhAnim = new PIXI.AnimatedSprite(
+                        bhRedSpritesheet.animations.bhRed
+                    );
                     break;
                 case 2:
-                    bhAnim = new PIXI.AnimatedSprite(bhYellowSpritesheet.animations.bhYellow);
+                    bhAnim = new PIXI.AnimatedSprite(
+                        bhYellowSpritesheet.animations.bhYellow
+                    );
                     break;
             }
             BlackHole.bHAnimArray.push(bhAnim!);
         }
-        new BlackHole(stage, p4Anim); // Add initial black hole
+        new BlackHole(stage, p4Anim);
 
-        // Create game elements
         p4 = new P4(stage, p4Anim);
         water = new Water(stage, waterAnim);
+    };
 
-    }
-
-    // Update game state
-    const update = async () => {
-        // Update game elements
+    /**
+     * Updates the game state.
+     */
+    const update = async (): Promise<void> => {
         sky.update();
         p4.update(p4.p4Anim);
-        water.update(water.waterAnim, p4, stage);
+        water.update(water.waterAnim, p4, notesPlaying, stage);
         for (let i = 0; i < BlackHole.bHArray.length; i++) {
             let blackHole = BlackHole.bHArray[i];
             gameLive = blackHole.update(p4, gameLive);
         }
 
-        // Check for game over
         if (!gameLive) {
             ticker.stop();
-            if (window.isLoggedIn) { await submitScore(); }
+            const isAuthenticated = auth?.isAuthenticated || false;
+            if (isAuthenticated) {
+                await submitScore();
+            }
             gameOverTexts = await gameOver(gameLive, p4);
-            gameOverTexts.forEach(text => stage.addChild(text));
+            gameOverTexts.forEach((text) => stage.addChild(text));
             renderer.render(stage);
         }
-    }
+    };
 
-    // Render the game
-    const render = async () => {
+    /**
+     * Renders the game stage.
+     */
+    const render = async (): Promise<void> => {
         renderer.render(stage);
-    }
+    };
 
-    // Game loop
     const ticker = new PIXI.Ticker();
     window.p4GameTicker = ticker;
     ticker.add(update);
     ticker.add(render);
 
-    // Start game
     await load();
     ticker.start();
 
-    // Restart game
-    const restart = async () => {
+    /**
+     * Restarts the game.
+     */
+    const restart = async (): Promise<void> => {
         gameLive = true;
-        // Clear stage
+
+        BlackHole.bHAnimArray = [];
+
         p4.destroy();
         water.destroy();
         BlackHole.destroy();
         stage.removeChildren();
-        // Load game assets
+
+        window.p4MusicPlayer.stop();
+
         await load();
         ticker.start();
-    }
+    };
 
-    const environment: string = process.env.NODE_ENV as string; // Determine environment
-    const apiUrl: string = environment === 'development' ? process.env.DEV_API_URL! : process.env.PROD_API_URL!; // Detertmine API URL
-
-    // Submit score
+    /**
+     * Submits the player's score to the server.
+     */
     const submitScore = async () => {
         const p4_score = p4.totalWater;
-        const storedToken = localStorage.getItem('sessionToken'); // Retrieve the token from local storage
-        const loggedInUsername = localStorage.getItem('user_name'); // Retrieve the user data from local storage
 
-        await fetch(`${apiUrl}/api/users`, {
+        const loggedInUsername = auth?.userName;
+
+        await fetch(`${API_BASE}/api/users`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${storedToken}`, // Include the token in the Authorization header
-                'Content-Type': 'application/json',
-            },
+            credentials: 'include',
             body: JSON.stringify({
                 type: 'submit_score',
                 p4_score: p4_score,
-                user_name: loggedInUsername
+                user_name: loggedInUsername,
             }),
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        }).then(data => {
-            if (data.error) {
-                console.error(data.error);
-            }
-            if (data.personalBest) {
-                Swal.fire({
-                    title: 'Congratulations!',
-                    text: 'You have broken a new personal record, check the leaderboard to see where you stand!',
-                    icon: 'success'
-                });
-            }
-        }).catch((error) => console.error('Fetch error:', error));
-    }
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data.error) {
+                    console.error(data.error);
+                }
+                if (data.personalBest) {
+                    Swal.fire({
+                        title: 'Congratulations!',
+                        text: 'You have broken a new personal record, check the leaderboard to see where you stand!',
+                        icon: 'success',
+                    });
+                }
+            })
+            .catch((error) => console.error('Fetch error:', error));
+    };
 
-    // User input
+    /**
+     * Handles keydown events for player movement and game restart.
+     * @param key - The keyboard event.
+     */
     const handleKeydown = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
-            case "ArrowRight":
-                key.preventDefault();
+            case 'ArrowRight':
                 p4.isMovingRight = true;
                 break;
-            case "ArrowLeft":
-                key.preventDefault();
+            case 'ArrowLeft':
                 p4.isMovingLeft = true;
                 break;
-            case "ArrowUp":
-                key.preventDefault();
+            case 'ArrowUp':
                 p4.isMovingUp = true;
                 break;
-            case "ArrowDown":
-                key.preventDefault();
+            case 'ArrowDown':
                 p4.isMovingDown = true;
                 break;
-            // Restart game
-            case "Space":
-                key.preventDefault();
+            case 'Space':
                 if (!gameLive) restart();
                 break;
             default:
                 break;
         }
-    }
+    };
+
+    /**
+     * Handles keyup events for stopping player movement.
+     * @param key - The keyboard event.
+     */
     const handleKeyup = (key: Event): void => {
+        key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
-            case "ArrowRight":
-                key.preventDefault();
+            case 'ArrowRight':
                 p4.isMovingRight = false;
                 break;
-            case "ArrowLeft":
-                key.preventDefault();
+            case 'ArrowLeft':
                 p4.isMovingLeft = false;
                 break;
-            case "ArrowUp":
-                key.preventDefault();
+            case 'ArrowUp':
                 p4.isMovingUp = false;
                 break;
-            case "ArrowDown":
-                key.preventDefault();
+            case 'ArrowDown':
                 p4.isMovingDown = false;
                 break;
             default:
                 break;
         }
-    }
-    document.addEventListener("keyup", handleKeyup);
-    document.addEventListener("keydown", handleKeydown);
+    };
 
-    let componentId = "p4-vega";
-    if (!window.eventListeners[componentId]) { window.eventListeners[componentId] = []; }
-    window.eventListeners[componentId].push({ element: document, event: 'keyup', handler: handleKeyup });
-    window.eventListeners[componentId].push({ element: document, event: 'keydown', handler: handleKeydown });
+    const registeredListeners: Array<{
+        element: Document | HTMLElement;
+        event: string;
+        handler: EventListener;
+    }> = [];
+
+    document.addEventListener("keydown", handleKeydown);
+    registeredListeners.push({
+        element: document,
+        event: "keydown",
+        handler: handleKeydown,
+    });
+
+    document.addEventListener("keyup", handleKeyup);
+    registeredListeners.push({
+        element: document,
+        event: "keyup",
+        handler: handleKeyup,
+    });
+
+    document.addEventListener("click", dropdownHandlers.toggleScalesDropdown);
+    registeredListeners.push({
+        element: document,
+        event: "click",
+        handler: dropdownHandlers.toggleScalesDropdown,
+    });
+
+    document.addEventListener("click", dropdownHandlers.toggleKeysDropdown);
+    registeredListeners.push({
+        element: document,
+        event: "click",
+        handler: dropdownHandlers.toggleKeysDropdown,
+    });
+
+    document.addEventListener("click", dropdownHandlers.toggleScaleSelection);
+    registeredListeners.push({
+        element: document,
+        event: "click",
+        handler: dropdownHandlers.toggleScaleSelection,
+    });
+
+    document.addEventListener("click", dropdownHandlers.toggleKeySelection);
+    registeredListeners.push({
+        element: document,
+        event: "click",
+        handler: dropdownHandlers.toggleKeySelection,
+    });
+
+    bgMusicCheckbox.addEventListener("change", toggleBackgroundMusic);
+    registeredListeners.push({
+        element: bgMusicCheckbox,
+        event: "change",
+        handler: toggleBackgroundMusic,
+    });
+
+    notesPlayingCheckbox.addEventListener("change", toggleNotesPlaying);
+    registeredListeners.push({
+        element: notesPlayingCheckbox,
+        event: "change",
+        handler: toggleNotesPlaying,
+    });
+
+    return () => {
+        // stop ticker and destroy it
+        ticker.stop();
+        ticker.destroy();
+
+        // stop music
+        if (window.p4MusicPlayer) {
+        window.p4MusicPlayer.stop();
+        }
+
+        // remove PIXI stuff
+        p4?.destroy();
+        water?.destroy();
+        BlackHole.destroy();
+        stage.removeChildren();
+        renderer.destroy(true);
+
+        // remove canvas from DOM
+        canvas.remove();
+
+        // remove event listeners
+        registeredListeners.forEach(({ element, event, handler }) => {
+            element.removeEventListener(event, handler);
+        });
+
+        // destroy fullscreen button if it has a destroy
+        if (typeof (fullscreenBtn as any).destroy === "function") {
+            (fullscreenBtn as any).destroy();
+        }
+    };
 }

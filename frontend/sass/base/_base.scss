@@ -15,6 +15,7 @@ body {
     min-height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
+    cursor: $cursor;
 }
 
 // Settings to set the font-size to 10px for easier rem calculations
@@ -22,24 +23,47 @@ body {
 // which includes padding and border in the element's total width and height
 html {
     font-size: 62.5%;
-
     box-sizing: border-box;
-
     user-select: none;
 }
 
 body {
     background-image: $page-bg-gradient;
-    cursor: $cursor;
+}
+
+button {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+
+    background-color: transparent;
+
+    border: none;
+
+    cursor: $cursor-hover;
 }
 
 canvas {
     width: 60vw;
     box-sizing: content-box;
-    border-radius: .8em;
+    border-radius: $default-border-radius;
 }
 
 a {
     text-decoration: none;
     cursor: $cursor-hover;
 }
+
+::-webkit-scrollbar {
+    width: .6em;
+}
+
+::-webkit-scrollbar-thumb {
+    background: $page-bg-gradient;
+    border-radius: 100vw;
+}
+
+::-webkit-scrollbar-track {
+    background: $page-bg-gradient;
+}
+

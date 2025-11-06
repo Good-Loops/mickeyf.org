@@ -1,4 +1,26 @@
+@use '../abstracts' as *;
+
 .footer {
     min-height: 5vh;
+
+    &__text {
+        text-align: center;
+        padding: 1em 0;
+        font-size: 0.9rem;
+    }
+    
+    &__link {
+        color: $white;
+        text-decoration: none;
+
+        &:visited,
+        &:active {
+            color: $white;
+        }
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }
 

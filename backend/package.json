@@ -1,8 +1,6 @@
 {
-    "name": "mickeyf-backend",
-    "version": "0.3.0",
-    "description": "Backend server for mickeyf.org",
-    "main": "app.ts",
+    "name": "backend",
+    "version": "0.4.0",
     "scripts": {
         "dev": "webpack --mode development --watch",
         "prod": "webpack --mode production",

@@ -3,7 +3,7 @@
         {
             "splitTerminals": [
                 {
-                    "name": "front-live-server",
+                    "name": "front-server",
                     "commands": [
                         "sleep 10s && cd frontend && npm run live"
                     ]

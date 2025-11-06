@@ -1,6 +1,13 @@
-// Linear interpolation is a method of curve fitting using linear polynomials to 
-// construct new data points within the range of a discrete set of known data points.
-// This method is used to smoothly change the value of a variable over time.
-export default function lerp(start: number, end: number, time: number): number {
+/**
+ * Linearly interpolates between two numbers.
+ *
+ * @param start - The starting value.
+ * @param end - The ending value.
+ * @param time - The interpolation factor, typically between 0 and 1.
+ * @returns The interpolated value.
+ */
+const lerp = (start: number, end: number, time: number): number => {
     return start * (1 - time) + end * time;
 }
+
+export default lerp;

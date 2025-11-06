@@ -21,7 +21,7 @@
 // Default component styling
 @mixin default-component {
     display: grid;
-    row-gap: 10rem;
+    row-gap: 6em;
 
     justify-items: center;
 
@@ -107,10 +107,10 @@
 
             border: .18em solid $gray-light;
             border-radius: .5em;
-            transition: border 0.7s;
+            transition: all 0.7s;
 
             &:active {
-                transform: scale(.85);
+                transform: scale(.7);
             }
 
             &:hover {
@@ -152,25 +152,6 @@
     user-select: none;
 }
 
-//////////////////////// Social Media ////////////////////////
-// Social media button styling
-@mixin social-media-btn {
-    @include default-btn;
-    padding-block: 5rem;
-    padding-inline: .05rem;
-
-    fill: $primary-light;
-
-    &:hover {
-        @include default-btn-hover;
-    }
-
-    &:active {
-        @include default-btn-active;
-    }
-}
-
-
 // Default button hover effect
 @mixin default-btn-hover {
     color: $white;
@@ -194,7 +175,7 @@
 // Menu button defaults
 @mixin default-menu-btn {
     display: none;
-    
+
     fill: $primary-light;
 
     background: none;
@@ -203,8 +184,52 @@
     position: fixed;
     top: -2.8em;
     left: -8.5em;
-    
+
     transform: scale(.35);
+}
+
+///////////////////////// UI Elements ////////////////////////
+// Default option styling
+@mixin default-option {
+    cursor: $cursor-hover;
+
+    box-shadow: $darl-box-shadow-s;
+
+    padding-block: .5em;
+    padding-inline: 1em;
+
+    border-radius: $default-border-radius;
+
+    transition: background-color .3s;
+
+    &:hover {
+        background-color: $primary-darker;
+    }
+
+    &-btn {
+        white-space: nowrap;
+        color: $white-darker;
+        font-size: $font-size-xxs;
+    }
+}
+
+//////////////////////// Social Media ////////////////////////
+// Social media button styling
+@mixin social-media-btn {
+    @include default-btn;
+    padding-block: 2em;
+    width: 13em;
+    scale: .8;
+
+    fill: $primary-light;
+
+    &:hover {
+        @include default-btn-hover;
+    }
+
+    &:active {
+        @include default-btn-active;
+    }
 }
 
 //////////////////////// Shadows ////////////////////////
@@ -226,6 +251,16 @@
     user-select: none;
 }
 
+// Canvas shadow effect
+@mixin canvas-shadow-effect {
+    box-shadow: $canvas-shadow;
+}
+
+// Dark box shadow effect
+@mixin dark-box-shadow-effect {
+    box-shadow: $dark-box-shadow;
+}
+
 //////////////////////// Navigation ////////////////////////
 // Default nav link styling
 @mixin nav-link {
@@ -238,6 +273,11 @@
     &:hover,
     &:focus {
         text-shadow: $label-text-shadow;
+    }
+
+    &:focus:not(:focus-visible),
+    &:active {
+        text-shadow: none;
     }
 }
 
@@ -259,6 +299,7 @@
     }
 }
 
+//////////////////////// Media Queries ////////////////////////
 // This mixin generates media queries for the given map
 // Maps are defined in the variables file
 @mixin generate-media-queries($map) {

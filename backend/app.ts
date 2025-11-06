@@ -1,9 +1,11 @@
+require('dotenv').config({
+  path: require('path').resolve(__dirname, '../..', '.env'),
+});
+
 /**
  * This file represents the main application file for the backend of the mickeyf.org website.
  * It sets up the Express server, configures middleware, and defines routes.
  */
-
-require('dotenv').config(); // Load environment variables from .env file
 
 // Import the required modules
 import express from 'express'; // Import the Express module
@@ -31,7 +33,7 @@ app.use(
                 "'self'",
                 "data:",
                 "https://mickeyf.org",
-                "http:localhost:3000",
+                "http://localhost:5173",
                 `${apiUrl!}/api/users`,
                 `${apiUrl}/auth/verify-token`
             ],
@@ -39,33 +41,33 @@ app.use(
                 "'self'",
                 "data:",
                 "https://mickeyf.org",
-                "http:localhost:3000"
+                "http://localhost:5173"
             ],
             scriptSrc: [
                 "'self'",
                 "'unsafe-inline'",
                 "'unsafe-eval'",
                 "https://mickeyf.org",
-                "http:localhost:3000" 
+                "http://localhost:5173"
             ],
             workerSrc: [
                 "'self'",
                 "blob:",
                 "https://mickeyf.org",
-                "http:localhost:3000"
+                "http://localhost:5173"
             ],
             styleSrc: [
                 "'self'",
                 "'unsafe-inline'",
                 "https://fonts.googleapis.com",
                 "https://mickeyf.org",
-                "http:localhost:3000"
+                "http://localhost:5173"
             ],
             fontSrc: [
                 "'self'",
                 "https://fonts.gstatic.com",
                 "https://mickeyf.org",
-                "http:localhost:3000"
+                "http://localhost:5173"
             ],
         }
     })
@@ -77,7 +79,7 @@ app.use(express.json()); // Parse JSON bodies
 app.use(cors({
     origin: [ // Allowed origins
         "https://mickeyf.org",
-        "http://localhost:3000", 
+        "http://localhost:5173", 
         `${apiUrl!}/api/users`, // Allow the /api/users route to be accessed from the frontend
         `${apiUrl!}/auth/verify-token` // Allow the /auth/verify-token route to be accessed from the frontend
     ],
@@ -94,7 +96,7 @@ app.set('trust proxy', true); // Trust the first proxy
 
 // Start the server
 app.listen(8080, () => {   
-    console.log("Backend running on port 8080"); 
+    // console.log("Backend running on port 8080"); 
 });
 
 export default app; // Export the Express application
