@@ -17,8 +17,10 @@ const Leaderboard: React.FC = () => {
 			try {
 				const res = await fetch(`${API_BASE}/api/users`, {
 					method: 'POST',
+					credentials: 'include',
 					headers: {
 						'Content-Type': 'application/json',
+						'Accept': 'application/json',
 					},
 					body: JSON.stringify({ type: 'get_leaderboard' }),
 				});
