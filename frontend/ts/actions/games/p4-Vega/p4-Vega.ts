@@ -18,6 +18,14 @@ import bhBlueData from './data/bhBlue.json';
 import bhRedData from './data/bhRed.json';
 import bhYellowData from './data/bhYellow.json';
 
+import p4PngURL from '@/assets/sprites/p4Vega/p4.png';
+import waterPngURL from '@/assets/sprites/p4Vega/water.png';
+import bhBluePngURL from '@/assets/sprites/p4Vega/bhBlue.png';
+import bhRedPngURL from '@/assets/sprites/p4Vega/bhRed.png';
+import bhYellowPngURL from '@/assets/sprites/p4Vega/bhYellow.png';
+
+import bgMusicURL from '@/assets/audio/bg-sound-p4.mp3';
+
 import Swal from 'sweetalert2';
 import * as Tone from 'tone';
 import * as PIXI from 'pixi.js';
@@ -50,8 +58,8 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     const bgMusicCheckbox = document.querySelector(
         '[data-bg-music-playing]'
     ) as HTMLInputElement;
-    window.p4MusicPlayer = new Tone.Player({
-        url: '/assets/audio/bg-sound-p4.mp3',
+    const p4MusicPlayer = new Tone.Player({
+        url: bgMusicURL,
         loop: true,
     }).toDestination();
 
@@ -60,9 +68,9 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
      */
     const toggleBackgroundMusic = (): void => {
         if (bgMusicCheckbox.checked) {
-            window.p4MusicPlayer.start();
+            p4MusicPlayer.start();
         } else {
-            window.p4MusicPlayer.stop();
+            p4MusicPlayer.stop();
         }
     };
 
@@ -111,50 +119,34 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
 
         sky = new Sky(stage);
 
-        const p4Image = document.querySelector('[data-p4]') as HTMLImageElement;
-        const waterImage = document.querySelector(
-            '[data-water]'
-        ) as HTMLImageElement;
-        const bhBlueImage = document.querySelector(
-            '[data-bh-blue]'
-        ) as HTMLImageElement;
-        const bhRedImage = document.querySelector(
-            '[data-bh-red]'
-        ) as HTMLImageElement;
-        const bhYellowImage = document.querySelector(
-            '[data-bh-yellow]'
-        ) as HTMLImageElement;
+        const [
+            p4Base,
+            waterBase,
+            bhBlueBase,
+            bhRedBase,
+            bhYellowBase,
+        ] = await Promise.all([
+            PIXI.Assets.load(p4PngURL),
+            PIXI.Assets.load(waterPngURL),
+            PIXI.Assets.load(bhBluePngURL),
+            PIXI.Assets.load(bhRedPngURL),
+            PIXI.Assets.load(bhYellowPngURL),
+        ]);
 
-        const p4Texture = (await PIXI.Assets.load(p4Image)) as PIXI.Texture;
-        const waterTexture = (await PIXI.Assets.load(
-            waterImage
-        )) as PIXI.Texture;
-        const bhBlueTexture = (await PIXI.Assets.load(
-            bhBlueImage
-        )) as PIXI.Texture;
-        const bhRedTexture = (await PIXI.Assets.load(
-            bhRedImage
-        )) as PIXI.Texture;
-        const bhYellowTexture = (await PIXI.Assets.load(
-            bhYellowImage
-        )) as PIXI.Texture;
+        const p4Spritesheet = new PIXI.Spritesheet(p4Base, p4Data);
+        const waterSpritesheet = new PIXI.Spritesheet(waterBase, waterData);
+        const bhBlueSpritesheet = new PIXI.Spritesheet(bhBlueBase, bhBlueData);
+        const bhRedSpritesheet = new PIXI.Spritesheet(bhRedBase, bhRedData);
+        const bhYellowSpritesheet = new PIXI.Spritesheet(bhYellowBase, bhYellowData);
 
-        const p4Spritesheet = new PIXI.Spritesheet(p4Texture, p4Data);
-        await p4Spritesheet.parse();
-        const waterSpritesheet = new PIXI.Spritesheet(waterTexture, waterData);
-        await waterSpritesheet.parse();
-        const bhBlueSpritesheet = new PIXI.Spritesheet(
-            bhBlueTexture,
-            bhBlueData
-        );
-        await bhBlueSpritesheet.parse();
-        const bhRedSpritesheet = new PIXI.Spritesheet(bhRedTexture, bhRedData);
-        await bhRedSpritesheet.parse();
-        const bhYellowSpritesheet = new PIXI.Spritesheet(
-            bhYellowTexture,
-            bhYellowData
-        );
-        await bhYellowSpritesheet.parse();
+        await Promise.all([
+            p4Spritesheet.parse(),
+            waterSpritesheet.parse(),
+            bhBlueSpritesheet.parse(),
+            bhRedSpritesheet.parse(),
+            bhYellowSpritesheet.parse(),
+        ]);
+
 
         const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
         const waterAnim = new PIXI.AnimatedSprite(
@@ -220,7 +212,6 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     };
 
     const ticker = new PIXI.Ticker();
-    window.p4GameTicker = ticker;
     ticker.add(update);
     ticker.add(render);
 
@@ -240,7 +231,7 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
         BlackHole.destroy();
         stage.removeChildren();
 
-        window.p4MusicPlayer.stop();
+        p4MusicPlayer.stop();
 
         await load();
         ticker.start();
@@ -403,8 +394,8 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
         ticker.destroy();
 
         // stop music
-        if (window.p4MusicPlayer) {
-        window.p4MusicPlayer.stop();
+        if (p4MusicPlayer) {
+            p4MusicPlayer.stop();
         }
 
         // remove PIXI stuff

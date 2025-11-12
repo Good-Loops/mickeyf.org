@@ -1,6 +1,7 @@
 # Ignore build artifacts and dependencies
 node_modules/
 backend/dist/
+frontend/dist/
 
 # Ignore log files
 *.log
