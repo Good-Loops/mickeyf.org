@@ -26,12 +26,6 @@ const P4Vega: React.FC = () => {
         <section className='p4-vega' data-p4-vega ref={containerRef}>
             <h1 className='p4-vega__title u-canvas-title'>p4-Vega</h1>
 
-            <img src='/sprites/p4Vega/p4.png' style={{ display: 'none' }} data-p4 />
-            <img src='/sprites/p4Vega/water.png' style={{ display: 'none' }} data-water />
-            <img src='/sprites/p4Vega/bhBlue.png' style={{ display: 'none' }} data-bh-blue />
-            <img src='/sprites/p4Vega/bhRed.png' style={{ display: 'none' }} data-bh-red />
-            <img src='/sprites/p4Vega/bhYellow.png' style={{ display: 'none' }} data-bh-yellow />
-
             <div className='p4-vega__ui'>
                 <label className='p4-vega__ui--option' data-checkbox>
                     <input className='p4-vega__ui--checkbox' type='checkbox' data-bg-music-playing />
