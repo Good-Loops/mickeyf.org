@@ -35,8 +35,8 @@ jobs:
           NODE_ENV: 'production'
           DEV_BASE_URL: ${{ secrets.DEV_BASE_URL }}
           PROD_BASE_URL: ${{ secrets.PROD_BASE_URL }}
-          DEV_API_URL: ${{ secrets.DEV_API_URL }}
-          PROD_API_URL: ${{ secrets.PROD_API_URL }}
+          VITE_DEV_API_URL: ${{ secrets.DEV_API_URL }}
+          VITE_PROD_API_URL: ${{ secrets.PROD_API_URL }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_NAME: ${{ secrets.DB_NAME }}
