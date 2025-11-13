@@ -22,6 +22,7 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
 
     container.append(app.canvas);
 
+    container.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
     new FullscreenButton(app.canvas, container);
 
     const centerX = app.screen.width / 2;
@@ -247,7 +248,7 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
             radius: seedLineRadius
         }
 
-        drawSeed(seedConfig);
+        // drawSeed(seedConfig);
 
         ////////////////////////////////////////////////////////////////
         const flowerWidth = 8 + 3 * Math.sin((time.lastTime / 500) * 2 + 3);
@@ -269,12 +270,12 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
             radius: randomShapeRadius
         }
 
-        drawRandomShape(randomShapeConfig);
+        // drawRandomShape(randomShapeConfig);
 
         //////////////////////////////////////////////////////////////////////
         firstLine.clear();
         for (let i = 0; i < 2; i++) {
-            drawFractal(firstLine, 10 * i, 400 * i, app.canvas.width / i * 10, app.canvas.height / i, fractalLevels);
+            // drawFractal(firstLine, 10 * i, 400 * i, app.canvas.width / i * 10, app.canvas.height / i, fractalLevels);
         }
 
         fractalWidth = 15 * Math.sin(angleTheta);
