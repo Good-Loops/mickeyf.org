@@ -7,7 +7,6 @@ import ColorManager from '../helpers/ColorManager';
 
 import { color, drawConfig } from '../animations.types';
 
-// TODO: Understand how variables affect animation
 export default async function dancingFractalsRunner(container: HTMLElement): Promise<() => void> {
 
     const app = new Application();
@@ -15,7 +14,7 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
 
     await app.init({
         antialias: true,
-        backgroundColor: '#223344',
+        backgroundColor: 'hsl(204, 92%, 80%)',
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT
     });
@@ -30,41 +29,9 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
 
     const colorPalette: color[] = [
         { hue: 3, saturation: 80, lightness: 85 },
-        { hue: 5, saturation: 80, lightness: 85 },
-        { hue: 8, saturation: 80, lightness: 85 },
+        { hue: 50, saturation: 80, lightness: 85 },
+        { hue: 150, saturation: 80, lightness: 85 },
     ];
-
-    /////////////////////////////////////////////////////////////////////////////////
-
-    const seed: Graphics[] = [];
-    const seedLines = 30;
-    const seedAlpha = .3;
-    const seedColorManager = new ColorManager(colorPalette, seedLines);
-
-    for (let i = 0; i < seedLines; i++) {
-        const line = new Graphics();
-
-        seed.push(line);
-        line.x = centerX;
-        line.y = centerY;
-
-        app.stage.addChild(line);
-    }
-
-    const drawSeed = (drawConfig: drawConfig) => {
-        seed.forEach((seedLine: Graphics, seedIndex: number) => {
-
-            const seedColor = seedColorManager.hslToString(seedColorManager.currentColors[seedIndex]);
-
-            seedLine.clear();
-            seedLine.moveTo(0, 0);
-
-            seedLine.lineTo(drawConfig.radius * Math.cos(angleTheta + (seedIndex * 2)) - Math.sin(drawConfig.radius) - seedIndex, drawConfig.radius * Math.sin(angleTheta + seedIndex));
-            seedLine.stroke({ color: seedColor, width: drawConfig.width, alpha: seedAlpha, cap: 'round' });
-        });
-    }
-
-    ////////////////////////////////////////////////////////////////////////
 
     const flowers: Graphics[][] = [];
     const flowerAmount = 50;
@@ -112,108 +79,6 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
         });
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////
-
-    const randomShape: Graphics[] = [];
-    const randomShapeLines = 12;
-    const randomShapeAlpha = .2;
-    const randomShapeColorManager = new ColorManager(colorPalette, randomShapeLines);
-
-    for (let i = 0; i < randomShapeLines; i++) {
-        const line = new Graphics();
-
-        randomShape.push(line);
-        line.x = centerX;
-        line.y = centerY;
-
-        app.stage.addChild(line);
-    }
-
-    const drawRandomShape = (drawConfig: drawConfig) => {
-        randomShape.forEach((line: Graphics, index: number) => {
-
-            const randomShapeColor = randomShapeColorManager.hslToString(randomShapeColorManager.currentColors[index]);
-
-            line.clear();
-            line.moveTo(0, 0);
-
-            line.lineTo(drawConfig.radius * Math.cos(angleTheta + (index * 3)) - Math.sin(index), drawConfig.radius * Math.sin(angleTheta + index))
-
-            const points = 15;
-            const step = Math.pow(Math.PI, Math.PI) / points;
-
-            for (let i = 0; i < 2 * points; i++) {
-                const angle = i * step * step;
-
-                const x = drawConfig.radius * (Math.cos(angle + (index * 4)) - Math.sin(angle + index)) * 2;
-                const y = drawConfig.radius * (Math.sin(angle + index) + Math.sin(index)) * 3;
-
-                line.lineTo(x, y);
-            }
-
-            line.stroke({ color: randomShapeColor, width: drawConfig.width, alpha: randomShapeAlpha, cap: 'round' });
-        });
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    const fractal: Graphics[] = [];
-
-    const firstLine = new Graphics();
-    firstLine.x = 0;
-    firstLine.y = 0;
-    app.stage.addChild(firstLine);
-
-    const fractalLines = 12;
-    const fractalLevels = 6;
-
-    const fractalAlpha = .8;
-    const fractalColorManager = new ColorManager(colorPalette, fractalLines);
-
-    for (let i = 0; i < fractalLines; i++) {
-        const line = new Graphics();
-
-        fractal.push(line);
-        line.x = centerX;
-        line.y = centerY;
-
-        app.stage.addChild(line);
-    }
-
-    let fractalWidth = 5;
-
-    const drawFractal = (line: Graphics, x1: number, y1: number, x2: number, y2: number, depth: number): void => {
-
-        if (depth === 0) {
-            line.moveTo(x1, y1);
-            line.lineTo(x2, y2);
-        } else {
-            const dx = (x2 - x1) / 3;
-            const dy = (y2 - y1) / 3;
-
-            const x3 = x1 + dx;
-            const y3 = y1 + dy;
-
-            const x5 = x2 - dx;
-            const y5 = y2 - dy;
-
-            const x4 = (x3 + x5) / 2 - (Math.sqrt(3) * (y5 - y3)) / 2;
-            const y4 = (y3 + y5) / 2 + (Math.sqrt(3) * (x5 - x3)) / 2;
-
-            drawFractal(line, x1, y1, x3, y3, depth - 1);
-            drawFractal(line, x3, y3, x4, y4, depth - 1);
-            drawFractal(line, x4, y4, x5, y5, depth - 1);
-            drawFractal(line, x5, y5, x2, y2, depth - 1);
-        }
-
-        const fractalColor = fractalColorManager.hslToString(fractalColorManager.currentColors[depth]);
-
-        line.stroke({ color: fractalColor, alpha: fractalAlpha, width: fractalWidth });
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // TODO: Stars
-
     let angleTheta = 0;
 
     const colorChangeInterval = 50;
@@ -226,31 +91,13 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
         colorChangeCounter += time.deltaMS / 100;
 
         if (colorChangeCounter >= colorChangeInterval) {
-            seedColorManager.updateTargetColors();
             flowerColorManager.updateTargetColors();
-            randomShapeColorManager.updateTargetColors();
-            fractalColorManager.updateTargetColors();
             colorChangeCounter = 0;
         }
 
         const interpolationFactor = colorChangeCounter / colorChangeInterval;
-        seedColorManager.interpolateColors(interpolationFactor);
         flowerColorManager.interpolateColors(interpolationFactor);
-        randomShapeColorManager.interpolateColors(interpolationFactor);
-        fractalColorManager.interpolateColors(interpolationFactor);
 
-        ////////////////////////////////////////////////////////////////
-        const seedWidth = 7 + 3 * Math.sin(time.lastTime / 800);
-        const seedLineRadius = 400 + 120 * Math.sin(time.lastTime / 800);
-
-        const seedConfig: drawConfig = {
-            width: seedWidth,
-            radius: seedLineRadius
-        }
-
-        // drawSeed(seedConfig);
-
-        ////////////////////////////////////////////////////////////////
         const flowerWidth = 8 + 3 * Math.sin((time.lastTime / 500) * 2 + 3);
         const flowerRadius = 100 + 50 * Math.cos((time.lastTime / 800) + 10);
 
@@ -260,25 +107,6 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
         }
 
         drawFlowers(flowersConfig);
-
-        ////////////////////////////////////////////////////////////////
-        const randomShapeWidth = 10 + 3 * Math.sin(time.lastTime / 500);
-        const randomShapeRadius = 50 * Math.cos((time.lastTime / 800) + 10);
-
-        const randomShapeConfig: drawConfig = {
-            width: randomShapeWidth,
-            radius: randomShapeRadius
-        }
-
-        // drawRandomShape(randomShapeConfig);
-
-        //////////////////////////////////////////////////////////////////////
-        firstLine.clear();
-        for (let i = 0; i < 2; i++) {
-            // drawFractal(firstLine, 10 * i, 400 * i, app.canvas.width / i * 10, app.canvas.height / i, fractalLevels);
-        }
-
-        fractalWidth = 15 * Math.sin(angleTheta);
     });
 
     return (): void => {
