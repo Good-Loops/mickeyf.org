@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { RowDataPacket } from 'mysql2';
 import { IUser } from '../types/customTypes';
-import pool from '../config/dbConfig';
+import { pool } from '../config/dbConfig';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { stat } from 'fs';
@@ -252,11 +252,18 @@ const getLeaderboard = async (_req: Request, res: Response) => {
     try {
         // Query the database to fetch the top 10 users with non-null p4_score, ordered by p4_score in descending order
         const [rows] = await pool.query(
-            'SELECT user_name, p4_score FROM users WHERE p4_score IS NOT NULL ORDER BY p4_score DESC LIMIT 10'
+            `SELECT user_name, p4_score 
+                FROM users 
+                WHERE p4_score IS NOT NULL 
+                ORDER BY p4_score DESC 
+                LIMIT 10`
         );
         // Send a JSON response with success status and the leaderboard data
         res.json({ success: true, leaderboard: rows });
-    } catch (error) {
+    } catch (error: unknown) {
+        const msg =
+            error instanceof Error ? error.message : JSON.stringify(error); 
+        console.error('Leaderboard error:', msg);
         // Send a JSON response with error status if there is an error while fetching the leaderboard data
         res.status(500).json({ error: 'SERVER_ERROR' });
     }
