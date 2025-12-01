@@ -1,6 +1,6 @@
 import { color } from "../animations.types";
 
-export default class ColorManager {
+export default class ColorInterpolator {
     currentColors: color[];
     private targetColors: color[];
 
@@ -29,13 +29,28 @@ export default class ColorManager {
     interpolateColors(factor: number) {
         this.currentColors = this.currentColors.map((currentColor: color, index: number): color => {
             const target = this.targetColors[index];
-            return {
-                hue: currentColor.hue + (target.hue - currentColor.hue) * factor,
-                saturation: currentColor.saturation + (target.saturation - currentColor.saturation) * factor,
-                lightness: currentColor.lightness + (target.lightness - currentColor.lightness) * factor
-            };
+
+            // Interpolate
+            let hue = currentColor.hue + (target.hue - currentColor.hue) * factor;
+            let saturation = currentColor.saturation + (target.saturation - currentColor.saturation) * factor;
+            let lightness = currentColor.lightness + (target.lightness - currentColor.lightness) * factor;
+
+            // Wrap hue (so it’s always 0–359)
+            hue = ((hue % 360) + 360) % 360;
+
+            // Clamp saturation/lightness (0–100)
+            saturation = Math.min(100, Math.max(0, saturation));
+            lightness = Math.min(100, Math.max(0, lightness));
+
+            // Round to integers (prevents scientific notation + float garbage)
+            hue = Math.round(hue);
+            saturation = Math.round(saturation);
+            lightness = Math.round(lightness);
+
+            return { hue, saturation, lightness };
         });
     }
+
 
     /**
      * Updates the target colors to new random colors from the palette.
@@ -45,7 +60,7 @@ export default class ColorManager {
     }
 
     /**
-     * Converts a color object to an HSL string.
+     * Converts a color object to a HSL string.
      * @param color - The color object to convert.
      * @returns The HSL string representation of the color.
      */
