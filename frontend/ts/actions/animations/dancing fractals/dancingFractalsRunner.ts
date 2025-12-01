@@ -14,7 +14,7 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
 
     await app.init({
         antialias: true,
-        backgroundColor: 'hsl(204, 92%, 80%)',
+        backgroundColor: 'hsl(204, 92%, 50%)',
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT
     });
@@ -36,7 +36,7 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
     const flowers: Graphics[][] = [];
     const flowerAmount = 50;
     const flowerLines = 7;
-    const flowersAlpha = .3;
+    const flowersAlpha = .8;
     const flowerColorManager = new ColorManager(colorPalette, flowerAmount);
 
     let spiralRadius: number = 0;
@@ -52,13 +52,13 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
         const y = centerY + spiralRadius * Math.sin(angle);
 
         for (let j = 0; j < flowerLines; j++) {
-            const line = new Graphics();
+            const petal = new Graphics();
 
-            flower.push(line);
-            line.x = x;
-            line.y = y;
+            flower.push(petal);
+            petal.x = x;
+            petal.y = y;
 
-            app.stage.addChild(line);
+            app.stage.addChild(petal);
         }
 
         flowers.push(flower);
@@ -69,26 +69,27 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
 
             const flowerColor: string = flowerColorManager.hslToString(flowerColorManager.currentColors[flowerIndex]);
 
-            flower.forEach((line: Graphics, flowerLineIndex: number) => {
-                line.clear();
-                line.moveTo(0, 0);
+            flower.forEach((petal: Graphics, petalIndex: number) => {
+                petal.clear();
+                petal.moveTo(0, 0);
 
-                line.lineTo((drawConfig.radius * 1.2) * Math.cos(angleTheta + (flowerLineIndex * 3)) - Math.sin(flowerIndex), drawConfig.radius * Math.sin(angleTheta + flowerLineIndex * flowerIndex) + 1.2);
-                line.stroke({ color: flowerColor, width: drawConfig.width, alpha: flowersAlpha, cap: 'round' });
+                petal.lineTo((drawConfig.radius) * Math.cos(angleTheta + (petalIndex)) - Math.sin(flowerIndex), 
+                            drawConfig.radius * Math.sin(angleTheta + petalIndex * flowerIndex));
+                petal.stroke({ color: flowerColor, width: drawConfig.width, alpha: flowersAlpha, cap: 'round' });
             });
         });
     }
 
     let angleTheta = 0;
 
-    const colorChangeInterval = 50;
+    const colorChangeInterval = 5;
     let colorChangeCounter = 0;
 
     app.ticker.add((time: Ticker): void => {
 
         angleTheta += .01;
 
-        colorChangeCounter += time.deltaMS / 100;
+        colorChangeCounter += time.deltaMS / 1000;
 
         if (colorChangeCounter >= colorChangeInterval) {
             flowerColorManager.updateTargetColors();
@@ -98,12 +99,19 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
         const interpolationFactor = colorChangeCounter / colorChangeInterval;
         flowerColorManager.interpolateColors(interpolationFactor);
 
-        const flowerWidth = 8 + 3 * Math.sin((time.lastTime / 500) * 2 + 3);
-        const flowerRadius = 100 + 50 * Math.cos((time.lastTime / 800) + 10);
+        const minPetalWidth = 20;
+        const petalWidthVariation = 10;
+        const petalWidthVariationSpeed = .005;
+        const petalWidth = minPetalWidth + petalWidthVariation * Math.sin(time.lastTime * petalWidthVariationSpeed);
+
+        const minPetalLength = 90;
+        const petalLengthVariation = 20;
+        const petalLengthVariationSpeed = .004;
+        const petalLength = minPetalLength + petalLengthVariation * Math.cos((time.lastTime * petalLengthVariationSpeed));
 
         const flowersConfig: drawConfig = {
-            width: flowerWidth,
-            radius: flowerRadius
+            width: petalWidth,
+            radius: petalLength
         }
 
         drawFlowers(flowersConfig);

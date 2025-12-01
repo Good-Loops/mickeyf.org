@@ -12,7 +12,7 @@ import AudioHandler from "./classes/AudioHandler";
 import { Application, Graphics } from "pixi.js";
 import FullscreenButton from "../../../helpers/FullscreenButton";
 
-type DancingCirclesDeps = {
+type DancingCirclesDependencies = {
     container: HTMLElement;
     uploadButton: HTMLLabelElement;
     fileInput: HTMLInputElement;
@@ -22,7 +22,7 @@ export default async function dancingCirclesRunner({
     container,
     uploadButton,
     fileInput,
-}: DancingCirclesDeps) {
+}: DancingCirclesDependencies) {
     const app = new Application();
 
     await app.init({
