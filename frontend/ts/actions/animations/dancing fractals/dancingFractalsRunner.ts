@@ -34,19 +34,20 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
     ];
 
     const flowers: Graphics[][] = [];
-    const flowerAmount = 50;
+    const flowerAmount = 120;
     const flowerLines = 7;
     const flowersAlpha = .8;
     const flowerColorManager = new ColorManager(colorPalette, flowerAmount);
 
     let spiralRadius: number = 0;
     const spiralIncrement = 8;
+    const revolutions = 3;
 
     for (let i = 0; i < flowerAmount; i++) {
         const flower: Graphics[] = [];
 
-        spiralRadius += spiralIncrement; // Increase radius to create the spiral effect
-        const angle = i * Math.PI * 2 / flowerAmount;
+        spiralRadius += spiralIncrement;
+        const angle = (i * 2 * Math.PI * revolutions) / flowerAmount;
 
         const x = centerX + spiralRadius * Math.cos(angle);
         const y = centerY + spiralRadius * Math.sin(angle);
