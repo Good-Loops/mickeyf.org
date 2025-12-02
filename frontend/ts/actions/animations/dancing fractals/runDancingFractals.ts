@@ -1,13 +1,14 @@
 import { Application, Ticker } from 'pixi.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
-
 import FullscreenButton from '../../../helpers/FullscreenButton';
-
-import FlowerSpiral from './classes/FlowerSpiral';
+import FractalAnimation, { FractalAnimationConstructor } from './interfaces/FractalAnimation';
 
 // Main entry point for the "dancing fractals" animation.
 // Returns a cleanup function that destroys the PIXI application.
-export default async function dancingFractalsRunner(container: HTMLElement): Promise<() => void> {
+export default async function runDancingFractals(
+    container: HTMLElement,
+    FractalClass: FractalAnimationConstructor 
+): Promise<() => void> {
 
     const app = new Application();
     // Expose app globally so PIXI devtools can inspect the scene.
@@ -31,18 +32,19 @@ export default async function dancingFractalsRunner(container: HTMLElement): Pro
     const centerX = app.screen.width / 2;
     const centerY = app.screen.height / 2;
 
-    const flowerSpiral = new FlowerSpiral(centerX, centerY);
-    flowerSpiral.init(app);
-    flowerSpiral.scheduleDisposal(10);
+    const fractal: FractalAnimation = new FractalClass(centerX, centerY);
+    fractal.init(app);
+    fractal.scheduleDisposal(FractalClass.disposalSeconds);
 
     // Main animation loop.
     app.ticker.add((time: Ticker): void => {
         const deltaSeconds = time.deltaMS / 1000;
-        flowerSpiral.step(deltaSeconds, time.lastTime);
+        fractal.step(deltaSeconds, time.lastTime);
     });
 
     // Cleanup function to be called when the animation is destroyed/unmounted.
     return (): void => {
+        fractal.dispose();
         app.destroy(true, { children: true, texture: true });
     }
 }

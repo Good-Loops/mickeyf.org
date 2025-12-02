@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import dancingFractalsRunner from '../../actions/animations/dancing fractals/dancingFractalsRunner';
+import runDancingFractals from '../../actions/animations/dancing fractals/runDancingFractals';
+import FlowerSpiral from '../../actions/animations/dancing fractals/classes/FlowerSpiral';
 
 const DancingFractals: React.FC = () => {
     const containerRef = React.useRef<HTMLElement | null>(null);
@@ -10,8 +11,9 @@ const DancingFractals: React.FC = () => {
         let dispose: (() => void) | undefined;
 
         (async () => {
-            dispose = await dancingFractalsRunner(
-                containerRef.current!
+            dispose = await runDancingFractals(
+                containerRef.current!,
+                FlowerSpiral
             );
         })();
 

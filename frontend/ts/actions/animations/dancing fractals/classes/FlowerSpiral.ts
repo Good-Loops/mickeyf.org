@@ -1,8 +1,9 @@
 import { Application, Graphics } from "pixi.js";
 import { color, drawConfig } from "../../animations.types";
 import ColorInterpolator from "../../helpers/ColorInterpolator";
+import type FractalAnimation from "../interfaces/FractalAnimation";
 
-export default class FlowerSpiral {
+export default class FlowerSpiral implements FractalAnimation {
     constructor(
         private readonly centerX: number, 
         private readonly centerY: number,
@@ -13,7 +14,7 @@ export default class FlowerSpiral {
     ) {}
     
     // Base palette used for smoothly interpolated flower colors.
-    static defaultPalette: color[] = [
+    private static defaultPalette: color[] = [
         { hue: 198, saturation: 58, lightness: 80 },
         { hue: 209, saturation: 42, lightness: 70 },
         { hue: 225, saturation: 30, lightness: 49 },
@@ -21,6 +22,9 @@ export default class FlowerSpiral {
         { hue: 19, saturation: 89, lightness: 67 },
         { hue: 5, saturation: 91, lightness: 67 }
     ];
+
+    // Class-wide default disposal time for this fractal type
+    public static disposalSeconds = 10;
 
     private childSpirals: FlowerSpiral[] = []; // For recursiveness
 
@@ -228,8 +232,6 @@ export default class FlowerSpiral {
 
         return { width, radius };
     }
-
-
 
     public updateColors = (deltaSeconds: number): void => {
         this.colorChangeCounter += deltaSeconds;
