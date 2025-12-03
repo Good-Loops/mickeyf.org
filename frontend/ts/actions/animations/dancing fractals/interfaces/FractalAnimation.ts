@@ -50,4 +50,9 @@ export interface FractalAnimationConstructor {
      * Number of seconds before disposal starts.
      */
     disposalSeconds: number;
+
+    /**
+     * Background color for the animation.
+     */
+    backgroundColor: string;
 }

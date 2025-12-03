@@ -16,7 +16,7 @@ export default async function runDancingFractals(
 
     // Initialize PIXI with fixed canvas size and background.
     await app.init({
-        backgroundColor: 'hsla(184, 100%, 89%, 1.00)',
+        backgroundColor: FractalClass.backgroundColor,
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT
     });

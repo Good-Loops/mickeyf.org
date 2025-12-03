@@ -22,12 +22,15 @@ export default class FlowerSpiral implements FractalAnimation {
         { hue: 19, saturation: 89, lightness: 67 },
         { hue: 5, saturation: 91, lightness: 67 }
     ];
-
+    
     // Class-wide default disposal time for this fractal type
-    public static disposalSeconds = 10;
+    static disposalSeconds = 10;
 
-    private childSpirals: FlowerSpiral[] = []; // For recursiveness
-
+    static backgroundColor: string = "hsla(184, 100%, 89%, 1.00)";
+    
+    // For recursiveness
+    private childSpirals: FlowerSpiral[] = []; 
+    
     // Each "flower" is an array of Graphics petals.
     private flowers: Graphics[][] = [];
     private flowerAmount = 50;     // How many flowers in the spiral.
@@ -35,39 +38,42 @@ export default class FlowerSpiral implements FractalAnimation {
     private visibleFlowerCount = 0; // How many flowers are currently visible (for animation).
     private flowersPerSecond = 10; // How many flowers become visible per second.
     private flowersAlpha = .7;      // Common alpha for all flower strokes.
+
+    // Color interpolator for smooth transitions between colors.
+    private readonly colorInterpolator: ColorInterpolator = new ColorInterpolator(this.colorPalette, this.flowerAmount);
     
-    private petalAngle = this.angleOffset; // Global angular phase used to animate the petal endpoints.
-    private petalRotationSpeed = 2;
-
-    private minRadiusScale = .1;
-    private maxRadiusScale = 1.5;
-
     private colorChangeInterval = 1; // Seconds between new target palettes.
     private colorChangeCounter = 0;
 
+    private petalAngle = this.angleOffset; // Global angular phase used to animate the petal endpoints.
+    private petalRotationSpeed = 2;
+
+    // Radius scaling for flowers from center to edge.
+    private minRadiusScale = .1;
+    private maxRadiusScale = 1.5;
+
+    // Disposal logic
     private disposalDelay = 0;
     private disposalTimer = 0;
     private autoDispose = false;
+    private isDisposing = false;
 
     private readonly spiralIncrement = 7;    // Distance between consecutive flowers.
     private readonly revolutions = 5;    // How many full turns the spiral makes.
 
+    // Petal animation parameters
     private readonly petalThicknessBase = 8;
     private readonly petalThicknessVariation = 7;
     private readonly petalThicknessSpeed = .005;
-
     private readonly petalLengthBase = 50;
     private readonly petalLengthVariation = 30;
     private readonly petalLengthSpeed = .008;
 
-    private isDisposing: boolean = false;
-
-    private app: Application | null = null;
+    private app: Application | null = null; // PIXI application
     private reusableStrokeOptions = { width: 0, color: '', alpha: 0, cap: 'round' };
 
-    private readonly colorInterpolator: ColorInterpolator = new ColorInterpolator(this.colorPalette, this.flowerAmount);
-
-    public init = (app: Application): void => {
+    // Initialize the flower spiral within the given PIXI application.
+    init = (app: Application): void => {
         this.app = app;
 
         // Create and position all flowers upfront.
@@ -116,6 +122,7 @@ export default class FlowerSpiral implements FractalAnimation {
         }
     }
 
+    // Advance the animation by deltaSeconds and timeMS
     public step(deltaSeconds: number, timeMS: number): void {
         if (this.autoDispose) {
             this.disposalTimer += deltaSeconds;
