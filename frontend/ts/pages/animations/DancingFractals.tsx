@@ -3,18 +3,15 @@ import runDancingFractals from '../../animations/dancing fractals/runDancingFrac
 
 import type FractalController from '../../animations/dancing fractals/interfaces/FractalController';
 import TreeControls from '../../animations/dancing fractals/components/TreeControls';
+import FlowerSpiralControls from '../../animations/dancing fractals/components/FlowerSpiralControls';
 
 import Tree from '../../animations/dancing fractals/classes/Tree';
 import { type TreeConfig, defaultTreeConfig } from '../../animations/dancing fractals/config/TreeConfig'; 
 
 import FlowerSpiral from '../../animations/dancing fractals/classes/FlowerSpiral';
+import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '../../animations/dancing fractals/config/FlowerSpiralConfig';
 
 type FractalKind = 'tree' | 'flower';
-
-// TODO: Define a real config + default for FlowerSpiral later.
-// For now we just use an empty object so typing is easy.
-type FlowerConfig = Record<string, never>;
-const defaultFlowerConfig: FlowerConfig = {};
 
 const DancingFractals: React.FC = () => {
     const containerRef = useRef<HTMLElement | null>(null);
@@ -27,7 +24,7 @@ const DancingFractals: React.FC = () => {
 
     // Separate config state for each fractal type
     const [treeConfig, setTreeConfig] = useState<TreeConfig>(defaultTreeConfig);
-    const [flowerConfig] = useState<FlowerConfig>(defaultFlowerConfig);
+    const [flowerConfig, setFlowerConfig] = useState<FlowerSpiralConfig>(defaultFlowerSpiralConfig);
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -63,13 +60,21 @@ const DancingFractals: React.FC = () => {
             controllerRef.current?.dispose();
             controllerRef.current = null;
         };
-    }, [fractalKind, treeConfig, flowerConfig]);
+    }, [fractalKind]);
 
     // Handle tree config changes: update React state + push patch into fractal
     const handleTreeConfigChange = (patch: Partial<TreeConfig>) => {
         setTreeConfig(prev => {
             const next = { ...prev, ...patch };
             // Send only the patch down to the fractal
+            controllerRef.current?.updateConfig(patch);
+            return next;
+        });
+    };
+
+    const handleFlowerConfigChange = (patch: Partial<FlowerSpiralConfig>) => {
+        setFlowerConfig(prev => {
+            const next = { ...prev, ...patch };
             controllerRef.current?.updateConfig(patch);
             return next;
         });
@@ -104,9 +109,10 @@ const DancingFractals: React.FC = () => {
                     )}
 
                     {fractalKind === 'flower' && (
-                        <p className="fractal-controls__placeholder">
-                            Flower controls coming soon…
-                        </p>
+                        <FlowerSpiralControls
+                            config={flowerConfig}
+                            onChange={handleFlowerConfigChange}
+                        />
                     )}
                 </div>
             </div>
