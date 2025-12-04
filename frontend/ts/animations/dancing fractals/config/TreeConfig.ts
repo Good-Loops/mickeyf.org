@@ -1,4 +1,4 @@
-import { color } from "../../animations.types";
+import { type color } from "../../animations.types";
 
 export interface TreeConfig {
     maxDepth: number;

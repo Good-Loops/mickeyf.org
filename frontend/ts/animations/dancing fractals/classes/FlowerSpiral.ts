@@ -1,56 +1,46 @@
 import { Application, Graphics } from "pixi.js";
-import { color, drawConfig } from "../../animations.types";
+import { drawConfig } from "../../animations.types";
 import ColorInterpolator from "../../helpers/ColorInterpolator";
 import type FractalAnimation from "../interfaces/FractalAnimation";
+import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from "../config/FlowerSpiralConfig";
 
-export default class FlowerSpiral implements FractalAnimation {
+export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig> {
     constructor(
-        private readonly centerX: number, 
+        private readonly centerX: number,
         private readonly centerY: number,
-        public colorPalette: color[] = FlowerSpiral.defaultPalette,
-        private readonly recursionDepth: number = 1,
-        private readonly scale: number = 3,
-        private readonly angleOffset: number = 0
-    ) {}
-    
-    // Base palette used for smoothly interpolated flower colors.
-    private static defaultPalette: color[] = [
-        { hue: 198, saturation: 58, lightness: 80 },
-        { hue: 209, saturation: 42, lightness: 70 },
-        { hue: 225, saturation: 30, lightness: 49 },
-        { hue: 225, saturation: 41, lightness: 33 },
-        { hue: 19, saturation: 89, lightness: 67 },
-        { hue: 5, saturation: 91, lightness: 67 }
-    ];
+        initialConfig: Partial<FlowerSpiralConfig> = {}
+    ) {
+        this.config = { ...defaultFlowerSpiralConfig, ...initialConfig };
+
+        this.colorInterpolator = new ColorInterpolator(
+            this.config.palette,
+            this.config.flowerAmount
+        );
+
+        this.petalAngle = this.angleOffset;
+    }
     
     // Class-wide default disposal time for this fractal type
     static disposalSeconds = 10;
 
     static backgroundColor: string = "hsla(184, 100%, 89%, 1.00)";
     
+    private config: FlowerSpiralConfig;
+
     // For recursiveness
     private childSpirals: FlowerSpiral[] = []; 
     
     // Each "flower" is an array of Graphics petals.
     private flowers: Graphics[][] = [];
-    private flowerAmount = 50;     // How many flowers in the spiral.
-    private petalsPerFlower = 4;        // Number of petals per flower.
-    private visibleFlowerCount = 0; // How many flowers are currently visible (for animation).
-    private flowersPerSecond = 10; // How many flowers become visible per second.
-    private flowersAlpha = .7;      // Common alpha for all flower strokes.
+    private visibleFlowerCount = 0; // How many flowers are currently visible.
 
     // Color interpolator for smooth transitions between colors.
-    private readonly colorInterpolator: ColorInterpolator = new ColorInterpolator(this.colorPalette, this.flowerAmount);
+    private colorInterpolator: ColorInterpolator;
     
-    private colorChangeInterval = 1; // Seconds between new target palettes.
     private colorChangeCounter = 0;
 
-    private petalAngle = this.angleOffset; // Global angular phase used to animate the petal endpoints.
-    private petalRotationSpeed = 2;
-
-    // Radius scaling for flowers from center to edge.
-    private minRadiusScale = .1;
-    private maxRadiusScale = 1.5;
+    private angleOffset = 0; // Per-instance offset for petal rotation animation.
+    private petalAngle = 0; // Global angular phase used to animate the petal endpoints.
 
     // Disposal logic
     private disposalDelay = 0;
@@ -58,72 +48,24 @@ export default class FlowerSpiral implements FractalAnimation {
     private autoDispose = false;
     private isDisposing = false;
 
-    private readonly spiralIncrement = 7;    // Distance between consecutive flowers.
-    private readonly revolutions = 5;    // How many full turns the spiral makes.
-
-    // Petal animation parameters
-    private readonly petalThicknessBase = 8;
-    private readonly petalThicknessVariation = 7;
-    private readonly petalThicknessSpeed = .005;
-    private readonly petalLengthBase = 50;
-    private readonly petalLengthVariation = 30;
-    private readonly petalLengthSpeed = .008;
-
     private app: Application | null = null; // PIXI application
-    private reusableStrokeOptions = { width: 0, color: '', alpha: 0, cap: 'round' };
+    private reusableStrokeOptions = { 
+        width: 0, 
+        color: '', 
+        alpha: 0, 
+        cap: 'round' as const,
+    };
 
     // Initialize the flower spiral within the given PIXI application.
     init = (app: Application): void => {
         this.app = app;
 
-        // Create and position all flowers upfront.
-        for (let i = 0; i < this.flowerAmount; i++) {
-            const { x, y } = this.computeFlowerPosition(i);
-            this.flowers.push(this.createFlowerAt(x, y));
-        }
-
-        // Create child spirals for fractal behavior
-        if (this.recursionDepth > 0 && this.app) {
-            const childScale = this.scale * 0.45;
-            const childDepth = this.recursionDepth - 1;
-            const childSpirals: FlowerSpiral[] = [];
-
-            this.flowers.forEach((flower, flowerIndex) => {
-                flower.forEach((petal, petalIndex) => {
-
-                    if (flowerIndex % 4 !== 0 || petalIndex !== 0) return;
-
-                    const radiusProgress = flowerIndex / (this.flowerAmount - 1);
-                    const radiusScale = this.minRadiusScale + (this.maxRadiusScale - this.minRadiusScale) * radiusProgress;
-
-                    // Compute the endpoint for this specific petal
-                    const angle = this.petalAngle + petalIndex;
-                    const len = this.petalLengthBase * radiusScale * this.scale;
-                    const endX = len * Math.cos(angle);
-                    const endY = len * Math.sin(angle);
-
-                    const { x, y } = this.getPetalEndpoint(petal, endX, endY);
-
-                    const child = new FlowerSpiral(
-                        x,
-                        y,
-                        this.colorPalette,
-                        childDepth,
-                        childScale,
-                        angle
-                    );
-
-                    child.init(this.app!);
-                    childSpirals.push(child);
-                });
-            });
-
-            this.childSpirals = childSpirals;
-        }
+        this.buildFlowers();
+        this.buildChildSpirals();
     }
 
     // Advance the animation by deltaSeconds and timeMS
-    public step(deltaSeconds: number, timeMS: number): void {
+    public step = (deltaSeconds: number, timeMS: number): void => {
         if (this.autoDispose) {
             this.disposalTimer += deltaSeconds;
             if (this.disposalTimer >= this.disposalDelay) {
@@ -148,6 +90,13 @@ export default class FlowerSpiral implements FractalAnimation {
 
     // Render all flowers for the given frame using supplied draw configuration.
     public draw = (drawConfig: drawConfig) => {
+        const {
+            flowerAmount,
+            minRadiusScale,
+            maxRadiusScale,
+            flowersAlpha,
+        } = this.config;
+
         this.flowers.forEach((flower: Graphics[], flowerIndex: number) => {
             // How "visible" this flower should be, based on visibleFlowerCount
             const visibility = this.visibleFlowerCount - flowerIndex;
@@ -165,13 +114,13 @@ export default class FlowerSpiral implements FractalAnimation {
             );
 
             // 0 at center, 1 at outermost
-            const radiusProgress = flowerIndex / (this.flowerAmount - 1);
+            const radiusProgress = flowerIndex / (flowerAmount - 1);
             // Scale radius so center flowers are smaller
             const radiusScale = 
-                this.minRadiusScale + (this.maxRadiusScale - this.minRadiusScale) * radiusProgress;
+                minRadiusScale + (maxRadiusScale - minRadiusScale) * radiusProgress;
 
             const flowerRadius = drawConfig.radius * radiusScale * growthFactor;
-            const effectiveAlpha = this.flowersAlpha * growthFactor;
+            const effectiveAlpha = flowersAlpha * growthFactor;
 
             flower.forEach((petal: Graphics, petalIndex: number) => {
                 // Clear previous stroke and start at local origin.
@@ -195,11 +144,13 @@ export default class FlowerSpiral implements FractalAnimation {
     }
 
     private computeFlowerPosition = (flowerIndex: number): { x: number, y: number } => {
+        const { spiralIncrement, scale, revolutions, flowerAmount } = this.config;
+
         // Spiral parameters: radius grows linearly with each flower index.
-        const spiralRadius = flowerIndex * this.spiralIncrement * this.scale;
+        const spiralRadius = flowerIndex * spiralIncrement * scale;
 
         // Map index i to angle along a spiral with `revolutions` turns.
-        const angle = (flowerIndex * 2 * Math.PI * this.revolutions) / this.flowerAmount;
+        const angle = (flowerIndex * 2 * Math.PI * revolutions) / flowerAmount;
 
         const x = this.centerX + spiralRadius * Math.cos(angle);
         const y = this.centerY + spiralRadius * Math.sin(angle);
@@ -215,7 +166,7 @@ export default class FlowerSpiral implements FractalAnimation {
         }
 
         // Create petals for this flower, all sharing same origin (x, y).
-        for (let j = 0; j < this.petalsPerFlower; j++) {
+        for (let j = 0; j < this.config.petalsPerFlower; j++) {
                 const petal = new Graphics();
     
                 flower.push(petal);
@@ -228,14 +179,103 @@ export default class FlowerSpiral implements FractalAnimation {
         return flower;
     }
 
-    public computeDrawConfig(timeMS: number): drawConfig {
-        const width = this.petalThicknessBase +
-            this.petalThicknessVariation *
-            Math.sin(timeMS * this.petalThicknessSpeed);
+    private buildFlowers = (): void => {
+        this.flowers = [];
+        if (!this.app) return;
 
-        const radius = this.petalLengthBase +
-            this.petalLengthVariation *
-            Math.cos(timeMS * this.petalLengthSpeed);
+        for (let i = 0; i < this.config.flowerAmount; i++) {
+            const { x, y } = this.computeFlowerPosition(i);
+            this.flowers.push(this.createFlowerAt(x, y));
+        }
+
+        // Rebuild color interpolator with new count
+        this.colorInterpolator = new ColorInterpolator(
+            this.config.palette,
+            this.config.flowerAmount
+        );
+    };
+
+    private buildChildSpirals = (): void => {
+        if (!this.app) return;
+
+        this.childSpirals.forEach(child => child.dispose());
+        this.childSpirals = [];
+
+        const { recursionDepth, scale, minRadiusScale, maxRadiusScale, petalLengthBase } =
+            this.config;
+
+        if (recursionDepth <= 0) return;
+
+        const childScale = scale * 0.45;
+        const childDepth = recursionDepth - 1;
+        const childSpirals: FlowerSpiral[] = [];
+
+        this.flowers.forEach((flower, flowerIndex) => {
+            flower.forEach((petal, petalIndex) => {
+                if (flowerIndex % 4 !== 0 || petalIndex !== 0)
+                    return;
+
+                const radiusProgress =
+                    flowerIndex / (this.config.flowerAmount - 1);
+                const radiusScale =
+                    minRadiusScale +
+                    (maxRadiusScale - minRadiusScale) *
+                        radiusProgress;
+
+                // Compute the endpoint for this specific petal
+                const angle =
+                    this.petalAngle + petalIndex;
+                const len =
+                    petalLengthBase *
+                    radiusScale *
+                    scale;
+                const endX = len * Math.cos(angle);
+                const endY = len * Math.sin(angle);
+
+                const { x, y } = this.getPetalEndpoint(
+                    petal,
+                    endX,
+                    endY
+                );
+
+                const childConfig: Partial<FlowerSpiralConfig> =
+                    {
+                        ...this.config,
+                        recursionDepth: childDepth,
+                        scale: childScale,
+                    };
+
+                const child = new FlowerSpiral(
+                    x,
+                    y,
+                    childConfig
+                );
+
+                child.init(this.app!);
+                childSpirals.push(child);
+            });
+        });
+
+        this.childSpirals = childSpirals;
+    };
+
+    public computeDrawConfig = (timeMS: number): drawConfig => {
+        const {
+            petalThicknessBase,
+            petalThicknessVariation,
+            petalThicknessSpeed,
+            petalLengthBase,
+            petalLengthVariation,
+            petalLengthSpeed,
+        } = this.config;
+
+        const width = petalThicknessBase +
+            petalThicknessVariation *
+            Math.sin(timeMS * petalThicknessSpeed);
+
+        const radius = petalLengthBase +
+            petalLengthVariation *
+            Math.cos(timeMS * petalLengthSpeed);
 
         return { width, radius };
     }
@@ -244,26 +284,51 @@ export default class FlowerSpiral implements FractalAnimation {
         this.colorChangeCounter += deltaSeconds;
 
         // Pick a new set of target colors every `colorChangeInterval` seconds.
-        if (this.colorChangeCounter >= this.colorChangeInterval) {
+        if (this.colorChangeCounter >= this.config.colorChangeInterval) {
             this.colorInterpolator.updateTargetColors();
             this.colorChangeCounter = 0;
         }
 
         // Interpolation factor between current and target colors [0, 1].
-        const t = this.colorChangeCounter / this.colorChangeInterval;
+        const t = this.colorChangeCounter / this.config.colorChangeInterval;
         this.colorInterpolator.interpolateColors(t);
     }
 
-    public update(deltaSeconds: number): void {
+    private destroyGraphicsAndChildren = (): void => {
+        // Destroy all petals
+        this.flowers.forEach(flower => {
+            flower.forEach(petal => petal.destroy());
+        });
+
+        this.flowers = [];
+
+        // Dispose child spirals
+        this.childSpirals.forEach(child => child.dispose());
+        this.childSpirals = [];
+    }
+
+
+    private getPetalEndpoint = (petal: Graphics, endX: number, endY: number) => {
+        return {
+            x: petal.x + endX,
+            y: petal.y + endY
+        };
+    }
+
+    public rotatePetals = (deltaSeconds: number): void => {
+        this.petalAngle += this.config.petalRotationSpeed * deltaSeconds;
+    }
+
+    public update = (deltaSeconds: number): void => {
         if(!this.isDisposing) {
             // GROW: reveal flowers
-            this.visibleFlowerCount += this.flowersPerSecond * deltaSeconds;
-            if (this.visibleFlowerCount > this.flowerAmount) {
-                this.visibleFlowerCount = this.flowerAmount;
+            this.visibleFlowerCount += this.config.flowersPerSecond * deltaSeconds;
+            if (this.visibleFlowerCount > this.config.flowerAmount) {
+                this.visibleFlowerCount = this.config.flowerAmount;
             }
         } else {
             // SHRINK: hide flowers
-            this.visibleFlowerCount -= this.flowersPerSecond * deltaSeconds;
+            this.visibleFlowerCount -= this.config.flowersPerSecond * deltaSeconds;
             if (this.visibleFlowerCount <= 0) {
                 this.visibleFlowerCount = 0;
                 this.finishDisposal();
@@ -279,7 +344,7 @@ export default class FlowerSpiral implements FractalAnimation {
         this.childSpirals.forEach(child => child.startDisposal());
     }
     
-    public scheduleDisposal(seconds: number): void {
+    public scheduleDisposal = (seconds: number): void => {
         if(this.autoDispose) return; // Already scheduled
         
         this.disposalDelay = seconds;
@@ -314,28 +379,36 @@ export default class FlowerSpiral implements FractalAnimation {
         this.app = null; 
     }
 
-    private destroyGraphicsAndChildren(): void {
-        // Destroy all petals
-        this.flowers.forEach(flower => {
-            flower.forEach(petal => petal.destroy());
-        });
+    updateConfig = (
+        patch: Partial<FlowerSpiralConfig>
+    ): void => {
+        const oldConfig = this.config;
+        this.config = { ...this.config, ...patch };
 
-        this.flowers = [];
+        if (!this.app) return;
 
-        // Dispose child spirals
-        this.childSpirals.forEach(child => child.dispose());
-        this.childSpirals = [];
-    }
+        const flowerCountChanged =
+            patch.flowerAmount !== undefined &&
+            patch.flowerAmount !== oldConfig.flowerAmount;
 
+        const petalCountChanged =
+            patch.petalsPerFlower !== undefined &&
+            patch.petalsPerFlower !== oldConfig.petalsPerFlower;
 
-    private getPetalEndpoint(petal: Graphics, endX: number, endY: number) {
-        return {
-            x: petal.x + endX,
-            y: petal.y + endY
-        };
-    }
+        if (flowerCountChanged || petalCountChanged) {
+            this.destroyGraphicsAndChildren();
+            this.buildFlowers();
+            this.buildChildSpirals();
+        }
 
-    public rotatePetals = (deltaSeconds: number): void => {
-        this.petalAngle += this.petalRotationSpeed * deltaSeconds;
+        if (
+            patch.palette &&
+            patch.palette !== oldConfig.palette
+        ) {
+            this.colorInterpolator = new ColorInterpolator(
+                this.config.palette,
+                this.config.flowerAmount
+            );
+        }
     }
 }

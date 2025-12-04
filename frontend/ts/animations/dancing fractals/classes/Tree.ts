@@ -54,7 +54,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
     private colorChangeCounter: number = 0;
 
     // Initialize the tree within the given PIXI application.
-    init(app: Application): void {
+    init = (app: Application): void => {
         this.app = app;
 
         this.depthGraphics = [];
@@ -65,7 +65,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
         }
     }
 
-    step(deltaSeconds: number, timeMS: number): void {
+    step = (deltaSeconds: number, timeMS: number): void => {
         if (!this.app || this.depthGraphics.length === 0) return;
 
         // Handle scheduled auto-disposal
@@ -192,7 +192,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
     }
 
     // Recursive branch drawing
-    private drawBranch(
+    private drawBranch = (
         x: number,
         y: number,
         angle: number,
@@ -200,7 +200,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
         depth: number,
         spin: number,
         timePhase: number
-    ): void {
+    ): void => {
         if (depth > this.config.maxDepth || length < 2) return;
 
         // Only draw this depth if it's within the current "visible" portion
@@ -270,7 +270,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
     }
 
     // Update colors over time
-    private updateColors(deltaSeconds: number): void {
+    private updateColors = (deltaSeconds: number): void => {
         this.colorChangeCounter += deltaSeconds;
 
         if (this.colorChangeCounter >= this.config.colorChangeInterval) {
@@ -283,7 +283,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
     }
 
     // Allow external code to update some/all config fields.
-    updateConfig(patch: Partial<TreeConfig>): void {
+    updateConfig = (patch: Partial<TreeConfig>): void => {
         const oldMaxDepth = this.config.maxDepth;
         this.config = { ...this.config, ...patch };
 
@@ -318,7 +318,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
     }
 
     // Schedule an animated disposal to begin after a delay.
-    scheduleDisposal(seconds: number): void {
+    scheduleDisposal = (seconds: number): void => {
         if (this.autoDispose || this.isDisposing) return;
 
         this.disposalDelay = seconds;
@@ -327,7 +327,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
     }
 
     // Begin the disposal process immediately.
-    startDisposal(): void {
+    startDisposal = (): void => {
         if (this.isDisposing) return;
 
         this.isDisposing = true;
@@ -335,7 +335,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
     }
 
     // Immediately dispose of the tree and its resources.
-    dispose(): void {
+    dispose = (): void =>{
         this.autoDispose = false;
         this.isDisposing = false;
 

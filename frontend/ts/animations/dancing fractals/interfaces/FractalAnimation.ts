@@ -1,6 +1,5 @@
 // FractalAnimation.ts
 import type { Application } from 'pixi.js';
-import { color } from '../../animations.types';
 
 /**
  * Common interface for any fractal-like PIXI animation
