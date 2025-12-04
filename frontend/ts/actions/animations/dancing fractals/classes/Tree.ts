@@ -10,16 +10,16 @@ export default class Tree implements FractalAnimation {
         centerY: number, 
         palette: color[] = Tree.defaultPalette
     ) {
-        this.centerY = centerY + 100; // lower the base a bit
+        this.centerY = centerY + 140; // lower the base a bit
 
         this.colorPalette = palette;
         this.colorInterpolator = new ColorInterpolator(this.colorPalette, this.maxDepth + 1);
     }
 
     // Class-wide disposal time
-    static disposalSeconds: number = 20;
+    static disposalSeconds = 30;
 
-    static backgroundColor: string = 'hsla(206, 64%, 74%, 1.00)';
+    static backgroundColor = 'hsla(206, 64%, 74%, 1.00)';
 
     // PIXI / scene
     private app: Application | null = null;
@@ -30,15 +30,16 @@ export default class Tree implements FractalAnimation {
     // Tree layout
     private readonly centerY: number;
 
-    private readonly maxDepth: number = 9;
-    private readonly baseLength: number = 200;
-    private readonly branchScale: number = .75;
-    private readonly rootScale: number = .6;
+    private readonly maxDepth = 9;
+    private readonly baseLength = 230;
+    private readonly branchScale = .75;
+    private readonly rootScale = .6;
+    private readonly sideScale = .8;
 
     // Thickness
-    private readonly trunkWidthBase: number = 12;   // at depth 0
-    private readonly trunkWidthMin: number = 1.5;   // thinnest branches
-    private readonly trunkShrinkFactor: number = .2; // 20% of normal length for depth 0
+    private readonly trunkWidthBase = 12;   // at depth 0
+    private readonly trunkWidthMin = 1.5;   // thinnest branches
+    private readonly trunkShrinkFactor = .2; // 20% of normal length for depth 0
 
     // Rotation
     private rotationAngle = 0;
@@ -48,19 +49,19 @@ export default class Tree implements FractalAnimation {
     private readonly depthSpinFactor = 2;
 
     // How much extra wiggle the small branches get
-    private readonly wiggleAmplitude = 0.35;
-    private readonly wiggleFrequencyFactor = 2;
+    private readonly wiggleAmplitude = 0.5;
+    private readonly wiggleFrequencyFactor = 3;
 
     // Animation state
-    private visibleFactor: number = 0; // 0 → invisible, 1 → full tree
-    private readonly growSpeed: number = .7;
-    private readonly shrinkSpeed: number = .7;
+    private visibleFactor = 0; // 0 → invisible, 1 → full tree
+    private readonly growSpeed = .7;
+    private readonly shrinkSpeed = .7;
 
     // Disposal logic
-    private isDisposing: boolean = false;
-    private autoDispose: boolean = false;
-    private disposalDelay: number = 0;
-    private disposalTimer: number = 0;
+    private isDisposing = false;
+    private autoDispose = false;
+    private disposalDelay = 0;
+    private disposalTimer = 0;
 
     // Color handling
     private static defaultPalette: color[] = [
@@ -159,6 +160,34 @@ export default class Tree implements FractalAnimation {
             timePhase
         );
 
+        // Approximate "middle" of the trunk: a bit above the center
+        const midY = this.centerY - this.baseLength * 0.3 * this.visibleFactor;
+
+        // Base length for side branches: similar to roots, a bit smaller
+        const sideLength = this.baseLength * this.sideScale * this.visibleFactor;
+
+        // Left side branch (pointing to the left)
+        this.drawBranch(
+            this.centerX,
+            midY,
+            Math.PI,          // angle: left
+            sideLength,
+            0,
+            spin,
+            timePhase
+        );
+
+        // Right side branch (pointing to the right)
+        this.drawBranch(
+            this.centerX,
+            midY,
+            0,                // angle: right
+            sideLength,
+            0,
+            spin,
+            timePhase
+        );
+
         // Stroke each depth with its own color + thickness
         for (let depth = 0; depth <= this.maxDepth; depth++) {
             const g = this.depthGraphics[depth];
@@ -174,7 +203,7 @@ export default class Tree implements FractalAnimation {
                 this.trunkWidthMin +
                 (this.trunkWidthBase - this.trunkWidthMin) * (1 - depthRatio);
 
-            const alpha = 1 - depthRatio * 0.3; // slightly fade tips
+            const alpha = 1 - depthRatio * .3; // slightly fade tips
 
             g.stroke({
                 width,
@@ -201,13 +230,26 @@ export default class Tree implements FractalAnimation {
         const depthRatio = depth / this.maxDepth;
         if (depthRatio > this.visibleFactor) return;
 
+        const TWO_PI = Math.PI * 2;
+        let baseAngle = angle % TWO_PI;
+        if (baseAngle <= -Math.PI) baseAngle += TWO_PI;
+        else if (baseAngle > Math.PI) baseAngle -= TWO_PI;
+
+        // Smooth 4-lobe field over angle: [-1, 1], continuous
+        // 2 * baseAngle → four sectors around the circle
+        const quadBlend = Math.sin(2 * baseAngle);
+
+        // Optional: control how strong quadrant shaping is
+        const quadrantStrength = .5; // try 0.5–1.5
+
+        const depthSpinMultiplier = .3 + depthRatio * this.depthSpinFactor;
+        
+        const localSpin = spin * depthSpinMultiplier * quadBlend * quadrantStrength;
+        
         let segmentLength = length;
         if (depth === 0) {
             segmentLength = length * this.trunkShrinkFactor; // shorter trunk / root stem
         }
-
-        const depthSpinMultiplier = .3 + depthRatio * this.depthSpinFactor;
-        const localSpin = spin * depthSpinMultiplier;
 
         const wiggle = Math.sin(
             timePhase * (1 + depthRatio * this.wiggleFrequencyFactor) + depth * .5
@@ -225,7 +267,7 @@ export default class Tree implements FractalAnimation {
         g.lineTo(x2, y2);
 
         let nextLength = length * this.branchScale;
-        const spread = .5; // angle between branches
+        const spread = .3; // angle between branches
 
         // Left branch
         this.drawBranch(
