@@ -19,6 +19,12 @@ export default interface FractalController<C> {
     startDisposal(): void;
 
     /**
+     * Restart the current fractal using the latest config.
+     * Optionally merge in some extra config changes.
+     */
+    restart(patch?: Partial<C>): void;
+
+    /**
      * Immediately destroy PIXI objects and free resources.
      * After this, the controller should not be used.
      */

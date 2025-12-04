@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import runDancingFractals from '../../animations/dancing fractals/runDancingFractals';
 
 import type FractalController from '../../animations/dancing fractals/interfaces/FractalController';
+
 import TreeControls from '../../animations/dancing fractals/components/TreeControls';
 import FlowerSpiralControls from '../../animations/dancing fractals/components/FlowerSpiralControls';
 
@@ -24,7 +25,7 @@ const DancingFractals: React.FC = () => {
 
     // Separate config state for each fractal type
     const [treeConfig, setTreeConfig] = useState<TreeConfig>(defaultTreeConfig);
-    const [flowerConfig, setFlowerConfig] = useState<FlowerSpiralConfig>(defaultFlowerSpiralConfig);
+    const [flowerSpiralConfig, setFlowerSpiralConfig] = useState<FlowerSpiralConfig>(defaultFlowerSpiralConfig);
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -40,7 +41,7 @@ const DancingFractals: React.FC = () => {
             const { Class, initialConfig } =
                 fractalKind === 'tree'
                     ? { Class: Tree, initialConfig: treeConfig }
-                    : { Class: FlowerSpiral, initialConfig: flowerConfig };
+                    : { Class: FlowerSpiral, initialConfig: flowerSpiralConfig };
 
             const controller = await runDancingFractals(
                 containerRef.current!,
@@ -62,6 +63,8 @@ const DancingFractals: React.FC = () => {
         };
     }, [fractalKind]);
 
+    const handleRestart = () => { controllerRef.current?.restart(); };
+
     // Handle tree config changes: update React state + push patch into fractal
     const handleTreeConfigChange = (patch: Partial<TreeConfig>) => {
         setTreeConfig(prev => {
@@ -73,7 +76,7 @@ const DancingFractals: React.FC = () => {
     };
 
     const handleFlowerConfigChange = (patch: Partial<FlowerSpiralConfig>) => {
-        setFlowerConfig(prev => {
+        setFlowerSpiralConfig(prev => {
             const next = { ...prev, ...patch };
             controllerRef.current?.updateConfig(patch);
             return next;
@@ -98,6 +101,14 @@ const DancingFractals: React.FC = () => {
                             <option value="flower">Flower Spiral</option>
                         </select>
                     </label>
+
+                    <button
+                        type="button"
+                        className="fractal-ui__restart-btn"
+                        onClick={handleRestart}
+                    >
+                        Restart
+                    </button>
                 </div>
 
                 <div className="fractal-ui__controls">
@@ -110,7 +121,7 @@ const DancingFractals: React.FC = () => {
 
                     {fractalKind === 'flower' && (
                         <FlowerSpiralControls
-                            config={flowerConfig}
+                            config={flowerSpiralConfig}
                             onChange={handleFlowerConfigChange}
                         />
                     )}

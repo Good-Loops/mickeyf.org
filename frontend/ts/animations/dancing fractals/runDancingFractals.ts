@@ -34,10 +34,12 @@ export default async function runDancingFractals<C>(
     const centerX = app.screen.width / 2;
     const centerY = app.screen.height / 2;
 
-    const fractal: FractalAnimation<C> = new Fractal(
+    let currentConfig: C = initialConfig;
+
+    let fractal: FractalAnimation<C> = new Fractal(
         centerX, 
         centerY, 
-        initialConfig
+        currentConfig
     );
     
     fractal.init(app);
@@ -52,6 +54,7 @@ export default async function runDancingFractals<C>(
     // Build controller to expose to React/UI.
     const controller: FractalController<C> = {
         updateConfig: (patch: Partial<C>): void => {
+            currentConfig = { ...currentConfig, ...patch };
             fractal.updateConfig(patch);
         },
         scheduleDisposal: (seconds: number): void => {
@@ -59,6 +62,20 @@ export default async function runDancingFractals<C>(
         },
         startDisposal: (): void => {
             fractal.startDisposal();
+        },
+        restart: (patch?: Partial<C>) => {
+            // Optionally merge extra changes on restart
+            if (patch) {
+                currentConfig = { ...currentConfig, ...patch };
+            }
+
+            // Dispose current fractal (only graphics, not app/canvas)
+            fractal.dispose();
+
+            // Create a *new* fractal with currentConfig on the same app
+            fractal = new Fractal(centerX, centerY, currentConfig);
+            fractal.init(app);
+            fractal.scheduleDisposal(Fractal.disposalSeconds);
         },
         dispose: (): void => {
             fractal.dispose();
