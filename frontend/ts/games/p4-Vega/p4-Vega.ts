@@ -1,11 +1,11 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
-import { getRandomInt } from '../../../utils/random';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../utils/constants';
+import { getRandomInt } from '../../utils/random';
 import gameOver from '../utils/gameOver';
 
-import { API_BASE } from '../../../config/apiConfig';
+import { API_BASE } from '../../config/apiConfig';
 
-import Dropdown from '../../../helpers/Dropdown';
-import FullscreenButton from '../../../helpers/FullscreenButton';
+import Dropdown from '../../helpers/Dropdown';
+import FullscreenButton from '../../helpers/FullscreenButton';
 
 import P4 from './classes/P4';
 import Water from './classes/Water';

@@ -1,4 +1,4 @@
-import { getRandomInt } from '../../../../utils/random';
+import { getRandomInt } from '../../../utils/random';
 
 /**
  * Interface representing the settings for color handling in animations.

@@ -1,11 +1,11 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../../utils/constants';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
 import {
     getRandomBoolean,
     getRandomInt,
     getRandomX,
     getRandomY,
-} from '../../../../utils/random';
-import isColliding from '../../../../utils/isColliding';
+} from '../../../utils/random';
+import isColliding from '../../../utils/isColliding';
 
 import Entity from '../../helpers/Entity';
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import runDancingCircles from "../../actions/animations/dancing circles/runDancingCircles"; 
+import runDancingCircles from "../../animations/dancing circles/runDancingCircles"; 
 
 const DancingCircles: React.FC = () => {
 	const containerRef = useRef<HTMLElement | null>(null);

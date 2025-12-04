@@ -1,16 +1,16 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../utils/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
 import {
   getRandomIndexArray,
   getRandomX,
   getRandomY,
-} from "../../../utils/random";
+} from "../../utils/random";
 
 import ColorHandler from "./classes/ColorHandler";
 import CircleHandler from "./classes/CircleHandler";
 import AudioHandler from "./classes/AudioHandler";
 
 import { Application, Graphics } from "pixi.js";
-import FullscreenButton from "../../../helpers/FullscreenButton";
+import FullscreenButton from "../../helpers/FullscreenButton";
 
 type DancingCirclesDependencies = {
     container: HTMLElement;

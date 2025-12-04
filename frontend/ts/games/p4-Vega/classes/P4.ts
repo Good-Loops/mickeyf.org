@@ -1,11 +1,11 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../../utils/constants';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
 import Entity from '../../helpers/Entity';
 import * as PIXI from 'pixi.js';
 
 /**
  * Class representing the player character (P4) in the game.
  */
-export default class P4 extends Entity {
+export default class P4 extends Entity<PIXI.AnimatedSprite> {
     private startX = Entity.gap;
     private startY = CANVAS_HEIGHT * 0.5;
 

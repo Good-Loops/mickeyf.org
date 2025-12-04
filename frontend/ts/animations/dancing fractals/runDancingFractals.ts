@@ -1,14 +1,16 @@
 import { Application, Ticker } from 'pixi.js';
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
-import FullscreenButton from '../../../helpers/FullscreenButton';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../utils/constants';
+import FullscreenButton from '../../helpers/FullscreenButton';
 import FractalAnimation, { FractalAnimationConstructor } from './interfaces/FractalAnimation';
+import FractalController from './interfaces/FractalController';
 
 // Main entry point for the "dancing fractals" animation.
 // Returns a cleanup function that destroys the PIXI application.
-export default async function runDancingFractals(
+export default async function runDancingFractals<C>(
     container: HTMLElement,
-    FractalClass: FractalAnimationConstructor 
-): Promise<() => void> {
+    Fractal: FractalAnimationConstructor<C>,
+    initialConfig: C 
+): Promise<FractalController<C>> {
 
     const app = new Application();
     // Expose app globally so PIXI devtools can inspect the scene.
@@ -16,7 +18,7 @@ export default async function runDancingFractals(
 
     // Initialize PIXI with fixed canvas size and background.
     await app.init({
-        backgroundColor: FractalClass.backgroundColor,
+        backgroundColor: Fractal.backgroundColor,
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT
     });
@@ -32,9 +34,14 @@ export default async function runDancingFractals(
     const centerX = app.screen.width / 2;
     const centerY = app.screen.height / 2;
 
-    const fractal: FractalAnimation = new FractalClass(centerX, centerY);
+    const fractal: FractalAnimation<C> = new Fractal(
+        centerX, 
+        centerY, 
+        initialConfig
+    );
+    
     fractal.init(app);
-    fractal.scheduleDisposal(FractalClass.disposalSeconds);
+    fractal.scheduleDisposal(Fractal.disposalSeconds);
 
     // Main animation loop.
     app.ticker.add((time: Ticker): void => {
@@ -42,9 +49,22 @@ export default async function runDancingFractals(
         fractal.step(deltaSeconds, time.lastTime);
     });
 
-    // Cleanup function to be called when the animation is destroyed/unmounted.
-    return (): void => {
-        fractal.dispose();
-        app.destroy(true, { children: true, texture: true });
-    }
+    // Build controller to expose to React/UI.
+    const controller: FractalController<C> = {
+        updateConfig: (patch: Partial<C>): void => {
+            fractal.updateConfig(patch);
+        },
+        scheduleDisposal: (seconds: number): void => {
+            fractal.scheduleDisposal(seconds);
+        },
+        startDisposal: (): void => {
+            fractal.startDisposal();
+        },
+        dispose: (): void => {
+            fractal.dispose();
+            app.destroy(true, { children: true, texture: true });
+        },
+    };
+
+    return controller;
 }

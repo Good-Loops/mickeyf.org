@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../utils/constants';
 
 import P4 from '../p4-Vega/classes/P4'
 

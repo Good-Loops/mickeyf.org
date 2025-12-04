@@ -1,8 +1,8 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../../utils/constants';
-import { getRandomX, getRandomY } from '../../../../utils/random';
-import isColliding from '../../../../utils/isColliding';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
+import { getRandomX, getRandomY } from '../../../utils/random';
+import isColliding from '../../../utils/isColliding';
 
-import NoteSelector from '../../../../helpers/NoteSelector';
+import NoteSelector from '../../../helpers/NoteSelector';
 
 import Entity from '../../helpers/Entity';
 

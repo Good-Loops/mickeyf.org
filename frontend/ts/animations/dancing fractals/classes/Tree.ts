@@ -2,24 +2,28 @@ import { Application, Graphics } from "pixi.js";
 import FractalAnimation from "../interfaces/FractalAnimation";
 import { color } from "../../animations.types";
 import ColorInterpolator from "../../helpers/ColorInterpolator";
-import { time } from "console";
+import { TreeConfig, defaultTreeConfig } from "../config/TreeConfig";
 
-export default class Tree implements FractalAnimation {
+export default class Tree implements FractalAnimation<TreeConfig> {
     constructor(
         private readonly centerX: number, 
         centerY: number, 
-        palette: color[] = Tree.defaultPalette
+        initialConfig: Partial<TreeConfig> = {}
     ) {
         this.centerY = centerY + 140; // lower the base a bit
 
-        this.colorPalette = palette;
-        this.colorInterpolator = new ColorInterpolator(this.colorPalette, this.maxDepth + 1);
+        this.config = { ...defaultTreeConfig, ...initialConfig };
+
+        this.colorInterpolator = new ColorInterpolator(
+            this.config.palette, 
+            this.config.maxDepth + 1
+        );
     }
 
     // Class-wide disposal time
     static disposalSeconds = 30;
 
-    static backgroundColor = 'hsla(206, 64%, 74%, 1.00)';
+    static backgroundColor = 'hsla(210, 100%, 80%, 1.00)';
 
     // PIXI / scene
     private app: Application | null = null;
@@ -30,32 +34,14 @@ export default class Tree implements FractalAnimation {
     // Tree layout
     private readonly centerY: number;
 
-    private readonly maxDepth = 9;
-    private readonly baseLength = 230;
-    private readonly branchScale = .75;
-    private readonly rootScale = .6;
-    private readonly sideScale = .8;
-
-    // Thickness
-    private readonly trunkWidthBase = 12;   // at depth 0
-    private readonly trunkWidthMin = 1.5;   // thinnest branches
-    private readonly trunkShrinkFactor = .2; // 20% of normal length for depth 0
+    // Config object with all tunables
+    private config: TreeConfig;
 
     // Rotation
     private rotationAngle = 0;
-    private readonly rotationSpeed = .6; // radians per second (tweak this)
-
-    // How much faster deeper branches spin (0 = all same speed)
-    private readonly depthSpinFactor = 2;
-
-    // How much extra wiggle the small branches get
-    private readonly wiggleAmplitude = 0.5;
-    private readonly wiggleFrequencyFactor = 3;
 
     // Animation state
     private visibleFactor = 0; // 0 → invisible, 1 → full tree
-    private readonly growSpeed = .7;
-    private readonly shrinkSpeed = .7;
 
     // Disposal logic
     private isDisposing = false;
@@ -63,19 +49,8 @@ export default class Tree implements FractalAnimation {
     private disposalDelay = 0;
     private disposalTimer = 0;
 
-    // Color handling
-    private static defaultPalette: color[] = [
-        { hue: 188,  saturation: 63, lightness: 9 },
-        { hue: 178,  saturation: 77, lightness: 18 },
-        { hue: 179,  saturation: 100, lightness: 33 },
-        { hue: 199,  saturation: 32, lightness: 45 },
-        { hue: 238, saturation: 52, lightness: 63 },
-    ];
-
-    private colorPalette: color[];
     private colorInterpolator: ColorInterpolator;
 
-    private colorChangeInterval: number = 1; // seconds between palette shifts
     private colorChangeCounter: number = 0;
 
     // Initialize the tree within the given PIXI application.
@@ -83,7 +58,7 @@ export default class Tree implements FractalAnimation {
         this.app = app;
 
         this.depthGraphics = [];
-        for (let d = 0; d <= this.maxDepth; d++) {
+        for (let d = 0; d <= this.config.maxDepth; d++) {
             const g = new Graphics();
             this.depthGraphics.push(g);
             this.app.stage.addChild(g);
@@ -107,7 +82,7 @@ export default class Tree implements FractalAnimation {
             if (this.visibleFactor < 1) {
                 this.visibleFactor = Math.min(
                     1,
-                    this.visibleFactor + this.growSpeed * deltaSeconds
+                    this.visibleFactor + this.config.growSpeed * deltaSeconds
                 );
             }
         } else {
@@ -115,7 +90,7 @@ export default class Tree implements FractalAnimation {
             if (this.visibleFactor > 0) {
                 this.visibleFactor = Math.max(
                     0,
-                    this.visibleFactor - this.shrinkSpeed * deltaSeconds
+                    this.visibleFactor - this.config.shrinkSpeed * deltaSeconds
                 );
             } else {
                 // Fully gone
@@ -133,7 +108,7 @@ export default class Tree implements FractalAnimation {
         }
 
         // New: accumulate a smooth spin
-        this.rotationAngle += deltaSeconds * this.rotationSpeed;
+        this.rotationAngle += deltaSeconds * this.config.rotationSpeed;
 
         const spin = this.rotationAngle;
         const timePhase = timeMS * .003;
@@ -143,28 +118,30 @@ export default class Tree implements FractalAnimation {
             this.centerX,
             this.centerY,
             -Math.PI / 2,                         // straight up
-            this.baseLength * this.visibleFactor, // grow in
+            this.config.baseLength * this.visibleFactor, // grow in
             0,
             spin,
             timePhase
         );
+
+        const rootLength = this.config.baseLength * this.config.rootScale * this.visibleFactor;
 
         // Draw roots (downwards, shorter and maybe opposite sway)
         this.drawBranch(
             this.centerX,
             this.centerY,
             Math.PI / 2,                                   // straight down
-            this.baseLength * this.rootScale * this.visibleFactor,
+            rootLength,
             0,
             -spin,
             timePhase
         );
 
         // Approximate "middle" of the trunk: a bit above the center
-        const midY = this.centerY - this.baseLength * 0.3 * this.visibleFactor;
+        const midY = this.centerY - this.config.baseLength * .3 * this.visibleFactor;
 
         // Base length for side branches: similar to roots, a bit smaller
-        const sideLength = this.baseLength * this.sideScale * this.visibleFactor;
+        const sideLength = this.config.baseLength * this.config.sideScale * this.visibleFactor;
 
         // Left side branch (pointing to the left)
         this.drawBranch(
@@ -189,19 +166,19 @@ export default class Tree implements FractalAnimation {
         );
 
         // Stroke each depth with its own color + thickness
-        for (let depth = 0; depth <= this.maxDepth; depth++) {
+        for (let depth = 0; depth <= this.config.maxDepth; depth++) {
             const g = this.depthGraphics[depth];
             if (!g) continue;
 
-            const depthRatio = depth / this.maxDepth;
+            const depthRatio = depth / this.config.maxDepth;
             if (depthRatio > this.visibleFactor) continue; // not visible yet
 
             const colorHsl = this.colorInterpolator.currentColors[depth];
             const colorStr = this.colorInterpolator.hslToString(colorHsl);
 
             const width =
-                this.trunkWidthMin +
-                (this.trunkWidthBase - this.trunkWidthMin) * (1 - depthRatio);
+                this.config.trunkWidthMin +
+                (this.config.trunkWidthBase - this.config.trunkWidthMin) * (1 - depthRatio);
 
             const alpha = 1 - depthRatio * .3; // slightly fade tips
 
@@ -224,10 +201,10 @@ export default class Tree implements FractalAnimation {
         spin: number,
         timePhase: number
     ): void {
-        if (depth > this.maxDepth || length < 2) return;
+        if (depth > this.config.maxDepth || length < 2) return;
 
         // Only draw this depth if it's within the current "visible" portion
-        const depthRatio = depth / this.maxDepth;
+        const depthRatio = depth / this.config.maxDepth;
         if (depthRatio > this.visibleFactor) return;
 
         const TWO_PI = Math.PI * 2;
@@ -242,18 +219,18 @@ export default class Tree implements FractalAnimation {
         // Optional: control how strong quadrant shaping is
         const quadrantStrength = .5; // try 0.5–1.5
 
-        const depthSpinMultiplier = .3 + depthRatio * this.depthSpinFactor;
+        const depthSpinMultiplier = .3 + depthRatio * this.config.depthSpinFactor;
         
         const localSpin = spin * depthSpinMultiplier * quadBlend * quadrantStrength;
         
         let segmentLength = length;
         if (depth === 0) {
-            segmentLength = length * this.trunkShrinkFactor; // shorter trunk / root stem
+            segmentLength = length * this.config.trunkShrinkFactor; // shorter trunk / root stem
         }
 
         const wiggle = Math.sin(
-            timePhase * (1 + depthRatio * this.wiggleFrequencyFactor) + depth * .5
-        ) * this.wiggleAmplitude * depthRatio;
+            timePhase * (1 + depthRatio * this.config.wiggleFrequencyFactor) + depth * .5
+        ) * this.config.wiggleAmplitude * depthRatio;
 
         const angleWithSpin = angle + localSpin + wiggle;
 
@@ -266,7 +243,7 @@ export default class Tree implements FractalAnimation {
         g.moveTo(x, y);
         g.lineTo(x2, y2);
 
-        let nextLength = length * this.branchScale;
+        let nextLength = length * this.config.branchScale;
         const spread = .3; // angle between branches
 
         // Left branch
@@ -296,13 +273,48 @@ export default class Tree implements FractalAnimation {
     private updateColors(deltaSeconds: number): void {
         this.colorChangeCounter += deltaSeconds;
 
-        if (this.colorChangeCounter >= this.colorChangeInterval) {
+        if (this.colorChangeCounter >= this.config.colorChangeInterval) {
             this.colorInterpolator.updateTargetColors();
             this.colorChangeCounter = 0;
         }
 
-        const t = this.colorChangeCounter / this.colorChangeInterval;
+        const t = this.colorChangeCounter / this.config.colorChangeInterval;
         this.colorInterpolator.interpolateColors(t);
+    }
+
+    // Allow external code to update some/all config fields.
+    updateConfig(patch: Partial<TreeConfig>): void {
+        const oldMaxDepth = this.config.maxDepth;
+        this.config = { ...this.config, ...patch };
+
+        // If maxDepth changed, rebuild depth graphics & color interpolator
+        if (
+            patch.maxDepth !== undefined &&
+            this.app &&
+            this.config.maxDepth !== oldMaxDepth
+        ) {
+            // Remove old graphics
+            for (const g of this.depthGraphics) {
+                if (g.parent) {
+                    g.parent.removeChild(g);
+                }
+                g.destroy();
+            }
+            this.depthGraphics = [];
+
+            // Create new graphics per depth
+            for (let d = 0; d <= this.config.maxDepth; d++) {
+                const g = new Graphics();
+                this.depthGraphics.push(g);
+                this.app.stage.addChild(g);
+            }
+
+            // Rebuild color interpolator with new depth count
+            this.colorInterpolator = new ColorInterpolator(
+                this.config.palette,
+                this.config.maxDepth + 1
+            );
+        }
     }
 
     // Schedule an animated disposal to begin after a delay.
