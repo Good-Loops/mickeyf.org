@@ -29,12 +29,29 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     let currentConfig: any = null;
     let currentCtor: FractalAnimationConstructor<any> | null = null;
 
+    let lifetimeSeconds: number | null = null;
+
+    let fps = 0;
+    const fpsSmoothing = .01;
+
     // Single ticker that always calls into the current fractal, if any
     app.ticker.add((time: Ticker): void => {
-        if (!currentFractal) return;
         const deltaSeconds = time.deltaMS / 1000;
+
+        if (deltaSeconds > 0) {
+            const inst = 1 / deltaSeconds;
+            fps = fps === 0 ? inst : fps + (inst - fps) * fpsSmoothing;
+        }
+
+        if (!currentFractal) return;
         currentFractal.step(deltaSeconds, time.lastTime);
     });
+
+    const applyLifetime = () => {
+        if (!currentFractal) return;
+        if (lifetimeSeconds == null) return; // disabled
+        currentFractal.scheduleDisposal(lifetimeSeconds);
+    };
 
     const setFractal = <C,>(
         Fractal: FractalAnimationConstructor<C>,
@@ -49,12 +66,17 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         currentCtor = Fractal as FractalAnimationConstructor<any>;
         currentConfig = config;
 
+        // Initialize lifetime if not set yet – default to class's suggestion
+        if (lifetimeSeconds === null) {
+            lifetimeSeconds = Fractal.disposalSeconds;
+        }
+
         // Update background for the new fractal
         (app.renderer as any).background.color = Fractal.backgroundColor;
 
         const fractal = new Fractal(centerX, centerY, config);
         fractal.init(app);
-        fractal.scheduleDisposal(Fractal.disposalSeconds);
+        applyLifetime();
 
         currentFractal = fractal as FractalAnimation<any>;
     };
@@ -80,10 +102,27 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         // Recreate fractal with last known config
         const fractal = new FractalClass(centerX, centerY, currentConfig);
         fractal.init(app);
-        fractal.scheduleDisposal(FractalClass.disposalSeconds);
+        applyLifetime();
 
         currentFractal = fractal;
     };
+
+    const setLifetime = (seconds: number | null) => {
+        lifetimeSeconds = seconds;
+        if (!currentFractal) return;
+
+        if (lifetimeSeconds == null) {
+            // Turn off future auto-disposal; current one will just keep running
+            return;
+        }
+
+        // Restart the disposal timer for the current fractal
+        currentFractal.scheduleDisposal(lifetimeSeconds);
+    };
+
+    const getStats = () => ({
+        fps,
+    });
 
     const dispose = () => {
         if (currentFractal) {
@@ -97,6 +136,8 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         setFractal,
         updateConfig,
         restart,
+        setLifetime,
+        getStats,
         dispose,
     };
 

@@ -21,6 +21,10 @@ const DancingFractals: React.FC = () => {
      // Which fractal is currently selected
     const [fractalKind, setFractalKind] = useState<FractalKind>('tree');
 
+    const [autoDisposeEnabled, setAutoDisposeEnabled] = useState(true);
+    const [lifetime, setLifetime] = useState(30); // seconds
+    const [fps, setFps] = useState<number | null>(null);
+
     // Separate config state for each fractal type
     const [treeConfig, setTreeConfig] = useState<TreeConfig>(defaultTreeConfig);
     const [flowerSpiralConfig, setFlowerSpiralConfig] = useState<FlowerSpiralConfig>(defaultFlowerSpiralConfig);
@@ -47,6 +51,8 @@ const DancingFractals: React.FC = () => {
             } else {
                 host.setFractal(FlowerSpiral, flowerSpiralConfig);
             }
+
+            host.setLifetime(autoDisposeEnabled ? lifetime : null);
         })();
 
         return () => {
@@ -67,6 +73,34 @@ const DancingFractals: React.FC = () => {
             host.setFractal(FlowerSpiral, flowerSpiralConfig);
         }
     }, [fractalKind]);
+
+    useEffect(() => {
+        const host = hostRef.current;
+        if (!host) return;
+
+        host.setLifetime(autoDisposeEnabled ? lifetime : null);
+    }, [autoDisposeEnabled, lifetime]);
+
+    useEffect(() => {
+        let rafId: number;
+
+        const loop = () => {
+            const host = hostRef.current;
+            if (host) {
+                const { fps: hostFps } = host.getStats();
+                if (!Number.isNaN(hostFps) && hostFps > 0) {
+                    setFps(hostFps);
+                }
+            }
+            rafId = requestAnimationFrame(loop);
+        };
+
+        rafId = requestAnimationFrame(loop);
+
+        return () => {
+            cancelAnimationFrame(rafId);
+        };
+    }, []);
 
     const handleRestart = () => { hostRef.current?.restart(); };
 
@@ -116,6 +150,35 @@ const DancingFractals: React.FC = () => {
                     </button>
                 </div>
 
+                <div className="fractal-ui__lifetime">
+                    <label className="fractal-ui__checkbox">
+                        <input
+                            type="checkbox"
+                            checked={autoDisposeEnabled}
+                            onChange={e =>
+                                setAutoDisposeEnabled(e.target.checked)
+                            }
+                        />
+                        Auto-dispose
+                    </label>
+
+                    <label className="fractal-ui__lifetime-slider">
+                        Lifetime:{" "}
+                        {autoDisposeEnabled ? `${lifetime.toFixed(0)}s` : "∞"}
+                        <input
+                            type="range"
+                            min={5}
+                            max={60}
+                            step={1}
+                            disabled={!autoDisposeEnabled}
+                            value={lifetime}
+                            onChange={e =>
+                                setLifetime(Number(e.target.value))
+                            }
+                        />
+                    </label>
+                </div>
+
                 <div className="fractal-ui__controls">
                     {fractalKind === 'tree' && (
                         <TreeControls
@@ -131,6 +194,12 @@ const DancingFractals: React.FC = () => {
                         />
                     )}
                 </div>
+
+                {fps !== null && (
+                    <div className="fractal-ui__debug">
+                        <span>FPS: {fps.toFixed(1)}</span>
+                    </div>
+                )}
             </div>
         </section>   
     );

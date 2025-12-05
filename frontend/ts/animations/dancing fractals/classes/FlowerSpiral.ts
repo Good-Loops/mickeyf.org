@@ -345,11 +345,11 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     }
     
     public scheduleDisposal = (seconds: number): void => {
-        if(this.autoDispose) return; // Already scheduled
         
         this.disposalDelay = seconds;
         this.disposalTimer = 0;
         this.autoDispose = true;
+        this.isDisposing = false;
         
         // Propagate to child spirals
         this.childSpirals.forEach(child => child.scheduleDisposal(seconds));

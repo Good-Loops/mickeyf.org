@@ -319,11 +319,10 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 
     // Schedule an animated disposal to begin after a delay.
     scheduleDisposal = (seconds: number): void => {
-        if (this.autoDispose || this.isDisposing) return;
-
         this.disposalDelay = seconds;
         this.disposalTimer = 0;
         this.autoDispose = true;
+        this.isDisposing = false;
     }
 
     // Begin the disposal process immediately.
