@@ -154,13 +154,74 @@
 
         &--checkbox {
             display: flex;
-            align-items: center;
-            gap: .8rem;
-            margin-bottom: 1rem;
+            align-items: center;     // ensures vertical centering
+            gap: 0.55rem;
             cursor: $cursor;
+            font-size: 1rem;
 
+            // Hide native checkbox
             input[type='checkbox'] {
-                accent-color: #ffffff;
+                position: absolute;
+                opacity: 0;
+                width: 0;
+                height: 0;
+                pointer-events: none;
+            }
+
+            // The visible checkbox circle
+            &-box {
+                flex-shrink: 0;
+                width: 1.05rem;
+                height: 1.05rem;
+
+                border-radius: 50%;   // <-- ROUND NOW
+                background: rgba(255, 255, 255, 0.18);
+                border: 1px solid rgba(255, 255, 255, 0.4);
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                cursor: $cursor-hover;
+                transition: all 0.2s ease;
+                box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
+            }
+
+            &:hover &-box {
+                background: rgba(255, 255, 255, 0.27);
+                box-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
+            }
+
+            // The dot (soft, glowing, not black)
+            &-box::after {
+                content: "";
+                width: 0.45rem;
+                height: 0.45rem;
+
+                border-radius: 50%;
+                background: #e8faff; // soft light-cyan dot
+                box-shadow:
+                    0 0 5px rgba(200, 255, 255, 0.9),
+                    0 0 10px rgba(200, 255, 255, 0.5);
+
+                opacity: 0;  // hidden by default
+                transition: opacity 0.2s ease;
+            }
+
+            // When checked → show glowing dot + brighter ring
+            input[type='checkbox']:checked + &-box {
+                background: #ffffff;
+                border-color: #ffffff;
+                box-shadow:
+                    0 0 8px rgba(255, 255, 255, 1),
+                    0 0 15px rgba(200, 255, 255, 0.7);
+            }
+
+            input[type='checkbox']:checked + &-box::after {
+                opacity: 1;
+            }
+
+            &-text {
                 cursor: $cursor;
             }
         }

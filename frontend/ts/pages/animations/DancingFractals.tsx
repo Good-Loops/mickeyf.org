@@ -204,11 +204,10 @@ const DancingFractals: React.FC = () => {
                         <input
                             type="checkbox"
                             checked={autoDisposeEnabled}
-                            onChange={e =>
-                                setAutoDisposeEnabled(e.target.checked)
-                            }
+                            onChange={e => setAutoDisposeEnabled(e.target.checked)}
                         />
-                        Auto-dispose
+                        <span className="dancing-fractals__ui--checkbox-box" />
+                        <span className="dancing-fractals__ui--checkbox-text">Auto-dispose</span>
                     </label>
 
                     <label className="dancing-fractals__ui--lifetime-slider">
