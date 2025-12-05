@@ -20,6 +20,7 @@ const TreeControls: React.FC<TreeControlsProps> = ({ config, onChange }) => {
                         onChange={e =>
                             onChange({ maxDepth: Number(e.target.value) })
                         }
+                        className='dancing-fractals__ui--slider'
                     />
                 </label>
             </div>
@@ -38,6 +39,7 @@ const TreeControls: React.FC<TreeControlsProps> = ({ config, onChange }) => {
                                 rotationSpeed: Number(e.target.value),
                             })
                         }
+                        className='dancing-fractals__ui--slider'
                     />
                 </label>
             </div>
@@ -56,6 +58,7 @@ const TreeControls: React.FC<TreeControlsProps> = ({ config, onChange }) => {
                                 branchScale: Number(e.target.value),
                             })
                         }
+                        className='dancing-fractals__ui--slider'
                     />
                 </label>
             </div>

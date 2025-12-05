@@ -15,6 +15,9 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         height: CANVAS_HEIGHT,
     });
 
+    const initialPathname = window.location.pathname;
+    let destroyed = false;
+
     container.append(app.canvas);
     app.canvas.classList.add('dancing-fractals__canvas');
 
@@ -36,6 +39,15 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
     // Single ticker that always calls into the current fractal, if any
     app.ticker.add((time: Ticker): void => {
+        if (destroyed) return;
+
+        // If the URL path changed, this page is no longer active → dispose host
+        if (window.location.pathname !== initialPathname) {
+            dispose();
+            destroyed = true;
+            return;
+        }
+
         const deltaSeconds = time.deltaMS / 1000;
 
         // Update FPS estimate
@@ -141,6 +153,9 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     });
 
     const dispose = () => {
+        if (destroyed) return;
+        destroyed = true;
+
         if (currentFractal) {
             currentFractal.dispose();
             currentFractal = null;

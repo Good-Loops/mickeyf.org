@@ -21,6 +21,7 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                         onChange={e =>
                             onChange({ flowerAmount: Number(e.target.value) })
                         }
+                        className='dancing-fractals__ui--slider'
                     />
                 </label>
             </div>
@@ -37,6 +38,7 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                         onChange={e =>
                             onChange({ petalsPerFlower: Number(e.target.value) })
                         }
+                        className='dancing-fractals__ui--slider'
                     />
                 </label>
             </div>
@@ -53,6 +55,7 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                         onChange={e =>
                             onChange({ petalRotationSpeed: Number(e.target.value) })
                         }
+                        className='dancing-fractals__ui--slider'
                     />
                 </label>
             </div>
@@ -69,6 +72,7 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                         onChange={e =>
                             onChange({ flowersPerSecond: Number(e.target.value) })
                         }
+                        className='dancing-fractals__ui--slider'
                     />
                 </label>
             </div>
@@ -85,6 +89,7 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                         onChange={e =>
                             onChange({ revolutions: Number(e.target.value) })
                         }
+                        className='dancing-fractals__ui--slider'
                     />
                 </label>
             </div>

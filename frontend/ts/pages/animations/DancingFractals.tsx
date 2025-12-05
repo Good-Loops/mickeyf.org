@@ -224,6 +224,7 @@ const DancingFractals: React.FC = () => {
                             onChange={e =>
                                 setLifetime(Number(e.target.value))
                             }
+                            className='dancing-fractals__ui--slider'
                         />
                     </label>
                 </div>
