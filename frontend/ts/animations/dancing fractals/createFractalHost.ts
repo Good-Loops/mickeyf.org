@@ -49,11 +49,11 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
     const applyLifetime = () => {
         if (!currentFractal) return;
-        if (lifetimeSeconds == null) return; // disabled
+        if (lifetimeSeconds == null) return; // Auto-dispose disabled
         currentFractal.scheduleDisposal(lifetimeSeconds);
     };
 
-    const setFractal = <C,>(
+    const setFractal = <C>(
         Fractal: FractalAnimationConstructor<C>,
         config: C
     ) => {
@@ -66,19 +66,14 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         currentCtor = Fractal as FractalAnimationConstructor<any>;
         currentConfig = config;
 
-        // Initialize lifetime if not set yet – default to class's suggestion
-        if (lifetimeSeconds === null) {
-            lifetimeSeconds = Fractal.disposalSeconds;
-        }
-
         // Update background for the new fractal
         (app.renderer as any).background.color = Fractal.backgroundColor;
 
         const fractal = new Fractal(centerX, centerY, config);
         fractal.init(app);
-        applyLifetime();
-
+        
         currentFractal = fractal as FractalAnimation<any>;
+        applyLifetime();
     };
 
     const updateConfig = (patch: any) => {
@@ -97,24 +92,22 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
             currentFractal = null;
         }
 
-        const FractalClass = currentCtor;
+        const Fractal = currentCtor;
 
         // Recreate fractal with last known config
-        const fractal = new FractalClass(centerX, centerY, currentConfig);
+        const fractal = new Fractal(centerX, centerY, currentConfig);
         fractal.init(app);
-        applyLifetime();
-
+        
         currentFractal = fractal;
+        applyLifetime();
     };
 
     const setLifetime = (seconds: number | null) => {
         lifetimeSeconds = seconds;
         if (!currentFractal) return;
 
-        if (lifetimeSeconds == null) {
-            // Turn off future auto-disposal; current one will just keep running
-            return;
-        }
+        // Turn off future auto-disposal; current one will just keep running
+        if (lifetimeSeconds == null) return;
 
         // Restart the disposal timer for the current fractal
         currentFractal.scheduleDisposal(lifetimeSeconds);
