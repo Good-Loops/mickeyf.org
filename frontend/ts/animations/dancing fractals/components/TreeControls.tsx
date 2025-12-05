@@ -8,8 +8,8 @@ interface TreeControlsProps {
 
 const TreeControls: React.FC<TreeControlsProps> = ({ config, onChange }) => {
     return (
-        <div className="fractal-controls">
-            <div className="fractal-controls__group">
+        <div className="dancing-fractals__ui--controls">
+            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Max depth: {config.maxDepth}
                     <input
@@ -24,7 +24,7 @@ const TreeControls: React.FC<TreeControlsProps> = ({ config, onChange }) => {
                 </label>
             </div>
 
-            <div className="fractal-controls__group">
+            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Rotation speed: {config.rotationSpeed.toFixed(2)}
                     <input
@@ -42,7 +42,7 @@ const TreeControls: React.FC<TreeControlsProps> = ({ config, onChange }) => {
                 </label>
             </div>
 
-            <div className="fractal-controls__group">
+            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Branch scale: {config.branchScale.toFixed(2)}
                     <input

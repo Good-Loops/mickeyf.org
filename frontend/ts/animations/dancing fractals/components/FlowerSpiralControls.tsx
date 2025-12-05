@@ -8,8 +8,8 @@ interface FlowerSpiralControlsProps {
 
 const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onChange }) => {
     return (
-        <div className="fractal-controls">
-            <div className="fractal-controls__group">
+        <div className="dancing-fractals__ui--controls">
+            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Flowers: {config.flowerAmount}
                     <input
@@ -25,7 +25,7 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                 </label>
             </div>
 
-            <div className="fractal-controls__group">
+            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Petals per flower: {config.petalsPerFlower}
                     <input
@@ -41,7 +41,7 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                 </label>
             </div>
 
-            <div className="fractal-controls__group">
+            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Rotation speed: {config.petalRotationSpeed.toFixed(2)}
                     <input
@@ -57,7 +57,7 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                 </label>
             </div>
 
-            <div className="fractal-controls__group">
+            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Flowers per second: {config.flowersPerSecond.toFixed(1)}
                     <input
@@ -73,7 +73,7 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                 </label>
             </div>
 
-            <div className="fractal-controls__group">
+            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Revolutions: {config.revolutions.toFixed(1)}
                     <input

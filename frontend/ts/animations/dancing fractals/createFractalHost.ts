@@ -10,14 +10,13 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     const app = new Application();
     (globalThis as any).__PIXI_APP__ = app;
 
-    // Init once, with some default background color
     await app.init({
-        backgroundColor: 0x000000, // will be updated per fractal
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
     });
 
     container.append(app.canvas);
+    app.canvas.classList.add('dancing-fractals__canvas');
 
     container.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
     new FullscreenButton(app.canvas, container);
@@ -30,6 +29,7 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     let currentCtor: FractalAnimationConstructor<any> | null = null;
 
     let lifetimeSeconds: number | null = null;
+    let remainingLifetime: number | null = null;
 
     let fps = 0;
     const fpsSmoothing = .01;
@@ -38,9 +38,20 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     app.ticker.add((time: Ticker): void => {
         const deltaSeconds = time.deltaMS / 1000;
 
+        // Update FPS estimate
         if (deltaSeconds > 0) {
             const inst = 1 / deltaSeconds;
             fps = fps === 0 ? inst : fps + (inst - fps) * fpsSmoothing;
+        }
+
+        // Decrease remaining lifetime if enabled and a fractal is running
+        if (
+            lifetimeSeconds !== null &&
+            currentFractal &&
+            remainingLifetime !== null &&
+            remainingLifetime > 0
+        ) {
+            remainingLifetime = Math.max(0, remainingLifetime - deltaSeconds);
         }
 
         if (!currentFractal) return;
@@ -49,7 +60,12 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
     const applyLifetime = () => {
         if (!currentFractal) return;
-        if (lifetimeSeconds == null) return; // Auto-dispose disabled
+        if (lifetimeSeconds == null) { // Disable auto-disposal
+            remainingLifetime = null;
+            return;
+        }
+
+        remainingLifetime = lifetimeSeconds;
         currentFractal.scheduleDisposal(lifetimeSeconds);
     };
 
@@ -104,17 +120,24 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
     const setLifetime = (seconds: number | null) => {
         lifetimeSeconds = seconds;
-        if (!currentFractal) return;
+         if (!currentFractal) {
+            remainingLifetime = seconds;
+            return;
+        }
 
-        // Turn off future auto-disposal; current one will just keep running
-        if (lifetimeSeconds == null) return;
+        if (lifetimeSeconds == null) { // Disable auto-disposal
+            remainingLifetime = null;
+            return;
+        }
 
-        // Restart the disposal timer for the current fractal
+        // Reset countdown and re-arm disposal
+        remainingLifetime = lifetimeSeconds;
         currentFractal.scheduleDisposal(lifetimeSeconds);
     };
 
     const getStats = () => ({
         fps,
+        remainingLifetime,
     });
 
     const dispose = () => {

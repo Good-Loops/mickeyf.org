@@ -28,7 +28,10 @@ export interface FractalHost {
     /**
      * Get simple runtime stats (currently FPS).
      */
-    getStats(): { fps: number };
+    getStats(): { 
+        fps: number;
+        remainingLifetime: number | null; 
+    };
 
     /**
      * Dispose everything: current fractal + host Application + canvas.

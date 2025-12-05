@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Dropdown from '../../helpers/Dropdown';
 
 import TreeControls from '../../animations/dancing fractals/components/TreeControls';
 import FlowerSpiralControls from '../../animations/dancing fractals/components/FlowerSpiralControls';
@@ -23,6 +24,8 @@ const DancingFractals: React.FC = () => {
 
     const [autoDisposeEnabled, setAutoDisposeEnabled] = useState(true);
     const [lifetime, setLifetime] = useState(30); // seconds
+    const [remainingLifetime, setRemainingLifetime] = useState<number | null>(null);
+
     const [fps, setFps] = useState<number | null>(null);
 
     // Separate config state for each fractal type
@@ -87,10 +90,11 @@ const DancingFractals: React.FC = () => {
         const loop = () => {
             const host = hostRef.current;
             if (host) {
-                const { fps: hostFps } = host.getStats();
+                const { fps: hostFps, remainingLifetime } = host.getStats();
                 if (!Number.isNaN(hostFps) && hostFps > 0) {
                     setFps(hostFps);
                 }
+                setRemainingLifetime(remainingLifetime);
             }
             rafId = requestAnimationFrame(loop);
         };
@@ -99,6 +103,25 @@ const DancingFractals: React.FC = () => {
 
         return () => {
             cancelAnimationFrame(rafId);
+        };
+    }, []);
+
+    useEffect(() => {
+        const dropdown = new Dropdown(
+            'data-dropdown',
+            'data-dropdown-button',
+            'data-dropdown-selected'
+        );
+
+        const toggleHandler = dropdown.toggle();
+        const selectionHandler = dropdown.toggleSelection('data-dropdown-option');
+
+        document.addEventListener('click', toggleHandler);
+        document.addEventListener('click', selectionHandler);
+
+        return () => {
+            document.removeEventListener('click', toggleHandler);
+            document.removeEventListener('click', selectionHandler);
         };
     }, []);
 
@@ -124,34 +147,60 @@ const DancingFractals: React.FC = () => {
 
     return (
         <section className='dancing-fractals' ref={containerRef as any}>
-            <h1 className='u-canvas-title'>Dancing Fractals</h1>
+            <h1 className='dancing-fractals__title u-canvas-title'>Dancing Fractals</h1>
 
-            <div className="fractal-ui">
-                <div className="fractal-ui__selector">
-                    <label>
-                        Fractal:
-                        <select
-                            value={fractalKind}
-                            onChange={e =>
-                                setFractalKind(e.target.value as FractalKind)
-                            }
-                        >
-                            <option value="tree">Tree</option>
-                            <option value="flower">Flower Spiral</option>
-                        </select>
-                    </label>
-
+            <div className="dancing-fractals__ui">
+                <div
+                    className="dancing-fractals__ui--dropdown"
+                    data-dropdown
+                >
                     <button
                         type="button"
-                        className="fractal-ui__restart-btn"
-                        onClick={handleRestart}
+                        className="dancing-fractals__ui--dropdown-button"
+                        data-dropdown-button
                     >
-                        Restart
+                        <span
+                            className="dancing-fractals__ui--dropdown-selected"
+                            data-dropdown-selected
+                        >
+                            {fractalKind === 'tree' ? 'Tree' : 'Flower Spiral'}
+                        </span>
                     </button>
+
+                    <ul className="dancing-fractals__ui--dropdown-menu">
+                        <li>
+                            <button
+                                type="button"
+                                className="dancing-fractals__ui--dropdown-option"
+                                data-dropdown-option="Tree"
+                                onClick={() => setFractalKind('tree')}
+                            >
+                                Tree
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                type="button"
+                                className="dancing-fractals__ui--dropdown-option"
+                                data-dropdown-option="Flower Spiral"
+                                onClick={() => setFractalKind('flower')}
+                            >
+                                Flower Spiral
+                            </button>
+                        </li>
+                    </ul>
                 </div>
 
-                <div className="fractal-ui__lifetime">
-                    <label className="fractal-ui__checkbox">
+                <button
+                    type="button"
+                    className="dancing-fractals__ui--restart-btn"
+                    onClick={handleRestart}
+                >
+                    Restart
+                </button>
+
+                <div className="dancing-fractals__ui--lifetime">
+                    <label className="dancing-fractals__ui--checkbox">
                         <input
                             type="checkbox"
                             checked={autoDisposeEnabled}
@@ -162,7 +211,7 @@ const DancingFractals: React.FC = () => {
                         Auto-dispose
                     </label>
 
-                    <label className="fractal-ui__lifetime-slider">
+                    <label className="dancing-fractals__ui--lifetime-slider">
                         Lifetime:{" "}
                         {autoDisposeEnabled ? `${lifetime.toFixed(0)}s` : "∞"}
                         <input
@@ -179,7 +228,7 @@ const DancingFractals: React.FC = () => {
                     </label>
                 </div>
 
-                <div className="fractal-ui__controls">
+                <div className="dancing-fractals__ui--controls-wrapper">
                     {fractalKind === 'tree' && (
                         <TreeControls
                             config={treeConfig}
@@ -196,8 +245,16 @@ const DancingFractals: React.FC = () => {
                 </div>
 
                 {fps !== null && (
-                    <div className="fractal-ui__debug">
+                    <div className="dancing-fractals__ui--debug">
                         <span>FPS: {fps.toFixed(1)}</span>
+                        {autoDisposeEnabled && remainingLifetime !== null && (
+                            <>
+                                <span> · </span>
+                                <span>
+                                    Time left: {remainingLifetime.toFixed(1)}s
+                                </span>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
