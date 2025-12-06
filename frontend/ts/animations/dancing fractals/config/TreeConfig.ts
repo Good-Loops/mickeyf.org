@@ -26,7 +26,7 @@ export interface TreeConfig {
 }
 
 export const defaultTreeConfig: TreeConfig = {
-    maxDepth: 9,
+    maxDepth: 1,
 
     palette: [
         { hue: 120, saturation: 100, lightness: 35 },

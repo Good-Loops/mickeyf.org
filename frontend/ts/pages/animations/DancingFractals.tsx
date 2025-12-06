@@ -165,8 +165,8 @@ const DancingFractals: React.FC = () => {
                         >
                             {fractalKind === 'tree' ? 'Tree' : 'Flower Spiral'}
                         </span>
+                        <span className="dancing-fractals__ui--dropdown-caret">▾</span>
                     </button>
-
                     <ul className="dancing-fractals__ui--dropdown-menu">
                         <li>
                             <button

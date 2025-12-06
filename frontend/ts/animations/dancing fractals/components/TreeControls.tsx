@@ -50,7 +50,7 @@ const TreeControls: React.FC<TreeControlsProps> = ({ config, onChange }) => {
                     <input
                         type="range"
                         min={0.4}
-                        max={0.9}
+                        max={2}
                         step={0.01}
                         value={config.branchScale}
                         onChange={e =>
