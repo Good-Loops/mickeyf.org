@@ -26,24 +26,23 @@ const DancingCircles: React.FC = () => {
 
 	return (
 		<section className="dancing-circles" ref={containerRef}>
-		<h1 className="u-canvas-title">Dancing Circles</h1>
+			<h1 className="u-canvas-title">Dancing Circles</h1>
 
-		<label
-			className="dancing-circles__upload-btn floating"
-			htmlFor="file-upload"
-			ref={uploadRef}
-		>
-			Upload Music
-		</label>
-
-		<input
-			className="dancing-circles__input"
-			id="file-upload"
-			type="file"
-			name="fileupload"
-			accept="audio/*"
-			ref={inputRef}
-		/>
+			<label
+				className="dancing-circles__upload-btn floating"
+				htmlFor="file-upload"
+				ref={uploadRef}
+			>
+				Upload Music
+			</label>
+			<input
+				className="dancing-circles__input"
+				id="file-upload"
+				type="file"
+				name="fileupload"
+				accept="audio/*"
+				ref={inputRef}
+			/>
 		</section>
 	);
 };

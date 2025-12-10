@@ -14,8 +14,8 @@ const FlowerSpiralControls: React.FC<FlowerSpiralControlsProps> = ({ config, onC
                     Flowers: {config.flowerAmount}
                     <input
                         type="range"
-                        min={10}
-                        max={200}
+                        min={2}
+                        max={60}
                         step={1}
                         value={config.flowerAmount}
                         onChange={e =>

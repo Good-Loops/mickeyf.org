@@ -24,6 +24,32 @@
         overflow: hidden;
     }
 
+    &__upload {
+        grid-column: 2 / 3;
+        grid-row: 3;
+        justify-self: center;
+        margin-top: 2rem;
+
+        &-btn {
+            justify-self: center;
+
+            @include default-btn;
+
+            &:not(.playing):hover,
+            &:not(.playing):focus {
+                @include default-btn-hover;
+            }
+
+            &:not(.playing):active {
+                @include default-btn-active;
+            }
+        }
+    }
+
+    &__input[type="file"] {
+        display: none;
+    }
+
     // Left-side UI panel
     &__ui {
         grid-column: 1 / 2;
@@ -38,6 +64,41 @@
         background: rgba(0, 0, 0, 0.35);
         backdrop-filter: blur(6px);
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+
+        &--locked {
+            opacity: .6;
+            pointer-events: none;
+            cursor: $cursor-notallowed, not-allowed !important;
+
+            // Force cursor inheritance inside locked UI
+            * {
+                cursor: inherit !important;
+            }
+
+            input[type='range']::-webkit-slider-thumb {
+                cursor: inherit !important;
+            }
+
+            input[type='range']::-moz-range-thumb {
+                cursor: inherit !important;
+            }
+
+            input[type='range']::-ms-thumb {
+                cursor: inherit !important;
+            }
+        }
+
+        &--overlay {
+            position: absolute;
+            inset: 0;
+            z-index: $front; 
+
+            pointer-events: all;
+            cursor: $cursor-notallowed, not-allowed !important;
+
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: inherit;
+        }
 
         &--selector {
             display: flex;
@@ -83,6 +144,11 @@
                 &:hover {
                     border-color: rgba(255, 255, 255, 0.35);
                     background: rgba(255, 255, 255, 0.20);
+                }
+
+                &:disabled {
+                    opacity: .65;
+                    cursor: inherit;
                 }
             }
 
@@ -171,6 +237,11 @@
 
             &:active {
                 transform: translateY(1px);
+            }
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: inherit;
             }
         }
 

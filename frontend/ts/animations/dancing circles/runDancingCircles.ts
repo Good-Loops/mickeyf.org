@@ -7,7 +7,7 @@ import {
 
 import ColorHandler from "./classes/ColorHandler";
 import CircleHandler from "./classes/CircleHandler";
-import AudioHandler from "./classes/AudioHandler";
+import AudioHandler from "../helpers/AudioHandler";
 
 import { Application, Graphics } from "pixi.js";
 import FullscreenButton from "../../helpers/FullscreenButton";

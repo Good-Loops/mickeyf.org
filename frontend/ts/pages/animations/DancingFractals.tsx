@@ -12,12 +12,19 @@ import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '../../animat
 import { FractalHost } from '../../animations/dancing fractals/interfaces/FractalHost';
 import { createFractalHost } from '../../animations/dancing fractals/createFractalHost';
 
+import AudioHandler from '../../animations/helpers/AudioHandler';
+import notAllowedCursor from '@/assets/cursors/notallowed.cur';
+
 type FractalKind = 'tree' | 'flower';
 
 const DancingFractals: React.FC = () => {
     const containerRef = useRef<HTMLElement | null>(null);
 
     const hostRef = useRef<FractalHost | null>(null);
+
+    const [audioPlaying, setAudioPlaying] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const uploadLabelRef = useRef<HTMLLabelElement | null>(null);
 
      // Which fractal is currently selected
     const [fractalKind, setFractalKind] = useState<FractalKind>('tree');
@@ -76,6 +83,22 @@ const DancingFractals: React.FC = () => {
             host.setFractal(FlowerSpiral, flowerSpiralConfig);
         }
     }, [fractalKind]);
+
+    useEffect(() => {
+        const fileInput = fileInputRef.current;
+        const uploadLabel = uploadLabelRef.current;
+
+        if (!fileInput || !uploadLabel) return;
+
+        const cleanup = AudioHandler.initializeUploadButton(
+            fileInput, 
+            uploadLabel,
+            (playing) => setAudioPlaying(playing)
+        );
+
+        return () => cleanup();
+    }, []);
+
 
     useEffect(() => {
         const host = hostRef.current;
@@ -137,6 +160,7 @@ const DancingFractals: React.FC = () => {
         });
     };
 
+    // Handle flower spiral config changes: update React state + push patch into fractal
     const handleFlowerConfigChange = (patch: Partial<FlowerSpiralConfig>) => {
         setFlowerSpiralConfig(prev => {
             const next = { ...prev, ...patch };
@@ -145,11 +169,22 @@ const DancingFractals: React.FC = () => {
         });
     };
 
+    const uiClassName = 
+        'dancing-fractals__ui' +
+        (audioPlaying ? ' dancing-fractals__ui--locked' : '');
+
+    const uiStyle = audioPlaying
+        ? { cursor: `url(${notAllowedCursor}), not-allowed` }
+        : undefined;
+
     return (
         <section className='dancing-fractals' ref={containerRef as any}>
             <h1 className='dancing-fractals__title u-canvas-title'>Dancing Fractals</h1>
 
-            <div className="dancing-fractals__ui">
+            <div className={uiClassName} style={uiStyle}>
+                {audioPlaying && (
+                    <div className="dancing-fractals__ui--overlay" />
+                )}
                 <div
                     className="dancing-fractals__ui--dropdown"
                     data-dropdown
@@ -157,6 +192,7 @@ const DancingFractals: React.FC = () => {
                     <button
                         type="button"
                         className="dancing-fractals__ui--dropdown-button"
+                        disabled={audioPlaying}
                         data-dropdown-button
                     >
                         <span
@@ -195,6 +231,7 @@ const DancingFractals: React.FC = () => {
                     type="button"
                     className="dancing-fractals__ui--restart-btn"
                     onClick={handleRestart}
+                    disabled={audioPlaying}
                 >
                     Restart
                 </button>
@@ -205,6 +242,7 @@ const DancingFractals: React.FC = () => {
                             type="checkbox"
                             checked={autoDisposeEnabled}
                             onChange={e => setAutoDisposeEnabled(e.target.checked)}
+                            disabled={audioPlaying}
                         />
                         <span className="dancing-fractals__ui--checkbox-box" />
                         <span className="dancing-fractals__ui--checkbox-text">Auto-dispose</span>
@@ -218,7 +256,7 @@ const DancingFractals: React.FC = () => {
                             min={5}
                             max={60}
                             step={1}
-                            disabled={!autoDisposeEnabled}
+                            disabled={!autoDisposeEnabled || audioPlaying}
                             value={lifetime}
                             onChange={e =>
                                 setLifetime(Number(e.target.value))
@@ -232,14 +270,20 @@ const DancingFractals: React.FC = () => {
                     {fractalKind === 'tree' && (
                         <TreeControls
                             config={treeConfig}
-                            onChange={handleTreeConfigChange}
+                            onChange={patch => {
+                                if(audioPlaying) return;
+                                handleTreeConfigChange(patch);
+                            }}
                         />
                     )}
 
                     {fractalKind === 'flower' && (
                         <FlowerSpiralControls
                             config={flowerSpiralConfig}
-                            onChange={handleFlowerConfigChange}
+                            onChange={patch => {
+                                if(audioPlaying) return;
+                                handleFlowerConfigChange(patch);
+                            }}
                         />
                     )}
                 </div>
@@ -257,6 +301,32 @@ const DancingFractals: React.FC = () => {
                         )}
                     </div>
                 )}
+            </div>
+
+            <div className="dancing-fractals__upload floating">
+                <label
+                    className="dancing-fractals__upload-btn"
+                    htmlFor="fractal-music-upload"
+                    ref={uploadLabelRef}
+                    style={audioPlaying ? { cursor: `url(${notAllowedCursor}), auto` } : undefined}
+                >
+                    Upload Music
+                </label>
+
+                <input
+                    id="fractal-music-upload"
+                    type="file"
+                    accept="audio/*"
+                    className="dancing-fractals__input"
+                    ref={fileInputRef}
+                    onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                            console.log("Music selected:", file);
+                            // TODO: hook into fractal audio reactions if needed
+                        }
+                    }}
+                />
             </div>
         </section>   
     );

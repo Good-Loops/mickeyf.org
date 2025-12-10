@@ -41,7 +41,7 @@ export const defaultFlowerSpiralConfig: FlowerSpiralConfig = {
         { hue: 5,   saturation: 91, lightness: 67 }
     ],
 
-    flowerAmount: 50,
+    flowerAmount: 10,
     petalsPerFlower: 4,
 
     flowersPerSecond: 10,

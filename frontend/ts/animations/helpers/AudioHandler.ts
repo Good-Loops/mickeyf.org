@@ -3,7 +3,7 @@ import notAllowedCursor from "@/assets/cursors/notallowed.cur";
 import selectCursor from "@/assets/cursors/select.cur";
 
 /**
- * A class to handle audio processing and analysis for the dancing circles animation.
+ * A class to handle audio processing and analysis for animations.
  */
 export default class AudioHandler {
     static pitch: number;
@@ -11,6 +11,7 @@ export default class AudioHandler {
     static volume: number;
     static duration: number;
     static playing: boolean;
+    static onPlayingChange?: (playing: boolean) => void;
 
     /**
      * Converts a given volume level to a percentage.
@@ -22,10 +23,8 @@ export default class AudioHandler {
      * @param volume - The volume level to convert.
      * @returns The volume level as a percentage.
      */
-    static getVolumePercentage = (
-        volume: number
-    ): number => {
-        let volumePercentage = (volume + 40) * 0.016 * 100;
+    static getVolumePercentage = (volume: number): number => {
+        let volumePercentage = (volume + 40) * .016 * 100;
         if (volume < -40) {
             volumePercentage = 0;
         } else if (volume > 20) {
@@ -46,8 +45,13 @@ export default class AudioHandler {
      */
     static initializeUploadButton = (
         fileInput: HTMLInputElement,
-        uploadButton: HTMLLabelElement
+        uploadButton: HTMLLabelElement,
+        onPlayingChange?: (playing: boolean) => void
     ): (() => void) => {
+        if(onPlayingChange) {
+            AudioHandler.onPlayingChange = onPlayingChange;
+        }
+
         const handleChange = () => {
             if (fileInput.files?.length) {
                 AudioHandler.processAudio(fileInput, uploadButton);
@@ -58,6 +62,9 @@ export default class AudioHandler {
 
         return () => {
             fileInput.removeEventListener("change", handleChange);
+            if(AudioHandler.onPlayingChange === onPlayingChange) {
+                AudioHandler.onPlayingChange = undefined;
+            }
         };
     }
 
@@ -81,7 +88,7 @@ export default class AudioHandler {
     ): Promise<void> {
         uploadButton.classList.add("playing");
         fileInput.disabled = true;
-        uploadButton.style.cursor = `url(${notAllowedCursor}), auto`;
+        uploadButton.style.cursor = `url(${notAllowedCursor}), not-allowed`;
 
         const files = fileInput.files as FileList;
         const file = files[0] as File;
@@ -108,6 +115,7 @@ export default class AudioHandler {
         // if the browser blocks it, we still have the analyser
         }
         AudioHandler.playing = true;
+        AudioHandler.onPlayingChange?.(true);
 
         // pitch detector
         const detector = PitchDetector.forFloat32Array(analyser.fftSize);
@@ -128,6 +136,7 @@ export default class AudioHandler {
             ) {
                 AudioHandler.volume = -Infinity;
                 AudioHandler.playing = false;
+                AudioHandler.onPlayingChange?.(false);
 
                 fileInput.disabled = false;
                 uploadButton.style.cursor = `url(${selectCursor}), auto`;
