@@ -1,4 +1,4 @@
-import { type color } from "ts/animations/animations.types";
+import { type color } from "@/animations/animations.types";
 
 export interface FlowerSpiralConfig {
     palette: color[];

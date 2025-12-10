@@ -1,20 +1,20 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Header from "./Header";
-import Home from "./pages/Home";
+import Header from "@/Header";
+import Home from "@/pages/Home";
 
-import Animations from "./pages/Animations";
-import DancingCircles from "./pages/animations/DancingCircles";
-import DancingFractals from "./pages/animations/DancingFractals";
+import Animations from "@/pages/Animations";
+import DancingCircles from "@/pages/animations/DancingCircles";
+import DancingFractals from "@/pages/animations/DancingFractals";
 
-import Games from "./pages/Games";
-import P4Vega from "./pages/games/P4Vega";
+import Games from "@/pages/Games";
+import P4Vega from "@/pages/games/P4Vega";
 
-import Leaderboard from "./pages/Leaderboard";
-import Social from "./pages/Social";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import NotFound from "./pages/NotFound";
+import Leaderboard from "@/pages/Leaderboard";
+import Social from "@/pages/Social";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import NotFound from "@/pages/NotFound";
 
 const App: React.FC = () => {
   return (

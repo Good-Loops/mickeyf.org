@@ -110,7 +110,7 @@ const Home: React.FC = () => {
 	useEffect(() => {
 		if (!quote) setQuote(pickRandomQuote());
 
-		let fadeTimeout: number;
+		let fadeTimeout: ReturnType<typeof setTimeout>;
 		const interval = setInterval(() => {
 			setVisible(false);
 

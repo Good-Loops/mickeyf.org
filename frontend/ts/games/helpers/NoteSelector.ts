@@ -1,6 +1,6 @@
-import scales from '../../utils/scales';
-import keys from '../../utils/keys';
-import transpose from '../../utils/transpose';
+import scales from '@/utils/scales';
+import keys from '@/utils/keys';
+import transpose from '@/utils/transpose';
 
 import * as Tone from 'tone';
 

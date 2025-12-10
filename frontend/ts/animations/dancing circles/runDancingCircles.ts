@@ -1,16 +1,16 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 import {
   getRandomIndexArray,
   getRandomX,
   getRandomY,
-} from "../../utils/random";
+} from "@/utils/random";
 
 import ColorHandler from "./classes/ColorHandler";
 import CircleHandler from "./classes/CircleHandler";
 import AudioHandler from "../helpers/AudioHandler";
 
 import { Application, Graphics } from "pixi.js";
-import FullscreenButton from "../../components/FullscreenButton";
+import FullscreenButton from "@/components/FullscreenButton";
 
 type DancingCirclesDependencies = {
     container: HTMLElement;
@@ -41,7 +41,7 @@ export default async function runDancingCircles({
     container.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
     new FullscreenButton(canvas, container);
 
-    AudioHandler.initializeUploadButton(fileInput, uploadButton);
+    AudioHandler.initializeUploadButton(fileInput);
 
     const colorChangingCircles = 2;
     const colorHandler = new ColorHandler();

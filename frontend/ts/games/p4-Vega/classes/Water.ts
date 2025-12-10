@@ -1,10 +1,10 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
-import { getRandomX, getRandomY } from '../../../utils/random';
-import isColliding from '../../../utils/isColliding';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
+import { getRandomX, getRandomY } from '@/utils/random';
+import isColliding from '@/utils/isColliding';
 
-import NoteSelector from '../../helpers/NoteSelector';
+import NoteSelector from '@/games/helpers/NoteSelector';
 
-import Entity from '../../helpers/Entity';
+import Entity from '@/games/helpers/Entity';
 
 import BlackHole from './BlackHole';
 import P4 from './P4';

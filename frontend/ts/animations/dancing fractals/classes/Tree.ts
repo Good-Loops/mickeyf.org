@@ -1,6 +1,5 @@
 import { Application, Graphics } from "pixi.js";
 import FractalAnimation from "../interfaces/FractalAnimation";
-import { color } from "../../animations.types";
 import ColorInterpolator from "../../helpers/ColorInterpolator";
 import { TreeConfig, defaultTreeConfig } from "../config/TreeConfig";
 

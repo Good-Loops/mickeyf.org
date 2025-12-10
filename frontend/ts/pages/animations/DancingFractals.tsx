@@ -1,19 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Dropdown from '../../components/Dropdown';
+import Dropdown from '@/components/Dropdown';
 
-import TreeControls from '../../animations/dancing fractals/components/TreeControls';
-import FlowerSpiralControls from '../../animations/dancing fractals/components/FlowerSpiralControls';
+import TreeControls from '@/animations/dancing fractals/components/TreeControls';
+import FlowerSpiralControls from '@/animations/dancing fractals/components/FlowerSpiralControls';
 
-import Tree from '../../animations/dancing fractals/classes/Tree';
-import { type TreeConfig, defaultTreeConfig } from '../../animations/dancing fractals/config/TreeConfig'; 
+import Tree from '@/animations/dancing fractals/classes/Tree';
+import { type TreeConfig, defaultTreeConfig } from '@/animations/dancing fractals/config/TreeConfig'; 
 
-import FlowerSpiral from '../../animations/dancing fractals/classes/FlowerSpiral';
-import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '../../animations/dancing fractals/config/FlowerSpiralConfig';
-import { FractalHost } from '../../animations/dancing fractals/interfaces/FractalHost';
-import { createFractalHost } from '../../animations/dancing fractals/createFractalHost';
+import FlowerSpiral from '@/animations/dancing fractals/classes/FlowerSpiral';
+import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '@/animations/dancing fractals/config/FlowerSpiralConfig';
+import { FractalHost } from '@/animations/dancing fractals/interfaces/FractalHost';
+import { createFractalHost } from '@/animations/dancing fractals/createFractalHost';
 
-import AudioHandler from '../../animations/helpers/AudioHandler';
-import MusicControls from '../../components/MusicControls';
+import AudioHandler from '@/animations/helpers/AudioHandler';
+import MusicControls from '@/components/MusicControls';
 import notAllowedCursor from '@/assets/cursors/notallowed.cur';
 
 type FractalKind = 'tree' | 'flower';

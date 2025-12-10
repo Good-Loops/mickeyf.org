@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
-import { API_BASE } from "../config/apiConfig";
+import { API_BASE } from "@/config/apiConfig";
 
 const Register: React.FC = () => {
     const [user_name, setUserName] = useState("");

@@ -1,5 +1,5 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../../../utils/constants';
-import Entity from '../../helpers/Entity';
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
+import Entity from '@/games/helpers/Entity';
 import * as PIXI from 'pixi.js';
 
 /**

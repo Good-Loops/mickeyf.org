@@ -1,5 +1,5 @@
-import { getRandomX, getRandomY } from "../../../utils/random";
-import lerp from "../../../utils/lerp";
+import { getRandomX, getRandomY } from "@/utils/random";
+import lerp from "@/utils/lerp";
 import ColorHandler from "./ColorHandler";
 
 /**

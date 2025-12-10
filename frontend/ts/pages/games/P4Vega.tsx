@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { useAuth } from '../../context/AuthContext';
-import p4Vega from '../../games/p4-Vega/p4-Vega';
-
+import { useAuth } from '@/context/AuthContext';
+import p4Vega from '@/games/p4-Vega/p4-Vega';
 
 const P4Vega: React.FC = () => {
     const containerRef = useRef<HTMLElement | null>(null);

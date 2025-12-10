@@ -1,7 +1,6 @@
-// createFractalHost.ts
 import { Application, Ticker } from "pixi.js";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../utils/constants";
-import FullscreenButton from "../../components/FullscreenButton";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
+import FullscreenButton from "@/components/FullscreenButton";
 import type { FractalAnimationConstructor } from "./interfaces/FractalAnimation";
 import type FractalAnimation from "./interfaces/FractalAnimation";
 import type { FractalHost } from "./interfaces/FractalHost";

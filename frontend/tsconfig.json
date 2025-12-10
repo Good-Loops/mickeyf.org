@@ -6,6 +6,9 @@
         "moduleResolution": "bundler",
         "outDir": "public/dist",
         "baseUrl": "./",
+        "paths": {
+            "@/*": ["ts/*"]
+        },
         "sourceMap": true,
         "allowJs": true,
         "strict": true,
@@ -16,20 +19,9 @@
     },
     "include": [
         "**/*.ts", 
-        "ts/pages/Animations.tsx", 
-        "ts/pages/Games.tsx", 
-        "ts/pages/Leaderboard.tsx", 
-        "ts/pages/Social.tsx", 
-        "ts/pages/Login.tsx", 
-        "ts/pages/Register.tsx", 
-        "ts/pages/NotFound.tsx", 
-        "ts/pages/animations/DancingCircles.tsx", 
-        "ts/pages/games/P4Vega.tsx", 
-        "ts/pages/animations/DancingFractals.tsx"    ],
+        "ts/**/*.tsx"    
+    ],
     "exclude": [
         "node_modules"
-    ],
-    "paths": {
-        "@/*": ["frontend/ts/*"]
-    }
+    ]
 }
