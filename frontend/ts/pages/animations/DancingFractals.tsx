@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Dropdown from '../../helpers/Dropdown';
+import Dropdown from '../../components/Dropdown';
 
 import TreeControls from '../../animations/dancing fractals/components/TreeControls';
 import FlowerSpiralControls from '../../animations/dancing fractals/components/FlowerSpiralControls';
@@ -13,6 +13,7 @@ import { FractalHost } from '../../animations/dancing fractals/interfaces/Fracta
 import { createFractalHost } from '../../animations/dancing fractals/createFractalHost';
 
 import AudioHandler from '../../animations/helpers/AudioHandler';
+import MusicControls from '../../components/MusicControls';
 import notAllowedCursor from '@/assets/cursors/notallowed.cur';
 
 type FractalKind = 'tree' | 'flower';
@@ -23,8 +24,9 @@ const DancingFractals: React.FC = () => {
     const hostRef = useRef<FractalHost | null>(null);
 
     const [audioPlaying, setAudioPlaying] = useState(false);
+    const [hasAudio, setHasAudio] = useState(false);
+
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const uploadLabelRef = useRef<HTMLLabelElement | null>(null);
 
      // Which fractal is currently selected
     const [fractalKind, setFractalKind] = useState<FractalKind>('tree');
@@ -84,22 +86,26 @@ const DancingFractals: React.FC = () => {
         }
     }, [fractalKind]);
 
+    // Hook upload button to AudioHandler
     useEffect(() => {
         const fileInput = fileInputRef.current;
-        const uploadLabel = uploadLabelRef.current;
 
-        if (!fileInput || !uploadLabel) return;
+        if (!fileInput) return;
 
         const cleanup = AudioHandler.initializeUploadButton(
             fileInput, 
-            uploadLabel,
-            (playing) => setAudioPlaying(playing)
+            (playing) => {
+                setAudioPlaying(playing)
+                if (playing) {
+                    setHasAudio(true);
+                }
+            }
         );
 
         return () => cleanup();
     }, []);
 
-
+    // Lifetime changes
     useEffect(() => {
         const host = hostRef.current;
         if (!host) return;
@@ -107,6 +113,7 @@ const DancingFractals: React.FC = () => {
         host.setLifetime(autoDisposeEnabled ? lifetime : null);
     }, [autoDisposeEnabled, lifetime]);
 
+    // FPS + remaining lifetime monitoring loop
     useEffect(() => {
         let rafId: number;
 
@@ -129,6 +136,7 @@ const DancingFractals: React.FC = () => {
         };
     }, []);
 
+    // Dropdown behavior
     useEffect(() => {
         const dropdown = new Dropdown(
             'data-dropdown',
@@ -176,6 +184,18 @@ const DancingFractals: React.FC = () => {
     const uiStyle = audioPlaying
         ? { cursor: `url(${notAllowedCursor}), not-allowed` }
         : undefined;
+
+    const handlePlay = () => {
+        AudioHandler.play();
+    };
+
+    const handlePause = () => {
+        AudioHandler.pause();
+    };
+
+    const handleStop = () => {
+        AudioHandler.stop();
+    };
 
     return (
         <section className='dancing-fractals' ref={containerRef as any}>
@@ -298,31 +318,41 @@ const DancingFractals: React.FC = () => {
                     </div>
                 )}
             </div>
+            
+            <div className="dancing-fractals__transport">
+                <div className="dancing-fractals__transport-left">
+                    <MusicControls
+                        hasAudio={hasAudio}
+                        isPlaying={audioPlaying}
+                        onPlay={handlePlay}
+                        onPause={handlePause}
+                        onStop={handleStop}
+                    />
+                </div>
 
-            <div className="dancing-fractals__upload floating">
-                <label
-                    className="dancing-fractals__upload-btn"
-                    htmlFor="fractal-music-upload"
-                    ref={uploadLabelRef}
-                    style={audioPlaying ? { cursor: `url(${notAllowedCursor}), auto` } : undefined}
-                >
-                    Upload Music
-                </label>
+                <div className="dancing-fractals__upload floating">
+                    <label
+                        className="dancing-fractals__upload-btn"
+                        htmlFor="fractal-music-upload"
+                    >
+                        Upload Music
+                    </label>
 
-                <input
-                    id="fractal-music-upload"
-                    type="file"
-                    accept="audio/*"
-                    className="dancing-fractals__input"
-                    ref={fileInputRef}
-                    onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                            console.log("Music selected:", file);
-                            // TODO: hook into fractal audio reactions if needed
-                        }
-                    }}
-                />
+                    <input
+                        id="fractal-music-upload"
+                        type="file"
+                        accept="audio/*"
+                        className="dancing-fractals__input"
+                        ref={fileInputRef}
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                                console.log("Music selected:", file);
+                                // TODO: hook into fractal audio reactions if needed
+                            }
+                        }}
+                    />
+                </div>
             </div>
 
             <div className="dancing-fractals__fullscreen-slot"></div>

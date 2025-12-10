@@ -25,23 +25,45 @@
         overflow: hidden;
     }
 
-    &__upload {
+    &__transport {
         grid-column: 2 / 3;
         grid-row: 3;
         justify-self: center;
-        margin-top: 2rem;
+        margin-top: .8em;
+
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 1rem;
+
+        width: 100%;
+
+        &-left {
+            grid-column: 1 / 2;
+            justify-self: center;
+            display: flex;
+        }
+    }
+
+    &__upload {
+        grid-column: 2 / 3;
+        justify-self: center;
+
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
 
         &-btn {
             justify-self: center;
 
             @include default-btn;
 
-            &:not(.playing):hover,
-            &:not(.playing):focus {
+            &:hover,
+            &:focus {
                 @include default-btn-hover;
             }
 
-            &:not(.playing):active {
+            &:active {
                 @include default-btn-active;
             }
         }

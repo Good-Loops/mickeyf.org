@@ -4,8 +4,8 @@ import gameOver from '../utils/gameOver';
 
 import { API_BASE } from '../../config/apiConfig';
 
-import Dropdown from '../../helpers/Dropdown';
-import FullscreenButton from '../../helpers/FullscreenButton';
+import Dropdown from '../../components/Dropdown';
+import FullscreenButton from '../../components/FullscreenButton';
 
 import P4 from './classes/P4';
 import Water from './classes/Water';

@@ -10,7 +10,7 @@ import CircleHandler from "./classes/CircleHandler";
 import AudioHandler from "../helpers/AudioHandler";
 
 import { Application, Graphics } from "pixi.js";
-import FullscreenButton from "../../helpers/FullscreenButton";
+import FullscreenButton from "../../components/FullscreenButton";
 
 type DancingCirclesDependencies = {
     container: HTMLElement;

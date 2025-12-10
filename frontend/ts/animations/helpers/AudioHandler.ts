@@ -1,6 +1,4 @@
 import { PitchDetector } from "pitchy";
-import notAllowedCursor from "@/assets/cursors/notallowed.cur";
-import selectCursor from "@/assets/cursors/select.cur";
 
 /**
  * A class to handle audio processing and analysis for animations.
@@ -13,6 +11,12 @@ export default class AudioHandler {
     static playing: boolean;
     static onPlayingChange?: (playing: boolean) => void;
 
+    private static audioElement: HTMLAudioElement | null = null;
+    private static audioContext: AudioContext | null = null;
+
+    // Used to invalidate old analysis loops when a new track is loaded or stopped
+    private static sessionId: number = 0;
+
     /**
      * Converts a given volume level to a percentage.
      *
@@ -20,7 +24,7 @@ export default class AudioHandler {
      * If the volume is less than -40, the percentage will be set to 0.
      * If the volume is greater than 20, the percentage will be set to 100.
      *
-     * @param volume - The volume level to convert.
+     * @param volume - The volume level in decibels to be converted.
      * @returns The volume level as a percentage.
      */
     static getVolumePercentage = (volume: number): number => {
@@ -34,18 +38,81 @@ export default class AudioHandler {
     };
 
     /**
+     * Ensure the AudioContext is running (autoplay policies).
+     */
+    private static async ensureContextRunning() {
+        if (!AudioHandler.audioContext) return;
+        if (AudioHandler.audioContext.state === "suspended") {
+            await AudioHandler.audioContext.resume();
+        }
+    }
+
+    /**
+     * Play the current audio (if loaded).
+     * Can be called from React MusicControls.
+     */
+    static async play() {
+        const audio = AudioHandler.audioElement;
+        if (!audio) return;
+
+        // If we reached the end previously, restart from the beginning
+        if (audio.ended || audio.currentTime >= audio.duration) {
+            audio.currentTime = 0;
+        }
+
+        AudioHandler.playing = true;
+        AudioHandler.onPlayingChange?.(true);
+
+        try {
+            await AudioHandler.ensureContextRunning();
+            await audio.play();
+        } catch (err) {
+            console.error("AudioHandler.play() error:", err);
+        }
+    }
+
+
+    /**
+     * Pause playback, but keep currentTime so we can resume.
+     */
+    static pause() {
+        if (!AudioHandler.audioElement) return;
+
+        AudioHandler.playing = false;
+        AudioHandler.onPlayingChange?.(false);
+        AudioHandler.audioElement.pause();
+    }
+
+    /**
+     * Stop playback, reset to the beginning,
+     * and request the analysis loop to clean up UI.
+     */
+    static stop() {
+        if (!AudioHandler.audioElement) return;
+
+        // Invalidate current analysis loop
+        AudioHandler.sessionId++;
+
+        AudioHandler.playing = false;
+        AudioHandler.onPlayingChange?.(false);
+
+        AudioHandler.audioElement.pause();
+        AudioHandler.audioElement.currentTime = 0;
+    }
+
+    /**
      * Initializes the upload button to handle file input and audio processing.
      * Redirects clicks on the upload button to the file input element.
      * 
      * @param fileInput - The HTML input element for file uploads.
      * @param uploadButton - The HTML label element that acts as the upload button.
+     * @param onPlayingChange - Optional callback function to be called when the playing state changes.
      * 
      * @returns A function to remove the event listeners when no longer needed.
      *
      */
     static initializeUploadButton = (
         fileInput: HTMLInputElement,
-        uploadButton: HTMLLabelElement,
         onPlayingChange?: (playing: boolean) => void
     ): (() => void) => {
         if(onPlayingChange) {
@@ -54,7 +121,7 @@ export default class AudioHandler {
 
         const handleChange = () => {
             if (fileInput.files?.length) {
-                AudioHandler.processAudio(fileInput, uploadButton);
+                AudioHandler.processAudio(fileInput);
             }
         };
 
@@ -83,16 +150,26 @@ export default class AudioHandler {
      * 6. Restores the UI state when the audio ends or the volume drops below a threshold.
      */
     static async processAudio(
-        fileInput: HTMLInputElement,
-        uploadButton: HTMLLabelElement
+        fileInput: HTMLInputElement
     ): Promise<void> {
-        uploadButton.classList.add("playing");
-        fileInput.disabled = true;
-        uploadButton.style.cursor = `url(${notAllowedCursor}), not-allowed`;
+        // Invalidate any previous analysis loop
+        AudioHandler.sessionId++;
+
+        if (AudioHandler.audioElement) {
+            AudioHandler.audioElement.pause();
+        }
 
         const files = fileInput.files as FileList;
         const file = files[0] as File;
         const music = new Audio(URL.createObjectURL(file));
+
+        // Capture this session's id
+        const currentSessionId = AudioHandler.sessionId;
+
+        music.addEventListener("ended", () => {
+            AudioHandler.playing = false;
+            AudioHandler.onPlayingChange?.(false);
+        });
 
         const audioContext = new window.AudioContext();
         await audioContext.resume();
@@ -105,6 +182,10 @@ export default class AudioHandler {
         const source = audioContext.createMediaElementSource(music);
         source.connect(analyser);
         analyser.connect(audioContext.destination);
+
+        // store references for play/pause/stop
+        AudioHandler.audioElement = music;
+        AudioHandler.audioContext = audioContext;
 
         // start playback
         music.load();
@@ -123,25 +204,31 @@ export default class AudioHandler {
             new ArrayBuffer(detector.inputLength * Float32Array.BYTES_PER_ELEMENT)
         );
 
+        const cleanupAndResetUI = () => {
+            // Only clean up if this is still the active session
+            if (currentSessionId !== AudioHandler.sessionId) return;
+
+            AudioHandler.volume = -Infinity;
+            AudioHandler.playing = false;
+            AudioHandler.onPlayingChange?.(false);
+            fileInput.value = "";
+        };
+
         const getCurrentPitch = (
             analyserNode: AnalyserNode,
             detector: PitchDetector<Float32Array>,
             input: Float32Array<ArrayBuffer>,
             sampleRate: number
         ): void => {
-            // stop condition
+            // If this loop is stale (new session has started), just stop
+            if (currentSessionId !== AudioHandler.sessionId) return;
+            
+            // stop condition (natural end, manual stop, or very low volume)
             if (
                 music.ended ||
                 (AudioHandler.volume < -1000 && AudioHandler.volume !== -Infinity)
             ) {
-                AudioHandler.volume = -Infinity;
-                AudioHandler.playing = false;
-                AudioHandler.onPlayingChange?.(false);
-
-                fileInput.disabled = false;
-                uploadButton.style.cursor = `url(${selectCursor}), auto`;
-                uploadButton.classList.remove("playing");
-                fileInput.value = "";
+                cleanupAndResetUI();
                 return;
             }
 
