@@ -185,8 +185,7 @@ const DancingFractals: React.FC = () => {
                 {audioPlaying && (
                     <div className="dancing-fractals__ui--overlay" />
                 )}
-                <div
-                    className="dancing-fractals__ui--dropdown"
+                <div className="dancing-fractals__ui--dropdown"
                     data-dropdown
                 >
                     <button
@@ -205,9 +204,8 @@ const DancingFractals: React.FC = () => {
                     </button>
                     <ul className="dancing-fractals__ui--dropdown-menu">
                         <li>
-                            <button
+                            <button className="dancing-fractals__ui--dropdown-option"
                                 type="button"
-                                className="dancing-fractals__ui--dropdown-option"
                                 data-dropdown-option="Tree"
                                 onClick={() => setFractalKind('tree')}
                             >
@@ -215,9 +213,8 @@ const DancingFractals: React.FC = () => {
                             </button>
                         </li>
                         <li>
-                            <button
+                            <button className="dancing-fractals__ui--dropdown-option"
                                 type="button"
-                                className="dancing-fractals__ui--dropdown-option"
                                 data-dropdown-option="Flower Spiral"
                                 onClick={() => setFractalKind('flower')}
                             >
@@ -227,9 +224,8 @@ const DancingFractals: React.FC = () => {
                     </ul>
                 </div>
 
-                <button
+                <button className="dancing-fractals__ui--restart-btn"
                     type="button"
-                    className="dancing-fractals__ui--restart-btn"
                     onClick={handleRestart}
                     disabled={audioPlaying}
                 >
@@ -328,6 +324,8 @@ const DancingFractals: React.FC = () => {
                     }}
                 />
             </div>
+
+            <div className="dancing-fractals__fullscreen-slot"></div>
         </section>   
     );
 }

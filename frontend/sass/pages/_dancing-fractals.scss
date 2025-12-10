@@ -17,6 +17,7 @@
     // PIXI canvas in the middle/right column
     &__canvas {
         grid-column: 2 / 3;
+        grid-row: 2;
         justify-self: center;
         align-self: center;
         @include canvas-shadow-effect;
@@ -48,6 +49,13 @@
 
     &__input[type="file"] {
         display: none;
+    }
+
+    &__fullscreen-slot {
+        grid-column: 2 / 3;
+        grid-row: 4;
+        justify-self: center;
+        margin-top: 1rem;
     }
 
     // Left-side UI panel

@@ -53,7 +53,9 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     const stage = new PIXI.Container();
 
     container?.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
-    const fullscreenBtn = new FullscreenButton(canvas, container!);
+    const fullscreenSlot = container?.querySelector(".p4-vega__fullscreen-slot") as HTMLDivElement;
+    const fullscreenParent = fullscreenSlot ?? container;
+    const fullscreenBtn = new FullscreenButton(canvas, fullscreenParent);
 
     const bgMusicCheckbox = document.querySelector(
         '[data-bg-music-playing]'

@@ -90,6 +90,8 @@ const P4Vega: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            <div className='p4-vega__fullscreen-slot'></div>
         </section>   
     );
 }

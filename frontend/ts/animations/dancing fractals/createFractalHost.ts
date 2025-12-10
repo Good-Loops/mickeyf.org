@@ -22,7 +22,9 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     app.canvas.classList.add('dancing-fractals__canvas');
 
     container.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
-    new FullscreenButton(app.canvas, container);
+    const fullscreenSlot = container.querySelector(".dancing-fractals__fullscreen-slot") as HTMLDivElement;
+    const fullscreenParent = fullscreenSlot ?? container;
+    new FullscreenButton(app.canvas, fullscreenParent);
 
     const centerX = app.screen.width / 2;
     const centerY = app.screen.height / 2;

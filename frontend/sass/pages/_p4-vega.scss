@@ -9,6 +9,12 @@
         grid-column: 2 / 3;
     }
 
+    &__canvas {
+        @include canvas-shadow-effect;
+        justify-self: center;
+        grid-column: 2 / 3;
+    }
+
     &__ui {
         grid-column: 1 / 2;
 
@@ -127,13 +133,10 @@
         }
     }
 
-    &__canvas {
-        @include canvas-shadow-effect;
-        justify-self: center;
+    &__fullscreen-slot {
         grid-column: 2 / 3;
-    }
-
-    &__img {
-        display: none;
+        grid-row: 3;
+        margin-top: -1em;
+        justify-self: center;
     }
 }
