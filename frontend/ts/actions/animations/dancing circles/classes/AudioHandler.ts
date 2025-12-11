@@ -35,6 +35,19 @@ export default class AudioHandler {
     };
 
     /**
+     * Converts the clarity value to a normalized factor between 0 and 1.
+     *
+     * The clarity value is expected to be in the range of 0 to 100.
+     * Values outside this range are clamped to ensure the factor stays within 0-1.
+     *
+     * @returns The clarity as a normalized factor (0-1).
+     */
+    static getClarityFactor = (): number => {
+        const clarity = AudioHandler.clarity || 0;
+        return Math.max(0, Math.min(100, clarity)) / 100;
+    };
+
+    /**
      * Initializes the upload button to handle file input and audio processing.
      * Redirects clicks on the upload button to the file input element.
      * 

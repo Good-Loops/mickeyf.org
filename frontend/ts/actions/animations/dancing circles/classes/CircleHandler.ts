@@ -102,8 +102,8 @@ export default class CircleHandler {
         let interpolationFactor = .03;
         
         // Adjust lerp speed based on clarity if audio is playing
-        if (AudioHandler.playing && AudioHandler.clarity !== undefined) {
-            const clarityFactor = Math.max(0, Math.min(100, AudioHandler.clarity)) / 100;
+        if (AudioHandler.playing) {
+            const clarityFactor = AudioHandler.getClarityFactor();
             // Higher clarity = faster color transitions (more responsive to music)
             interpolationFactor = 0.03 + (clarityFactor * 0.05); // 0.03-0.08 range
         }
@@ -119,18 +119,18 @@ export default class CircleHandler {
      */
     lerpPosition(isX: boolean): void {
         // Base interpolation factor
-        let interpolationFacor = .01;
+        let interpolationFactor = .01;
         
         // Scale movement speed based on volume when audio is playing
         if (AudioHandler.playing && AudioHandler.volume !== undefined && AudioHandler.volume !== -Infinity) {
             const volumePercentage = AudioHandler.getVolumePercentage(AudioHandler.volume);
             // Higher volume = faster movement (0.01-0.03 range)
-            interpolationFacor = 0.01 + (volumePercentage / 100) * 0.02;
+            interpolationFactor = 0.01 + (volumePercentage / 100) * 0.02;
         }
         
         const axis = isX ? this.x : this.y;
         const tAxis = isX ? this.targetX : this.targetY;
-        const position = lerp(axis, tAxis, interpolationFacor);
+        const position = lerp(axis, tAxis, interpolationFactor);
 
         if (isX) {
             this.x = position;
@@ -153,8 +153,8 @@ export default class CircleHandler {
         let interpolationFactor = .2;
         
         // Adjust lerp speed based on clarity for more beat-synced pulsation
-        if (AudioHandler.playing && AudioHandler.clarity !== undefined) {
-            const clarityFactor = Math.max(0, Math.min(100, AudioHandler.clarity)) / 100;
+        if (AudioHandler.playing) {
+            const clarityFactor = AudioHandler.getClarityFactor();
             // Higher clarity = snappier radius changes (better beat sync)
             interpolationFactor = 0.2 + (clarityFactor * 0.2); // 0.2-0.4 range
         }
