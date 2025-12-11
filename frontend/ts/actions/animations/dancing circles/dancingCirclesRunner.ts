@@ -107,7 +107,7 @@ export default async function dancingCirclesRunner({
             // Use clarity to determine if we should update colors more frequently
             // Higher clarity (clearer sound) = more responsive color changes
             const clarityFactor = AudioHandler.getClarityFactor();
-            const dynamicColorInterval = colorInterval * (0.7 - clarityFactor * 0.3); // 70-100% of base interval
+            const dynamicColorInterval = colorInterval * (1 - clarityFactor * 0.3); // 70-100% of base interval
             
             // Update color based on pitch
             if (colorTimer >= dynamicColorInterval) {
