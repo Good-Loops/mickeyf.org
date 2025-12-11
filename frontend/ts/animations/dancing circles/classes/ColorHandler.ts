@@ -87,7 +87,7 @@ export default class ColorHandler {
      * @param interpolationFactor - The interpolation factor (between 0 and 1).
      * @returns The interpolated HSL color string.
      */
-    lerpColor(start: string, end: string, t: number): string {
+    lerpColor(start: string, end: string, interpolationFactor: number): string {
         const parse = (str: string) =>
             str.substring(4, str.length - 1)
                 .split(',')
@@ -99,12 +99,12 @@ export default class ColorHandler {
         // --- HUE (circular interpolation)
         let delta = h2 - h1;
         delta = ((delta + 180) % 360) - 180;  // shortest path
-        let h = h1 + delta * t;
+        let h = h1 + delta * interpolationFactor;
         h = ((h % 360) + 360) % 360;          // wrap 0–359
 
         // --- SAT & LIGHT (linear)
-        let s = s1 + (s2 - s1) * t;
-        let l = l1 + (l2 - l1) * t;
+        let s = s1 + (s2 - s1) * interpolationFactor;
+        let l = l1 + (l2 - l1) * interpolationFactor;
 
         // --- Round (VERY IMPORTANT)
         h = Math.round(h);

@@ -110,11 +110,11 @@ const Home: React.FC = () => {
 	useEffect(() => {
 		if (!quote) setQuote(pickRandomQuote());
 
-		let fadeTimeout: ReturnType<typeof setTimeout>;
-		const interval = setInterval(() => {
+		let fadeTimeout: number | undefined;
+		const interval = window.setInterval(() => {
 			setVisible(false);
 
-			fadeTimeout = setTimeout(() => {
+			fadeTimeout = window.setTimeout(() => {
 				setQuote(pickRandomQuote());
 				setVisible(true);
 			}, FADE_MS);
@@ -123,10 +123,12 @@ const Home: React.FC = () => {
 		setVisible(true);
 
 		return () => {
-			clearInterval(interval);
-			clearTimeout(fadeTimeout);
+			window.clearInterval(interval);
+			if (fadeTimeout !== undefined) {
+				window.clearTimeout(fadeTimeout);
+			}
 		};
-  	}, [quote]);
+	}, [quote]);
 
 	return (
 		<section className="home">

@@ -5,7 +5,7 @@ export default class ColorInterpolator {
     private targetColors: color[];
 
     /**
-     * Creates an instance of ColorManager.
+     * Creates an instance of ColorInterpolator.
      * @param colorPalette - The array of colors to use as the palette.
      * @param size - The number of colors to manage.
      */
