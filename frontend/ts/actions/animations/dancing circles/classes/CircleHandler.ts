@@ -122,7 +122,7 @@ export default class CircleHandler {
         let interpolationFactor = .01;
         
         // Scale movement speed based on volume when audio is playing
-        if (AudioHandler.playing && AudioHandler.volume !== undefined && AudioHandler.volume !== -Infinity) {
+        if (AudioHandler.playing && AudioHandler.volume !== -Infinity) {
             const volumePercentage = AudioHandler.getVolumePercentage(AudioHandler.volume);
             // Higher volume = faster movement (0.01-0.03 range)
             interpolationFactor = 0.01 + (volumePercentage / 100) * 0.02;

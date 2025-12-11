@@ -55,7 +55,7 @@ export default class ColorHandler {
         const normalizedFreq = logFreq / maxOctaves; // 0-1 range
         
         // Map to full hue spectrum (0-360 degrees)
-        const hue = Math.round(normalizedFreq * 360) % 360;
+        const hue = Math.round(normalizedFreq * 360);
 
         const randomHSL = this.getRandomColor(Settings);
         const randomHSLhue = randomHSL
