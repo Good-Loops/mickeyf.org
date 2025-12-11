@@ -88,16 +88,16 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             const volumePercentage = AudioHandler.getVolumePercentage(AudioHandler.volume);
             const normalizedClarity = AudioHandler.clarity / 100; // 0-1 range
             
-            // Update colors more frequently and tie directly to frequency
+            // Update colors more frequently and tie directly to pitch
             if (colorTimer >= colorInterval) {
                 const randomIndexArray = getRandomIndexArray(circleHandler.arrayLength);
                 
                 for (let i = 0; i < circleHandler.arrayLength; i++) {
                     const circle = CircleHandler.circleArray[randomIndexArray[i]];
                     
-                    // Map frequency directly to hue for musical color changes
-                    if (AudioHandler.frequency > 20 && normalizedClarity > 0.3) {
-                        circleHandler.colorSettings.hertz = Math.round(AudioHandler.frequency);
+                    // Map pitch directly to hue for musical color changes
+                    if (AudioHandler.pitch > 20 && normalizedClarity > 0.3) {
+                        circleHandler.colorSettings.hertz = Math.round(AudioHandler.pitch);
                         circle.targetColor = colorHandler.convertHertzToHSL(circleHandler.colorSettings);
                     } else {
                         // Fallback to random colors during silence or unclear pitch
@@ -126,9 +126,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                     circle.targetRadius = circle.baseRadius * volumeScale;
                 });
             }
-            
-            // Use clarity to modulate movement speed
-            const movementFactor = 0.01 + (normalizedClarity * 0.02); // Higher clarity = faster movement
             
             // Update positions with volume-based amplitude on beats
             if (AudioHandler.isBeat && volumePercentage > 20) {
@@ -171,7 +168,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         // Adjust interpolation based on music properties for more responsive visuals
         const radiusFactor = AudioHandler.isBeat ? 0.4 : 0.25; // Faster response on beats
         const colorFactor = 0.08 + (normalizedClarity * 0.05); // Clarity affects color smoothness
-        const positionFactor = 0.015 + (volumePercentage * 0.0002); // Volume affects movement speed
+        const movementFactor = 0.01 + (normalizedClarity * 0.02); // Higher clarity = faster movement
+        const positionFactor = 0.015 + (volumePercentage * 0.0002) + movementFactor; // Combined movement speed
 
         CircleHandler.circleArray.forEach((circle: CircleHandler) => {
             circle.lerpRadius(radiusFactor);

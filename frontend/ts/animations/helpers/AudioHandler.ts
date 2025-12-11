@@ -14,11 +14,9 @@ export default class AudioHandler {
     // Beat detection properties
     static isBeat: boolean = false;
     static beatStrength: number = 0;
-    static frequency: number = 0; // Dominant frequency in Hz
     
     private static audioElement: HTMLAudioElement | null = null;
     private static audioContext: AudioContext | null = null;
-    private static lastVolume: number = -Infinity;
     private static volumeHistory: number[] = [];
     private static readonly VOLUME_HISTORY_SIZE = 10;
 
@@ -283,12 +281,9 @@ export default class AudioHandler {
 
             // pitch in Hz (rounded)
             AudioHandler.pitch = Math.round(AudioHandler.pitch * 10) * 0.1;
-            // Store frequency (pitch is the fundamental frequency)
-            AudioHandler.frequency = AudioHandler.pitch;
             // clarity as percentage
             AudioHandler.clarity = Math.round(AudioHandler.clarity * 100);
             // volume in decibels
-            AudioHandler.lastVolume = AudioHandler.volume;
             AudioHandler.volume = Math.round(
                 20 * Math.log10(Math.max(...input))
             );
