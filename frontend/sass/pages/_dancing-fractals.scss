@@ -4,7 +4,7 @@
     position: relative;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    gap: 1rem;
+    gap: 3em;
     align-items: flex-start;
 
     // Title centered above everything
@@ -33,7 +33,6 @@
         grid-column: 2 / 3;
         grid-row: 3;
         justify-self: center;
-        margin-top: 2em;
 
         display: grid;
         grid-template-columns: 1fr auto 1fr;
@@ -81,7 +80,6 @@
     // Left-side UI panel
     &__ui {
         grid-column: 1 / 2;
-        margin-left: 1rem;
         display: flex;
         flex-direction: column;
         gap: 1.5rem;

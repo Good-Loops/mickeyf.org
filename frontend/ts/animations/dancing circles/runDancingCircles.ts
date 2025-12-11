@@ -13,13 +13,9 @@ import { Application, Graphics } from "pixi.js";
 
 type DancingCirclesDeps = {
     container: HTMLElement;
-    fileInput: HTMLInputElement;
 };
 
-export default async function runDancingCircles({
-    container,
-    fileInput,
-}: DancingCirclesDeps) {
+export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     const app = new Application();
 
     await app.init({
@@ -30,10 +26,7 @@ export default async function runDancingCircles({
     });
 
     app.canvas.classList.add("dancing-circles__canvas");
-
     container.append(app.canvas);
-
-    AudioHandler.initializeUploadButton(fileInput);
 
     const colorChangingCircles = 2;
     const colorHandler = new ColorHandler();

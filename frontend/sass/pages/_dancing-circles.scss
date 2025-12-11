@@ -2,18 +2,26 @@
 
 .dancing-circles {
     display: grid;
-    gap: 2em;
+    gap: 3em;
 
     &__canvas {
         @include canvas-shadow-effect;
         justify-self: center;
     }
 
+    &__transport {
+        grid-row: 3;
+        display: grid;
+        grid-template-columns: repeat(3, auto);
+
+        &-controls {
+            justify-self: center;
+        }
+    }
+
     &__upload-btn {
         justify-self: center;
         
-        grid-row: 3;
-
         @include default-btn;
 
         &:not(.playing):hover,

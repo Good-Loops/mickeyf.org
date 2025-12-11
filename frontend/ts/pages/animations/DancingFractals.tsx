@@ -157,6 +157,13 @@ const DancingFractals: React.FC = () => {
         };
     }, []);
 
+    // Stop audio on unmount
+    useEffect(() => {
+        return () => {
+            AudioHandler.stop();
+        };
+    }, []);
+
     const handleRestart = () => { hostRef.current?.restart(); };
 
     // Handle tree config changes: update React state + push patch into fractal
@@ -186,17 +193,9 @@ const DancingFractals: React.FC = () => {
         ? { cursor: `url(${notAllowedCursor}), not-allowed` }
         : undefined;
 
-    const handlePlay = () => {
-        AudioHandler.play();
-    };
-
-    const handlePause = () => {
-        AudioHandler.pause();
-    };
-
-    const handleStop = () => {
-        AudioHandler.stop();
-    };
+    const handlePlay = () => AudioHandler.play();
+    const handlePause = () => AudioHandler.pause();
+    const handleStop = () => AudioHandler.stop();
 
     return (
         <section className='dancing-fractals'>
