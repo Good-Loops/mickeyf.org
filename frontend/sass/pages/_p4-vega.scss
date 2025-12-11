@@ -1,22 +1,38 @@
 @use '../abstracts' as *;
 
 .p4-vega {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     gap: 3em;
+    align-items: flex-start;
 
     &__title {
+        grid-column: 1 / -1;
+        justify-self: center;
+        margin-bottom: .5em;
+    }
+
+    &__canvas-wrapper {
         grid-column: 2 / 3;
+        grid-row: 2;
+        justify-self: center;
+        align-self: center;
+
+        width: fit-content;
+        height: fit-content;
+        margin: 0 auto;
     }
 
     &__canvas {
         @include canvas-shadow-effect;
-        justify-self: center;
-        grid-column: 2 / 3;
+        display: block;
+        overflow: hidden;
     }
 
     &__ui {
         grid-column: 1 / 2;
+        grid-row: 2;
 
         display: grid;
         grid-auto-rows: max-content;
@@ -133,10 +149,6 @@
         }
     }
 
-    &__fullscreen-slot {
-        grid-column: 2 / 3;
-        grid-row: 3;
-        margin-top: -1em;
-        justify-self: center;
-    }
+    @include canvas-fullscreen-button-position("p4-vega");
+    @include block-canvas-fullscreen("p4-vega");
 }

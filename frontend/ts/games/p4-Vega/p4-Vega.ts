@@ -5,7 +5,6 @@ import gameOver from '../utils/gameOver';
 import { API_BASE } from '@/config/apiConfig';
 
 import Dropdown from '@/components/Dropdown';
-import FullscreenButton from '@/components/FullscreenButton';
 
 import P4 from './classes/P4';
 import Water from './classes/Water';
@@ -51,11 +50,6 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     container?.appendChild(canvas);
 
     const stage = new PIXI.Container();
-
-    container?.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
-    const fullscreenSlot = container?.querySelector(".p4-vega__fullscreen-slot") as HTMLDivElement;
-    const fullscreenParent = fullscreenSlot ?? container;
-    const fullscreenBtn = new FullscreenButton(canvas, fullscreenParent);
 
     const bgMusicCheckbox = document.querySelector(
         '[data-bg-music-playing]'
@@ -414,10 +408,5 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
         registeredListeners.forEach(({ element, event, handler }) => {
             element.removeEventListener(event, handler);
         });
-
-        // destroy fullscreen button if it has a destroy
-        if (typeof (fullscreenBtn as any).destroy === "function") {
-            (fullscreenBtn as any).destroy();
-        }
     };
 }

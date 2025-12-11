@@ -1,18 +1,19 @@
 import React, { useEffect, useRef } from "react";
 import { useAuth } from '@/context/AuthContext';
 import p4Vega from '@/games/p4-Vega/p4-Vega';
+import FullscreenButton from "@/components/FullscreenButton";
 
 const P4Vega: React.FC = () => {
-    const containerRef = useRef<HTMLElement | null>(null);
+    const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
     const { isAuthenticated, userName } = useAuth();
 
     useEffect(() => {
-        if (!containerRef.current) return;
+        if (!canvasWrapperRef.current) return;
 
         let dispose: (() => void) | undefined;
 
         (async () => {
-            dispose = await p4Vega(containerRef.current!, {
+            dispose = await p4Vega(canvasWrapperRef.current!, {
                 isAuthenticated,
                 userName,
             });
@@ -22,8 +23,18 @@ const P4Vega: React.FC = () => {
     }, []);
 
     return (
-        <section className='p4-vega' data-p4-vega ref={containerRef}>
+        <section className='p4-vega' data-p4-vega>
             <h1 className='p4-vega__title u-canvas-title'>p4-Vega</h1>
+
+            <div
+                className="p4-vega__canvas-wrapper"
+                ref={canvasWrapperRef}
+            >
+                <FullscreenButton
+                    targetRef={canvasWrapperRef}
+                    className="p4-vega__fullscreen-btn"
+                />
+            </div>
 
             <div className='p4-vega__ui'>
                 <label className='p4-vega__ui--option' data-checkbox>
@@ -89,8 +100,6 @@ const P4Vega: React.FC = () => {
                     </div>
                 </div>
             </div>
-
-            <div className='p4-vega__fullscreen-slot'></div>
         </section>   
     );
 }

@@ -6,6 +6,55 @@ interface FullscreenButtonProps {
     label?: string;
 }
 
+// ⛶-style ENTER icon (outer corners)
+const FullscreenEnterIcon: React.FC = () => (
+    <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+        width="100%"
+        height="100%"
+    >
+        <path
+            d="M4 9V4h5
+               M4 15v5h5
+               M20 9V4h-5
+               M20 15v5h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    </svg>
+);
+
+// “Inverted ⛶” EXIT icon (inner corners, contracting)
+const FullscreenExitIcon: React.FC = () => (
+    <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+        width="100%"
+        height="100%"
+    >
+        <path
+            d="
+                M5 9 H9 V5
+                M5 15 H9 V19
+                M19 9 H15 V5
+                M19 15 H15 V19
+            "
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    </svg>
+);
+
+
 const FullscreenButton: React.FC<FullscreenButtonProps> = ({
     targetRef,
     className = "",
@@ -39,10 +88,11 @@ const FullscreenButton: React.FC<FullscreenButtonProps> = ({
     return (
         <button
             type="button"
-            className={`fullscreen-btn ${isFullscreen ? "fullscreen-btn--active" : ""} ${className}`}
+            className={`fullscreen-btn ${className ?? ""}`}
             onClick={toggle}
+            aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
         >
-            {label ?? (isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen")}
+            {label ?? (isFullscreen ? <FullscreenExitIcon /> : <FullscreenEnterIcon />)}
         </button>
     );
 };
