@@ -111,7 +111,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             
             // Beat-synchronized radius pulsation
             if (AudioHandler.isBeat && volumePercentage > 10) {
-                const beatScale = 1 + (AudioHandler.beatStrength * 0.5); // Up to 50% size increase on strong beats
+                const beatScale = 1 + (AudioHandler.beatStrength * 1.0); // Up to 100% size increase on strong beats
                 
                 CircleHandler.circleArray.forEach((circle, index) => {
                     // Alternate circles pulse on beats for visual variety
@@ -122,7 +122,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             } else {
                 // Smoothly return to base radius between beats
                 CircleHandler.circleArray.forEach((circle) => {
-                    const volumeScale = 1 + (volumePercentage * 0.005); // Subtle scaling with volume
+                    const volumeScale = 1 + (volumePercentage * 0.02); // Stronger scaling with volume
                     circle.targetRadius = circle.baseRadius * volumeScale;
                 });
             }
@@ -166,7 +166,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         const normalizedClarity = AudioHandler.playing ? (AudioHandler.clarity / 100) : 0.5;
         
         // Adjust interpolation based on music properties for more responsive visuals
-        const radiusFactor = AudioHandler.isBeat ? 0.4 : 0.25; // Faster response on beats
+        const radiusFactor = AudioHandler.isBeat ? 0.6 : 0.35; // Faster response on beats and snappier pulsation
         const colorFactor = 0.08 + (normalizedClarity * 0.05); // Clarity affects color smoothness
         const movementFactor = 0.01 + (normalizedClarity * 0.02); // Higher clarity = faster movement
         const positionFactor = 0.015 + (volumePercentage * 0.0002) + movementFactor; // Combined movement speed
