@@ -14,12 +14,16 @@
         margin-bottom: 0.5rem;
     }
 
-    // PIXI canvas in the middle/right column
-    &__canvas {
+    &__canvas-wrapper {
         grid-column: 2 / 3;
         grid-row: 2;
         justify-self: center;
         align-self: center;
+        position: relative;
+    }
+
+    // PIXI canvas in the middle/right column
+    &__canvas {
         @include canvas-shadow-effect;
         border-radius: 0.75rem;
         overflow: hidden;
@@ -29,7 +33,7 @@
         grid-column: 2 / 3;
         grid-row: 3;
         justify-self: center;
-        margin-top: .8em;
+        margin-top: 2em;
 
         display: grid;
         grid-template-columns: 1fr auto 1fr;
@@ -42,6 +46,7 @@
             grid-column: 1 / 2;
             justify-self: center;
             display: flex;
+            margin-top: -2em;
         }
     }
 
@@ -71,13 +76,6 @@
 
     &__input[type="file"] {
         display: none;
-    }
-
-    &__fullscreen-slot {
-        grid-column: 2 / 3;
-        grid-row: 4;
-        justify-self: center;
-        margin-top: 1rem;
     }
 
     // Left-side UI panel
@@ -486,4 +484,7 @@
             cursor: $cursor;
         }
     }
+
+    @include canvas-fullscreen-button-position('dancing-fractals');
+    @include block-canvas-fullscreen('dancing-fractals');
 }

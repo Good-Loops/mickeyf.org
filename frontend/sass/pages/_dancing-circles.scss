@@ -29,4 +29,7 @@
     &__input[type="file"] {
         display: none;
     }
+
+    @include block-canvas-fullscreen('dancing-circles');
+    @include canvas-fullscreen-button-position('dancing-circles');
 }

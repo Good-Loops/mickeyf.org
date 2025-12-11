@@ -15,11 +15,12 @@ import { createFractalHost } from '@/animations/dancing fractals/createFractalHo
 import AudioHandler from '@/animations/helpers/AudioHandler';
 import MusicControls from '@/components/MusicControls';
 import notAllowedCursor from '@/assets/cursors/notallowed.cur';
+import FullscreenButton from '../../components/FullscreenButton';
 
 type FractalKind = 'tree' | 'flower';
 
 const DancingFractals: React.FC = () => {
-    const containerRef = useRef<HTMLElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
 
     const hostRef = useRef<FractalHost | null>(null);
 
@@ -198,8 +199,15 @@ const DancingFractals: React.FC = () => {
     };
 
     return (
-        <section className='dancing-fractals' ref={containerRef as any}>
+        <section className='dancing-fractals'>
             <h1 className='dancing-fractals__title u-canvas-title'>Dancing Fractals</h1>
+
+            <div className="dancing-fractals__canvas-wrapper" ref={containerRef}>
+                <FullscreenButton 
+                    targetRef={containerRef} 
+                    className='dancing-fractals__fullscreen-btn'
+                />
+            </div>
 
             <div className={uiClassName} style={uiStyle}>
                 {audioPlaying && (
@@ -354,8 +362,6 @@ const DancingFractals: React.FC = () => {
                     />
                 </div>
             </div>
-
-            <div className="dancing-fractals__fullscreen-slot"></div>
         </section>   
     );
 }

@@ -10,19 +10,16 @@ import CircleHandler from "./classes/CircleHandler";
 import AudioHandler from "../helpers/AudioHandler";
 
 import { Application, Graphics } from "pixi.js";
-import FullscreenButton from "@/components/FullscreenButton";
 
-type DancingCirclesDependencies = {
+type DancingCirclesDeps = {
     container: HTMLElement;
-    uploadButton: HTMLLabelElement;
     fileInput: HTMLInputElement;
 };
 
 export default async function runDancingCircles({
     container,
-    uploadButton,
     fileInput,
-}: DancingCirclesDependencies) {
+}: DancingCirclesDeps) {
     const app = new Application();
 
     await app.init({
@@ -32,14 +29,9 @@ export default async function runDancingCircles({
         height: CANVAS_HEIGHT,
     });
 
-    const { canvas } = app;
-    canvas.className = "dancing-circles__canvas";
-    canvas.id = "dc-canvas";
+    app.canvas.classList.add("dancing-circles__canvas");
 
-    container.append(canvas);
-
-    container.querySelectorAll(".fullscreen-btn").forEach(btn => btn.remove());
-    new FullscreenButton(canvas, container);
+    container.append(app.canvas);
 
     AudioHandler.initializeUploadButton(fileInput);
 
@@ -236,7 +228,7 @@ export default async function runDancingCircles({
     return () => {
         stop = true;
         if (raf.id) cancelAnimationFrame(raf.id);
+        app.canvas.remove();
         app.destroy(true, { children: true, texture: true });
-        canvas.remove();
     };
 }
