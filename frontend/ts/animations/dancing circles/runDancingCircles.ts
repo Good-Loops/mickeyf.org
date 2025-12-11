@@ -76,70 +76,69 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         }
     };
 
-    const colorInterval = 30;
+    const colorInterval = 15; // Faster color updates for more responsiveness
     let colorTimer = colorInterval;
 
-    const adjustRInterval = 30;
-    let increaseRTimer = adjustRInterval,
-        decreaseRTimer = adjustRInterval * 0.5,
-        even = true;
-
     /**
-     * Updates the circles based on the audio pitch and volume.
+     * Updates the circles based on audio properties for music-driven animation.
+     * Uses pitch, volume, clarity, and beat detection for dynamic visual effects.
      */
     const updateOnPitch = (): void => {
         if (AudioHandler.playing) {
-            // Update color based on pitch
+            const volumePercentage = AudioHandler.getVolumePercentage(AudioHandler.volume);
+            const normalizedClarity = AudioHandler.clarity / 100; // 0-1 range
+            
+            // Update colors more frequently and tie directly to frequency
             if (colorTimer >= colorInterval) {
-                const randomIndexArray = getRandomIndexArray(
-                    circleHandler.arrayLength
-                );
+                const randomIndexArray = getRandomIndexArray(circleHandler.arrayLength);
+                
                 for (let i = 0; i < circleHandler.arrayLength; i++) {
-                    const circle =
-                        CircleHandler.circleArray[randomIndexArray[i]];
-                    circleHandler.colorSettings.hertz = Math.round(
-                        AudioHandler.pitch
-                    );
-                    circle.targetColor = colorHandler.convertHertzToHSL(
-                        circleHandler.colorSettings
-                    );
+                    const circle = CircleHandler.circleArray[randomIndexArray[i]];
+                    
+                    // Map frequency directly to hue for musical color changes
+                    if (AudioHandler.frequency > 20 && normalizedClarity > 0.3) {
+                        circleHandler.colorSettings.hertz = Math.round(AudioHandler.frequency);
+                        circle.targetColor = colorHandler.convertHertzToHSL(circleHandler.colorSettings);
+                    } else {
+                        // Fallback to random colors during silence or unclear pitch
+                        circle.targetColor = colorHandler.getRandomColor(circleHandler.colorSettings);
+                    }
                 }
                 colorTimer = 0;
             } else {
                 colorTimer++;
             }
-            // Update radius based on volume
-            const volumePercentage = AudioHandler.getVolumePercentage(
-                AudioHandler.volume
-            );
-            if (AudioHandler.volume != -Infinity) {
-                const adjust = 1 + volumePercentage * 0.02;
-                if (increaseRTimer >= adjustRInterval) {
-                    CircleHandler.circleArray.forEach((circle, index) => {
-                        if (even) {
-                            if (index % 2 == 0) circle.targetRadius *= adjust;
-                        } else {
-                            if (index % 2 != 0) circle.targetRadius *= adjust;
-                        }
-                    });
-                    increaseRTimer = 0;
-                } else {
-                    increaseRTimer++;
-                }
-                if (decreaseRTimer >= adjustRInterval) {
-                    CircleHandler.circleArray.forEach((circle, index) => {
-                        if (even) {
-                            if (index % 2 == 0)
-                                circle.targetRadius = circle.baseRadius;
-                        } else {
-                            if (index % 2 != 0)
-                                circle.targetRadius = circle.baseRadius;
-                        }
-                    });
-                    even = !even;
-                    decreaseRTimer = 0;
-                } else {
-                    decreaseRTimer++;
+            
+            // Beat-synchronized radius pulsation
+            if (AudioHandler.isBeat && volumePercentage > 10) {
+                const beatScale = 1 + (AudioHandler.beatStrength * 0.5); // Up to 50% size increase on strong beats
+                
+                CircleHandler.circleArray.forEach((circle, index) => {
+                    // Alternate circles pulse on beats for visual variety
+                    if (index % 2 === 0) {
+                        circle.targetRadius = circle.baseRadius * beatScale;
+                    }
+                });
+            } else {
+                // Smoothly return to base radius between beats
+                CircleHandler.circleArray.forEach((circle) => {
+                    const volumeScale = 1 + (volumePercentage * 0.005); // Subtle scaling with volume
+                    circle.targetRadius = circle.baseRadius * volumeScale;
+                });
+            }
+            
+            // Use clarity to modulate movement speed
+            const movementFactor = 0.01 + (normalizedClarity * 0.02); // Higher clarity = faster movement
+            
+            // Update positions with volume-based amplitude on beats
+            if (AudioHandler.isBeat && volumePercentage > 20) {
+                const numCircsToMove = Math.ceil(circleHandler.arrayLength * AudioHandler.beatStrength);
+                const randomIndexArray = getRandomIndexArray(circleHandler.arrayLength);
+                
+                for (let i = 0; i < numCircsToMove; i++) {
+                    const circle = CircleHandler.circleArray[randomIndexArray[i]];
+                    circle.targetX = getRandomX(circle.currentRadius, circleHandler.gap);
+                    circle.targetY = getRandomY(circle.currentRadius, circleHandler.gap);
                 }
             }
         }
@@ -158,22 +157,27 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         drawInterval = 40;
 
     /**
-     * Draws the circles on the canvas.
+     * Draws the circles on the canvas with smooth interpolation.
      */
     const draw = (): void => {
         app.stage.removeChildren();
 
         const graphics = new Graphics();
 
+        // Get current audio properties for dynamic interpolation
+        const volumePercentage = AudioHandler.playing ? AudioHandler.getVolumePercentage(AudioHandler.volume) : 0;
+        const normalizedClarity = AudioHandler.playing ? (AudioHandler.clarity / 100) : 0.5;
+        
+        // Adjust interpolation based on music properties for more responsive visuals
+        const radiusFactor = AudioHandler.isBeat ? 0.4 : 0.25; // Faster response on beats
+        const colorFactor = 0.08 + (normalizedClarity * 0.05); // Clarity affects color smoothness
+        const positionFactor = 0.015 + (volumePercentage * 0.0002); // Volume affects movement speed
+
         CircleHandler.circleArray.forEach((circle: CircleHandler) => {
-            circle.lerpRadius();
-
-            let isX = true;
-            circle.lerpPosition(isX);
-            isX = false;
-            circle.lerpPosition(isX);
-
-            circle.lerpColor();
+            circle.lerpRadius(radiusFactor);
+            circle.lerpPosition(true, positionFactor);
+            circle.lerpPosition(false, positionFactor);
+            circle.lerpColor(colorFactor);
 
             graphics.circle(circle.x, circle.y, circle.currentRadius);
             graphics.fill(colorHandler.convertHSLtoHSLA(circle.color, 0.7));
