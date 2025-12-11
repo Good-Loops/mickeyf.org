@@ -55,7 +55,7 @@ const DancingCircles: React.FC = () => {
 
 	return (
 		<section className="dancing-circles">
-			<h1 className="u-canvas-title">Dancing Circles</h1>
+			<h1 className="canvas-title">Dancing Circles</h1>
 
 			<div 
 				className="dancing-circles__canvas-wrapper" 

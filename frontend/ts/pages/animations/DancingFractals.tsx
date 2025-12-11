@@ -15,7 +15,7 @@ import { createFractalHost } from '@/animations/dancing fractals/createFractalHo
 import AudioHandler from '@/animations/helpers/AudioHandler';
 import MusicControls from '@/components/MusicControls';
 import notAllowedCursor from '@/assets/cursors/notallowed.cur';
-import FullscreenButton from '../../components/FullscreenButton';
+import FullscreenButton from '@/components/FullscreenButton';
 
 type FractalKind = 'tree' | 'flower';
 
@@ -137,26 +137,6 @@ const DancingFractals: React.FC = () => {
         };
     }, []);
 
-    // Dropdown behavior
-    useEffect(() => {
-        const dropdown = new Dropdown(
-            'data-dropdown',
-            'data-dropdown-button',
-            'data-dropdown-selected'
-        );
-
-        const toggleHandler = dropdown.toggle();
-        const selectionHandler = dropdown.toggleSelection('data-dropdown-option');
-
-        document.addEventListener('click', toggleHandler);
-        document.addEventListener('click', selectionHandler);
-
-        return () => {
-            document.removeEventListener('click', toggleHandler);
-            document.removeEventListener('click', selectionHandler);
-        };
-    }, []);
-
     // Stop audio on unmount
     useEffect(() => {
         return () => {
@@ -199,7 +179,7 @@ const DancingFractals: React.FC = () => {
 
     return (
         <section className='dancing-fractals'>
-            <h1 className='dancing-fractals__title u-canvas-title'>Dancing Fractals</h1>
+            <h1 className='dancing-fractals__title canvas-title'>Dancing Fractals</h1>
 
             <div className="dancing-fractals__canvas-wrapper" ref={containerRef}>
                 <FullscreenButton 
@@ -212,44 +192,22 @@ const DancingFractals: React.FC = () => {
                 {audioPlaying && (
                     <div className="dancing-fractals__ui--overlay" />
                 )}
-                <div className="dancing-fractals__ui--dropdown"
-                    data-dropdown
-                >
-                    <button
-                        type="button"
-                        className="dancing-fractals__ui--dropdown-button"
-                        disabled={audioPlaying}
-                        data-dropdown-button
-                    >
-                        <span
-                            className="dancing-fractals__ui--dropdown-selected"
-                            data-dropdown-selected
-                        >
-                            {fractalKind === 'tree' ? 'Tree' : 'Flower Spiral'}
-                        </span>
-                        <span className="dancing-fractals__ui--dropdown-caret">▾</span>
-                    </button>
-                    <ul className="dancing-fractals__ui--dropdown-menu">
-                        <li>
-                            <button className="dancing-fractals__ui--dropdown-option"
-                                type="button"
-                                data-dropdown-option="Tree"
-                                onClick={() => setFractalKind('tree')}
-                            >
-                                Tree
-                            </button>
-                        </li>
-                        <li>
-                            <button className="dancing-fractals__ui--dropdown-option"
-                                type="button"
-                                data-dropdown-option="Flower Spiral"
-                                onClick={() => setFractalKind('flower')}
-                            >
-                                Flower Spiral
-                            </button>
-                        </li>
-                    </ul>
-                </div>
+
+                <Dropdown
+                    options={[
+                        { value: 'tree', label: 'Tree' },
+                        { value: 'flower', label: 'Flower Spiral' },
+                    ]}
+                    value={fractalKind}
+                    onChange={(val) => setFractalKind(val as FractalKind)}
+                    disabled={audioPlaying}
+                    className="dancing-fractals__ui--dropdown"
+                    buttonClassName="dancing-fractals__ui--dropdown-button"
+                    selectedClassName="dancing-fractals__ui--dropdown-selected"
+                    caretClassName="dancing-fractals__ui--dropdown-caret"
+                    menuClassName="dancing-fractals__ui--dropdown-menu"
+                    optionClassName="dancing-fractals__ui--dropdown-option"
+                />
 
                 <button className="dancing-fractals__ui--restart-btn"
                     type="button"
@@ -355,7 +313,7 @@ const DancingFractals: React.FC = () => {
                             const file = e.target.files?.[0];
                             if (file) {
                                 console.log("Music selected:", file);
-                                // TODO: hook into fractal audio reactions if needed
+                                // TODO: hook into fractal audio reactions
                             }
                         }}
                     />

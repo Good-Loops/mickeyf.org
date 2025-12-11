@@ -8,3 +8,19 @@ h1 {
     font-family: $heading-font;
     font-size: $font-size-s;
 }
+
+.canvas-title {
+    justify-self: center;
+
+    padding-inline: .3em;
+    padding-block: .1em;
+
+    @include title-coloring;
+
+    border-top: .15em double rgba($white, .3);
+    border-bottom: .15em double rgba($white, .3);
+
+    border-radius: .4em;
+
+    box-shadow: $dark-box-shadow-s;
+}

@@ -1,24 +1,10 @@
 @use '../abstracts' as *;
 
-.u-canvas-title {
-    justify-self: center;
-
-    padding-inline: .3em;
-    padding-block: .1em;
-
-    @include title-coloring;
-
-    border-top: .15em double rgba($white, .3);
-    border-bottom: .15em double rgba($white, .3);
-
-    border-radius: .4em;
-
-    box-shadow: $darl-box-shadow-s;
-}
-
 .u-truncate {
     flex: 0 1 auto;
+    display: inline-block;
     width: 3em;
+    vertical-align: -.32em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

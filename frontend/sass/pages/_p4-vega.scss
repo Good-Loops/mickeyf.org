@@ -91,29 +91,25 @@
                 display: flex;
             }
 
+            // Theming and positioning for the shared .dropdown menu
             &-menu {
                 cursor: $cursor-hover;
 
-                max-height: 20em;
+                max-height: 20rem;
                 overflow-y: auto; 
                 overflow-x: hidden; 
 
                 position: absolute;
-                left: 1em;
+                left: 1rem;
+                right: .3rem;
                 top: 95%;
 
-                padding: .5em;
+                margin-left: -.8rem;
 
                 border-bottom-left-radius: $border-radius-s;
                 border-bottom-right-radius: $border-radius-s;
 
-                box-shadow: $darl-box-shadow-s;
-
-                pointer-events: none;
-                opacity: 0;
-                transform: translateY(-1em);
-                transition: opacity .15s ease-in-out,
-                            transform .15s ease-in-out;
+                box-shadow: $dark-box-shadow-s;
 
                 &-keys {
                     white-space: nowrap;
@@ -130,22 +126,13 @@
                         border-radius: $border-radius-s;
                     }
                 }
-
-                &.active {
-                    display: block;
-                }
             }
-        }
 
-        &--dropdown.active + &--dropdown-btn,
-        &--dropdown-btn:hover {
-            background-color: $primary-darker;
-        }
-
-        &--dropdown.active > &--dropdown-btn + &--dropdown-menu {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
+            // Button hover state; open/close behavior is handled
+            // by the shared .dropdown styles.
+            &-btn:hover {
+                background-color: $primary-darker;
+            }
         }
     }
 

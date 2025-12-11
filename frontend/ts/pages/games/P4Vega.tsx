@@ -1,11 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from '@/context/AuthContext';
 import p4Vega from '@/games/p4-Vega/p4-Vega';
 import FullscreenButton from "@/components/FullscreenButton";
+import Dropdown from '@/components/Dropdown';
 
 const P4Vega: React.FC = () => {
     const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
     const { isAuthenticated, userName } = useAuth();
+
+    const [selectedKey, setSelectedKey] = useState<string>('C');
+    const [selectedScale, setSelectedScale] = useState<string>('Major');
 
     useEffect(() => {
         if (!canvasWrapperRef.current) return;
@@ -24,7 +28,7 @@ const P4Vega: React.FC = () => {
 
     return (
         <section className='p4-vega' data-p4-vega>
-            <h1 className='p4-vega__title u-canvas-title'>p4-Vega</h1>
+            <h1 className='p4-vega__title canvas-title'>p4-Vega</h1>
 
             <div
                 className="p4-vega__canvas-wrapper"
@@ -46,58 +50,84 @@ const P4Vega: React.FC = () => {
                     <span className='p4-vega__ui--option-btn'>Notes Playing</span>
                 </label>
                 <div className='p4-vega__ui--dropdown-grid'>
-                    <div className='p4-vega__ui--dropdown' data-dropdown-keys>
-                        <button className='p4-vega__ui--dropdown-btn' data-dropdown-btn>Key: &nbsp;<span className='u-truncate' data-selected-key>C</span></button>
-                        <div className='p4-vega__ui--dropdown-menu p4-vega__ui--dropdown-menu-keys'>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='C'>C</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='C#/Db'>C#/Db</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='D'>D</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='D#/Eb'>D#/Eb</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='E'>E</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='F'>F</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='F#/Gb'>F#/Gb</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='G'>G</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='G#/Ab'>G#/Ab</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='A'>A</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='A#/Bb'>A#/Bb</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-key='B'>B</div>
-                        </div>
-                    </div>
-                    <div className='p4-vega__ui--dropdown' data-dropdown-scales>
-                        <button className='p4-vega__ui--dropdown-btn' data-dropdown-btn>Scale: &nbsp;<span className='u-truncate' data-selected-scale>Major</span></button>
-                        <div className='p4-vega__ui--dropdown-menu'>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Major'>Major</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Minor'>Minor</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Pentatonic'>Pentatonic</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Blues'>Blues</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Dorian'>Dorian</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Mixolydian'>Mixolydian</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Phrygian'>Phrygian</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Lydian'>Lydian</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Locrian'>Locrian</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Chromatic'>Chromatic</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Harmonic Major'>Harmonic Major</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Melodic Minor'>Melodic Minor</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Whole Tone'>Whole Tone</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Hungarian Minor'>Hungarian Minor</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Double Harmonic'>Double Harmonic</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Neapolitan Major'>Neapolitan Major</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Neapolitan Minor'>Neapolitan Minor</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Augmented'>Augmented</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Hexatonic'>Hexatonic</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Enigmatic'>Enigmatic</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Spanish Gypsy'>Spanish Gypsy</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Hirajoshi'>Hirajoshi</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Balinese Pelog'>Balinese Pelog</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Egyptian'>Egyptian</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Hungarian Gypsy'>Hungarian Gypsy</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Persian'>Persian</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Tritone'>Tritone</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Flamenco'>Flamenco</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Iwato'>Iwato</div>
-                            <div className='p4-vega__ui--dropdown-menu-item' data-scale='Blues Heptatonic'>Blues Heptatonic</div>
-                        </div>
-                    </div>
+                    <Dropdown
+                        options={[
+                            { value: 'C', label: 'C' },
+                            { value: 'C#/Db', label: 'C#/Db' },
+                            { value: 'D', label: 'D' },
+                            { value: 'D#/Eb', label: 'D#/Eb' },
+                            { value: 'E', label: 'E' },
+                            { value: 'F', label: 'F' },
+                            { value: 'F#/Gb', label: 'F#/Gb' },
+                            { value: 'G', label: 'G' },
+                            { value: 'G#/Ab', label: 'G#/Ab' },
+                            { value: 'A', label: 'A' },
+                            { value: 'A#/Bb', label: 'A#/Bb' },
+                            { value: 'B', label: 'B' },
+                        ]}
+                        value={selectedKey}
+                        onChange={setSelectedKey}
+                        className="p4-vega__ui--dropdown"
+                        buttonClassName="p4-vega__ui--dropdown-btn"
+                        menuClassName="p4-vega__ui--dropdown-menu p4-vega__ui--dropdown-menu-keys"
+                        optionClassName="p4-vega__ui--dropdown-menu-item"
+                        renderSelected={(selected, fallbackLabel) => (
+                            <>
+                                Key:&nbsp;
+                                <span className='u-truncate' data-selected-key>
+                                    {selected?.label ?? fallbackLabel}
+                                </span>
+                            </>
+                        )}
+                    />
+                    <Dropdown
+                        options={[
+                            { value: 'Major', label: 'Major' },
+                            { value: 'Minor', label: 'Minor' },
+                            { value: 'Pentatonic', label: 'Pentatonic' },
+                            { value: 'Blues', label: 'Blues' },
+                            { value: 'Dorian', label: 'Dorian' },
+                            { value: 'Mixolydian', label: 'Mixolydian' },
+                            { value: 'Phrygian', label: 'Phrygian' },
+                            { value: 'Lydian', label: 'Lydian' },
+                            { value: 'Locrian', label: 'Locrian' },
+                            { value: 'Chromatic', label: 'Chromatic' },
+                            { value: 'Harmonic Major', label: 'Harmonic Major' },
+                            { value: 'Melodic Minor', label: 'Melodic Minor' },
+                            { value: 'Whole Tone', label: 'Whole Tone' },
+                            { value: 'Hungarian Minor', label: 'Hungarian Minor' },
+                            { value: 'Double Harmonic', label: 'Double Harmonic' },
+                            { value: 'Neapolitan Major', label: 'Neapolitan Major' },
+                            { value: 'Neapolitan Minor', label: 'Neapolitan Minor' },
+                            { value: 'Augmented', label: 'Augmented' },
+                            { value: 'Hexatonic', label: 'Hexatonic' },
+                            { value: 'Enigmatic', label: 'Enigmatic' },
+                            { value: 'Spanish Gypsy', label: 'Spanish Gypsy' },
+                            { value: 'Hirajoshi', label: 'Hirajoshi' },
+                            { value: 'Balinese Pelog', label: 'Balinese Pelog' },
+                            { value: 'Egyptian', label: 'Egyptian' },
+                            { value: 'Hungarian Gypsy', label: 'Hungarian Gypsy' },
+                            { value: 'Persian', label: 'Persian' },
+                            { value: 'Tritone', label: 'Tritone' },
+                            { value: 'Flamenco', label: 'Flamenco' },
+                            { value: 'Iwato', label: 'Iwato' },
+                            { value: 'Blues Heptatonic', label: 'Blues Heptatonic' },
+                        ]}
+                        value={selectedScale}
+                        onChange={setSelectedScale}
+                        className="p4-vega__ui--dropdown"
+                        buttonClassName="p4-vega__ui--dropdown-btn"
+                        menuClassName="p4-vega__ui--dropdown-menu"
+                        optionClassName="p4-vega__ui--dropdown-menu-item"
+                        renderSelected={(selected, fallbackLabel) => (
+                            <>
+                                Scale:&nbsp;
+                                <span className='u-truncate' data-selected-scale>
+                                    {selected?.label ?? fallbackLabel}
+                                </span>
+                            </>
+                        )}
+                    />
                 </div>
             </div>
         </section>   

@@ -4,8 +4,6 @@ import gameOver from '../utils/gameOver';
 
 import { API_BASE } from '@/config/apiConfig';
 
-import Dropdown from '@/components/Dropdown';
-
 import P4 from './classes/P4';
 import Water from './classes/Water';
 import BlackHole from './classes/BlackHole';
@@ -80,23 +78,6 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
      */
     const toggleNotesPlaying = (): void => {
         notesPlaying = notesPlayingCheckbox.checked;
-    };
-
-    const scalesDropdown = new Dropdown(
-        'data-dropdown-scales',
-        'data-dropdown-btn',
-        'data-selected-scale'
-    );
-    const keysDropdown = new Dropdown(
-        'data-dropdown-keys',
-        'data-dropdown-btn',
-        'data-selected-key'
-    );
-    const dropdownHandlers = {
-        toggleScalesDropdown: scalesDropdown.toggle(),
-        toggleKeysDropdown: keysDropdown.toggle(),
-        toggleScaleSelection: scalesDropdown.toggleSelection('data-scale'),
-        toggleKeySelection: keysDropdown.toggleSelection('data-key'),
     };
 
     let gameLive: boolean,
@@ -340,34 +321,6 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
         element: document,
         event: "keyup",
         handler: handleKeyup,
-    });
-
-    document.addEventListener("click", dropdownHandlers.toggleScalesDropdown);
-    registeredListeners.push({
-        element: document,
-        event: "click",
-        handler: dropdownHandlers.toggleScalesDropdown,
-    });
-
-    document.addEventListener("click", dropdownHandlers.toggleKeysDropdown);
-    registeredListeners.push({
-        element: document,
-        event: "click",
-        handler: dropdownHandlers.toggleKeysDropdown,
-    });
-
-    document.addEventListener("click", dropdownHandlers.toggleScaleSelection);
-    registeredListeners.push({
-        element: document,
-        event: "click",
-        handler: dropdownHandlers.toggleScaleSelection,
-    });
-
-    document.addEventListener("click", dropdownHandlers.toggleKeySelection);
-    registeredListeners.push({
-        element: document,
-        event: "click",
-        handler: dropdownHandlers.toggleKeySelection,
     });
 
     bgMusicCheckbox.addEventListener("change", toggleBackgroundMusic);
