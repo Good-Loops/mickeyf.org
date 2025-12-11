@@ -2,6 +2,9 @@
 
 .footer {
     min-height: 5vh;
+    display: flex;
+    justify-content: center;
+    align-items: end;
 
     &__text {
         text-align: center;
