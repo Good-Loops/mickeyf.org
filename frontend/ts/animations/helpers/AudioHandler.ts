@@ -10,9 +10,15 @@ export default class AudioHandler {
     static duration: number;
     static playing: boolean;
     static onPlayingChange?: (playing: boolean) => void;
-
+    
+    // Beat detection properties
+    static isBeat: boolean = false;
+    static beatStrength: number = 0;
+    
     private static audioElement: HTMLAudioElement | null = null;
     private static audioContext: AudioContext | null = null;
+    private static volumeHistory: number[] = [];
+    private static readonly VOLUME_HISTORY_SIZE = 10;
 
     // Used to invalidate old analysis loops when a new track is loaded or stopped
     private static sessionId: number = 0;
@@ -36,6 +42,33 @@ export default class AudioHandler {
         }
         return volumePercentage;
     };
+    
+    /**
+     * Detects beats based on volume changes.
+     * A beat is detected when there's a significant increase in volume compared to recent history.
+     */
+    private static detectBeat(): void {
+        // Add current volume to history
+        AudioHandler.volumeHistory.push(AudioHandler.volume);
+        if (AudioHandler.volumeHistory.length > AudioHandler.VOLUME_HISTORY_SIZE) {
+            AudioHandler.volumeHistory.shift();
+        }
+        
+        // Calculate average volume from history
+        if (AudioHandler.volumeHistory.length < 3) {
+            AudioHandler.isBeat = false;
+            AudioHandler.beatStrength = 0;
+            return;
+        }
+        
+        const avgVolume = AudioHandler.volumeHistory.reduce((a, b) => a + b, 0) / AudioHandler.volumeHistory.length;
+        const volumeDiff = AudioHandler.volume - avgVolume;
+        
+        // Beat threshold: current volume is significantly higher than average
+        const beatThreshold = 3; // decibels
+        AudioHandler.isBeat = volumeDiff > beatThreshold;
+        AudioHandler.beatStrength = Math.max(0, Math.min(1, volumeDiff / 10));
+    }
 
     /**
      * Ensure the AudioContext is running (autoplay policies).
@@ -95,6 +128,9 @@ export default class AudioHandler {
 
         AudioHandler.playing = false;
         AudioHandler.onPlayingChange?.(false);
+        AudioHandler.isBeat = false;
+        AudioHandler.beatStrength = 0;
+        AudioHandler.volumeHistory = [];
 
         AudioHandler.audioElement.pause();
         AudioHandler.audioElement.currentTime = 0;
@@ -253,6 +289,9 @@ export default class AudioHandler {
             );
             // duration in seconds
             AudioHandler.duration = music.duration;
+            
+            // Detect beats
+            AudioHandler.detectBeat();
 
             // loop ~60fps
             window.setTimeout(
