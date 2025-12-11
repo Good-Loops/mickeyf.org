@@ -104,8 +104,13 @@ export default async function dancingCirclesRunner({
      */
     const updateOnPitch = (): void => {
         if (AudioHandler.playing) {
+            // Use clarity to determine if we should update colors more frequently
+            // Higher clarity (clearer sound) = more responsive color changes
+            const clarityFactor = Math.max(0, Math.min(100, AudioHandler.clarity || 0)) / 100;
+            const dynamicColorInterval = colorInterval * (1 - clarityFactor * 0.5); // 50-100% of base interval
+            
             // Update color based on pitch
-            if (colorTimer >= colorInterval) {
+            if (colorTimer >= dynamicColorInterval) {
                 const randomIndexArray = getRandomIndexArray(
                     circleHandler.arrayLength
                 );
@@ -128,7 +133,11 @@ export default async function dancingCirclesRunner({
                 AudioHandler.volume
             );
             if (AudioHandler.volume != -Infinity) {
-                const adjust = 1 + volumePercentage * 0.02;
+                // Scale radius adjustment based on both volume and clarity
+                // Higher clarity = more pronounced pulsation
+                const clarityBoost = 1 + (clarityFactor * 0.3); // 1.0-1.3x multiplier
+                const adjust = 1 + volumePercentage * 0.02 * clarityBoost;
+                
                 if (increaseRTimer >= adjustRInterval) {
                     CircleHandler.circleArray.forEach((circle, index) => {
                         if (even) {
@@ -156,6 +165,11 @@ export default async function dancingCirclesRunner({
                 } else {
                     decreaseRTimer++;
                 }
+            } else {
+                // Graceful fallback for silence: reset radii to base size
+                CircleHandler.circleArray.forEach((circle) => {
+                    circle.targetRadius = circle.baseRadius;
+                });
             }
         }
     };

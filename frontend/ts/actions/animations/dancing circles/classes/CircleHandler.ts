@@ -1,6 +1,7 @@
 import { getRandomX, getRandomY } from "../../../../utils/random";
 import lerp from "../../../../utils/lerp";
 import ColorHandler from "./ColorHandler";
+import AudioHandler from "./AudioHandler";
 
 /**
  * Represents a handler for managing circle animations.
@@ -93,21 +94,40 @@ export default class CircleHandler {
 
     /**
      * Linearly interpolates the current color towards the target color.
-     * The interpolation factor is fixed at 0.03.
+     * The interpolation factor adjusts based on audio clarity for more musical color transitions.
      * Updates the `color` property of the instance with the interpolated color.
      */
     lerpColor(): void {
-        const interpolationFactor = .03;
+        // Base interpolation factor
+        let interpolationFactor = .03;
+        
+        // Adjust lerp speed based on clarity if audio is playing
+        if (AudioHandler.playing && AudioHandler.clarity !== undefined) {
+            const clarityFactor = Math.max(0, Math.min(100, AudioHandler.clarity)) / 100;
+            // Higher clarity = faster color transitions (more responsive to music)
+            interpolationFactor = 0.03 + (clarityFactor * 0.05); // 0.03-0.08 range
+        }
+        
         this.color = this.colorHandler.lerpColor(this.color, this.targetColor, interpolationFactor);
     }
 
     /**
      * Linearly interpolates the position of the circle along the specified axis (X or Y) towards its target position.
+     * Movement speed scales with volume for more dynamic, music-driven animation.
      *
      * @param isX - A boolean indicating whether to interpolate the X axis (true) or the Y axis (false).
      */
     lerpPosition(isX: boolean): void {
-        const interpolationFacor = .01;
+        // Base interpolation factor
+        let interpolationFacor = .01;
+        
+        // Scale movement speed based on volume when audio is playing
+        if (AudioHandler.playing && AudioHandler.volume !== undefined && AudioHandler.volume !== -Infinity) {
+            const volumePercentage = AudioHandler.getVolumePercentage(AudioHandler.volume);
+            // Higher volume = faster movement (0.01-0.03 range)
+            interpolationFacor = 0.01 + (volumePercentage / 100) * 0.02;
+        }
+        
         const axis = isX ? this.x : this.y;
         const tAxis = isX ? this.targetX : this.targetY;
         const position = lerp(axis, tAxis, interpolationFacor);
@@ -122,14 +142,23 @@ export default class CircleHandler {
     /**
      * Linearly interpolates the current radius towards the target radius.
      * This method updates the `currentRadius` property by moving it a fraction
-     * of the way towards the `targetRadius` based on a fixed interpolation factor.
+     * of the way towards the `targetRadius` based on a clarity-adjusted interpolation factor.
      *
      * @remarks
-     * The interpolation factor is set to 0.2, meaning the `currentRadius` will
-     * move 20% of the way towards the `targetRadius` each time this method is called.
+     * The interpolation factor adjusts based on audio clarity (0.2-0.4 range).
+     * Higher clarity produces snappier, more beat-synced pulsations.
      */
     lerpRadius(): void {
-        const interpolationFactor = .2;
+        // Base interpolation factor
+        let interpolationFactor = .2;
+        
+        // Adjust lerp speed based on clarity for more beat-synced pulsation
+        if (AudioHandler.playing && AudioHandler.clarity !== undefined) {
+            const clarityFactor = Math.max(0, Math.min(100, AudioHandler.clarity)) / 100;
+            // Higher clarity = snappier radius changes (better beat sync)
+            interpolationFactor = 0.2 + (clarityFactor * 0.2); // 0.2-0.4 range
+        }
+        
         this.currentRadius = lerp(this.currentRadius, this.targetRadius, interpolationFactor);
     }
 }

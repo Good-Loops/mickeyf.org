@@ -35,6 +35,7 @@ export default class ColorHandler {
 
     /**
      * Converts a frequency in hertz to an HSL color string.
+     * Maps pitch to hue in a more perceptually musical way, with smoother transitions.
      * @param Settings - The settings for the color conversion.
      * @returns The HSL color string.
      */
@@ -43,17 +44,18 @@ export default class ColorHandler {
 
         if (!hertz) return this.getRandomColor(Settings);
 
-        // Hearing range
+        // Hearing range with graceful clamping
         if (hertz < 20) hertz = 20;
         if (hertz > 20e3) hertz = 20e3;
 
-        // Visible light range
-        const teraHertz = (hertz % 389) + 1;
-
-        const rangeAmplifier = 7;
-        const percentage = teraHertz * 0.00257 * rangeAmplifier;
-
-        const hue = 360 * percentage;
+        // Map frequency to hue using a logarithmic scale for more musical perception
+        // Musical octaves are logarithmic, so this feels more natural
+        const logFreq = Math.log2(hertz / 20); // Octaves above 20Hz
+        const maxOctaves = Math.log2(20000 / 20); // ~10 octaves in hearing range
+        const normalizedFreq = logFreq / maxOctaves; // 0-1 range
+        
+        // Map to full hue spectrum (0-360 degrees)
+        const hue = Math.round(normalizedFreq * 360) % 360;
 
         const randomHSL = this.getRandomColor(Settings);
         const randomHSLhue = randomHSL
