@@ -30,11 +30,14 @@ export default class CircleHandler {
     baseRadius: number;
     currentRadius: number;
     targetRadius: number;
+    radiusVelocity: number = 0;
 
     x: number;
     y: number;
     targetX: number;
     targetY: number;
+    velocityX: number = 0;
+    velocityY: number = 0;
     
     colorSettings = {
         hertz: 0,
@@ -93,28 +96,34 @@ export default class CircleHandler {
 
     /**
      * Linearly interpolates the current color towards the target color.
-     * The interpolation factor is fixed at 0.03.
+     * The interpolation factor can be adjusted for smoother or faster transitions.
      * Updates the `color` property of the instance with the interpolated color.
+     * 
+     * @param customFactor - Optional custom interpolation factor (0-1). Defaults to 0.05 for smoother transitions.
      */
-    lerpColor(): void {
-        const interpolationFactor = .03;
+    lerpColor(customFactor?: number): void {
+        const interpolationFactor = customFactor ?? 0.05;
         this.color = this.colorHandler.lerpColor(this.color, this.targetColor, interpolationFactor);
     }
 
     /**
      * Linearly interpolates the position of the circle along the specified axis (X or Y) towards its target position.
+     * Uses velocity for more natural movement.
      *
      * @param isX - A boolean indicating whether to interpolate the X axis (true) or the Y axis (false).
+     * @param customFactor - Optional custom interpolation factor (0-1). Defaults to 0.015.
      */
-    lerpPosition(isX: boolean): void {
-        const interpolationFacor = .01;
+    lerpPosition(isX: boolean, customFactor?: number): void {
+        const interpolationFactor = customFactor ?? 0.015;
         const axis = isX ? this.x : this.y;
         const tAxis = isX ? this.targetX : this.targetY;
-        const position = lerp(axis, tAxis, interpolationFacor);
+        const position = lerp(axis, tAxis, interpolationFactor);
 
         if (isX) {
+            this.velocityX = position - this.x;
             this.x = position;
         } else {
+            this.velocityY = position - this.y;
             this.y = position;
         }
     }
@@ -122,14 +131,15 @@ export default class CircleHandler {
     /**
      * Linearly interpolates the current radius towards the target radius.
      * This method updates the `currentRadius` property by moving it a fraction
-     * of the way towards the `targetRadius` based on a fixed interpolation factor.
+     * of the way towards the `targetRadius` based on a customizable interpolation factor.
+     * Tracks velocity for smoother beat-responsive pulsations.
      *
-     * @remarks
-     * The interpolation factor is set to 0.2, meaning the `currentRadius` will
-     * move 20% of the way towards the `targetRadius` each time this method is called.
+     * @param customFactor - Optional custom interpolation factor (0-1). Defaults to 0.25 for snappy response.
      */
-    lerpRadius(): void {
-        const interpolationFactor = .2;
-        this.currentRadius = lerp(this.currentRadius, this.targetRadius, interpolationFactor);
+    lerpRadius(customFactor?: number): void {
+        const interpolationFactor = customFactor ?? 0.25;
+        const newRadius = lerp(this.currentRadius, this.targetRadius, interpolationFactor);
+        this.radiusVelocity = newRadius - this.currentRadius;
+        this.currentRadius = newRadius;
     }
 }

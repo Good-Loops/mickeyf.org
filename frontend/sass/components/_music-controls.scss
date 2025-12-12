@@ -4,41 +4,55 @@
     display: inline-flex;
     align-items: center;
     gap: 0.8rem;
+    pointer-events: auto;
 
     padding: 0.6rem 1rem;
     border-radius: 999px;
 
     backdrop-filter: blur(10px);
-    background: rgba(0, 0, 0, .35);
-    box-shadow: 0 0 18px rgba(0, 0, 0, .6);
+    background: rgba($primary, 0.06);
+    box-shadow: 0 0 .6em rgba($white, .6), 0 0 0em rgba($primary, .5) inset;
 
-    color: #fff;
-    z-index: $front-9; 
+    color: $primary;
+    z-index: $front-9;
 
     &__btn {
         position: relative;
 
-        min-width: 2.4rem;
-        height: 2.4rem;
+        width: 3rem;
+        height: 3rem;
         border-radius: 999px;
 
-        border: 1px solid hsla(0, 0%, 100%, 0.35);
-        background: hsla(0, 0%, 0%, 0.5);
-        color: #fff;
-
+        padding: 0.5rem;
         font-size: 0;
         line-height: 1;
-        padding: 0;
 
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         cursor: $cursor-hover;
+        pointer-events: auto;
 
-        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        background: $secondary-light;
+        color: $primary;
 
+        transition: box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+        // Subtle hover state: brighten background + glow, no scaling
         &:hover:not(:disabled) {
-            transform: translateY(-1px) scale(1.05);
-            box-shadow: 0 0 12px hsla(167, 100%, 50%, 0.7);
-            background: rgba(0, 0, 0, 0.75);
+            background: lighten($secondary-light, 5%);
+            box-shadow:
+                0 0 0.35rem rgba($white, 0.8),
+                0 0 0.4rem rgba($primary, 0.45);
+            color: $primary-dark;
+        }
+
+        // Active state: slightly stronger inner shadow, still no scale
+        &:active:not(:disabled) {
+            background: darken($secondary-light, 3%);
+            box-shadow:
+                0 0 0.15rem rgba($white, 0.7) inset,
+                0 0 0.3rem rgba($primary, 0.35) inset;
         }
 
         &:disabled {
@@ -49,13 +63,11 @@
     }
 
     &__icon {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        position: relative;
+        transform: none;
 
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 2rem;
+        height: 2rem;
         display: block;
         fill: currentColor;
         pointer-events: none;
