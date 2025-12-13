@@ -1,5 +1,29 @@
 import { PitchDetector } from "pitchy";
 
+export type BeatState = {
+    isBeat: boolean;
+    strength: number;
+};
+
+export type AudioState = {
+    pitchHz: number;
+    clarity: number;
+    volumeDb: number;  
+    durationSec: number;
+    playing: boolean;
+    beat: BeatState;
+};
+
+const DEFAULT_STATE: AudioState = {
+    pitchHz: 0,
+    clarity: 0,
+    volumeDb: -Infinity,
+    durationSec: 0,
+    playing: false,
+    beat: { isBeat: false, strength: 0 },
+};
+
+
 /**
  * A class to handle audio processing and analysis for animations.
  */
@@ -22,8 +46,113 @@ export default class AudioHandler {
     private static volumeHistory: number[] = [];
     private static readonly VOLUME_HISTORY_SIZE = 10;
 
+    private static rafId: number | null = null;
+    private static objectUrl: string | null = null;
+    private static endedListener: (() => void) | null = null;
+
+
     // Used to invalidate old analysis loops when a new track is loaded or stopped
     private static sessionId: number = 0;
+
+    private static listeners = new Set<(state: AudioState) => void>();
+    
+    static state: AudioState = { ...DEFAULT_STATE, beat: { ...DEFAULT_STATE.beat } };
+
+    private static patchState(patch: Partial<AudioState>) {
+        AudioHandler.state = {
+            ...AudioHandler.state,
+            ...patch,
+            beat: patch.beat ? { ...AudioHandler.state.beat, ...patch.beat } : AudioHandler.state.beat,
+        };
+
+        // Temporary: keep old fields updated so nothing else breaks.
+        AudioHandler.pitch = AudioHandler.state.pitchHz;
+        AudioHandler.clarity = AudioHandler.state.clarity; // (we’ll rename later)
+        AudioHandler.volume = AudioHandler.state.volumeDb;  
+        AudioHandler.duration = AudioHandler.state.durationSec;
+        AudioHandler.playing = AudioHandler.state.playing;
+        AudioHandler.isBeat = AudioHandler.state.beat.isBeat;
+        AudioHandler.beatStrength = AudioHandler.state.beat.strength;
+
+        AudioHandler.notifyState();
+    }
+
+    static subscribe(listener: (state: AudioState) => void): () => void {
+        AudioHandler.listeners.add(listener);
+
+        // Immediately emit current state so UI can initialize from it
+        listener(AudioHandler.state);
+
+        // Return unsubscribe fn (nice & clean for React useEffect cleanup)
+        return () => {
+            AudioHandler.listeners.delete(listener);
+        };
+    }
+
+    private static notifyState() {
+        for (const listener of AudioHandler.listeners) {
+            try {
+                listener(AudioHandler.state);
+            } catch (err) {
+                // Don't let one bad listener break audio
+                console.error("AudioHandler state listener error:", err);
+            }
+        }
+    }
+
+    private static stopAnalysisLoop(): void {
+        if (AudioHandler.rafId !== null) {
+            cancelAnimationFrame(AudioHandler.rafId);
+            AudioHandler.rafId = null;
+        }
+    }
+
+    private static teardownTrack(options?: { closeContext?: boolean }) {
+        const { closeContext = false } = options ?? {};
+
+        AudioHandler.stopAnalysisLoop();
+
+        const audio = AudioHandler.audioElement;
+        if (audio && AudioHandler.endedListener) {
+            audio.removeEventListener("ended", AudioHandler.endedListener);
+        }
+        AudioHandler.endedListener = null;
+
+        try {
+            audio?.pause();
+        } catch {}
+
+        // Disconnect nodes
+        try {
+            AudioHandler.sourceNode?.disconnect();
+        } catch {}
+        AudioHandler.sourceNode = null;
+        AudioHandler.analyserNode = null;
+
+        // Optionally close the AudioContext
+        if (closeContext && AudioHandler.audioContext) {
+            try {
+                // Void is used to ignore the promise warning
+                void AudioHandler.audioContext.close();
+            } catch {}
+            AudioHandler.audioContext = null;
+        }
+
+        // Revoke object URL (avoid memory leaks)
+        if (AudioHandler.objectUrl) {
+            try {
+                URL.revokeObjectURL(AudioHandler.objectUrl);
+            } catch {}
+            AudioHandler.objectUrl = null;
+        }
+
+        AudioHandler.audioElement = null;
+    }
+
+
+    static hasAudio(): boolean {
+        return AudioHandler.audioElement !== null;
+    }
 
     /**
      * Converts a given volume level to a percentage.
@@ -49,47 +178,46 @@ export default class AudioHandler {
      * Detects beats based on volume changes.
      * A beat is detected when there's a significant increase in volume compared to recent history.
      */
-    private static detectBeat(): void {
-        // Only record finite volume values
-        if (Number.isFinite(AudioHandler.volume)) {
-            AudioHandler.volumeHistory.push(AudioHandler.volume);
+    private static detectBeat(volumeDb: number): BeatState {
+        if (Number.isFinite(volumeDb)) {
+            AudioHandler.volumeHistory.push(volumeDb);
         }
         if (AudioHandler.volumeHistory.length > AudioHandler.VOLUME_HISTORY_SIZE) {
             AudioHandler.volumeHistory.shift();
         }
 
-        // Need enough history to detect a beat
-        if (AudioHandler.volumeHistory.length < 3) {
-            AudioHandler.isBeat = false;
-            AudioHandler.beatStrength = 0;
-            return;
-        }
-
+        // Analyze volume history to detect beats
         const validHistory = AudioHandler.volumeHistory.filter(Number.isFinite);
-        if (validHistory.length < 3) {
-            AudioHandler.isBeat = false;
-            AudioHandler.beatStrength = 0;
-            return;
+        if (validHistory.length < 3 || !Number.isFinite(volumeDb)) {
+            return { isBeat: false, strength: 0 };
         }
 
+        // Calculate average volume from history
         const avgVolume = validHistory.reduce((a, b) => a + b, 0) / validHistory.length;
-        const volumeDiff = Number.isFinite(AudioHandler.volume) ? AudioHandler.volume - avgVolume : -Infinity;
+        const volumeDiff = volumeDb - avgVolume;
 
-        const beatThreshold = 3; // decibels
-        AudioHandler.isBeat = volumeDiff > beatThreshold;
-        AudioHandler.beatStrength = Math.max(0, Math.min(1, volumeDiff / 10));
+        const beatThresholdDb = 3;
+        const strength = Math.max(0, Math.min(1, volumeDiff / 10));
+
+        return {
+            isBeat: volumeDiff > beatThresholdDb,
+            strength,
+        };
     }
+
 
     /**
      * Start the analysis loop using the current `audioElement` and `analyserNode`.
      * If an optional `onEnded` callback is provided it will be called when the
      * track naturally ends or the analysis determines it should stop.
      */
-    private static startAnalysis(onEnded?: () => void): void {
+    private static startAnalysis(): void {
         const analyser = AudioHandler.analyserNode;
         const music = AudioHandler.audioElement;
         const audioCtx = AudioHandler.audioContext;
         if (!analyser || !music || !audioCtx) return;
+
+        AudioHandler.stopAnalysisLoop();
 
         const currentSessionId = AudioHandler.sessionId;
 
@@ -99,16 +227,16 @@ export default class AudioHandler {
         );
 
         const loop = () => {
-            if (currentSessionId !== AudioHandler.sessionId) return;
+            if (currentSessionId !== AudioHandler.sessionId) {
+                AudioHandler.stopAnalysisLoop();
+                return;
+            }
 
-            // stop condition
-            if (
-                music.ended ||
-                (AudioHandler.volume < -1000 && AudioHandler.volume !== -Infinity)
-            ) {
-                AudioHandler.playing = false;
+            // Stop condition
+            if (music.ended) {
+                AudioHandler.patchState({ playing: false });
                 AudioHandler.onPlayingChange?.(false);
-                if (onEnded) onEnded();
+                AudioHandler.stopAnalysisLoop();
                 return;
             }
 
@@ -124,22 +252,32 @@ export default class AudioHandler {
 
             analyser.getFloatTimeDomainData(input);
             const [pitch, clarity] = detector.findPitch(input, audioCtx.sampleRate);
-            AudioHandler.pitch = Math.round(pitch * 10) * 0.1;
-            AudioHandler.clarity = Math.round(clarity * 100);
 
-            // compute peak absolute value
+            // Compute peak absolute value for volume
             let maxAbs = 0;
             for (let i = 0; i < input.length; i++) {
                 const v = Math.abs(input[i]);
                 if (v > maxAbs) maxAbs = v;
             }
-            if (maxAbs <= 0) AudioHandler.volume = -Infinity;
-            else AudioHandler.volume = Math.round(20 * Math.log10(maxAbs));
+            // Volume in decibels
+            const volumeDb =
+                maxAbs <= 0 ? -Infinity : Math.round(20 * Math.log10(maxAbs));
 
-            AudioHandler.duration = music.duration;
-            AudioHandler.detectBeat();
+            const beat = AudioHandler.detectBeat(volumeDb);
 
-            window.setTimeout(loop, 1000 / 60);
+            AudioHandler.patchState({
+                pitchHz: Math.round(pitch * 10) * 0.1,
+                clarity, // still raw 0..1 for now
+                volumeDb,
+                durationSec: music.duration,
+                beat,
+            });
+
+            if (AudioHandler.state.playing) {
+                AudioHandler.rafId = requestAnimationFrame(loop);
+            } else {
+                AudioHandler.stopAnalysisLoop();
+            }
         };
 
         loop();
@@ -168,16 +306,13 @@ export default class AudioHandler {
             audio.currentTime = 0;
         }
 
-        AudioHandler.playing = true;
+        AudioHandler.patchState({ playing: true });
         AudioHandler.onPlayingChange?.(true);
 
         try {
             await AudioHandler.ensureContextRunning();
             await audio.play();
-            // Ensure analysis loop is running (resume visuals) when playback starts.
-            // Bump sessionId here so the analysis loop uses a fresh id.
-            if (AudioHandler.analyserNode && AudioHandler.audioContext) {
-                AudioHandler.sessionId++;
+            if (AudioHandler.rafId === null && AudioHandler.analyserNode && AudioHandler.audioContext) {
                 AudioHandler.startAnalysis();
             }
         } catch (err) {
@@ -192,9 +327,10 @@ export default class AudioHandler {
     static pause() {
         if (!AudioHandler.audioElement) return;
 
-        AudioHandler.playing = false;
+        AudioHandler.patchState({ playing: false });
         AudioHandler.onPlayingChange?.(false);
         AudioHandler.audioElement.pause();
+        AudioHandler.stopAnalysisLoop();
     }
 
     /**
@@ -206,14 +342,16 @@ export default class AudioHandler {
 
         // Invalidate analysis loop for this session so it stops touching playback.
         AudioHandler.sessionId++;
+        AudioHandler.teardownTrack();
 
         // Mark not playing and clear transient state. Do not close the AudioContext
         // here so that calling `play()` can resume both playback and analysis
         // without needing to re-create the context.
-        AudioHandler.playing = false;
+        AudioHandler.patchState({ 
+            playing: false,
+            beat: { isBeat: false, strength: 0 },
+        });
         AudioHandler.onPlayingChange?.(false);
-        AudioHandler.isBeat = false;
-        AudioHandler.beatStrength = 0;
         AudioHandler.volumeHistory = [];
 
         // Pause and reset media element
@@ -260,56 +398,47 @@ export default class AudioHandler {
         };
     }
 
+    static dispose() {
+        AudioHandler.sessionId++;
+        AudioHandler.teardownTrack({ closeContext: true });
+        AudioHandler.volumeHistory = [];
+        AudioHandler.patchState({ ...DEFAULT_STATE, beat: { ...DEFAULT_STATE.beat } });
+        AudioHandler.onPlayingChange = undefined;
+    }
+
     /**
-     * Processes the audio file selected through the file input element and updates the UI accordingly.
+     * Processes the audio file selected through the file input element.
      *
      * @param fileInput - The HTML input element of type file used to select the audio file.
-     * @param uploadButton - The HTML label element that acts as the upload button.
      *
-     * This function performs the following steps:
-     * 1. Disables the file input and changes the cursor style of the upload button.
-     * 2. Retrieves the selected audio file and creates an Audio object from it.
-     * 3. Sets up an audio context and analyser node to process the audio data.
-     * 4. Plays the audio and continuously analyzes its pitch, clarity, volume, and duration.
-     * 5. Updates the AudioHandler properties with the analyzed data.
-     * 6. Restores the UI state when the audio ends or the volume drops below a threshold.
      */
-    static async processAudio(
-        fileInput: HTMLInputElement
-    ): Promise<void> {
+    static async processAudio(fileInput: HTMLInputElement): Promise<void> {
         // Invalidate any previous analysis loop
         AudioHandler.sessionId++;
 
         // If a previous audio context/source exists, disconnect and close it
-        try {
-            if (AudioHandler.sourceNode) {
-                AudioHandler.sourceNode.disconnect();
-                AudioHandler.sourceNode = null;
-            }
-            if (AudioHandler.audioContext) {
-                await AudioHandler.audioContext.close().catch(() => {});
-                AudioHandler.audioContext = null;
-            }
-        } catch (e) {
-            // ignore cleanup errors
-        }
+        AudioHandler.teardownTrack({ closeContext: true });
 
-        if (AudioHandler.audioElement) {
-            try { AudioHandler.audioElement.pause(); } catch (e) {}
-            AudioHandler.audioElement = null;
-        }
+        const file = fileInput.files?.[0];
+        if (!file) return;
 
-        const files = fileInput.files as FileList;
-        const file = files[0] as File;
-        const music = new Audio(URL.createObjectURL(file));
+        const url = URL.createObjectURL(file);
+        AudioHandler.objectUrl = url;
 
-        // Capture this session's id
-        const currentSessionId = AudioHandler.sessionId;
+        const music = new Audio(url);
 
-        music.addEventListener("ended", () => {
-            AudioHandler.playing = false;
+        AudioHandler.endedListener = () => {
+            // Treat natural end like "paused at end": stop analysis, mark not playing, reset time
+            AudioHandler.patchState({ playing: false });
             AudioHandler.onPlayingChange?.(false);
-        });
+            AudioHandler.stopAnalysisLoop();
+
+            try {
+                music.currentTime = 0;
+            } catch {}
+        };
+
+        music.addEventListener("ended", AudioHandler.endedListener);
 
         const audioContext = new window.AudioContext();
         await audioContext.resume();
@@ -339,43 +468,8 @@ export default class AudioHandler {
         } catch {
         // if the browser blocks it, we still have the analyser
         }
-        AudioHandler.playing = true;
+        AudioHandler.patchState({ playing: true });
         AudioHandler.onPlayingChange?.(true);
-
-        // pitch detector
-        const detector = PitchDetector.forFloat32Array(analyser.fftSize);
-        const input = new Float32Array(
-            new ArrayBuffer(detector.inputLength * Float32Array.BYTES_PER_ELEMENT)
-        );
-
-        const cleanupAndResetUI = () => {
-            // Only clean up if this is still the active session
-            if (currentSessionId !== AudioHandler.sessionId) return;
-
-            AudioHandler.volume = -Infinity;
-            AudioHandler.playing = false;
-            AudioHandler.onPlayingChange?.(false);
-            fileInput.value = "";
-
-            // Disconnect and close audio resources for this session
-            try {
-                if (AudioHandler.sourceNode) {
-                    AudioHandler.sourceNode.disconnect();
-                    AudioHandler.sourceNode = null;
-                }
-                if (AudioHandler.audioContext) {
-                    AudioHandler.audioContext.close().catch(() => {});
-                    AudioHandler.audioContext = null;
-                }
-                AudioHandler.audioElement = null;
-            } catch (e) {
-                // ignore
-            }
-        };
-        // start analysis loop; pass cleanup callback so processAudio-specific
-        // teardown (like clearing the file input) runs when the track ends.
-        AudioHandler.startAnalysis(() => {
-            cleanupAndResetUI();
-        });
+        AudioHandler.startAnalysis();
     };
 }

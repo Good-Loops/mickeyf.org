@@ -8,8 +8,8 @@ const DancingCircles: React.FC = () => {
 	const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
   	const inputRef = useRef<HTMLInputElement | null>(null);
 
-	const [audioPlaying, setAudioPlaying] = useState(false);
-	const [hasAudio, setHasAudio] = useState(false);
+	const [audioState, setAudioState] = useState(AudioHandler.state);
+	const [hasAudio, setHasAudio] = useState(AudioHandler.hasAudio());
 
 	useEffect(() => {
 		if (!canvasWrapperRef.current) return;
@@ -27,25 +27,25 @@ const DancingCircles: React.FC = () => {
 		};
 	}, []);
 
+    useEffect(() => {
+        return AudioHandler.subscribe((state) => {
+            setAudioState(state);
+            setHasAudio(AudioHandler.hasAudio());
+        });
+    }, []);
+
+
 	useEffect(() => {
         const input = inputRef.current;
         if (!input) return;
 
-        const cleanup = AudioHandler.initializeUploadButton(
-            input,
-            (playing: boolean) => {
-                setAudioPlaying(playing);
-                if (playing) setHasAudio(true);
-            }
-        );
-
-        return () => cleanup();
+        return AudioHandler.initializeUploadButton(input);
     }, []);
 
 	// Stop audio on unmount
 	useEffect(() => {
         return () => {
-            AudioHandler.stop();
+            AudioHandler.dispose();
         };
     }, []);
 
@@ -71,7 +71,7 @@ const DancingCircles: React.FC = () => {
                 <div className="dancing-circles__transport-controls">
                     <MusicControls
                         hasAudio={hasAudio}
-                        isPlaying={audioPlaying}
+                        isPlaying={audioState.playing}
                         onPlay={handlePlay}
                         onPause={handlePause}
                         onStop={handleStop}

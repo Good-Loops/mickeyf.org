@@ -24,8 +24,8 @@ const DancingFractals: React.FC = () => {
 
     const hostRef = useRef<FractalHost | null>(null);
 
-    const [audioPlaying, setAudioPlaying] = useState(false);
-    const [hasAudio, setHasAudio] = useState(false);
+    const [audioState, setAudioState] = useState(AudioHandler.state);
+    const [hasAudio, setHasAudio] = useState(AudioHandler.hasAudio());
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -87,23 +87,20 @@ const DancingFractals: React.FC = () => {
         }
     }, [fractalKind]);
 
+    useEffect(() => {
+        return AudioHandler.subscribe((s) => {
+            setAudioState(s);
+            setHasAudio(AudioHandler.hasAudio());
+        });
+    }, []);
+
+
     // Hook upload button to AudioHandler
     useEffect(() => {
         const fileInput = fileInputRef.current;
-
         if (!fileInput) return;
 
-        const cleanup = AudioHandler.initializeUploadButton(
-            fileInput, 
-            (playing) => {
-                setAudioPlaying(playing)
-                if (playing) {
-                    setHasAudio(true);
-                }
-            }
-        );
-
-        return () => cleanup();
+        return AudioHandler.initializeUploadButton(fileInput);
     }, []);
 
     // Lifetime changes
@@ -140,7 +137,7 @@ const DancingFractals: React.FC = () => {
     // Stop audio on unmount
     useEffect(() => {
         return () => {
-            AudioHandler.stop();
+            AudioHandler.dispose();
         };
     }, []);
 
@@ -167,9 +164,9 @@ const DancingFractals: React.FC = () => {
 
     const uiClassName = 
         'dancing-fractals__ui' +
-        (audioPlaying ? ' dancing-fractals__ui--locked' : '');
+        (audioState.playing ? ' dancing-fractals__ui--locked' : '');
 
-    const uiStyle = audioPlaying
+    const uiStyle = audioState.playing
         ? { cursor: `url(${notAllowedCursor}), not-allowed` }
         : undefined;
 
@@ -189,7 +186,7 @@ const DancingFractals: React.FC = () => {
             </div>
 
             <div className={uiClassName} style={uiStyle}>
-                {audioPlaying && (
+                {audioState.playing && (
                     <div className="dancing-fractals__ui--overlay" />
                 )}
 
@@ -200,7 +197,7 @@ const DancingFractals: React.FC = () => {
                     ]}
                     value={fractalKind}
                     onChange={(val) => setFractalKind(val as FractalKind)}
-                    disabled={audioPlaying}
+                    disabled={audioState.playing}
                     className="dancing-fractals__ui--dropdown"
                     buttonClassName="dancing-fractals__ui--dropdown-button"
                     selectedClassName="dancing-fractals__ui--dropdown-selected"
@@ -212,7 +209,7 @@ const DancingFractals: React.FC = () => {
                 <button className="dancing-fractals__ui--restart-btn"
                     type="button"
                     onClick={handleRestart}
-                    disabled={audioPlaying}
+                    disabled={audioState.playing}
                 >
                     Restart
                 </button>
@@ -223,7 +220,7 @@ const DancingFractals: React.FC = () => {
                             type="checkbox"
                             checked={autoDisposeEnabled}
                             onChange={e => setAutoDisposeEnabled(e.target.checked)}
-                            disabled={audioPlaying}
+                            disabled={audioState.playing}
                         />
                         <span className="dancing-fractals__ui--checkbox-box" />
                         <span className="dancing-fractals__ui--checkbox-text">Auto-dispose</span>
@@ -237,7 +234,7 @@ const DancingFractals: React.FC = () => {
                             min={5}
                             max={60}
                             step={1}
-                            disabled={!autoDisposeEnabled || audioPlaying}
+                            disabled={!autoDisposeEnabled || audioState.playing}
                             value={lifetime}
                             onChange={e =>
                                 setLifetime(Number(e.target.value))
@@ -252,7 +249,7 @@ const DancingFractals: React.FC = () => {
                         <TreeControls
                             config={treeConfig}
                             onChange={patch => {
-                                if(audioPlaying) return;
+                                if(audioState.playing) return;
                                 handleTreeConfigChange(patch);
                             }}
                         />
@@ -262,7 +259,7 @@ const DancingFractals: React.FC = () => {
                         <FlowerSpiralControls
                             config={flowerSpiralConfig}
                             onChange={patch => {
-                                if(audioPlaying) return;
+                                if(audioState.playing) return;
                                 handleFlowerConfigChange(patch);
                             }}
                         />
@@ -288,7 +285,7 @@ const DancingFractals: React.FC = () => {
                 <div className="dancing-fractals__transport-left">
                     <MusicControls
                         hasAudio={hasAudio}
-                        isPlaying={audioPlaying}
+                        isPlaying={audioState.playing}
                         onPlay={handlePlay}
                         onPause={handlePause}
                         onStop={handleStop}
@@ -309,13 +306,6 @@ const DancingFractals: React.FC = () => {
                         accept="audio/*"
                         className="dancing-fractals__input"
                         ref={fileInputRef}
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                console.log("Music selected:", file);
-                                // TODO: hook into fractal audio reactions
-                            }
-                        }}
                     />
                 </div>
             </div>
