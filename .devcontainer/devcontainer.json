@@ -1,0 +1,18 @@
+{
+  "name": "mickeyf.org (Node + tools)",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "postCreateCommand": "cd frontend && npm ci && cd ../backend && npm ci",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "forwardPorts": [5173, 8080, 3306],
+  "remoteUser": "node"
+}
