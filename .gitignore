@@ -17,3 +17,6 @@ credentials.json
 
 # Ignore docker compose file
 docker-compose.yml
+
+# Ignore Docker credentials directory
+.docker/creds/

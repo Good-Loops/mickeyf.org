@@ -7,7 +7,7 @@ import {
 
 import ColorHandler from "./classes/ColorHandler";
 import CircleHandler from "./classes/CircleHandler";
-import AudioHandler from "../helpers/AudioHandler";
+import audioEngine from "../helpers/AudioEngine";
 
 import { Application, Graphics } from "pixi.js";
 
@@ -66,7 +66,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                 circleHandler.gap
             );
 
-            if (!AudioHandler.playing) {
+            if (!audioEngine.state.playing) {
                 circle.targetRadius = circle.baseRadius;
 
                 circle.targetColor = colorHandler.getRandomColor(
@@ -84,9 +84,9 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
      * Uses pitch, volume, clarity, and beat detection for dynamic visual effects.
      */
     const updateOnPitch = (): void => {
-        if (AudioHandler.playing) {
-            const volumePercentage = AudioHandler.getVolumePercentage(AudioHandler.volume);
-            const normalizedClarity = AudioHandler.clarity / 100; // 0-1 range
+        if (audioEngine.state.playing) {
+            const volumePercentage = audioEngine.getVolumePercentage(audioEngine.state.volumeDb);
+            const normalizedClarity = audioEngine.state.clarity / 100; // 0-1 range
             
             // Update colors more frequently and tie directly to pitch
             if (colorTimer >= colorInterval) {
@@ -96,8 +96,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                     const circle = CircleHandler.circleArray[randomIndexArray[i]];
                     
                     // Map pitch directly to hue for musical color changes
-                    if (AudioHandler.pitch > 20 && normalizedClarity > 0.3) {
-                        circleHandler.colorSettings.hertz = Math.round(AudioHandler.pitch);
+                    if (audioEngine.state.pitchHz > 20 && normalizedClarity > 0.3) {
+                        circleHandler.colorSettings.hertz = Math.round(audioEngine.state.pitchHz);
                         circle.targetColor = colorHandler.convertHertzToHSL(circleHandler.colorSettings);
                     } else {
                         // Fallback to random colors during silence or unclear pitch
@@ -110,8 +110,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             }
             
             // Beat-synchronized radius pulsation
-            if (AudioHandler.isBeat && volumePercentage > 10) {
-                const beatScale = 1 + (AudioHandler.beatStrength * 1.0); // Up to 100% size increase on strong beats
+            if (audioEngine.state.beat.isBeat && volumePercentage > 10) {
+                const beatScale = 1 + (audioEngine.state.beat.strength * 1.0); // Up to 100% size increase on strong beats
                 
                 CircleHandler.circleArray.forEach((circle, index) => {
                     // Alternate circles pulse on beats for visual variety
@@ -128,8 +128,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             }
             
             // Update positions with volume-based amplitude on beats
-            if (AudioHandler.isBeat && volumePercentage > 20) {
-                const numCircsToMove = Math.ceil(circleHandler.arrayLength * AudioHandler.beatStrength);
+            if (audioEngine.state.beat.isBeat && volumePercentage > 20) {
+                const numCircsToMove = Math.ceil(circleHandler.arrayLength * audioEngine.state.beat.strength);
                 const randomIndexArray = getRandomIndexArray(circleHandler.arrayLength);
                 
                 for (let i = 0; i < numCircsToMove; i++) {
@@ -162,11 +162,11 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         const graphics = new Graphics();
 
         // Get current audio properties for dynamic interpolation
-        const volumePercentage = AudioHandler.playing ? AudioHandler.getVolumePercentage(AudioHandler.volume) : 0;
-        const normalizedClarity = AudioHandler.playing ? (AudioHandler.clarity / 100) : 0.5;
+        const volumePercentage = audioEngine.state.playing ? audioEngine.getVolumePercentage(audioEngine.state.volumeDb) : 0;
+        const normalizedClarity = audioEngine.state.playing ? (audioEngine.state.clarity / 100) : 0.5;
         
         // Adjust interpolation based on music properties for more responsive visuals
-        const radiusFactor = AudioHandler.isBeat ? 0.6 : 0.35; // Faster response on beats and snappier pulsation
+        const radiusFactor = audioEngine.state.beat.isBeat ? 0.6 : 0.35; // Faster response on beats and snappier pulsation
         const colorFactor = 0.08 + (normalizedClarity * 0.05); // Clarity affects color smoothness
         const movementFactor = 0.01 + (normalizedClarity * 0.02); // Higher clarity = faster movement
         const positionFactor = 0.015 + (volumePercentage * 0.0002) + movementFactor; // Combined movement speed

@@ -1,0 +1,24 @@
+{
+  "name": "mickeyf.org (backend dev)",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspaces/mickeyf.org",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+
+  "remoteUser": "node",
+  "forwardPorts": [8080],
+  "postCreateCommand": "cd backend && npm ci",
+  "postStartCommand": "./scripts/devcontainer-backend-start.sh"
+}

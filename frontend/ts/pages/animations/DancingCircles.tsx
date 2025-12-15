@@ -1,15 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import { runDancingCircles } from "@/animations/dancing circles/runDancingCircles"; 
 import FullscreenButton from "@/components/FullscreenButton";
 import MusicControls from "@/components/MusicControls";
-import AudioHandler from "@/animations/helpers/AudioHandler";
+import audioEngine from "@/animations/helpers/AudioEngine";
+import useAudioEngineState from "@/hooks/useAudioEngineState";
 
 const DancingCircles: React.FC = () => {
 	const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
   	const inputRef = useRef<HTMLInputElement | null>(null);
-
-	const [audioPlaying, setAudioPlaying] = useState(false);
-	const [hasAudio, setHasAudio] = useState(false);
+	const audio = useAudioEngineState();
 
 	useEffect(() => {
 		if (!canvasWrapperRef.current) return;
@@ -27,31 +26,24 @@ const DancingCircles: React.FC = () => {
 		};
 	}, []);
 
+    // Hook upload button to audio engine
 	useEffect(() => {
         const input = inputRef.current;
         if (!input) return;
 
-        const cleanup = AudioHandler.initializeUploadButton(
-            input,
-            (playing: boolean) => {
-                setAudioPlaying(playing);
-                if (playing) setHasAudio(true);
-            }
-        );
-
-        return () => cleanup();
+        return audioEngine.initializeUploadButton(input);
     }, []);
 
 	// Stop audio on unmount
 	useEffect(() => {
         return () => {
-            AudioHandler.stop();
+            audioEngine.dispose();
         };
     }, []);
 
-    const handlePlay = () => AudioHandler.play();
-    const handlePause = () => AudioHandler.pause();
-    const handleStop = () => AudioHandler.stop();
+    const handlePlay = () => audioEngine.play();
+    const handlePause = () => audioEngine.pause();
+    const handleStop = () => audioEngine.stop();
 
 	return (
 		<section className="dancing-circles">
@@ -70,8 +62,8 @@ const DancingCircles: React.FC = () => {
 			<div className="dancing-circles__transport">
                 <div className="dancing-circles__transport-controls">
                     <MusicControls
-                        hasAudio={hasAudio}
-                        isPlaying={audioPlaying}
+                        hasAudio={audio.hasAudio}
+                        isPlaying={audio.playing}
                         onPlay={handlePlay}
                         onPause={handlePause}
                         onStop={handleStop}

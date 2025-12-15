@@ -12,22 +12,19 @@ import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '@/animations
 import { FractalHost } from '@/animations/dancing fractals/interfaces/FractalHost';
 import { createFractalHost } from '@/animations/dancing fractals/createFractalHost';
 
-import AudioHandler from '@/animations/helpers/AudioHandler';
+import audioEngine from '@/animations/helpers/AudioEngine';
 import MusicControls from '@/components/MusicControls';
 import notAllowedCursor from '@/assets/cursors/notallowed.cur';
 import FullscreenButton from '@/components/FullscreenButton';
+import useAudioEngineState from '@/hooks/useAudioEngineState';
 
 type FractalKind = 'tree' | 'flower';
 
 const DancingFractals: React.FC = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
-
     const hostRef = useRef<FractalHost | null>(null);
-
-    const [audioPlaying, setAudioPlaying] = useState(false);
-    const [hasAudio, setHasAudio] = useState(false);
-
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const audio = useAudioEngineState();
 
      // Which fractal is currently selected
     const [fractalKind, setFractalKind] = useState<FractalKind>('tree');
@@ -87,23 +84,12 @@ const DancingFractals: React.FC = () => {
         }
     }, [fractalKind]);
 
-    // Hook upload button to AudioHandler
+    // Hook upload button to audio engine
     useEffect(() => {
         const fileInput = fileInputRef.current;
-
         if (!fileInput) return;
 
-        const cleanup = AudioHandler.initializeUploadButton(
-            fileInput, 
-            (playing) => {
-                setAudioPlaying(playing)
-                if (playing) {
-                    setHasAudio(true);
-                }
-            }
-        );
-
-        return () => cleanup();
+        return audioEngine.initializeUploadButton(fileInput);
     }, []);
 
     // Lifetime changes
@@ -140,7 +126,7 @@ const DancingFractals: React.FC = () => {
     // Stop audio on unmount
     useEffect(() => {
         return () => {
-            AudioHandler.stop();
+            audioEngine.dispose();
         };
     }, []);
 
@@ -167,15 +153,15 @@ const DancingFractals: React.FC = () => {
 
     const uiClassName = 
         'dancing-fractals__ui' +
-        (audioPlaying ? ' dancing-fractals__ui--locked' : '');
+        (audio.playing ? ' dancing-fractals__ui--locked' : '');
 
-    const uiStyle = audioPlaying
+    const uiStyle = audio.playing
         ? { cursor: `url(${notAllowedCursor}), not-allowed` }
         : undefined;
 
-    const handlePlay = () => AudioHandler.play();
-    const handlePause = () => AudioHandler.pause();
-    const handleStop = () => AudioHandler.stop();
+    const handlePlay = () => audioEngine.play();
+    const handlePause = () => audioEngine.pause();
+    const handleStop = () => audioEngine.stop();
 
     return (
         <section className='dancing-fractals'>
@@ -189,7 +175,7 @@ const DancingFractals: React.FC = () => {
             </div>
 
             <div className={uiClassName} style={uiStyle}>
-                {audioPlaying && (
+                {audio.playing && (
                     <div className="dancing-fractals__ui--overlay" />
                 )}
 
@@ -200,7 +186,7 @@ const DancingFractals: React.FC = () => {
                     ]}
                     value={fractalKind}
                     onChange={(val) => setFractalKind(val as FractalKind)}
-                    disabled={audioPlaying}
+                    disabled={audio.playing}
                     className="dancing-fractals__ui--dropdown"
                     buttonClassName="dancing-fractals__ui--dropdown-button"
                     selectedClassName="dancing-fractals__ui--dropdown-selected"
@@ -212,7 +198,7 @@ const DancingFractals: React.FC = () => {
                 <button className="dancing-fractals__ui--restart-btn"
                     type="button"
                     onClick={handleRestart}
-                    disabled={audioPlaying}
+                    disabled={audio.playing}
                 >
                     Restart
                 </button>
@@ -223,7 +209,7 @@ const DancingFractals: React.FC = () => {
                             type="checkbox"
                             checked={autoDisposeEnabled}
                             onChange={e => setAutoDisposeEnabled(e.target.checked)}
-                            disabled={audioPlaying}
+                            disabled={audio.playing}
                         />
                         <span className="dancing-fractals__ui--checkbox-box" />
                         <span className="dancing-fractals__ui--checkbox-text">Auto-dispose</span>
@@ -237,7 +223,7 @@ const DancingFractals: React.FC = () => {
                             min={5}
                             max={60}
                             step={1}
-                            disabled={!autoDisposeEnabled || audioPlaying}
+                            disabled={!autoDisposeEnabled || audio.playing}
                             value={lifetime}
                             onChange={e =>
                                 setLifetime(Number(e.target.value))
@@ -252,7 +238,7 @@ const DancingFractals: React.FC = () => {
                         <TreeControls
                             config={treeConfig}
                             onChange={patch => {
-                                if(audioPlaying) return;
+                                if(audio.playing) return;
                                 handleTreeConfigChange(patch);
                             }}
                         />
@@ -262,7 +248,7 @@ const DancingFractals: React.FC = () => {
                         <FlowerSpiralControls
                             config={flowerSpiralConfig}
                             onChange={patch => {
-                                if(audioPlaying) return;
+                                if(audio.playing) return;
                                 handleFlowerConfigChange(patch);
                             }}
                         />
@@ -287,8 +273,8 @@ const DancingFractals: React.FC = () => {
             <div className="dancing-fractals__transport">
                 <div className="dancing-fractals__transport-left">
                     <MusicControls
-                        hasAudio={hasAudio}
-                        isPlaying={audioPlaying}
+                        hasAudio={audio.hasAudio}
+                        isPlaying={audio.playing}
                         onPlay={handlePlay}
                         onPause={handlePause}
                         onStop={handleStop}
@@ -309,13 +295,6 @@ const DancingFractals: React.FC = () => {
                         accept="audio/*"
                         className="dancing-fractals__input"
                         ref={fileInputRef}
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                console.log("Music selected:", file);
-                                // TODO: hook into fractal audio reactions
-                            }
-                        }}
                     />
                 </div>
             </div>

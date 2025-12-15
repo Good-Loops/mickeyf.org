@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Dev: backend (container)",
+      "type": "shell",
+      "command": "bash -lc 'cd backend && npm run dev'",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Backend: watch (webpack)",
+      "type": "shell",
+      "command": "bash -lc 'cd backend && npm run watch'",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: dev + watch",
+      "dependsOn": ["Backend: watch (webpack)", "Backend: dev (nodemon)"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    }
+  ]
+}
