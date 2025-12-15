@@ -13,26 +13,6 @@
         {
             "splitTerminals": [
                 {
-                    "name": "back-compiler",
-                    "commands": [
-                        "cd backend && npm run dev"
-                    ]
-                }
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
-                    "name": "back-server",
-                    "commands": [
-                        "cd backend && until nc -z 127.0.0.1 3306; do echo \"Waiting for Cloud SQL Proxy on 3306...\"; sleep 1; done; npm run serve"
-                    ]
-                }
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
                     "name": "general",
                 }
             ]

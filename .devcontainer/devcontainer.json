@@ -1,10 +1,13 @@
 {
-  "name": "mickeyf.org (Node + tools)",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "name": "mickeyf.org (backend dev)",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspaces/mickeyf.org",
+
   "features": {
     "ghcr.io/devcontainers/features/git:1": {}
   },
-  "postCreateCommand": "cd frontend && npm ci && cd ../backend && npm ci",
+
   "customizations": {
     "vscode": {
       "extensions": [
@@ -13,6 +16,9 @@
       ]
     }
   },
-  "forwardPorts": [5173, 8080, 3306],
-  "remoteUser": "node"
+
+  "remoteUser": "node",
+  "forwardPorts": [8080],
+  "postCreateCommand": "cd backend && npm ci",
+  "postStartCommand": "./scripts/devcontainer-backend-start.sh"
 }
