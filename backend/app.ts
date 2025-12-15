@@ -95,8 +95,7 @@ app.use('/auth', authRouter); // Auth router for authentication related routes
 app.set('trust proxy', true); // Trust the first proxy
 
 // Start the server
-app.listen(8080, () => {   
-    // console.log("Backend running on port 8080"); 
-});
+const port = Number(process.env.PORT ?? 8080);
+app.listen(port, () => console.log(`Listening on ${port}`));
 
 export default app; // Export the Express application
