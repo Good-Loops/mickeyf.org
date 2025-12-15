@@ -91,6 +91,16 @@ code .
 This starts required infrastructure (Cloud SQL Proxy via Docker Compose) and opens VS Code.
 Frontend and backend processes are started automatically via restored terminals.
 
+### End development session
+
+From the project root (WSL):
+
+```bash
+./scripts/dev-down.sh
+```
+
+This stops local infrastructure (Cloud SQL Proxy).
+
 ## License
 
 mickeyf.org is freely available under the Creative Commons Zero v1.0 Universal license - detailed in the [LICENSE](LICENSE) file.

@@ -33,16 +33,6 @@
         {
             "splitTerminals": [
                 {
-                    "name": "proxy",
-                    "commands": [
-                        "docker compose up -d cloud-sql-proxy && docker logs --tail=20 cloud-sql-proxy"
-                    ]
-                }
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
                     "name": "general",
                 }
             ]
