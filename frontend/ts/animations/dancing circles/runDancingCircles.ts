@@ -10,6 +10,8 @@ import CircleHandler from "./classes/CircleHandler";
 import audioEngine from "../helpers/AudioEngine";
 
 import { Application, Graphics } from "pixi.js";
+import clamp from "@/utils/clamp";
+import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
 
 type DancingCirclesDeps = {
     container: HTMLElement;
@@ -24,18 +26,21 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
     });
-
+    
     app.canvas.classList.add("dancing-circles__canvas");
     container.append(app.canvas);
-
+    
     const colorHandler = new ColorHandler();
     const circleHandler = new CircleHandler(0);
+
+    const BASE_SCALE = 1;
+    const COLOR_CHANGING_CIRCLES = 2;
 
     const TUNING = {
         intervals: {
             idleTargetUpdateIntervalMs: 1000,
             controlTargetUpdateIntervalMs: 10,
-            colorIntervalMs: 120,
+            colorIntervalMs: 70,
         },
         beat: {
             moveThreshold: 0.09,
@@ -72,8 +77,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             silenceSaturationRange: [25, 45] as const,
             silenceLightnessRange: [40, 60] as const,
 
-            minHoldMs: 120,         // prevents flicker
-            minStableMs: 40,        // require pitch to stay on same note briefly
+            minHoldMs: 90,         // prevents flicker
+            minStableMs: 45,        // require pitch to stay on same note briefly
         },
         render: {
             posResponsiveness: 1.4,
@@ -84,32 +89,54 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         },
     } as const;
 
-    const BASE_SCALE = 1.0;
-    const colorChangingCircles = 2;
-    
-    let lastMoveAt = -Infinity,
-    moveGroup = 0; // 0 -> evens, 1 -> odds
-    
-    let smoothedPitchHz = 0,
-    lastGoodColor = "hsl(0, 50%, 50%)",
-    silenceMs = 0;
-    
-    let deltaTime = 0,
-    colorElapsedMs = 0,
-    idleElapsedMs = 0,
-    controlElapsedMs = 0,
-    nowMs = 0;
+    const pitchTracker = new PitchHysteresis({
+        minClarity: TUNING.color.minClarity,
+        minHz: 20,
+        holdAfterSilenceMs: TUNING.color.holdAfterSilenceMs,
+        minStableMs: TUNING.color.minStableMs,
+        minHoldMs: TUNING.color.minHoldMs,
+        smoothingBase: 0.06,
+        smoothingClarityScale: 0.30,
+        microSemitoneRange: 0.5,
+    });
 
-    let beatEnvelope = 0, // 0..1
-    lastBeatAt = -Infinity;
+    type TimeState = {
+        deltaMs: number;
+        nowMs: number;
+        colorElapsedMs: number;
+        idleElapsedMs: number;
+        controlElapsedMs: number;
+    };
 
-    let evenGroup: CircleHandler[] = [],
-    oddGroup: CircleHandler[] = [];
+    type BeatState = {
+        envelope: number;
+        lastBeatAtMs: number;
+        lastMoveAtMs: number;
+        moveGroup: 0 | 1;
+    };
 
-    let lastColorChangeAtMs = -Infinity,
-    candidateMidiStep = Number.NEGATIVE_INFINITY,
-    candidateStableMs = 0,
-    lastMidiStep = Number.NEGATIVE_INFINITY;
+    type ColorState = {
+        lastGoodColor: string;
+    };
+
+    const time: TimeState = {
+        deltaMs: 0,
+        nowMs: 0,
+        colorElapsedMs: 0,
+        idleElapsedMs: 0,
+        controlElapsedMs: 0,
+    };
+
+    const beat: BeatState = {
+        envelope: 0,
+        lastBeatAtMs: -Infinity,
+        lastMoveAtMs: -Infinity,
+        moveGroup: 0,
+    };
+
+    const color: ColorState = {
+        lastGoodColor: "hsl(0, 50%, 50%)",
+    };
     
     type ColorDecisionDeps = {
         pitchHz: number;
@@ -124,6 +151,9 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         clarity: number; // 0..1
         pitchHz: number;
     };
+
+    let evenGroup: CircleHandler[] = [],
+        oddGroup: CircleHandler[] = [];
     
     const buildGroups = () => {
         evenGroup = [];
@@ -131,7 +161,16 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         for (const c of CircleHandler.circleArray) (c.index % 2 === 0 ? evenGroup : oddGroup).push(c);
     };
 
-    const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
+    const clampToCanvasX = (x: number, r: number) => clamp(x, r, CANVAS_WIDTH - r);
+    const clampToCanvasY = (y: number, r: number) => clamp(y, r, CANVAS_HEIGHT - r);
+
+    const clampCircleToCanvas = (circle: CircleHandler): void => {
+        const radius = circle.currentRadius; // or Math.max(circle.currentRadius, circle.targetRadius)
+        circle.x = clampToCanvasX(circle.x, radius);
+        circle.y = clampToCanvasY(circle.y, radius);
+        circle.targetX = clampToCanvasX(circle.targetX, radius);
+        circle.targetY = clampToCanvasY(circle.targetY, radius);
+    };
 
     /**
      * Calculates exponential smoothing factor for interpolation.
@@ -157,72 +196,53 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         };
     };
 
-    const hzToMidi = (hz: number) => 69 + 12 * Math.log2(hz / 440);
+    const computePitchColor = ({ pitchHz, clarity, dtMs, colorSettings }: ColorDecisionDeps): string => {
+        const result = pitchTracker.update({pitchHz, clarity, nowMs: time.nowMs, dtMs});
 
-    const pickNextColor = ({ pitchHz, clarity, dtMs, colorSettings }: ColorDecisionDeps): string => {
-        const hasPitch = Number.isFinite(pitchHz) && pitchHz > 20 && clarity >= TUNING.color.minClarity;
-        const smoothHz = hasPitch ? updateSmoothedPitch(pitchHz, clarity) : smoothedPitchHz;
-
-        silenceMs = hasPitch ? 0 : (silenceMs + dtMs);
-        if(!hasPitch || smoothHz <= 20) {
-            if(silenceMs >= TUNING.color.holdAfterSilenceMs) return lastGoodColor;
-            // Silence color
+        if(result.kind === "silence") {
+            if(!pitchTracker.isSilentLongEnough()) return color.lastGoodColor;
+            
+            // Generate a random muted color for silence
             const [minSat, maxSat] = TUNING.color.silenceSaturationRange;
             const [minLit, maxLit] = TUNING.color.silenceLightnessRange;
-            lastGoodColor = colorHandler.getRandomColor({
+
+            color.lastGoodColor = colorHandler.getRandomColor({
                 ...colorSettings,
                 minSaturation: minSat, maxSaturation: maxSat,
                 minLightness: minLit, maxLightness: maxLit,
             });
-            return lastGoodColor;
+
+            return color.lastGoodColor;
         }
 
-        const midiStep = Math.round(hzToMidi(smoothHz));
+        const hueOffset = clamp(result.fractionalDistance * 2, -1, 1) * TUNING.color.microHueDriftDeg;
 
-        // Candidate tracking (stability / hysteresis)
-        if(midiStep !== candidateMidiStep) {
-            candidateMidiStep = midiStep;
-            candidateStableMs = 0;
-        } else {
-            candidateStableMs += dtMs;
-        }
+        if (TUNING.color.noteStep && !result.changed) return color.lastGoodColor;
 
-        // Hard rate-limit color flips
-        if (nowMs - lastColorChangeAtMs < TUNING.color.minHoldMs) return lastGoodColor;
-
-        // Require stable note for a short time before committing
-        if (candidateStableMs < TUNING.color.minStableMs) return lastGoodColor;
-
-        // Commit: now we're confident this note is "real"
-        lastMidiStep = midiStep;
-        lastColorChangeAtMs = nowMs;
-
-        const hueDrift = TUNING.color.microHueDriftDeg;
-        const drift = (Math.random() * 2 - 1) * hueDrift;
-
-        lastGoodColor = colorHandler.convertHertzToHSL({
+        color.lastGoodColor = colorHandler.convertHertzToHSL({
             ...colorSettings,
-            hertz: Math.round(smoothHz),
-            hueOffset: drift,
+            hertz: Math.round(result.hz),
+            hueOffset,
             minSaturation: TUNING.color.pitchSaturation,
             maxSaturation: TUNING.color.pitchSaturation,
             minLightness: TUNING.color.pitchLightness,
             maxLightness: TUNING.color.pitchLightness,
         });
 
-        return lastGoodColor;
+        return color.lastGoodColor;
     };
 
-    const updateTargetColors = (activeGroup: CircleHandler[],clarity: number, pitchHz: number): void => {
-        colorElapsedMs += deltaTime;
-        if (colorElapsedMs < TUNING.intervals.colorIntervalMs) return;
+    const updateTargetColors = (activeGroup: CircleHandler[], clarity: number, pitchHz: number): void => {
+        time.colorElapsedMs += time.deltaMs;
+        if (time.colorElapsedMs < TUNING.intervals.colorIntervalMs) return;
 
-        colorElapsedMs = 0;
+        const elapsed = time.colorElapsedMs;
+        time.colorElapsedMs = 0;
 
-        const nextColor = pickNextColor({
+        const nextColor = computePitchColor({
             pitchHz,
             clarity,
-            dtMs: deltaTime,
+            dtMs: elapsed,
             colorSettings: circleHandler.colorSettings,
         });
 
@@ -230,7 +250,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         if (activeGroup.length === 0) return;
 
         const indices = getRandomIndexArray(activeGroup.length);
-        const count = Math.min(colorChangingCircles, activeGroup.length);
+        const count = Math.min(COLOR_CHANGING_CIRCLES, activeGroup.length);
 
         for (let i = 0; i < count; i++) {
             activeGroup[indices[i]].targetColor = nextColor;
@@ -239,18 +259,18 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
     const updateTargetRadii = (): void => {
         for (const circle of CircleHandler.circleArray) {
-            const isActiveGroup = (circle.index % 2) === moveGroup;
-            const punch = isActiveGroup ? beatEnvelope * TUNING.beat.radiusPunch : 0;
+            const isActiveGroup = (circle.index % 2) === beat.moveGroup;
+            const punch = isActiveGroup ? beat.envelope * TUNING.beat.radiusPunch : 0;
             circle.targetRadius = circle.baseRadius * BASE_SCALE * (1 + punch);
         }
     };
 
     const applyBeatMovement = (activeGroup: CircleHandler[], volumePercentage: number): void => {
-        if (beatEnvelope <= TUNING.beat.moveThreshold) return;
+        if (beat.envelope <= TUNING.beat.moveThreshold) return;
         if (volumePercentage <= TUNING.beat.minVolumePercent) return;
-        if (nowMs - lastMoveAt <= TUNING.beat.moveCooldownMs) return;
+        if (time.nowMs - beat.lastMoveAtMs <= TUNING.beat.moveCooldownMs) return;
         
-        lastMoveAt = nowMs;
+        beat.lastMoveAtMs = time.nowMs;
         if (activeGroup.length === 0) return;
 
         const indices = getRandomIndexArray(activeGroup.length);
@@ -258,8 +278,9 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
         for (let i = 0; i < count; i++) {
             const circle = activeGroup[indices[i]];
-            circle.targetX = clamp(circle.targetX + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, 0, CANVAS_WIDTH);
-            circle.targetY = clamp(circle.targetY + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, 0, CANVAS_HEIGHT);
+            const radius = circle.currentRadius;
+            circle.targetX = clampToCanvasX(circle.targetX + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, radius);
+            circle.targetY = clampToCanvasY(circle.targetY + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, radius);
         }
     };
 
@@ -276,21 +297,10 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
         for (let i = 0; i < count; i++) {
             const circle = activeGroup[indices[i]];
-            circle.targetX = clamp(circle.targetX + (Math.random() * 2 - 1) * jitter, 0, CANVAS_WIDTH);
-            circle.targetY = clamp(circle.targetY + (Math.random() * 2 - 1) * jitter, 0, CANVAS_HEIGHT);
+            const radius = circle.currentRadius;
+            circle.targetX = clampToCanvasX(circle.targetX + (Math.random() * 2 - 1) * jitter, radius);
+            circle.targetY = clampToCanvasY(circle.targetY + (Math.random() * 2 - 1) * jitter, radius);
         }
-    };
-
-    const updateSmoothedPitch = (pitchHz: number, clarity: number): number => {
-        // Confidence-weighted smoothing: more clarity = faster tracking
-        const alpha = .06 + clarity * .3;
-        if (!Number.isFinite(pitchHz) || pitchHz <= 0) return smoothedPitchHz;
-
-        smoothedPitchHz = smoothedPitchHz === 0
-            ? pitchHz
-            : smoothedPitchHz + (pitchHz - smoothedPitchHz) * alpha;
-
-        return smoothedPitchHz;
     };
 
     const updateBeatEnvelope = (dtMs: number, nowMs: number): void => {
@@ -300,19 +310,19 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         const strength = Math.min(1, Math.pow(strengthRaw, 0.35) * 1.25);
 
         // cooldown gate so isBeat doesn't retrigger too fast
-        const gatedStrength = (isBeat && nowMs - lastBeatAt > TUNING.beat.env.gateCooldownMs) ? strength : 0;
+        const gatedStrength = (isBeat && nowMs - beat.lastBeatAtMs > TUNING.beat.env.gateCooldownMs) ? strength : 0;
 
         if (gatedStrength > 0) {
-            lastBeatAt = nowMs;
-            moveGroup = 1 - moveGroup; // Flip groups on every accepted beat
+            beat.lastBeatAtMs = nowMs;
+            beat.moveGroup = 1 - beat.moveGroup as 1 | 0; // Flip groups on every accepted beat
         }
 
         const target = gatedStrength;         // 0..1
         const attack = TUNING.beat.env.attack;                    // higher = snappier hit
         const decay = TUNING.beat.env.decay;                      // higher = faster fade
 
-        const smoothingValue = expSmoothing(dtMs, target > beatEnvelope ? attack : decay);
-        beatEnvelope += (target - beatEnvelope) * smoothingValue;
+        const smoothingValue = expSmoothing(dtMs, target > beat.envelope ? attack : decay);
+        beat.envelope += (target - beat.envelope) * smoothingValue;
     };
 
     /**
@@ -349,6 +359,15 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                 circleHandler.gap
             );
 
+            circle.targetX = clampToCanvasX(
+                circle.targetX, 
+                circle.currentRadius
+            );
+            circle.targetY = clampToCanvasY(
+                circle.targetY, 
+                circle.currentRadius
+            );
+
             if (!audioEngine.state.playing) {
                 circle.targetRadius = circle.baseRadius;
 
@@ -364,9 +383,9 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
      * Uses pitch, volume, clarity, and beat detection for dynamic visual effects.
      */
     const updateControlTargets = (audio: AudioParams): void => {
-        if (!audio.isPlaying) { beatEnvelope = 0; return; }
+        if (!audio.isPlaying) { beat.envelope = 0; return; }
 
-        const activeGroup = moveGroup === 0 ? evenGroup : oddGroup;
+        const activeGroup = beat.moveGroup === 0 ? evenGroup : oddGroup;
 
         updateTargetColors(activeGroup, audio.clarity, audio.pitchHz);
         updateTargetRadii();
@@ -386,16 +405,16 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
         // Use deltaTime-based smoothing so speed is consistent across FPS.
         // Higher responsivenessPerSec => faster snapping to target.
-        const posAlpha = expSmoothing(deltaTime, TUNING.render.posResponsiveness);
+        const posAlpha = expSmoothing(time.deltaMs, TUNING.render.posResponsiveness);
         const radiusAlpha = expSmoothing(
-            deltaTime, 
+            time.deltaMs, 
             isPlaying
-            ? (TUNING.render.radiusBaseResponsiveness + beatEnvelope * TUNING.render.radiusBeatBoost) 
+            ? (TUNING.render.radiusBaseResponsiveness + beat.envelope * TUNING.render.radiusBeatBoost) 
             : 8
         );
 
         const colorAlpha = expSmoothing(
-            deltaTime, 
+            time.deltaMs, 
             TUNING.render.colorBaseResponsiveness + clarity * TUNING.render.colorClarityBoost
         );
 
@@ -405,42 +424,35 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             circle.lerpPosition(false, posAlpha);
             circle.lerpColor(colorAlpha);
 
+            clampCircleToCanvas(circle);
+
             graphics.circle(circle.x, circle.y, circle.currentRadius);
             graphics.fill(colorHandler.convertHSLtoHSLA(circle.color, 0.7));
         });
     };
 
     const onTick = () => {
-        deltaTime = app.ticker.deltaMS;
-        nowMs += deltaTime;
+        time.deltaMs = app.ticker.deltaMS;
+        time.nowMs += time.deltaMs;
 
         const audio = getAudioParams();
 
-        updateBeatEnvelope(deltaTime, nowMs);
+        updateBeatEnvelope(time.deltaMs, time.nowMs);
 
-        idleElapsedMs += deltaTime;
-        controlElapsedMs += deltaTime;
+        time.idleElapsedMs += time.deltaMs;
+        time.controlElapsedMs += time.deltaMs;
 
-        if (idleElapsedMs >= TUNING.intervals.idleTargetUpdateIntervalMs) {
-            updateIdleTargets(colorChangingCircles, audio.isPlaying);
-            idleElapsedMs = 0;
+        if (time.idleElapsedMs >= TUNING.intervals.idleTargetUpdateIntervalMs) {
+            updateIdleTargets(COLOR_CHANGING_CIRCLES, audio.isPlaying);
+            time.idleElapsedMs = 0;
         }
 
-        if (controlElapsedMs >= TUNING.intervals.controlTargetUpdateIntervalMs) {
+        if (time.controlElapsedMs >= TUNING.intervals.controlTargetUpdateIntervalMs) {
             updateControlTargets(audio);
-            controlElapsedMs = 0;
+            time.controlElapsedMs = 0;
         }
 
         renderFrame(audio.clarity, audio.isPlaying);
-
-        // Log every second
-        if (Math.floor(nowMs / 1000) !== Math.floor((nowMs - deltaTime) / 1000)) {
-            console.log({
-                beat: beatEnvelope.toFixed(2),
-                clarity: audio.clarity.toFixed(2),
-                pitch: Math.round(smoothedPitchHz),
-            });
-        }
     };
     app.ticker.add(onTick);
 
