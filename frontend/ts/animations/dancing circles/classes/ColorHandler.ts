@@ -3,16 +3,17 @@ import { getRandomInt } from '@/utils/random';
 /**
  * Interface representing the settings for color handling in animations.
  * 
- * @interface Settings
+ * @interface ColorSettings
  * 
- * @property {number} [hertz] - Optional frequency in hertz for the color changes.
+ * @property {number} [hertz] - Frequency in hertz for the color changes.
  * @property {number} minSaturation - Minimum saturation value for the colors.
  * @property {number} maxSaturation - Maximum saturation value for the colors.
  * @property {number} minLightness - Minimum lightness value for the colors.
  * @property {number} maxLightness - Maximum lightness value for the colors.
  */
-export interface Settings {
-    hertz?: number;
+export type ColorSettings = {
+    hertz: number;
+    hueOffset?: number;
     minSaturation: number;
     maxSaturation: number;
     minLightness: number;
@@ -25,8 +26,10 @@ export interface Settings {
 export default class ColorHandler {
     /**
      * Converts an HSL color string to an HSLA color string.
+     * 
      * @param hsl - The HSL color string.
      * @param alpha - The alpha value for the HSLA color.
+     * 
      * @returns The HSLA color string.
      */
     convertHSLtoHSLA(hsl: string, alpha: number): string {
@@ -36,41 +39,48 @@ export default class ColorHandler {
     /**
      * Converts a frequency in hertz to an HSL color string.
      * Maps frequency logarithmically across the hue spectrum (musical perception).
+     * 
      * @param Settings - The settings for the color conversion.
+     * 
      * @returns The HSL color string.
      */
-    convertHertzToHSL(Settings: Settings): string {
-        let { hertz } = Settings;
+    convertHertzToHSL(Settings: ColorSettings): string {
+        let { hertz, hueOffset, minSaturation, maxSaturation, minLightness, maxLightness } = Settings;
 
-        if (!hertz) return this.getRandomColor(Settings);
+        if (!hertz || !Number.isFinite(hertz) || hertz <= 0) {
+            return this.getRandomColor(Settings);
+        }
 
-        // Clamp to hearing range (20 Hz - 20,000 Hz ≈ 10 octaves)
-        const minFreq = 20;
-        const maxFreq = 20000;
+        // Clamp to a sane pitch range (beatbox/voice/instruments live here)
+        const minFreq = 40;     // E1-ish
+        const maxFreq = 4000;   // above this pitch detection gets jittery
         hertz = Math.max(minFreq, Math.min(maxFreq, hertz));
 
-        // Map frequency logarithmically to 0-360 hue range
-        const normalizedFreq = (Math.log2(hertz) - Math.log2(minFreq)) / 
-                               (Math.log2(maxFreq) - Math.log2(minFreq));
-        const hue = Math.round(normalizedFreq * 360);
+        // Hz -> MIDI (log scale), then pitch class (0..11)
+        const midi = 69 + 12 * Math.log2(hertz / 440);
+        const pitchClass = ((Math.round(midi) % 12) + 12) % 12;
 
-        const randomHSL = this.getRandomColor(Settings);
-        const randomHSLhue = randomHSL
-            .substring(4, randomHSL.length - 1)
-            .split(',')[0];
-        const newHSL = randomHSL.replace(randomHSLhue, hue.toString());
+        // Map pitch class to hue (0..360). Octaves share hue -> more "musical"
+        const baseHue = Math.round((pitchClass / 12) * 360);
+        const hue = (baseHue + (hueOffset ?? 0) + 360) % 360;
 
-        return newHSL;
+        // Use your settings deterministically (no random hue swapping)
+        const sat = Math.round((minSaturation + maxSaturation) / 2);
+        const lit = Math.round((minLightness + maxLightness) / 2);
+
+        return `hsl(${hue}, ${sat}%, ${lit}%)`;
     }
+
 
     /**
      * Generates a random HSL color string based on the provided settings.
+     * 
      * @param Settings - The settings for the color generation.
+     * 
      * @returns The random HSL color string.
      */
-    getRandomColor(Settings: Settings): string {
-        const { minSaturation, maxSaturation, minLightness, maxLightness } =
-            Settings;
+    getRandomColor(Settings: ColorSettings): string {
+        const { minSaturation, maxSaturation, minLightness, maxLightness } = Settings;
 
         const hue = (Math.random() * 360) | 0;
         const saturation = getRandomInt(minSaturation, maxSaturation);
@@ -81,6 +91,7 @@ export default class ColorHandler {
 
     /**
      * Linearly interpolates between two HSL colors.
+     * 
      * @param start - The starting HSL color string.
      * @param end - The ending HSL color string.
      * @param interpolationFactor - The interpolation factor (between 0 and 1).

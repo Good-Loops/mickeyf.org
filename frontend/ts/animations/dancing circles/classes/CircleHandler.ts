@@ -1,6 +1,6 @@
 import { getRandomX, getRandomY } from "@/utils/random";
 import lerp from "@/utils/lerp";
-import ColorHandler from "./ColorHandler";
+import ColorHandler, { ColorSettings } from "./ColorHandler";
 
 /**
  * Represents a handler for managing circle animations.
@@ -27,6 +27,8 @@ export default class CircleHandler {
     arrayLength = 12;
     gap = 14;
 
+    index: number;
+
     baseRadius: number;
     currentRadius: number;
     targetRadius: number;
@@ -39,7 +41,7 @@ export default class CircleHandler {
     velocityX: number = 0;
     velocityY: number = 0;
     
-    colorSettings = {
+    colorSettings: ColorSettings = {
         hertz: 0,
         minSaturation: 95,
         maxSaturation: 100,
@@ -72,6 +74,8 @@ export default class CircleHandler {
         this.baseRadius = this.getBaseRadius(index * 15);
         this.currentRadius = this.baseRadius;
         this.targetRadius = this.baseRadius;
+
+        this.index = index;
 
         this.x = getRandomX(this.baseRadius, this.gap);
         this.y = getRandomY(this.baseRadius, this.gap);
@@ -111,22 +115,26 @@ export default class CircleHandler {
      * Uses velocity for more natural movement.
      *
      * @param isX - A boolean indicating whether to interpolate the X axis (true) or the Y axis (false).
-     * @param customFactor - Optional custom interpolation factor (0-1). Defaults to 0.015.
+     * @param customFactor - Optional custom interpolation factor (0-1).
      */
-    lerpPosition(isX: boolean, customFactor?: number): void {
-        const interpolationFactor = customFactor ?? 0.015;
+    lerpPosition(isX: boolean, customFactor: number): void {
         const axis = isX ? this.x : this.y;
-        const tAxis = isX ? this.targetX : this.targetY;
-        const position = lerp(axis, tAxis, interpolationFactor);
+        const target = isX ? this.targetX : this.targetY;
+
+        const next = lerp(axis, target, customFactor);
+        const velocity = next - axis;
+
+        const damping = 0.85; // < 1 = smoother, heavier feel
 
         if (isX) {
-            this.velocityX = position - this.x;
-            this.x = position;
+            this.velocityX = this.velocityX * damping + velocity;
+            this.x += this.velocityX;
         } else {
-            this.velocityY = position - this.y;
-            this.y = position;
+            this.velocityY = this.velocityY * damping + velocity;
+            this.y += this.velocityY;
         }
     }
+
 
     /**
      * Linearly interpolates the current radius towards the target radius.

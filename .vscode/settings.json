@@ -18,5 +18,8 @@
             ]
         }
     ],
-    "terminal.integrated.defaultProfile.linux": "bash"
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "editor.inlineSuggest.enabled": true,
+    "editor.suggest.preview": true,
+    "editor.tabCompletion": "onlySnippets"
 }
