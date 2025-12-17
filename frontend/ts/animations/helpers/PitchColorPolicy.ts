@@ -1,7 +1,7 @@
-import PitchColorizer, { ColorRanges } from "@/animations/dancing circles/classes/PitchColorizer";
+import PitchColorizer, { RandomColorSettings } from "@/animations/helpers/PitchColorizer";
 import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
 import clamp from "@/utils/clamp";
-import { HslColor, HslRanges } from "@/utils/hsl";
+import { getRandomHsl, HslColor, HslRanges } from "@/utils/hsl";
 
 type PitchColorPolicyDeps = {
     colorizer: PitchColorizer;
@@ -13,7 +13,7 @@ type PitchColorPolicyDeps = {
         pitchLightness: number;
         silenceRanges: HslRanges;
     };
-    baseSettings: ColorRanges;
+    baseRanges: HslRanges;
     initialColor?: HslColor;
 };
 
@@ -32,24 +32,15 @@ export default class PitchColorPolicy {
     }
 
     decide({ pitchHz, clarity, nowMs, dtMs }: DecideInput): HslColor {
-        const { tracker, tuning, baseSettings, colorizer } = this.deps;
+        const { tracker, tuning, baseRanges, colorizer } = this.deps;
 
         const result = tracker.update({pitchHz, clarity, nowMs, dtMs});
         
         if(result.kind === "silence") {
             if(!tracker.isSilentLongEnough()) return this.lastGood;
             
-            const saturation = tuning.silenceRanges.saturation;
-            const lightness = tuning.silenceRanges.lightness;
-
             // Return a random color in the silence range
-            this.lastGood = colorizer.getRandomColor({
-                ...baseSettings,
-                minSaturation: saturation[0],
-                maxSaturation: saturation[1],
-                minLightness: lightness[0],
-                maxLightness: lightness[1],
-            });
+            this.lastGood = getRandomHsl(tuning.silenceRanges);
 
             return this.lastGood;
         }
@@ -59,13 +50,13 @@ export default class PitchColorPolicy {
         if (tuning.noteStep && !result.changed) return this.lastGood;
 
         this.lastGood = colorizer.hertzToHsl({
-            ...baseSettings,
             hertz: Math.round(result.hz),
             hueOffset,
-            minSaturation: tuning.pitchSaturation,
-            maxSaturation: tuning.pitchSaturation,
-            minLightness: tuning.pitchLightness,
-            maxLightness: tuning.pitchLightness,
+            ranges: {
+                ...baseRanges,
+                saturation: [tuning.pitchSaturation, tuning.pitchSaturation],
+                lightness: [tuning.pitchLightness, tuning.pitchLightness],
+            }
         });
 
         return this.lastGood;

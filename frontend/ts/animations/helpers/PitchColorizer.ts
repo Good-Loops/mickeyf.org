@@ -1,12 +1,13 @@
-import { getRandomHsl, HslColor } from '@/utils/hsl';
+import { getRandomHsl, HslColor, HslRanges } from '@/utils/hsl';
 
-export type ColorRanges = {
+export type RandomColorSettings = {
     hueOffset?: number;
-    minSaturation: number; maxSaturation: number;
-    minLightness: number;  maxLightness: number;
+    ranges: HslRanges;
 };
 
-export type HertzColorSettings = ColorRanges & { hertz: number };
+export type HertzColorSettings = RandomColorSettings & {
+    hertz: number;
+};
 
 /**
  * Class to handle color operations for the dancing circles animation.
@@ -20,11 +21,9 @@ export default class PitchColorizer {
      * 
      * @returns The HSL color string.
      */
-    hertzToHsl(settings: HertzColorSettings): HslColor {
-        let { hertz, hueOffset, minSaturation, maxSaturation, minLightness, maxLightness } = settings;
-
+    hertzToHsl({ hertz, hueOffset, ranges }: HertzColorSettings): HslColor {
         if (!hertz || !Number.isFinite(hertz) || hertz <= 0) {
-            return this.getRandomColor(settings);
+            return getRandomHsl(ranges);
         }
 
         // Clamp to a sane pitch range (beatbox/voice/instruments live here)
@@ -41,23 +40,9 @@ export default class PitchColorizer {
         const hue = (baseHue + (hueOffset ?? 0) + 360) % 360;
 
         // Use your settings deterministically (no random hue swapping)
-        const saturation = Math.round((minSaturation + maxSaturation) / 2);
-        const lightness = Math.round((minLightness + maxLightness) / 2);
+        const saturation = Math.round((ranges.saturation[0] + ranges.saturation[1]) / 2);
+        const lightness = Math.round((ranges.lightness[0] + ranges.lightness[1]) / 2);
 
         return {hue, saturation, lightness};
-    }
-
-    /**
-     * Generates a random HSL color string based on the provided settings.
-     * 
-     * @param settings - The settings for the color generation.
-     * 
-     * @returns The random HSL color string.
-     */
-    getRandomColor(settings: ColorRanges): HslColor {
-        return getRandomHsl({
-            saturation: [settings.minSaturation, settings.maxSaturation],
-            lightness: [settings.minLightness, settings.maxLightness],
-        });
     }
 }

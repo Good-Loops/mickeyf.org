@@ -5,14 +5,14 @@ import {
   getRandomY,
 } from "@/utils/random";
 
-import PitchColorizer from "./classes/PitchColorizer";
-import CircleHandler from "./classes/CircleHandler";
+import PitchColorizer from "../helpers/PitchColorizer";
+import Circle from "./classes/Circle";
 import audioEngine from "../helpers/AudioEngine";
 
 import { Application, Graphics } from "pixi.js";
 import clamp from "@/utils/clamp";
 import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
-import { HslColor, HslRanges, toHslaString, toHslString } from "@/utils/hsl";
+import { getRandomHsl, HslRanges, toHslaString, toHslString } from "@/utils/hsl";
 import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
 import expSmoothing from "@/utils/expSmoothing";
 
@@ -33,8 +33,13 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     app.canvas.classList.add("dancing-circles__canvas");
     container.append(app.canvas);
     
-    const colorHandler = new PitchColorizer();
-    const circleHandler = new CircleHandler(0);
+    const pitchColorizer = new PitchColorizer();
+    const circleCount = 12;
+    const circles = Array.from({ length: circleCount }, (_, i) => 
+        new Circle({ index: i, gap: 14, colorRanges: {
+            saturation: [95, 100],
+            lightness: [60, 80],
+    }}));
 
     const BASE_SCALE = 1;
     const COLOR_CHANGING_CIRCLES = 2;
@@ -106,9 +111,9 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     });
 
     const colorPolicy = new PitchColorPolicy({
-        colorizer: colorHandler,
+        colorizer: pitchColorizer,
         tracker: pitchTracker,
-        baseSettings: circleHandler.colorSettings,
+        baseRanges: circles[0].colorRanges,
         tuning: {
             noteStep: TUNING.color.noteStep,
             microHueDriftDeg: TUNING.color.microHueDriftDeg,
@@ -158,19 +163,19 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         pitchHz: number;
     };
 
-    let evenGroup: CircleHandler[] = [],
-        oddGroup: CircleHandler[] = [];
+    let evenGroup: Circle[] = [],
+        oddGroup: Circle[] = [];
     
     const buildGroups = () => {
         evenGroup = [];
         oddGroup = [];
-        for (const c of CircleHandler.circleArray) (c.index % 2 === 0 ? evenGroup : oddGroup).push(c);
+        for (const c of circles) (c.index % 2 === 0 ? evenGroup : oddGroup).push(c);
     };
 
     const clampToCanvasX = (x: number, r: number) => clamp(x, r, CANVAS_WIDTH - r);
     const clampToCanvasY = (y: number, r: number) => clamp(y, r, CANVAS_HEIGHT - r);
 
-    const clampCircleToCanvas = (circle: CircleHandler): void => {
+    const clampCircleToCanvas = (circle: Circle): void => {
         const radius = circle.currentRadius; // or Math.max(circle.currentRadius, circle.targetRadius)
         circle.x = clampToCanvasX(circle.x, radius);
         circle.y = clampToCanvasY(circle.y, radius);
@@ -189,7 +194,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         };
     };
 
-    const updateTargetColors = (activeGroup: CircleHandler[], clarity: number, pitchHz: number): void => {
+    const updateTargetColors = (activeGroup: Circle[], clarity: number, pitchHz: number): void => {
         time.colorElapsedMs += time.deltaMs;
         if (time.colorElapsedMs < TUNING.intervals.colorIntervalMs) return;
 
@@ -215,14 +220,14 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     };
 
     const updateTargetRadii = (): void => {
-        for (const circle of CircleHandler.circleArray) {
+        for (const circle of circles) {
             const isActiveGroup = (circle.index % 2) === beat.moveGroup;
             const punch = isActiveGroup ? beat.envelope * TUNING.beat.radiusPunch : 0;
             circle.targetRadius = circle.baseRadius * BASE_SCALE * (1 + punch);
         }
     };
 
-    const applyBeatMovement = (activeGroup: CircleHandler[], volumePercentage: number): void => {
+    const applyBeatMovement = (activeGroup: Circle[], volumePercentage: number): void => {
         if (beat.envelope <= TUNING.beat.moveThreshold) return;
         if (volumePercentage <= TUNING.beat.minVolumePercent) return;
         if (time.nowMs - beat.lastMoveAtMs <= TUNING.beat.moveCooldownMs) return;
@@ -241,7 +246,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         }
     };
 
-    const applyMusicDrift = (activeGroup: CircleHandler[], volumePercentage: number): void => {
+    const applyMusicDrift = (activeGroup: Circle[], volumePercentage: number): void => {
         if (activeGroup.length === 0) return;
 
         // volumePercentage is 0..100; map to 0..1
@@ -286,11 +291,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
      * Loads the initial state of the circles.
      */
     const load = (): void => {
-        CircleHandler.circleArray = [circleHandler];
-        for (let i = 1; i < circleHandler.arrayLength; i++) {
-            new CircleHandler(i);
-        }
-        CircleHandler.circleArray.sort(
+        circles.sort(
             (circleA, circleB) => circleB.currentRadius - circleA.currentRadius
         );
         buildGroups();
@@ -303,17 +304,17 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
      */
     const updateIdleTargets = (numCircs: number, isPlaying: boolean): void => {
         if(isPlaying) return;
-        const randomIndexArray = getRandomIndexArray(circleHandler.arrayLength);
+        const randomIndexArray = getRandomIndexArray(circleCount);
         for (let i = 0; i < numCircs; i++) {
-            const circle = CircleHandler.circleArray[randomIndexArray[i]];
+            const circle = circles[randomIndexArray[i]];
 
             circle.targetX = getRandomX(
                 circle.currentRadius,
-                circleHandler.gap
+                circle.gap
             );
             circle.targetY = getRandomY(
                 circle.currentRadius,
-                circleHandler.gap
+                circle.gap
             );
 
             circle.targetX = clampToCanvasX(
@@ -328,9 +329,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             if (!audioEngine.state.playing) {
                 circle.targetRadius = circle.baseRadius;
 
-                circle.targetColor = colorHandler.getRandomColor(
-                    circleHandler.colorSettings
-                );
+                circle.targetColor = getRandomHsl(circle.colorRanges);
             }
         }
     };
@@ -375,11 +374,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             TUNING.render.colorBaseResponsiveness + clarity * TUNING.render.colorClarityBoost
         );
 
-        CircleHandler.circleArray.forEach((circle: CircleHandler) => {
-            circle.lerpRadius(radiusAlpha);
-            circle.lerpPosition(true, posAlpha);
-            circle.lerpPosition(false, posAlpha);
-            circle.lerpColor(colorAlpha);
+        circles.forEach((circle: Circle) => {
+            circle.step({ posAlpha, radiusAlpha, colorAlpha });
 
             clampCircleToCanvas(circle);
 
