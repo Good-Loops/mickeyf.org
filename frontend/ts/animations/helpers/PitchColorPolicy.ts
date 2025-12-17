@@ -1,10 +1,9 @@
-import PitchColorizer, { RandomColorSettings } from "@/animations/helpers/PitchColorizer";
+import hertzToHsl from "@/animations/helpers/hertzToHsl";
 import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
 import clamp from "@/utils/clamp";
 import { getRandomHsl, HslColor, HslRanges } from "@/utils/hsl";
 
 type PitchColorPolicyDeps = {
-    colorizer: PitchColorizer;
     tracker: PitchHysteresis;
     tuning: {
         noteStep: boolean;
@@ -32,7 +31,7 @@ export default class PitchColorPolicy {
     }
 
     decide({ pitchHz, clarity, nowMs, dtMs }: DecideInput): HslColor {
-        const { tracker, tuning, baseRanges, colorizer } = this.deps;
+        const { tracker, tuning, baseRanges } = this.deps;
 
         const result = tracker.update({pitchHz, clarity, nowMs, dtMs});
         
@@ -49,7 +48,7 @@ export default class PitchColorPolicy {
 
         if (tuning.noteStep && !result.changed) return this.lastGood;
 
-        this.lastGood = colorizer.hertzToHsl({
+        this.lastGood = hertzToHsl({
             hertz: Math.round(result.hz),
             hueOffset,
             ranges: {

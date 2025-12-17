@@ -10,7 +10,7 @@ import clamp from "@/utils/clamp";
 import expSmoothing from "@/utils/expSmoothing";
 import { getRandomHsl, HslRanges, toHslaString } from "@/utils/hsl";
 
-import PitchColorizer from "@/animations/helpers/PitchColorizer";
+import PitchColorizer from "@/animations/helpers/hertzToHsl";
 import AudioEngine from "@/animations/helpers/AudioEngine";
 import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
 import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
@@ -36,7 +36,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     app.canvas.classList.add("dancing-circles__canvas");
     container.append(app.canvas);
     
-    const pitchColorizer = new PitchColorizer();
     const bounds = new CircleBounds(CANVAS_WIDTH, CANVAS_HEIGHT);
     const circleCount = 12;
     const circles = Array.from({ length: circleCount }, (_, i) => 
@@ -115,7 +114,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     });
 
     const colorPolicy = new PitchColorPolicy({
-        colorizer: pitchColorizer,
         tracker: pitchTracker,
         baseRanges: circles[0].colorRanges,
         tuning: {
