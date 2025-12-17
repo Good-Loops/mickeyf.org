@@ -1,20 +1,23 @@
+import { Application, Graphics } from "pixi.js";
+
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 import {
   getRandomIndexArray,
   getRandomX,
   getRandomY,
 } from "@/utils/random";
-
-import PitchColorizer from "../helpers/PitchColorizer";
-import Circle from "./classes/Circle";
-import audioEngine from "../helpers/AudioEngine";
-
-import { Application, Graphics } from "pixi.js";
 import clamp from "@/utils/clamp";
-import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
-import { getRandomHsl, HslRanges, toHslaString, toHslString } from "@/utils/hsl";
-import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
 import expSmoothing from "@/utils/expSmoothing";
+import { getRandomHsl, HslRanges, toHslaString } from "@/utils/hsl";
+
+import PitchColorizer from "@/animations/helpers/PitchColorizer";
+import AudioEngine from "@/animations/helpers/AudioEngine";
+import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
+import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
+import groupByParity from "@/animations/helpers/groupByParity";
+
+import Circle from "./classes/Circle";
+import CircleBounds from "./classes/CircleBounds";
 
 type DancingCirclesDeps = {
     container: HTMLElement;
@@ -34,6 +37,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     container.append(app.canvas);
     
     const pitchColorizer = new PitchColorizer();
+    const bounds = new CircleBounds(CANVAS_WIDTH, CANVAS_HEIGHT);
     const circleCount = 12;
     const circles = Array.from({ length: circleCount }, (_, i) => 
         new Circle({ index: i, gap: 14, colorRanges: {
@@ -163,34 +167,16 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         pitchHz: number;
     };
 
-    let evenGroup: Circle[] = [],
-        oddGroup: Circle[] = [];
-    
-    const buildGroups = () => {
-        evenGroup = [];
-        oddGroup = [];
-        for (const c of circles) (c.index % 2 === 0 ? evenGroup : oddGroup).push(c);
-    };
-
-    const clampToCanvasX = (x: number, r: number) => clamp(x, r, CANVAS_WIDTH - r);
-    const clampToCanvasY = (y: number, r: number) => clamp(y, r, CANVAS_HEIGHT - r);
-
-    const clampCircleToCanvas = (circle: Circle): void => {
-        const radius = circle.currentRadius; // or Math.max(circle.currentRadius, circle.targetRadius)
-        circle.x = clampToCanvasX(circle.x, radius);
-        circle.y = clampToCanvasY(circle.y, radius);
-        circle.targetX = clampToCanvasX(circle.targetX, radius);
-        circle.targetY = clampToCanvasY(circle.targetY, radius);
-    };
+    const { even: evenGroup, odd: oddGroup } = groupByParity(circles);
 
     const getAudioParams = (): AudioParams => {
-        const isPlaying = audioEngine.state.playing;
+        const isPlaying = AudioEngine.state.playing;
 
         return {
             isPlaying,
-            volumePercentage: audioEngine.getVolumePercentage(audioEngine.state.volumeDb),
-            clarity: clamp(audioEngine.state.clarity, 0, 1),
-            pitchHz: audioEngine.state.pitchHz,
+            volumePercentage: AudioEngine.getVolumePercentage(AudioEngine.state.volumeDb),
+            clarity: clamp(AudioEngine.state.clarity, 0, 1),
+            pitchHz: AudioEngine.state.pitchHz,
         };
     };
 
@@ -241,8 +227,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         for (let i = 0; i < count; i++) {
             const circle = activeGroup[indices[i]];
             const radius = circle.currentRadius;
-            circle.targetX = clampToCanvasX(circle.targetX + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, radius);
-            circle.targetY = clampToCanvasY(circle.targetY + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, radius);
+            circle.targetX = bounds.clampX(circle.targetX + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, radius);
+            circle.targetY = bounds.clampY(circle.targetY + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, radius);
         }
     };
 
@@ -260,15 +246,15 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         for (let i = 0; i < count; i++) {
             const circle = activeGroup[indices[i]];
             const radius = circle.currentRadius;
-            circle.targetX = clampToCanvasX(circle.targetX + (Math.random() * 2 - 1) * jitter, radius);
-            circle.targetY = clampToCanvasY(circle.targetY + (Math.random() * 2 - 1) * jitter, radius);
+            circle.targetX = bounds.clampX(circle.targetX + (Math.random() * 2 - 1) * jitter, radius);
+            circle.targetY = bounds.clampY(circle.targetY + (Math.random() * 2 - 1) * jitter, radius);
         }
     };
 
     const updateBeatEnvelope = (dtMs: number, nowMs: number): void => {
-        const isBeat = audioEngine.state.playing && audioEngine.state.beat.isBeat;
+        const isBeat = AudioEngine.state.playing && AudioEngine.state.beat.isBeat;
 
-        const strengthRaw = isBeat ? Math.min(1, Math.max(0, audioEngine.state.beat.strength)) : 0;
+        const strengthRaw = isBeat ? Math.min(1, Math.max(0, AudioEngine.state.beat.strength)) : 0;
         const strength = Math.min(1, Math.pow(strengthRaw, 0.35) * 1.25);
 
         // cooldown gate so isBeat doesn't retrigger too fast
@@ -289,12 +275,12 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
     /**
      * Loads the initial state of the circles.
+     * Sorts circles by their current radius in descending order.
      */
     const load = (): void => {
         circles.sort(
             (circleA, circleB) => circleB.currentRadius - circleA.currentRadius
         );
-        buildGroups();
     };
 
     /**
@@ -317,16 +303,16 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                 circle.gap
             );
 
-            circle.targetX = clampToCanvasX(
+            circle.targetX = bounds.clampX(
                 circle.targetX, 
                 circle.currentRadius
             );
-            circle.targetY = clampToCanvasY(
+            circle.targetY = bounds.clampY(
                 circle.targetY, 
                 circle.currentRadius
             );
 
-            if (!audioEngine.state.playing) {
+            if (!AudioEngine.state.playing) {
                 circle.targetRadius = circle.baseRadius;
 
                 circle.targetColor = getRandomHsl(circle.colorRanges);
@@ -377,7 +363,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         circles.forEach((circle: Circle) => {
             circle.step({ posAlpha, radiusAlpha, colorAlpha });
 
-            clampCircleToCanvas(circle);
+            bounds.clampCircle(circle);
 
             graphics.circle(circle.x, circle.y, circle.currentRadius);
             graphics.fill(toHslaString(circle.color, 0.7));
