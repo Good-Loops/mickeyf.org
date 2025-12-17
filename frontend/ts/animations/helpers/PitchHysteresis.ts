@@ -37,7 +37,7 @@ export default class PitchHysteresis {
     private silenceMs = 0;
 
     private lastCommitAtMs = Number.NEGATIVE_INFINITY;
-    private committedMidiStep = Number.NEGATIVE_INFINITY;
+    private committedMidi = Number.NEGATIVE_INFINITY;
 
     private candidateMidiStep = Number.NEGATIVE_INFINITY;
     private candidateStableMs = 0;
@@ -48,7 +48,7 @@ export default class PitchHysteresis {
         this.smoothedHz = 0;
         this.silenceMs = 0;
         this.lastCommitAtMs = Number.NEGATIVE_INFINITY;
-        this.committedMidiStep = Number.NEGATIVE_INFINITY;
+        this.committedMidi = Number.NEGATIVE_INFINITY;
         this.candidateMidiStep = Number.NEGATIVE_INFINITY;
         this.candidateStableMs = 0;
     }
@@ -90,20 +90,20 @@ export default class PitchHysteresis {
         const stableOk = this.candidateStableMs >= this.tuning.minStableMs;
 
         let changed = false;
-        if (holdOk && stableOk && midiStep !== this.committedMidiStep) {
-            this.committedMidiStep = midiStep;
+        if (holdOk && stableOk && midiStep !== this.committedMidi) {
+            this.committedMidi = midiStep;
             this.lastCommitAtMs = nowMs;
             changed = true;
         }
 
-        const fractionalDistanceRaw = midi - this.committedMidiStep;
+        const fractionalDistanceRaw = midi - this.committedMidi;
         const clampedFractionalDistance = clamp(fractionalDistanceRaw, -this.tuning.microSemitoneRange, this.tuning.microSemitoneRange);
 
         return {
             kind: "pitch",
             hz,
             midi,
-            midiStep: this.committedMidiStep,
+            midiStep: this.committedMidi,
             fractionalDistance: clampedFractionalDistance,
             changed,
         };
@@ -113,9 +113,7 @@ export default class PitchHysteresis {
         return this.silenceMs >= this.tuning.holdAfterSilenceMs;
     }
 
-    getCommittedMidiStep(): number {
-        return this.committedMidiStep;
-    }
+    get committedMidiStep(): number { return this.committedMidi; }
 
     static hzToMidi(hz: number): number {
         return 69 + 12 * Math.log2(hz / 440);

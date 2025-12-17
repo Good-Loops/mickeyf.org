@@ -4,10 +4,10 @@ import Dropdown from '@/components/Dropdown';
 import TreeControls from '@/animations/dancing fractals/components/TreeControls';
 import FlowerSpiralControls from '@/animations/dancing fractals/components/FlowerSpiralControls';
 
-import Tree from '@/animations/dancing fractals/classes/Tree';
+import Tree from '@/animations/dancing fractals/fractals/Tree';
 import { type TreeConfig, defaultTreeConfig } from '@/animations/dancing fractals/config/TreeConfig'; 
 
-import FlowerSpiral from '@/animations/dancing fractals/classes/FlowerSpiral';
+import FlowerSpiral from '@/animations/dancing fractals/fractals/FlowerSpiral';
 import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '@/animations/dancing fractals/config/FlowerSpiralConfig';
 import { FractalHost } from '@/animations/dancing fractals/interfaces/FractalHost';
 import { createFractalHost } from '@/animations/dancing fractals/createFractalHost';

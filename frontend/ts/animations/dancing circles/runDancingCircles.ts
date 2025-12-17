@@ -5,13 +5,16 @@ import {
   getRandomY,
 } from "@/utils/random";
 
-import ColorHandler, { ColorSettings } from "./classes/ColorHandler";
+import PitchColorizer from "./classes/PitchColorizer";
 import CircleHandler from "./classes/CircleHandler";
 import audioEngine from "../helpers/AudioEngine";
 
 import { Application, Graphics } from "pixi.js";
 import clamp from "@/utils/clamp";
 import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
+import { HslColor, HslRanges, toHslaString, toHslString } from "@/utils/hsl";
+import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
+import expSmoothing from "@/utils/expSmoothing";
 
 type DancingCirclesDeps = {
     container: HTMLElement;
@@ -30,7 +33,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     app.canvas.classList.add("dancing-circles__canvas");
     container.append(app.canvas);
     
-    const colorHandler = new ColorHandler();
+    const colorHandler = new PitchColorizer();
     const circleHandler = new CircleHandler(0);
 
     const BASE_SCALE = 1;
@@ -74,8 +77,10 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             pitchLightness: 55,
 
             // When we truly have silence for a while
-            silenceSaturationRange: [25, 45] as const,
-            silenceLightnessRange: [40, 60] as const,
+            silenceRanges: {
+                saturation: [25, 45],
+                lightness: [40, 60],
+            } satisfies HslRanges,   
 
             minHoldMs: 90,         // prevents flicker
             minStableMs: 45,        // require pitch to stay on same note briefly
@@ -100,6 +105,22 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         microSemitoneRange: 0.5,
     });
 
+    const colorPolicy = new PitchColorPolicy({
+        colorizer: colorHandler,
+        tracker: pitchTracker,
+        baseSettings: circleHandler.colorSettings,
+        tuning: {
+            noteStep: TUNING.color.noteStep,
+            microHueDriftDeg: TUNING.color.microHueDriftDeg,
+            pitchSaturation: TUNING.color.pitchSaturation,
+            pitchLightness: TUNING.color.pitchLightness,
+            silenceRanges: {
+                saturation: TUNING.color.silenceRanges.saturation,
+                lightness: TUNING.color.silenceRanges.lightness,
+            },
+        },
+    });
+
     type TimeState = {
         deltaMs: number;
         nowMs: number;
@@ -115,10 +136,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         moveGroup: 0 | 1;
     };
 
-    type ColorState = {
-        lastGoodColor: string;
-    };
-
     const time: TimeState = {
         deltaMs: 0,
         nowMs: 0,
@@ -132,17 +149,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         lastBeatAtMs: -Infinity,
         lastMoveAtMs: -Infinity,
         moveGroup: 0,
-    };
-
-    const color: ColorState = {
-        lastGoodColor: "hsl(0, 50%, 50%)",
-    };
-    
-    type ColorDecisionDeps = {
-        pitchHz: number;
-        clarity: number;     // 0..1
-        dtMs: number;
-        colorSettings: ColorSettings;
     };
 
     type AudioParams = {
@@ -172,19 +178,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         circle.targetY = clampToCanvasY(circle.targetY, radius);
     };
 
-    /**
-     * Calculates exponential smoothing factor for interpolation.
-     * 
-     * @param dtMs 
-     * @param responsivenessPerSec 
-     * 
-     * @returns Factor between 0 and 1 for exponential smoothing.
-     */
-    const expSmoothing = (dtMs: number, responsivenessPerSec: number): number => {
-        const dt = dtMs / 1000;
-        return 1 - Math.exp(-responsivenessPerSec * dt); // 0..1
-    };
-
     const getAudioParams = (): AudioParams => {
         const isPlaying = audioEngine.state.playing;
 
@@ -196,42 +189,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         };
     };
 
-    const computePitchColor = ({ pitchHz, clarity, dtMs, colorSettings }: ColorDecisionDeps): string => {
-        const result = pitchTracker.update({pitchHz, clarity, nowMs: time.nowMs, dtMs});
-
-        if(result.kind === "silence") {
-            if(!pitchTracker.isSilentLongEnough()) return color.lastGoodColor;
-            
-            // Generate a random muted color for silence
-            const [minSat, maxSat] = TUNING.color.silenceSaturationRange;
-            const [minLit, maxLit] = TUNING.color.silenceLightnessRange;
-
-            color.lastGoodColor = colorHandler.getRandomColor({
-                ...colorSettings,
-                minSaturation: minSat, maxSaturation: maxSat,
-                minLightness: minLit, maxLightness: maxLit,
-            });
-
-            return color.lastGoodColor;
-        }
-
-        const hueOffset = clamp(result.fractionalDistance * 2, -1, 1) * TUNING.color.microHueDriftDeg;
-
-        if (TUNING.color.noteStep && !result.changed) return color.lastGoodColor;
-
-        color.lastGoodColor = colorHandler.convertHertzToHSL({
-            ...colorSettings,
-            hertz: Math.round(result.hz),
-            hueOffset,
-            minSaturation: TUNING.color.pitchSaturation,
-            maxSaturation: TUNING.color.pitchSaturation,
-            minLightness: TUNING.color.pitchLightness,
-            maxLightness: TUNING.color.pitchLightness,
-        });
-
-        return color.lastGoodColor;
-    };
-
     const updateTargetColors = (activeGroup: CircleHandler[], clarity: number, pitchHz: number): void => {
         time.colorElapsedMs += time.deltaMs;
         if (time.colorElapsedMs < TUNING.intervals.colorIntervalMs) return;
@@ -239,11 +196,11 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         const elapsed = time.colorElapsedMs;
         time.colorElapsedMs = 0;
 
-        const nextColor = computePitchColor({
+        const nextColor = colorPolicy.decide({
             pitchHz,
             clarity,
+            nowMs: time.nowMs,
             dtMs: elapsed,
-            colorSettings: circleHandler.colorSettings,
         });
 
         // Apply to a few circles in the active group
@@ -427,7 +384,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             clampCircleToCanvas(circle);
 
             graphics.circle(circle.x, circle.y, circle.currentRadius);
-            graphics.fill(colorHandler.convertHSLtoHSLA(circle.color, 0.7));
+            graphics.fill(toHslaString(circle.color, 0.7));
         });
     };
 

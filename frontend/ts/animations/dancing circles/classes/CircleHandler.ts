@@ -1,6 +1,7 @@
 import { getRandomX, getRandomY } from "@/utils/random";
 import lerp from "@/utils/lerp";
-import ColorHandler, { ColorSettings } from "./ColorHandler";
+import PitchColorizer, { ColorRanges } from "./PitchColorizer";
+import { lerpHsl, parseHslString, toHslString } from "@/utils/hsl";
 
 /**
  * Represents a handler for managing circle animations.
@@ -41,15 +42,14 @@ export default class CircleHandler {
     velocityX: number = 0;
     velocityY: number = 0;
     
-    colorSettings: ColorSettings = {
-        hertz: 0,
+    colorSettings: ColorRanges = {
         minSaturation: 95,
         maxSaturation: 100,
         minLightness: 60,
         maxLightness: 80,
     };
 
-    private colorHandler = new ColorHandler();
+    private colorHandler = new PitchColorizer();
     
     color = this.colorHandler.getRandomColor(this.colorSettings);
     targetColor = this.colorHandler.getRandomColor(this.colorSettings);
@@ -106,8 +106,8 @@ export default class CircleHandler {
      * @param customFactor - Optional custom interpolation factor (0-1). Defaults to 0.05 for smoother transitions.
      */
     lerpColor(customFactor?: number): void {
-        const interpolationFactor = customFactor ?? 0.05;
-        this.color = this.colorHandler.lerpColor(this.color, this.targetColor, interpolationFactor);
+        const interpolationFactor = customFactor ?? .05;
+        this.color = lerpHsl(this.color, this.targetColor, interpolationFactor);
     }
 
     /**
