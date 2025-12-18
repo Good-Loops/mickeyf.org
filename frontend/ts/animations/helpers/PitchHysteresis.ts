@@ -57,9 +57,9 @@ export default class PitchHysteresis {
         const { pitchHz, clarity, dtMs, nowMs } = input;
 
         const hasPitch =
-        Number.isFinite(pitchHz) &&
-        pitchHz > this.tuning.minHz &&
-        clarity >= this.tuning.minClarity;
+            Number.isFinite(pitchHz) &&
+            pitchHz > this.tuning.minHz &&
+            clarity >= this.tuning.minClarity;
 
         if (!hasPitch) {
             this.silenceMs += dtMs;
@@ -76,6 +76,27 @@ export default class PitchHysteresis {
         const hz = this.updateSmoothedHz(pitchHz, clarity);
         const midi = PitchHysteresis.hzToMidi(hz);
         const midiStep = Math.round(midi);
+
+        if (!Number.isFinite(this.committedMidi)) {
+            this.committedMidi = midiStep;
+            this.lastCommitAtMs = nowMs;
+        }
+
+        const hasCommitted = Number.isFinite(this.committedMidi);
+
+        if (!hasCommitted) {
+            // “Bootstrap” so we never compare against -Infinity
+            this.committedMidi = midiStep;
+            this.lastCommitAtMs = nowMs;
+            return {
+                kind: "pitch",
+                hz,
+                midi,
+                midiStep: this.committedMidi,
+                fractionalDistance: 0,
+                changed: true,
+            };
+        }
 
         // candidate stability tracking
         if (midiStep !== this.candidateMidiStep) {
@@ -114,6 +135,8 @@ export default class PitchHysteresis {
     }
 
     get committedMidiStep(): number { return this.committedMidi; }
+
+    get microSemitoneRange(): number { return this.tuning.microSemitoneRange; }
 
     static hzToMidi(hz: number): number {
         return 69 + 12 * Math.log2(hz / 440);

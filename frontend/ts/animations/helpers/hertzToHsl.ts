@@ -9,6 +9,19 @@ export type HertzColorSettings = RandomColorSettings & {
     hertz: number;
 };
 
+export const hzToPitchInfo = (hertz: number) => {
+    const minFreq = 40;
+    const maxFreq = 4000;
+
+    const hzClamped = Math.max(minFreq, Math.min(maxFreq, hertz));
+    const midi = 69 + 12 * Math.log2(hzClamped / 440);
+    const midiRounded = Math.round(midi);
+    const pitchClass = ((midiRounded % 12) + 12) % 12;
+    const baseHue = Math.round((pitchClass / 12) * 360);
+
+    return { hzClamped, midi, midiRounded, pitchClass, baseHue };
+};
+
 /**
  * Converts a frequency in hertz to an HSL color string.
  * Maps frequency logarithmically across the hue spectrum (musical perception).

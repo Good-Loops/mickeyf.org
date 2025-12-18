@@ -11,13 +11,14 @@ import expSmoothing from "@/utils/expSmoothing";
 import { getRandomHsl, HslRanges, toHslaString } from "@/utils/hsl";
 
 import audioEngine from "@/animations/helpers/AudioEngine";
-import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
-import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
+import PitchHysteresis, { PitchResult } from "@/animations/helpers/PitchHysteresis";
+import PitchColorPolicy, { type PitchColorDebug } from "@/animations/helpers/PitchColorPolicy";
 import BeatEnvelope from "@/animations/helpers/BeatEnvelope";
 import groupByParity from "@/animations/helpers/groupByParity";
 
 import Circle from "./classes/Circle";
 import CircleBounds from "./classes/CircleBounds";
+import { now } from "tone";
 
 type DancingCirclesDeps = {
     container: HTMLElement;
@@ -33,8 +34,73 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         height: CANVAS_HEIGHT,
     });
     
+    const startMs = performance.now();
+    const getNowMs = () => performance.now() - startMs;
+
     app.canvas.classList.add("dancing-circles__canvas");
     container.append(app.canvas);
+
+    const DEBUG = {
+        pitch: true,
+        everyMs: 250,
+    };
+
+    const lastHueByPitchClass = new Array<number>(12).fill(-1);
+
+    let debugElapsedMs = 0;
+
+    const debugPitch = (input: {
+        clarity: number;
+        color: { hue: number; saturation: number; lightness: number };
+        noteStep: boolean;
+        decision: PitchResult;
+        debug?: PitchColorDebug;
+        deltaMs: number;
+        nowMs: number;
+    }) => {
+        if (!DEBUG.pitch) return;
+
+        debugElapsedMs += input.deltaMs;
+        if (debugElapsedMs < DEBUG.everyMs) return;
+        debugElapsedMs = 0;
+
+        if (input.decision.kind === "silence") {
+            console.log({
+                kind: "silence",
+                silenceMs: Math.round(input.decision.silenceMs),
+                clarity: Number(input.clarity.toFixed(2)),
+                hue: input.color.hue,
+                reason: input.debug?.reason ?? "silence-hold",
+                nowMs: Math.round(input.nowMs),
+            });
+            return;
+        }
+
+        const pc = ((input.decision.midiStep % 12) + 12) % 12;
+
+        const prevHue = lastHueByPitchClass[pc];
+        lastHueByPitchClass[pc] = input.color.hue;
+
+        console.log({
+            kind: "pitch",
+            hzSmoothed: Math.round(input.decision.hz),
+            midi: Number(input.decision.midi.toFixed(2)),
+            midiStep: input.decision.midiStep,
+            pitchClass: pc,
+            changed: input.decision.changed,
+            frac: Number(input.decision.fractionalDistance.toFixed(2)),
+            hue: input.color.hue,
+            hueDeltaFromLastSameNote: prevHue === -1 ? null : input.color.hue - prevHue,
+            clarity: Number(input.clarity.toFixed(2)),
+            noteStep: input.noteStep,
+            hzClamped: input.debug?.hzClamped,
+            hueOffset: input.debug?.hueOffset,
+            finalHue: input.color.hue,
+            baseToFinalDelta: input.debug ? input.color.hue - input.debug.baseHue : null,
+            reason: input.debug?.reason,
+            nowMs: Math.round(input.nowMs),
+        });
+    };
     
     const bounds = new CircleBounds(CANVAS_WIDTH, CANVAS_HEIGHT);
     const circleCount = 12;
@@ -76,7 +142,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             },
         },
         color: {
-            minClarity: 0.15,
+            minClarity: .20,
             holdAfterSilenceMs: 3000,
             noteStep: true,
 
@@ -92,8 +158,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                 lightness: [40, 60],
             } satisfies HslRanges,   
 
-            minHoldMs: 90,         // prevents flicker
-            minStableMs: 45,        // require pitch to stay on same note briefly
+            minHoldMs: 60,         // prevents flicker
+            minStableMs: 20,        // require pitch to stay on same note briefly
         },
         render: {
             posResponsiveness: 1.4,
@@ -190,11 +256,23 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         const elapsed = time.colorElapsedMs;
         time.colorElapsedMs = 0;
 
-        const nextColor = colorPolicy.decide({
+        const decision = colorPolicy.decideWithDebug({
             pitchHz,
             clarity,
             nowMs: time.nowMs,
             dtMs: elapsed,
+        });
+
+        const nextColor = decision.color;
+
+        debugPitch({
+            clarity,
+            color: nextColor,
+            noteStep: TUNING.color.noteStep,
+            decision: decision.result,
+            debug: decision.debug,
+            deltaMs: time.deltaMs,
+            nowMs: time.nowMs,
         });
 
         // Apply to a few circles in the active group
@@ -351,11 +429,19 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         });
     };
 
+    let wasPlaying = false;
+
     const onTick = () => {
         time.deltaMs = app.ticker.deltaMS;
-        time.nowMs += time.deltaMs;
+        time.nowMs = getNowMs();
 
         const audio = getAudioParams();
+
+        if (audio.isPlaying && !wasPlaying) {
+            pitchTracker.reset();
+            beatEnvelope.reset();
+        }
+        wasPlaying = audio.isPlaying;
 
         const isBeat = audio.isPlaying && audioEngine.state.beat.isBeat;
         const strength = audioEngine.state.beat.strength;
