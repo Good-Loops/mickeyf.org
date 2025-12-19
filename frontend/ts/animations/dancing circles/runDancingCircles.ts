@@ -194,7 +194,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         intervals: {
             idleTargetUpdateIntervalMs: 1000,
             controlTargetUpdateIntervalMs: 10,
-            colorIntervalMs: 50,
+            colorIntervalMs: 20,
         },
         beat: {
             moveThreshold: 0.09,
@@ -239,12 +239,12 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                 lightness: [40, 60],
             } satisfies HslRanges,   
 
-            minHoldMs: 120,         // prevents flicker
-            minStableMs: 180,        // require pitch to stay on same note briefly
+            minHoldMs: 90,         // prevents flicker
+            minStableMs: 90,        // require pitch to stay on same note briefly
             listenAfterSilenceMs: 220,
             commit: {
-                holdMs: 800,
-                smoothingResponsiveness: 8,
+                holdMs: 220,
+                smoothingResponsiveness: 12,
             },
 
             holdDrift: {
@@ -256,8 +256,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             posResponsiveness: 1.4,
             radiusBaseResponsiveness: 16,
             radiusBeatBoost: 22,
-            colorBaseResponsiveness: 4,
-            colorClarityBoost: 4,
+            colorBaseResponsiveness: 10,
+            colorClarityBoost: 7,
         },
     } as const;
 
@@ -269,12 +269,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         envelope: 0,
         moveGroup: 0 as 0 | 1,
     };
-
-    // const getHueDistanceDeg = (from: number, to: number): number => {
-    //     const delta = wrapHue(to - from);
-    //     const shortest = delta > 180 ? delta - 360 : delta;
-    //     return Math.abs(shortest);
-    // };
 
     const beatEnvelope = new BeatEnvelope({
         gateCooldownMs: TUNING.beat.env.gateCooldownMs,
@@ -290,10 +284,10 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         holdAfterSilenceMs: TUNING.color.holdAfterSilenceMs,
         minStableMs: TUNING.color.minStableMs,
         minHoldMs: TUNING.color.minHoldMs,
-        smoothingBase: 0.06,
-        smoothingClarityScale: 0.30,
+        smoothingBase: 0.08,
+        smoothingClarityScale: 0.32,
         microSemitoneRange: 0.5,
-        deadbandFrac: 0.35,
+        deadbandFrac: 0.4,
     });
 
     const colorPolicy = new PitchColorPolicy({
@@ -359,7 +353,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     };
 
     const updateGlobalPitchColorTargets = (clarity: number, pitchHz: number): void => {
-        
         const phaseResult = pitchColorController.step({
             pitchHz,
             clarity,
