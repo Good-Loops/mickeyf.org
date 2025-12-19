@@ -1,4 +1,5 @@
 import { getRandomInt } from "@/utils/random";
+import { wrap } from "node:module";
 
 export type HslColor = { hue: number; saturation: number; lightness: number };
 
@@ -13,18 +14,26 @@ export const toHslString = (color: HslColor) => `hsl(${color.hue}, ${color.satur
 export const toHslaString = (color: HslColor, alpha: number) => `hsla(${color.hue}, ${color.saturation}%, ${color.lightness}%, ${alpha})`;
 
 export const parseHslString = (hsl: string): HslColor => {
-    const raw = hsl.slice(4, -1).split(",").map(s => s.trim());
-    const hue = parseInt(raw[0], 10);
-    const saturation = parseInt(raw[1], 10);
-    const lightness = parseInt(raw[2], 10);
+    const rawHsl = hsl.slice(4, -1).split(",").map(string => string.trim());
+
+    const hue = parseInt(rawHsl[0], 10);
+    const saturation = parseInt(rawHsl[1], 10);
+    const lightness = parseInt(rawHsl[2], 10);
+
     return { hue, saturation, lightness };
 };
 
+export const wrapHue = (h: number) => ((h % 360) + 360) % 360;
+
 const lerpHue = (h1: number, h2: number, t: number) => {
-    let delta = h2 - h1;
-    delta = ((delta + 180) % 360) - 180;
-    const h = h1 + delta * t;
-    return ((Math.round(h) % 360) + 360) % 360;
+    const a = wrapHue(h1);
+    const b = wrapHue(h2);
+
+    let delta = b - a;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+
+    return wrapHue(a + delta * t);
 };
 
 export const lerpHsl = (a: HslColor, b: HslColor, t: number): HslColor => ({

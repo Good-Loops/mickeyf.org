@@ -6,6 +6,22 @@ type PitchInfo = {
     baseHue: number;
 };
 
+const clampHz = (hz: number, min = 40, max = 4000): number => {
+    return Math.max(min, Math.min(max, hz));
+}
+
+const hzToMidi = (hz: number): number => {
+    return 69 + 12 * Math.log2(hz / 440);
+}
+
+const midiToPitchClass = (midi: number): number => {
+    return ((Math.round(midi) % 12) + 12) % 12;
+}
+
+const pitchClassToBaseHue = (pitchClass: number): number => {
+    return pitchClass * 30;
+}
+
 /**
  * Converts a frequency in hertz to pitch and hue information.
  * 
@@ -14,16 +30,19 @@ type PitchInfo = {
  * @returns PitchInfo to be used for color mapping 
  */
 const hzToPitchInfo = (hertz: number): PitchInfo => {
-    const minFreq = 40;
-    const maxFreq = 4000;
-
-    const hzClamped = Math.max(minFreq, Math.min(maxFreq, hertz));
-    const midi = 69 + 12 * Math.log2(hzClamped / 440);
+    const hzClamped = clampHz(hertz);
+    const midi = hzToMidi(hzClamped);
     const midiRounded = Math.round(midi);
-    const pitchClass = ((midiRounded % 12) + 12) % 12;
-    const baseHue = Math.round((pitchClass / 12) * 360);
+    const pitchClass = midiToPitchClass(midi);
+    const baseHue = pitchClassToBaseHue(pitchClass);
 
-    return { hzClamped, midi, midiRounded, pitchClass, baseHue };
+    return { 
+        hzClamped, 
+        midi, 
+        midiRounded, 
+        pitchClass, 
+        baseHue 
+    };
 };
 
 export default hzToPitchInfo;

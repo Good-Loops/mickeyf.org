@@ -8,7 +8,7 @@ import {
 } from "@/utils/random";
 import clamp from "@/utils/clamp";
 import expSmoothing from "@/utils/expSmoothing";
-import { getRandomHsl, HslRanges, toHslaString } from "@/utils/hsl";
+import { getRandomHsl, HslRanges, toHslaString, wrapHue } from "@/utils/hsl";
 
 import audioEngine from "@/animations/helpers/AudioEngine";
 import PitchHysteresis, { PitchResult } from "@/animations/helpers/PitchHysteresis";
@@ -102,7 +102,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                 kind: "silence",
                 silenceMs: Math.round(input.decision.silenceMs),
                 clarity: Number(input.clarity.toFixed(2)),
-                policyHue: committedHueBase,
+                policyHue: pitchColorState.committedHueBase,
                 renderedHue: input.color.hue,
                 reason: input.debug?.reason ?? "silence-hold",
                 nowMs: Math.round(input.nowMs),
@@ -231,6 +231,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
             minHoldMs: 120,         // prevents flicker
             minStableMs: 180,        // require pitch to stay on same note briefly
+            listenAfterSilenceMs: 220,
 
             holdDrift: {
                 deg: 3,
@@ -241,17 +242,50 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             posResponsiveness: 1.4,
             radiusBaseResponsiveness: 16,
             radiusBeatBoost: 22,
-            colorBaseResponsiveness: 3.5,
+            colorBaseResponsiveness: 4,
             colorClarityBoost: 4,
         },
     } as const;
 
-    const wrapHue = (h: number) => ((h % 360) + 360) % 360;
+    type PitchColorState = {
+        committedHueBase: number;
+        committedColorBase: {
+            hue: number;
+            saturation: number;
+            lightness: number;
+        } | null;
 
-    // “committed” hue base and LFO (low frequency oscillator) phase (radians)
-    let committedHueBase = 0;
-    let holdLfoPhase = 0;
-    let hasCommittedHue = false;
+        committedAtMs: number;
+
+        hasCommittedHue: boolean;
+        holdListening: boolean;
+
+        holdHueLfoPhase: number;
+        localSilenceMs: number;
+    };
+
+    const pitchColorState: PitchColorState = {
+        committedHueBase: 0,
+        committedColorBase: null,
+
+        committedAtMs: 0,
+
+        hasCommittedHue: false,
+        holdListening: true,
+
+        holdHueLfoPhase: 0,
+        localSilenceMs: 0,
+    };
+
+    const resetPitchColorState = () => {
+        pitchColorState.committedHueBase = 0;
+        pitchColorState.committedColorBase = null;
+        pitchColorState.committedAtMs = 0;
+        pitchColorState.hasCommittedHue = false;
+        pitchColorState.holdListening = true;
+        pitchColorState.holdHueLfoPhase = 0;
+        pitchColorState.localSilenceMs = 0;
+    };
 
     const beatMove = {
         lastMoveAtMs: -Infinity,
@@ -333,6 +367,47 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     };
 
     const updateGlobalPitchColorTargets = (clarity: number, pitchHz: number): void => {
+        time.colorElapsedMs += time.deltaMs;
+        const elapsedMs = time.colorElapsedMs;
+
+        // Hold phase (no policy evaluation)
+        if (pitchColorState.hasCommittedHue && !pitchColorState.holdListening) {
+            // Check if hold time expired
+            const holdDurationMs = time.nowMs - pitchColorState.committedAtMs;
+
+            if (holdDurationMs >= 800) {
+                pitchColorState.holdListening = true;
+                pitchColorState.localSilenceMs = 0;
+                time.colorElapsedMs = 0;
+                return; // Still do NOT evaluate policy this frame
+            }
+
+            if (elapsedMs < TUNING.intervals.colorIntervalMs) return;
+
+            time.colorElapsedMs = 0;
+
+            const dtSec = elapsedMs / 1000;
+            pitchColorState.holdHueLfoPhase +=
+                dtSec * (TUNING.color.holdDrift.hz * Math.PI * 2);
+
+            const drift =
+                Math.sin(pitchColorState.holdHueLfoPhase) ** 2 *
+                TUNING.color.holdDrift.deg;
+
+            if (pitchColorState.committedColorBase) {
+                const driftColor = {
+                    hue: wrapHue(pitchColorState.committedHueBase + drift),
+                    saturation: pitchColorState.committedColorBase.saturation,
+                    lightness: pitchColorState.committedColorBase.lightness,
+                };
+
+                for (const circle of circles) circle.targetColor = driftColor;
+            }
+
+            return;
+        }
+
+        // Listening phase (policy evaluation allowed)
         const decision = colorPolicy.decideWithDebug({
             pitchHz,
             clarity,
@@ -344,9 +419,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             decision.result.kind === "pitch" && 
             decision.result.changed === true;
 
-        time.colorElapsedMs += time.deltaMs;
-
-        if(!isCommit && time.colorElapsedMs < TUNING.intervals.colorIntervalMs) return;
+        if(!isCommit && elapsedMs < TUNING.intervals.colorIntervalMs) return;
+        time.colorElapsedMs = 0;
 
         debugDecisionSummary({
             decision: decision.result,
@@ -354,11 +428,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             pitchHz,
             nowMs: time.nowMs,
             policyHue: decision.color.hue,
-            renderedHue: hasCommittedHue ? committedHueBase : decision.color.hue,
+            renderedHue: pitchColorState.hasCommittedHue ? pitchColorState.committedHueBase : decision.color.hue,
         });
-
-        const elapsedMs = time.colorElapsedMs;
-        time.colorElapsedMs = 0;
 
         debugPitch({
             clarity,
@@ -372,32 +443,32 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
         // Silence: keep whatever we already have (no drift, no reassignment).
         if (decision.result.kind === "silence") {
-            holdLfoPhase = 0;
-            return;
+            pitchColorState.localSilenceMs += elapsedMs;
+
+            if(pitchColorState.localSilenceMs >= TUNING.color.listenAfterSilenceMs) {
+                pitchColorState.holdHueLfoPhase = 0;
+                pitchColorState.holdListening = true;
+                pitchColorState.localSilenceMs = 0;
+                time.colorElapsedMs = 0;
+                return;
+            }
+        } else {
+            pitchColorState.localSilenceMs = 0;
         }
 
-        if (isCommit || !hasCommittedHue) {
-            for (const c of circles) c.targetColor = decision.color;
+        // Commit phase
+        if (isCommit || !pitchColorState.hasCommittedHue) {
+            pitchColorState.committedColorBase = decision.color;
+            pitchColorState.committedHueBase = decision.color.hue;
+            pitchColorState.committedAtMs = time.nowMs;
+            
+            for (const circle of circles) circle.targetColor = pitchColorState.committedColorBase;
 
-            committedHueBase = decision.color.hue;
-            holdLfoPhase = 0;
-            hasCommittedHue = true;
+            pitchColorState.holdHueLfoPhase = 0;
+            pitchColorState.hasCommittedHue = true;
+            pitchColorState.holdListening = false;
             return;
         }
-
-        // Holding: apply a tiny LFO drift around the committed hue base.
-        const dtSec = elapsedMs / 1000;
-        holdLfoPhase += dtSec * (TUNING.color.holdDrift.hz * Math.PI * 2);
-
-        const drift = Math.sin(holdLfoPhase) * Math.sin(holdLfoPhase) * TUNING.color.holdDrift.deg;
-
-        const driftColor = {
-            hue: wrapHue(committedHueBase + drift),
-            saturation: decision.color.saturation,
-            lightness: decision.color.lightness,
-        };
-
-        for (const c of circles) c.targetColor = driftColor;
     };
 
     const updateTargetRadii = (): void => {
@@ -554,8 +625,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         if (audio.isPlaying && !wasPlaying) {
             pitchTracker.reset();
             beatEnvelope.reset();
-            hasCommittedHue = false;
-            holdLfoPhase = 0;
+            resetPitchColorState();
         }
         wasPlaying = audio.isPlaying;
 
