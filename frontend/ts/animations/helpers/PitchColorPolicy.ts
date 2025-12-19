@@ -1,7 +1,8 @@
 import PitchHysteresis, { PitchResult } from "@/animations/helpers/PitchHysteresis";
 import clamp from "@/utils/clamp";
 import { getRandomHsl, HslColor, HslRanges } from "@/utils/hsl";
-import hzToPitchInfo from "@/animations/helpers/hertzToPitchInfo";
+import hzToPitchInfo from "@/animations/helpers/pitchInfo";
+import pitchClassToHue from "@/animations/helpers/pitchClassToHue";
 
 type PitchColorPolicyDeps = {
     tracker: PitchHysteresis;
@@ -81,11 +82,7 @@ export default class PitchColorPolicy {
         const committedPitchClass = result.pitchClass; // 0..11
         const info = hzToPitchInfo(result.hz);
 
-        // Adjust baseHue to match the COMMITTED pitch class (not the raw detected one).
-        // Assumes pitch classes are spaced evenly (360/12 = 30 degrees).
-        const SEMI_HUE = 360 / 12;
-        const pitchClassDelta = committedPitchClass - info.pitchClass;
-        const committedBaseHue = (info.baseHue + pitchClassDelta * SEMI_HUE + 360) % 360;
+        const committedBaseHue = pitchClassToHue(committedPitchClass);
 
         const finalHue = (committedBaseHue + hueOffset + 360) % 360;
 

@@ -1,9 +1,8 @@
-type PitchInfo = {
+export type PitchInfo = {
     hzClamped: number;
     midi: number;
     midiRounded: number;
     pitchClass: number;
-    baseHue: number;
 };
 
 const clampHz = (hz: number, min = 40, max = 4000): number => {
@@ -18,10 +17,6 @@ const midiToPitchClass = (midi: number): number => {
     return ((Math.round(midi) % 12) + 12) % 12;
 }
 
-const pitchClassToBaseHue = (pitchClass: number): number => {
-    return pitchClass * 30;
-}
-
 /**
  * Converts a frequency in hertz to pitch and hue information.
  * 
@@ -34,14 +29,12 @@ const hzToPitchInfo = (hertz: number): PitchInfo => {
     const midi = hzToMidi(hzClamped);
     const midiRounded = Math.round(midi);
     const pitchClass = midiToPitchClass(midi);
-    const baseHue = pitchClassToBaseHue(pitchClass);
 
     return { 
         hzClamped, 
         midi, 
         midiRounded, 
-        pitchClass, 
-        baseHue 
+        pitchClass
     };
 };
 
