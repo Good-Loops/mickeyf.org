@@ -11,9 +11,9 @@ import expSmoothing from "@/utils/expSmoothing";
 import { getRandomHsl, HslRanges, toHslaString } from "@/utils/hsl";
 
 import audioEngine from "@/animations/helpers/AudioEngine";
-import PitchHysteresis, { PitchResult } from "@/animations/helpers/PitchHysteresis";
-import PitchColorPolicy, { type PitchColorDebug } from "@/animations/helpers/PitchColorPolicy";
-import PitchColorPhaseController, { type PitchColorPhaseDebug } from "@/animations/helpers/PitchColorPhaseController";
+import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
+import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
+import PitchColorPhaseController from "@/animations/helpers/PitchColorPhaseController";
 import BeatEnvelope from "@/animations/helpers/BeatEnvelope";
 import groupByParity from "@/animations/helpers/groupByParity";
 
@@ -40,146 +40,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     app.canvas.classList.add("dancing-circles__canvas");
     container.append(app.canvas);
 
-    const DEBUG = {
-        pitch: true,
-        deepPitch: true,
-        everyMs: 50,
-    };
-
-    const lastHueByPitchClass = new Array<number>(12).fill(-1);
-
-    let summaryElapsedMs = 0;
-
-    const debugDecisionSummary = (input: {
-        decision: PitchResult;
-        clarity: number;
-        pitchHz: number;
-        nowMs: number;
-        renderedHue: number;
-        policyHue: number;
-    }) => {
-        if (!DEBUG.pitch) return;
-
-        summaryElapsedMs += time.deltaMs;
-        if (summaryElapsedMs < 200) return; // 5x/sec
-        summaryElapsedMs = 0;
-
-        const tracker = pitchTracker.getDebugState();
-
-        console.log("PITCH_SUMMARY", JSON.stringify({
-            t: Math.round(input.nowMs),
-            kind: input.decision.kind,
-            hz: Math.round(input.pitchHz),
-            clarity: Number(input.clarity.toFixed(2)),
-            committedPc: tracker.committedPitchClass,
-            candidatePc: tracker.candidatePitchClass,
-            stableMs: Math.round(tracker.candidateStableMs),
-            silenceMs: Math.round(tracker.silenceMs),
-            policyHue: Math.round(input.policyHue),
-            renderedHue: Math.round(input.renderedHue),
-        }));
-    };
-
-
-    let debugElapsedMs = 0;
-
-    const debugPitch = (input: {
-        clarity: number;
-        color: { hue: number; saturation: number; lightness: number };
-        noteStep: boolean;
-        decision: PitchResult;
-        debug?: PitchColorDebug;
-        phaseDebug?: PitchColorPhaseDebug;
-        deltaMs: number;
-        nowMs: number;
-    }) => {
-        if (!DEBUG.pitch) return;
-
-        debugElapsedMs += input.deltaMs;
-        if (debugElapsedMs < DEBUG.everyMs) return;
-        debugElapsedMs = 0;
-
-        if (input.decision.kind === "silence") {
-            console.log({
-                kind: "silence",
-                silenceMs: Math.round(input.decision.silenceMs),
-                clarity: Number(input.clarity.toFixed(2)),
-                policyHue: input.debug?.finalHue ?? input.color.hue,
-                renderedHue: input.color.hue,
-                reason: input.debug?.reason ?? "silence-hold",
-                nowMs: Math.round(input.nowMs),
-                phase: input.phaseDebug?.phase ?? "listening",
-            });
-            return;
-        }
-
-        const pitchClass = input.decision.pitchClass;
-
-        const prevHue = lastHueByPitchClass[pitchClass];
-        lastHueByPitchClass[pitchClass] = input.color.hue;
-
-        const applied = input.debug?.applied === true;
-
-        const tracker = pitchTracker.getDebugState();
-
-        // console.table([{
-        //     t: Math.round(input.nowMs),
-        //     hz: Math.round(input.decision.hz),
-        //     midi: Number(input.decision.midi.toFixed(2)),
-        //     pc: input.decision.pitchClass,
-        //     changed: input.decision.changed,
-        //     frac: Number(input.decision.fractionalDistance.toFixed(2)),
-        //     applied: input.debug?.applied ?? false,
-        //     reason: input.debug?.reason,
-        // }]);
-
-        if (DEBUG.deepPitch && input.debug?.applied) {
-            console.log("PITCH_COMMIT", JSON.stringify({
-                    kind: "pitch",
-                    hzSmoothed: Math.round(input.decision.hz),
-                    midi: Number(input.decision.midi.toFixed(2)),
-                    pitchClass,
-                    changed: input.decision.changed,
-                    frac: Number(input.decision.fractionalDistance.toFixed(2)),
-                    
-                    centsFromNearest: Math.round(input.decision.fractionalDistance * 100),
-                    absFrac: Number(Math.abs(input.decision.fractionalDistance).toFixed(2)),
-                    
-                    heldHue: input.color.hue,
-                    computedHue: input.debug?.finalHue ?? null,
-                    hueOffset: input.debug?.hueOffset ?? null,
-                    
-                    hueDeltaFromLastSameNote: prevHue === -1 ? null : input.color.hue - prevHue,
-                    hzClamped: input.debug?.hzClamped ?? null,
-                    nowMs: Math.round(input.nowMs),
-                    
-                    clarity: Number(input.clarity.toFixed(2)),
-                    noteStep: input.noteStep,
-                    reason: input.debug?.reason,
-                    applied,
-                    phase: input.phaseDebug?.phase ?? "listening",
-                    commitTransitionActive: input.phaseDebug?.commitTransitionActive ?? false,
-                    commitTransitionHueDelta: input.phaseDebug?.commitTransitionHueDelta ?? 0,
-                    
-                    minStableMs: tracker.minStableMs,
-                    minHoldMs: tracker.minHoldMs,
-                    deadbandFrac: tracker.deadbandFrac,
-                    
-                    commitMeetsStabilityCriteria:
-                        tracker.candidateStableMs >= tracker.minStableMs &&
-                        Math.abs(input.decision.fractionalDistance) <= tracker.deadbandFrac,
-                    
-                    trackerCommittedPitchClass: tracker.committedPitchClass,
-                    trackerCandidatePitchClass: tracker.candidatePitchClass,
-                    trackerCandidateStableMs: Math.round(tracker.candidateStableMs),
-                    trackerSilenceMs: Math.round(tracker.silenceMs),
-                    trackerLastCommitAtMs: Math.round(tracker.lastCommitAtMs),
-                    candidateEqualsCommitted: tracker.candidatePitchClass === tracker.committedPitchClass,
-                }, null, 2)
-            );
-        }
-    };
-    
     const bounds = new CircleBounds(CANVAS_WIDTH, CANVAS_HEIGHT);
     const circleCount = 12;
     const circles = Array.from({ length: circleCount }, (_, i) => 
@@ -359,28 +219,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             nowMs: time.nowMs,
             deltaMs: time.deltaMs,
         });
-
-        if(phaseResult.decision) {
-            debugDecisionSummary({
-                decision: phaseResult.decision.result,
-                clarity,
-                pitchHz,
-                nowMs: time.nowMs,
-                policyHue: phaseResult.decision.color.hue,
-                renderedHue: phaseResult.color.hue,
-            });
-
-            debugPitch({
-                clarity,
-                color: phaseResult.color,
-                noteStep: TUNING.color.noteStep,
-                decision: phaseResult.decision.result,
-                debug: phaseResult.decision.debug,
-                phaseDebug: phaseResult.debug,
-                deltaMs: time.deltaMs,
-                nowMs: time.nowMs,
-            });
-        }
 
         for (const circle of circles) circle.targetColor = phaseResult.color;
     };

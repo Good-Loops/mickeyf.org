@@ -148,19 +148,6 @@ export default class PitchHysteresis {
     get candidatePitchClass(): number { return this._candidatePitchClass; }
     get candidateStableMs(): number { return this._candidateStableMs; }
 
-    getDebugState() {
-        return {
-            committedPitchClass: this._committedPitchClass,
-            candidatePitchClass: this._candidatePitchClass,
-            candidateStableMs: this._candidateStableMs,
-            silenceMs: this.silenceMs,
-            lastCommitAtMs: this.lastCommitAtMs,
-            minStableMs: this.tuning.minStableMs,
-            minHoldMs: this.tuning.minHoldMs,
-            deadbandFrac: this.tuning.deadbandFrac,
-        };
-    }
-
     static hzToMidi(hz: number): number {
         return 69 + 12 * Math.log2(hz / 440);
     }

@@ -42,20 +42,9 @@ export type PitchColorPhaseStepInput = {
     deltaMs: number;
 };
 
-export type PitchColorPhaseDebug = {
-    phase: "hold" | "listening";
-    holdListening: boolean;
-    holdDurationMs: number;
-    localSilenceMs: number;
-    commitTransitionActive: boolean;
-    commitTransitionHueDelta: number;
-    noteStep: boolean;
-};
-
 export type PitchColorPhaseStepResult = {
     color: HslColor;
     decision?: ColorDecision;
-    debug: PitchColorPhaseDebug;
 };
 
 export default class PitchColorPhaseController {
@@ -115,7 +104,7 @@ export default class PitchColorPhaseController {
             return this.handleHoldPhase(input);
         }
 
-        const decision = this.deps.policy.decideWithDebug({
+        const decision = this.deps.policy.decide({
             pitchHz: input.pitchHz,
             clarity: input.clarity,
             nowMs: input.nowMs,
@@ -133,7 +122,6 @@ export default class PitchColorPhaseController {
             return {
                 color,
                 decision: undefined,
-                debug: this.buildDebug("listening"),
             };
         }
 
@@ -152,7 +140,6 @@ export default class PitchColorPhaseController {
         return {
             color,
             decision,
-            debug: this.buildDebug("listening"),
         };
     }
 
@@ -197,7 +184,6 @@ export default class PitchColorPhaseController {
 
         return {
             color,
-            debug: this.buildDebug("hold", holdDurationMs),
         };
     }
 
@@ -276,20 +262,5 @@ export default class PitchColorPhaseController {
         if (delta > 180) delta -= 360;
         if (delta < -180) delta += 360;
         return delta;
-    }
-
-    private buildDebug(phase: PitchColorPhaseDebug["phase"], holdDurationMs = 0): PitchColorPhaseDebug {
-        return {
-            phase,
-            holdListening: this.state.holdListening,
-            holdDurationMs,
-            localSilenceMs: this.state.localSilenceMs,
-            commitTransitionActive: this.state.commitTransition.active,
-            commitTransitionHueDelta: this.hueDistance(
-                this.state.commitTransition.color.hue,
-                this.state.commitTransition.target.hue
-            ),
-            noteStep: this.deps.tuning.noteStep,
-        };
     }
 }

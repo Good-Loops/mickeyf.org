@@ -23,23 +23,9 @@ type DecideInput = {
     dtMs: number;
 };
 
-export type PitchColorDebug = {
-    hzIn: number;
-    hzClamped: number;           // after clamp
-    midi: number;
-    pitchClassCommitted: number;
-    frac: number;
-    baseHue: number;
-    hueOffset: number;
-    finalHue: number;
-    applied: boolean;         // did we update lastGood?
-    reason: "silence-hold" | "silence-new" | "noteStep-hold" | "pitch-applied";
-};
-
 export type ColorDecision = {
     color: HslColor;
     result: PitchResult;
-    debug: PitchColorDebug;
 };
 
 export default class PitchColorPolicy {
@@ -49,7 +35,7 @@ export default class PitchColorPolicy {
         this.lastGood = deps.initialColor ?? { hue: 0, saturation: 50, lightness: 50 };
     }
 
-    decideWithDebug({ pitchHz, clarity, nowMs, dtMs }: DecideInput): ColorDecision {
+    decide({ pitchHz, clarity, nowMs, dtMs }: DecideInput): ColorDecision {
         const { tracker, tuning } = this.deps;
 
         const result = tracker.update({ pitchHz, clarity, nowMs, dtMs });
@@ -61,18 +47,6 @@ export default class PitchColorPolicy {
             return {
                 color: this.lastGood,
                 result,
-                debug: {
-                    hzIn: pitchHz,
-                    hzClamped: NaN,
-                    midi: NaN,
-                    pitchClassCommitted: NaN,
-                    frac: NaN,
-                    baseHue: NaN,
-                    hueOffset: 0,
-                    finalHue: this.lastGood.hue,
-                    applied: silentLong,
-                    reason: silentLong ? "silence-new" : "silence-hold",
-                },
             };
         }
 
@@ -90,18 +64,6 @@ export default class PitchColorPolicy {
             return {
                 color: this.lastGood,
                 result,
-                debug: {
-                    hzIn: pitchHz,
-                    hzClamped: info.hzClamped,
-                    midi: info.midi,
-                    pitchClassCommitted: committedPitchClass,
-                    frac: result.fractionalDistance,
-                    baseHue: committedBaseHue,
-                    hueOffset,
-                    finalHue,
-                    applied: false,
-                    reason: "noteStep-hold",
-                },
             };
         }
 
@@ -114,23 +76,7 @@ export default class PitchColorPolicy {
         return {
             color: this.lastGood,
             result,
-            debug: {
-                hzIn: pitchHz,
-                hzClamped: info.hzClamped,
-                midi: info.midi,
-                pitchClassCommitted: committedPitchClass,
-                frac: result.fractionalDistance,
-                baseHue: committedBaseHue,
-                hueOffset,
-                finalHue,
-                applied: true,
-                reason: "pitch-applied",
-            },
         };
-    }
-
-    decide(input: DecideInput): HslColor {
-        return this.decideWithDebug(input).color;
     }
 
     get lastGoodColor(): HslColor { return this.lastGood; }
