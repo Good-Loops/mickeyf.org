@@ -40,7 +40,7 @@ const App: React.FC = () => {
       </main>
       <footer className="footer">
         <p className="footer__text">
-          <a className="footer__link" href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0 Universal</a>
+          © 2025 Michel Fingergut {/* · Portfolio */}
         </p>
       </footer>
     </div>

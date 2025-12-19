@@ -1,4 +1,4 @@
-import { lerpHsl, toHslString, type HslColor } from "@/utils/hsl";
+import { lerpHsl, type HslColor } from "@/utils/hsl";
 
 export default class PaletteTween {
     currentColors: HslColor[];

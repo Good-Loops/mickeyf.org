@@ -4,6 +4,7 @@ import FullscreenButton from "@/components/FullscreenButton";
 import MusicControls from "@/components/MusicControls";
 import audioEngine from "@/animations/helpers/AudioEngine";
 import useAudioEngineState from "@/hooks/useAudioEngineState";
+import { CANVAS_WIDTH } from "@/utils/constants";
 
 const DancingCircles: React.FC = () => {
 	const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
@@ -46,8 +47,11 @@ const DancingCircles: React.FC = () => {
     const handleStop = () => audioEngine.stop();
 
 	return (
-		<section className="dancing-circles">
-			<h1 className="canvas-title">Dancing Circles</h1>
+		<section 
+            className="dancing-circles"
+            style={{ ["--canvas-width" as any]: `${CANVAS_WIDTH}px` }}
+        >
+			<h1 className="dancing-circles__title canvas-title">Dancing Circles</h1>
 
 			<div 
 				className="dancing-circles__canvas-wrapper" 

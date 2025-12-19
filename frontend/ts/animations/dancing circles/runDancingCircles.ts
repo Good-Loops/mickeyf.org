@@ -18,7 +18,6 @@ import groupByParity from "@/animations/helpers/groupByParity";
 
 import Circle from "./classes/Circle";
 import CircleBounds from "./classes/CircleBounds";
-import { now } from "tone";
 
 type DancingCirclesDeps = {
     container: HTMLElement;
@@ -42,10 +41,44 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
     const DEBUG = {
         pitch: true,
-        everyMs: 250,
+        deepPitch: true,
+        everyMs: 50,
     };
 
     const lastHueByPitchClass = new Array<number>(12).fill(-1);
+
+    let summaryElapsedMs = 0;
+
+    const debugDecisionSummary = (input: {
+        decision: PitchResult;
+        clarity: number;
+        pitchHz: number;
+        nowMs: number;
+        renderedHue: number;
+        policyHue: number;
+    }) => {
+        if (!DEBUG.pitch) return;
+
+        summaryElapsedMs += time.deltaMs;
+        if (summaryElapsedMs < 200) return; // 5x/sec
+        summaryElapsedMs = 0;
+
+        const tracker = pitchTracker.getDebugState();
+
+        console.log("PITCH_SUMMARY", JSON.stringify({
+            t: Math.round(input.nowMs),
+            kind: input.decision.kind,
+            hz: Math.round(input.pitchHz),
+            clarity: Number(input.clarity.toFixed(2)),
+            committedPc: tracker.committedPitchClass,
+            candidatePc: tracker.candidatePitchClass,
+            stableMs: Math.round(tracker.candidateStableMs),
+            silenceMs: Math.round(tracker.silenceMs),
+            policyHue: Math.round(input.policyHue),
+            renderedHue: Math.round(input.renderedHue),
+        }));
+    };
+
 
     let debugElapsedMs = 0;
 
@@ -69,37 +102,76 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                 kind: "silence",
                 silenceMs: Math.round(input.decision.silenceMs),
                 clarity: Number(input.clarity.toFixed(2)),
-                hue: input.color.hue,
+                policyHue: committedHueBase,
+                renderedHue: input.color.hue,
                 reason: input.debug?.reason ?? "silence-hold",
                 nowMs: Math.round(input.nowMs),
             });
             return;
         }
 
-        const pc = ((input.decision.midiStep % 12) + 12) % 12;
+        const pitchClass = input.decision.pitchClass;
 
-        const prevHue = lastHueByPitchClass[pc];
-        lastHueByPitchClass[pc] = input.color.hue;
+        const prevHue = lastHueByPitchClass[pitchClass];
+        lastHueByPitchClass[pitchClass] = input.color.hue;
 
-        console.log({
-            kind: "pitch",
-            hzSmoothed: Math.round(input.decision.hz),
-            midi: Number(input.decision.midi.toFixed(2)),
-            midiStep: input.decision.midiStep,
-            pitchClass: pc,
-            changed: input.decision.changed,
-            frac: Number(input.decision.fractionalDistance.toFixed(2)),
-            hue: input.color.hue,
-            hueDeltaFromLastSameNote: prevHue === -1 ? null : input.color.hue - prevHue,
-            clarity: Number(input.clarity.toFixed(2)),
-            noteStep: input.noteStep,
-            hzClamped: input.debug?.hzClamped,
-            hueOffset: input.debug?.hueOffset,
-            finalHue: input.color.hue,
-            baseToFinalDelta: input.debug ? input.color.hue - input.debug.baseHue : null,
-            reason: input.debug?.reason,
-            nowMs: Math.round(input.nowMs),
-        });
+        const applied = input.debug?.applied === true;
+
+        const tracker = pitchTracker.getDebugState();
+
+        // console.table([{
+        //     t: Math.round(input.nowMs),
+        //     hz: Math.round(input.decision.hz),
+        //     midi: Number(input.decision.midi.toFixed(2)),
+        //     pc: input.decision.pitchClass,
+        //     changed: input.decision.changed,
+        //     frac: Number(input.decision.fractionalDistance.toFixed(2)),
+        //     applied: input.debug?.applied ?? false,
+        //     reason: input.debug?.reason,
+        // }]);
+
+        if (DEBUG.deepPitch && input.debug?.applied) {
+            console.log("PITCH_COMMIT", JSON.stringify({
+                    kind: "pitch",
+                    hzSmoothed: Math.round(input.decision.hz),
+                    midi: Number(input.decision.midi.toFixed(2)),
+                    pitchClass,
+                    changed: input.decision.changed,
+                    frac: Number(input.decision.fractionalDistance.toFixed(2)),
+                    
+                    centsFromNearest: Math.round(input.decision.fractionalDistance * 100),
+                    absFrac: Number(Math.abs(input.decision.fractionalDistance).toFixed(2)),
+                    
+                    heldHue: input.color.hue,
+                    computedHue: input.debug?.finalHue ?? null,
+                    hueOffset: input.debug?.hueOffset ?? null,
+                    
+                    hueDeltaFromLastSameNote: prevHue === -1 ? null : input.color.hue - prevHue,
+                    hzClamped: input.debug?.hzClamped ?? null,
+                    nowMs: Math.round(input.nowMs),
+                    
+                    clarity: Number(input.clarity.toFixed(2)),
+                    noteStep: input.noteStep,
+                    reason: input.debug?.reason,
+                    applied,
+                    
+                    minStableMs: tracker.minStableMs,
+                    minHoldMs: tracker.minHoldMs,
+                    deadbandFrac: tracker.deadbandFrac,
+                    
+                    commitMeetsStabilityCriteria:
+                        tracker.candidateStableMs >= tracker.minStableMs &&
+                        Math.abs(input.decision.fractionalDistance) <= tracker.deadbandFrac,
+                    
+                    trackerCommittedPitchClass: tracker.committedPitchClass,
+                    trackerCandidatePitchClass: tracker.candidatePitchClass,
+                    trackerCandidateStableMs: Math.round(tracker.candidateStableMs),
+                    trackerSilenceMs: Math.round(tracker.silenceMs),
+                    trackerLastCommitAtMs: Math.round(tracker.lastCommitAtMs),
+                    candidateEqualsCommitted: tracker.candidatePitchClass === tracker.committedPitchClass,
+                }, null, 2)
+            );
+        }
     };
     
     const bounds = new CircleBounds(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -111,13 +183,12 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     }}));
 
     const BASE_SCALE = 1;
-    const COLOR_CHANGING_CIRCLES = 2;
 
     const TUNING = {
         intervals: {
             idleTargetUpdateIntervalMs: 1000,
             controlTargetUpdateIntervalMs: 10,
-            colorIntervalMs: 70,
+            colorIntervalMs: 50,
         },
         beat: {
             moveThreshold: 0.09,
@@ -142,7 +213,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             },
         },
         color: {
-            minClarity: .20,
+            minClarity: .85,
             holdAfterSilenceMs: 3000,
             noteStep: true,
 
@@ -158,17 +229,29 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                 lightness: [40, 60],
             } satisfies HslRanges,   
 
-            minHoldMs: 60,         // prevents flicker
-            minStableMs: 20,        // require pitch to stay on same note briefly
+            minHoldMs: 120,         // prevents flicker
+            minStableMs: 180,        // require pitch to stay on same note briefly
+
+            holdDrift: {
+                deg: 3,
+                hz: .25
+            }
         },
         render: {
             posResponsiveness: 1.4,
             radiusBaseResponsiveness: 16,
             radiusBeatBoost: 22,
-            colorBaseResponsiveness: 2.5,
+            colorBaseResponsiveness: 3.5,
             colorClarityBoost: 4,
         },
     } as const;
+
+    const wrapHue = (h: number) => ((h % 360) + 360) % 360;
+
+    // “committed” hue base and LFO (low frequency oscillator) phase (radians)
+    let committedHueBase = 0;
+    let holdLfoPhase = 0;
+    let hasCommittedHue = false;
 
     const beatMove = {
         lastMoveAtMs: -Infinity,
@@ -196,11 +279,11 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         smoothingBase: 0.06,
         smoothingClarityScale: 0.30,
         microSemitoneRange: 0.5,
+        deadbandFrac: 0.35,
     });
 
     const colorPolicy = new PitchColorPolicy({
         tracker: pitchTracker,
-        baseRanges: circles[0].colorRanges,
         tuning: {
             noteStep: TUNING.color.noteStep,
             microHueDriftDeg: TUNING.color.microHueDriftDeg,
@@ -249,25 +332,37 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         };
     };
 
-    const updateTargetColors = (activeGroup: Circle[], clarity: number, pitchHz: number): void => {
-        time.colorElapsedMs += time.deltaMs;
-        if (time.colorElapsedMs < TUNING.intervals.colorIntervalMs) return;
-
-        const elapsed = time.colorElapsedMs;
-        time.colorElapsedMs = 0;
-
+    const updateGlobalPitchColorTargets = (clarity: number, pitchHz: number): void => {
         const decision = colorPolicy.decideWithDebug({
             pitchHz,
             clarity,
             nowMs: time.nowMs,
-            dtMs: elapsed,
+            dtMs: time.colorElapsedMs,
         });
 
-        const nextColor = decision.color;
+        const isCommit = 
+            decision.result.kind === "pitch" && 
+            decision.result.changed === true;
+
+        time.colorElapsedMs += time.deltaMs;
+
+        if(!isCommit && time.colorElapsedMs < TUNING.intervals.colorIntervalMs) return;
+
+        debugDecisionSummary({
+            decision: decision.result,
+            clarity,
+            pitchHz,
+            nowMs: time.nowMs,
+            policyHue: decision.color.hue,
+            renderedHue: hasCommittedHue ? committedHueBase : decision.color.hue,
+        });
+
+        const elapsedMs = time.colorElapsedMs;
+        time.colorElapsedMs = 0;
 
         debugPitch({
             clarity,
-            color: nextColor,
+            color: decision.color,
             noteStep: TUNING.color.noteStep,
             decision: decision.result,
             debug: decision.debug,
@@ -275,15 +370,34 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             nowMs: time.nowMs,
         });
 
-        // Apply to a few circles in the active group
-        if (activeGroup.length === 0) return;
-
-        const indices = getRandomIndexArray(activeGroup.length);
-        const count = Math.min(COLOR_CHANGING_CIRCLES, activeGroup.length);
-
-        for (let i = 0; i < count; i++) {
-            activeGroup[indices[i]].targetColor = nextColor;
+        // Silence: keep whatever we already have (no drift, no reassignment).
+        if (decision.result.kind === "silence") {
+            holdLfoPhase = 0;
+            return;
         }
+
+        if (isCommit || !hasCommittedHue) {
+            for (const c of circles) c.targetColor = decision.color;
+
+            committedHueBase = decision.color.hue;
+            holdLfoPhase = 0;
+            hasCommittedHue = true;
+            return;
+        }
+
+        // Holding: apply a tiny LFO drift around the committed hue base.
+        const dtSec = elapsedMs / 1000;
+        holdLfoPhase += dtSec * (TUNING.color.holdDrift.hz * Math.PI * 2);
+
+        const drift = Math.sin(holdLfoPhase) * Math.sin(holdLfoPhase) * TUNING.color.holdDrift.deg;
+
+        const driftColor = {
+            hue: wrapHue(committedHueBase + drift),
+            saturation: decision.color.saturation,
+            lightness: decision.color.lightness,
+        };
+
+        for (const c of circles) c.targetColor = driftColor;
     };
 
     const updateTargetRadii = (): void => {
@@ -345,12 +459,12 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     /**
      * Updates the position and color of a specified number of circles.
      * 
-     * @param numCircs - The number of circles to update.
+     * @param isPlaying - Indicates if the audio is currently playing.
      */
-    const updateIdleTargets = (numCircs: number, isPlaying: boolean): void => {
+    const updateIdleTargets = (isPlaying: boolean): void => {
         if(isPlaying) return;
         const randomIndexArray = getRandomIndexArray(circleCount);
-        for (let i = 0; i < numCircs; i++) {
+        for (let i = 0; i < circleCount; i++) {
             const circle = circles[randomIndexArray[i]];
 
             circle.targetX = getRandomX(
@@ -388,7 +502,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
         const activeGroup = beatFrame.moveGroup === 0 ? evenGroup : oddGroup;
 
-        updateTargetColors(activeGroup, audio.clarity, audio.pitchHz);
+        updateGlobalPitchColorTargets(audio.clarity, audio.pitchHz);
         updateTargetRadii();
 
         applyMusicDrift(activeGroup, audio.volumePercentage);
@@ -440,6 +554,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         if (audio.isPlaying && !wasPlaying) {
             pitchTracker.reset();
             beatEnvelope.reset();
+            hasCommittedHue = false;
+            holdLfoPhase = 0;
         }
         wasPlaying = audio.isPlaying;
 
@@ -460,7 +576,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         time.controlElapsedMs += time.deltaMs;
 
         if (time.idleElapsedMs >= TUNING.intervals.idleTargetUpdateIntervalMs) {
-            updateIdleTargets(COLOR_CHANGING_CIRCLES, audio.isPlaying);
+            updateIdleTargets(audio.isPlaying);
             time.idleElapsedMs = 0;
         }
 

@@ -100,7 +100,3 @@ From the project root (WSL):
 ```
 
 This stops local infrastructure (Cloud SQL Proxy).
-
-## License
-
-mickeyf.org is freely available under the Creative Commons Zero v1.0 Universal license - detailed in the [LICENSE](LICENSE) file.

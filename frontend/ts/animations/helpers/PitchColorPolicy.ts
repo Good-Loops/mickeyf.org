@@ -1,9 +1,7 @@
-import hertzToHsl from "@/animations/helpers/hertzToHsl";
 import PitchHysteresis, { PitchResult } from "@/animations/helpers/PitchHysteresis";
 import clamp from "@/utils/clamp";
 import { getRandomHsl, HslColor, HslRanges } from "@/utils/hsl";
-
-import { hzToPitchInfo } from "@/animations/helpers/hertzToHsl";
+import hzToPitchInfo from "@/animations/helpers/hertzToPitchInfo";
 
 type PitchColorPolicyDeps = {
     tracker: PitchHysteresis;
@@ -14,7 +12,6 @@ type PitchColorPolicyDeps = {
         pitchLightness: number;
         silenceRanges: HslRanges;
     };
-    baseRanges: HslRanges;
     initialColor?: HslColor;
 };
 
@@ -29,8 +26,7 @@ export type PitchColorDebug = {
     hzIn: number;
     hzClamped: number;           // after clamp
     midi: number;
-    midiStep: number;
-    pitchClass: number;
+    pitchClassCommitted: number;
     frac: number;
     baseHue: number;
     hueOffset: number;
@@ -53,7 +49,7 @@ export default class PitchColorPolicy {
     }
 
     decideWithDebug({ pitchHz, clarity, nowMs, dtMs }: DecideInput): ColorDecision {
-        const { tracker, tuning, baseRanges } = this.deps;
+        const { tracker, tuning } = this.deps;
 
         const result = tracker.update({ pitchHz, clarity, nowMs, dtMs });
 
@@ -68,8 +64,7 @@ export default class PitchColorPolicy {
                     hzIn: pitchHz,
                     hzClamped: NaN,
                     midi: NaN,
-                    midiStep: tracker.committedMidiStep,
-                    pitchClass: NaN,
+                    pitchClassCommitted: NaN,
                     frac: NaN,
                     baseHue: NaN,
                     hueOffset: 0,
@@ -83,8 +78,16 @@ export default class PitchColorPolicy {
         const fracNorm = result.fractionalDistance / tracker.microSemitoneRange;
         const hueOffset = clamp(fracNorm, -1, 1) * tuning.microHueDriftDeg;
 
+        const committedPitchClass = result.pitchClass; // 0..11
         const info = hzToPitchInfo(result.hz);
-        const finalHue = (info.baseHue + hueOffset + 360) % 360;
+
+        // Adjust baseHue to match the COMMITTED pitch class (not the raw detected one).
+        // Assumes pitch classes are spaced evenly (360/12 = 30 degrees).
+        const SEMI_HUE = 360 / 12;
+        const pitchClassDelta = committedPitchClass - info.pitchClass;
+        const committedBaseHue = (info.baseHue + pitchClassDelta * SEMI_HUE + 360) % 360;
+
+        const finalHue = (committedBaseHue + hueOffset + 360) % 360;
 
         if (tuning.noteStep && !result.changed) {
             return {
@@ -94,10 +97,9 @@ export default class PitchColorPolicy {
                     hzIn: pitchHz,
                     hzClamped: info.hzClamped,
                     midi: info.midi,
-                    midiStep: result.midiStep,
-                    pitchClass: info.pitchClass,
+                    pitchClassCommitted: committedPitchClass,
                     frac: result.fractionalDistance,
-                    baseHue: info.baseHue,
+                    baseHue: committedBaseHue,
                     hueOffset,
                     finalHue,
                     applied: false,
@@ -106,15 +108,11 @@ export default class PitchColorPolicy {
             };
         }
 
-        this.lastGood = hertzToHsl({
-            hertz: info.hzClamped,
-            hueOffset,
-            ranges: {
-                ...baseRanges,
-                saturation: [tuning.pitchSaturation, tuning.pitchSaturation],
-                lightness: [tuning.pitchLightness, tuning.pitchLightness],
-            },
-        });
+        this.lastGood = {
+            hue: finalHue,
+            saturation: tuning.pitchSaturation,
+            lightness: tuning.pitchLightness,
+        };
 
         return {
             color: this.lastGood,
@@ -123,10 +121,9 @@ export default class PitchColorPolicy {
                 hzIn: pitchHz,
                 hzClamped: info.hzClamped,
                 midi: info.midi,
-                midiStep: result.midiStep,
-                pitchClass: info.pitchClass,
+                pitchClassCommitted: committedPitchClass,
                 frac: result.fractionalDistance,
-                baseHue: info.baseHue,
+                baseHue: committedBaseHue,
                 hueOffset,
                 finalHue,
                 applied: true,
