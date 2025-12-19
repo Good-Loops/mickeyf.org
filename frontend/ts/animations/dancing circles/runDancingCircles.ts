@@ -8,11 +8,12 @@ import {
 } from "@/utils/random";
 import clamp from "@/utils/clamp";
 import expSmoothing from "@/utils/expSmoothing";
-import { getRandomHsl, HslRanges, toHslaString, wrapHue } from "@/utils/hsl";
+import { getRandomHsl, HslRanges, toHslaString } from "@/utils/hsl";
 
 import audioEngine from "@/animations/helpers/AudioEngine";
 import PitchHysteresis, { PitchResult } from "@/animations/helpers/PitchHysteresis";
 import PitchColorPolicy, { type PitchColorDebug } from "@/animations/helpers/PitchColorPolicy";
+import PitchColorPhaseController, { type PitchColorPhaseDebug } from "@/animations/helpers/PitchColorPhaseController";
 import BeatEnvelope from "@/animations/helpers/BeatEnvelope";
 import groupByParity from "@/animations/helpers/groupByParity";
 
@@ -88,6 +89,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         noteStep: boolean;
         decision: PitchResult;
         debug?: PitchColorDebug;
+        phaseDebug?: PitchColorPhaseDebug;
         deltaMs: number;
         nowMs: number;
     }) => {
@@ -102,10 +104,11 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                 kind: "silence",
                 silenceMs: Math.round(input.decision.silenceMs),
                 clarity: Number(input.clarity.toFixed(2)),
-                policyHue: pitchColorState.committedHueBase,
+                policyHue: input.debug?.finalHue ?? input.color.hue,
                 renderedHue: input.color.hue,
                 reason: input.debug?.reason ?? "silence-hold",
                 nowMs: Math.round(input.nowMs),
+                phase: input.phaseDebug?.phase ?? "listening",
             });
             return;
         }
@@ -154,6 +157,9 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
                     noteStep: input.noteStep,
                     reason: input.debug?.reason,
                     applied,
+                    phase: input.phaseDebug?.phase ?? "listening",
+                    commitTransitionActive: input.phaseDebug?.commitTransitionActive ?? false,
+                    commitTransitionHueDelta: input.phaseDebug?.commitTransitionHueDelta ?? 0,
                     
                     minStableMs: tracker.minStableMs,
                     minHoldMs: tracker.minHoldMs,
@@ -218,6 +224,10 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             noteStep: true,
 
             microHueDriftDeg: 6,
+            commitSmoothing: {
+                minHueDeltaDeg: 28,
+                durationMs: 140,
+            },
 
             // “Stable” saturation/lightness for pitch colors
             pitchSaturation: 85,
@@ -232,6 +242,10 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             minHoldMs: 120,         // prevents flicker
             minStableMs: 180,        // require pitch to stay on same note briefly
             listenAfterSilenceMs: 220,
+            commit: {
+                holdMs: 800,
+                smoothingResponsiveness: 8,
+            },
 
             holdDrift: {
                 deg: 3,
@@ -247,46 +261,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         },
     } as const;
 
-    type PitchColorState = {
-        committedHueBase: number;
-        committedColorBase: {
-            hue: number;
-            saturation: number;
-            lightness: number;
-        } | null;
-
-        committedAtMs: number;
-
-        hasCommittedHue: boolean;
-        holdListening: boolean;
-
-        holdHueLfoPhase: number;
-        localSilenceMs: number;
-    };
-
-    const pitchColorState: PitchColorState = {
-        committedHueBase: 0,
-        committedColorBase: null,
-
-        committedAtMs: 0,
-
-        hasCommittedHue: false,
-        holdListening: true,
-
-        holdHueLfoPhase: 0,
-        localSilenceMs: 0,
-    };
-
-    const resetPitchColorState = () => {
-        pitchColorState.committedHueBase = 0;
-        pitchColorState.committedColorBase = null;
-        pitchColorState.committedAtMs = 0;
-        pitchColorState.hasCommittedHue = false;
-        pitchColorState.holdListening = true;
-        pitchColorState.holdHueLfoPhase = 0;
-        pitchColorState.localSilenceMs = 0;
-    };
-
     const beatMove = {
         lastMoveAtMs: -Infinity,
     };
@@ -295,6 +269,12 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         envelope: 0,
         moveGroup: 0 as 0 | 1,
     };
+
+    // const getHueDistanceDeg = (from: number, to: number): number => {
+    //     const delta = wrapHue(to - from);
+    //     const shortest = delta > 180 ? delta - 360 : delta;
+    //     return Math.abs(shortest);
+    // };
 
     const beatEnvelope = new BeatEnvelope({
         gateCooldownMs: TUNING.beat.env.gateCooldownMs,
@@ -330,10 +310,23 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         },
     });
 
+    const pitchColorController = new PitchColorPhaseController({
+        policy: colorPolicy,
+        tuning: {
+            colorIntervalMs: TUNING.intervals.colorIntervalMs,
+            listenAfterSilenceMs: TUNING.color.listenAfterSilenceMs,
+            holdDrift: TUNING.color.holdDrift,
+            commit: {
+                holdMs: TUNING.color.commit.holdMs,
+                smoothingResponsiveness: TUNING.color.commit.smoothingResponsiveness,
+            },
+            noteStep: TUNING.color.noteStep,
+        },
+    });
+
     type TimeState = {
         deltaMs: number;
         nowMs: number;
-        colorElapsedMs: number;
         idleElapsedMs: number;
         controlElapsedMs: number;
     };
@@ -341,7 +334,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     const time: TimeState = {
         deltaMs: 0,
         nowMs: 0,
-        colorElapsedMs: 0,
         idleElapsedMs: 0,
         controlElapsedMs: 0,
     };
@@ -367,108 +359,37 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     };
 
     const updateGlobalPitchColorTargets = (clarity: number, pitchHz: number): void => {
-        time.colorElapsedMs += time.deltaMs;
-        const elapsedMs = time.colorElapsedMs;
-
-        // Hold phase (no policy evaluation)
-        if (pitchColorState.hasCommittedHue && !pitchColorState.holdListening) {
-            // Check if hold time expired
-            const holdDurationMs = time.nowMs - pitchColorState.committedAtMs;
-
-            if (holdDurationMs >= 800) {
-                pitchColorState.holdListening = true;
-                pitchColorState.localSilenceMs = 0;
-                time.colorElapsedMs = 0;
-                return; // Still do NOT evaluate policy this frame
-            }
-
-            if (elapsedMs < TUNING.intervals.colorIntervalMs) return;
-
-            time.colorElapsedMs = 0;
-
-            const dtSec = elapsedMs / 1000;
-            pitchColorState.holdHueLfoPhase +=
-                dtSec * (TUNING.color.holdDrift.hz * Math.PI * 2);
-
-            const drift =
-                Math.sin(pitchColorState.holdHueLfoPhase) ** 2 *
-                TUNING.color.holdDrift.deg;
-
-            if (pitchColorState.committedColorBase) {
-                const driftColor = {
-                    hue: wrapHue(pitchColorState.committedHueBase + drift),
-                    saturation: pitchColorState.committedColorBase.saturation,
-                    lightness: pitchColorState.committedColorBase.lightness,
-                };
-
-                for (const circle of circles) circle.targetColor = driftColor;
-            }
-
-            return;
-        }
-
-        // Listening phase (policy evaluation allowed)
-        const decision = colorPolicy.decideWithDebug({
+        
+        const phaseResult = pitchColorController.step({
             pitchHz,
             clarity,
             nowMs: time.nowMs,
-            dtMs: time.colorElapsedMs,
-        });
-
-        const isCommit = 
-            decision.result.kind === "pitch" && 
-            decision.result.changed === true;
-
-        if(!isCommit && elapsedMs < TUNING.intervals.colorIntervalMs) return;
-        time.colorElapsedMs = 0;
-
-        debugDecisionSummary({
-            decision: decision.result,
-            clarity,
-            pitchHz,
-            nowMs: time.nowMs,
-            policyHue: decision.color.hue,
-            renderedHue: pitchColorState.hasCommittedHue ? pitchColorState.committedHueBase : decision.color.hue,
-        });
-
-        debugPitch({
-            clarity,
-            color: decision.color,
-            noteStep: TUNING.color.noteStep,
-            decision: decision.result,
-            debug: decision.debug,
             deltaMs: time.deltaMs,
-            nowMs: time.nowMs,
         });
 
-        // Silence: keep whatever we already have (no drift, no reassignment).
-        if (decision.result.kind === "silence") {
-            pitchColorState.localSilenceMs += elapsedMs;
+        if(phaseResult.decision) {
+            debugDecisionSummary({
+                decision: phaseResult.decision.result,
+                clarity,
+                pitchHz,
+                nowMs: time.nowMs,
+                policyHue: phaseResult.decision.color.hue,
+                renderedHue: phaseResult.color.hue,
+            });
 
-            if(pitchColorState.localSilenceMs >= TUNING.color.listenAfterSilenceMs) {
-                pitchColorState.holdHueLfoPhase = 0;
-                pitchColorState.holdListening = true;
-                pitchColorState.localSilenceMs = 0;
-                time.colorElapsedMs = 0;
-                return;
-            }
-        } else {
-            pitchColorState.localSilenceMs = 0;
+            debugPitch({
+                clarity,
+                color: phaseResult.color,
+                noteStep: TUNING.color.noteStep,
+                decision: phaseResult.decision.result,
+                debug: phaseResult.decision.debug,
+                phaseDebug: phaseResult.debug,
+                deltaMs: time.deltaMs,
+                nowMs: time.nowMs,
+            });
         }
 
-        // Commit phase
-        if (isCommit || !pitchColorState.hasCommittedHue) {
-            pitchColorState.committedColorBase = decision.color;
-            pitchColorState.committedHueBase = decision.color.hue;
-            pitchColorState.committedAtMs = time.nowMs;
-            
-            for (const circle of circles) circle.targetColor = pitchColorState.committedColorBase;
-
-            pitchColorState.holdHueLfoPhase = 0;
-            pitchColorState.hasCommittedHue = true;
-            pitchColorState.holdListening = false;
-            return;
-        }
+        for (const circle of circles) circle.targetColor = phaseResult.color;
     };
 
     const updateTargetRadii = (): void => {
@@ -625,7 +546,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         if (audio.isPlaying && !wasPlaying) {
             pitchTracker.reset();
             beatEnvelope.reset();
-            resetPitchColorState();
+            pitchColorController.reset();
         }
         wasPlaying = audio.isPlaying;
 
