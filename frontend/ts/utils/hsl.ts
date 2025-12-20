@@ -1,5 +1,5 @@
+import clamp from "@/utils/clamp";
 import { getRandomInt } from "@/utils/random";
-import { wrap } from "node:module";
 
 export type HslColor = { hue: number; saturation: number; lightness: number };
 
@@ -9,9 +9,22 @@ export type HslRanges = {
     lightness: readonly [number, number];
 };
 
-export const toHslString = (color: HslColor) => `hsl(${color.hue}, ${color.saturation}%, ${color.lightness}%)`;
+const formatHue = (h: number): string => {
+	// Normalize first (keeps range stable), then round to avoid tiny float noise.
+	const wrapped = wrapHue(Number.isFinite(h) ? h : 0);
+	// 3 decimals is plenty for smooth lerp and prevents 1e-7 style output.
+	const rounded = Math.round(wrapped * 1000) / 1000;
+	// Ensure we never return "-0"
+	const safe = Object.is(rounded, -0) ? 0 : rounded;
 
-export const toHslaString = (color: HslColor, alpha: number) => `hsla(${color.hue}, ${color.saturation}%, ${color.lightness}%, ${alpha})`;
+	// String(...) of this value will never be scientific notation now.
+	return safe.toString();
+};
+
+export const toHslString = (color: HslColor) => `hsl(${formatHue(color.hue)}, ${color.saturation}%, ${color.lightness}%)`;
+
+export const toHslaString = (color: HslColor, alpha: number) => 
+	`hsla(${formatHue(color.hue)}, ${color.saturation}%, ${color.lightness}%, ${clamp(alpha, 0, 1).toFixed(3)})`;
 
 export const parseHslString = (hsl: string): HslColor => {
     const rawHsl = hsl.slice(4, -1).split(",").map(string => string.trim());

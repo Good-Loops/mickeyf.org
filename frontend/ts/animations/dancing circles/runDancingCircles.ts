@@ -8,7 +8,7 @@ import {
 } from "@/utils/random";
 import clamp from "@/utils/clamp";
 import expSmoothing from "@/utils/expSmoothing";
-import { getRandomHsl, HslRanges, toHslaString } from "@/utils/hsl";
+import { getRandomHsl, toHslaString } from "@/utils/hsl";
 
 import audioEngine from "@/animations/helpers/AudioEngine";
 import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
@@ -16,6 +16,8 @@ import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
 import PitchColorPhaseController from "@/animations/helpers/PitchColorPhaseController";
 import BeatEnvelope from "@/animations/helpers/BeatEnvelope";
 import groupByParity from "@/animations/helpers/groupByParity";
+import { TUNING } from "./tuning";
+import { createTimeState, resetControlElapsed, resetIdleElapsed } from "./timeState";
 
 import Circle from "./classes/Circle";
 import CircleBounds from "./classes/CircleBounds";
@@ -49,77 +51,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     }}));
 
     const BASE_SCALE = 1;
-
-    const TUNING = {
-        intervals: {
-            idleTargetUpdateIntervalMs: 1000,
-            controlTargetUpdateIntervalMs: 10,
-            colorIntervalMs: 20,
-        },
-        beat: {
-            moveThreshold: 0.09,
-            minVolumePercent: 8,
-            moveCooldownMs: 160,
-            env: {
-                attack: 32,
-                decay: 7,
-                gateCooldownMs: 180,
-                strengthPower: 0.35,
-                strengthScale: 1.25,
-            },
-            radiusPunch: 1.4,
-        },
-        move: {
-            beatJitterPx: 110,
-            beatCapPerBeat: 10,
-            drift: {
-                rate: 0.28,
-                jitterPx: 26,          
-                volumeScale: 0.75,     
-            },
-        },
-        color: {
-            minClarity: .85,
-            holdAfterSilenceMs: 3000,
-            noteStep: true,
-
-            microHueDriftDeg: 6,
-            commitSmoothing: {
-                minHueDeltaDeg: 28,
-                durationMs: 140,
-            },
-
-            // “Stable” saturation/lightness for pitch colors
-            pitchSaturation: 85,
-            pitchLightness: 55,
-
-            // When we truly have silence for a while
-            silenceRanges: {
-                saturation: [25, 45],
-                lightness: [40, 60],
-            } satisfies HslRanges,   
-
-            minHoldMs: 90,         // prevents flicker
-            minStableMs: 90,        // require pitch to stay on same note briefly
-            listenAfterSilenceMs: 220,
-            commit: {
-                holdMs: 220,
-                smoothingResponsiveness: 12,
-            },
-
-            holdDrift: {
-                deg: 3,
-                hz: .25
-            }
-        },
-        render: {
-            posResponsiveness: 1.4,
-            radiusBaseResponsiveness: 16,
-            radiusBeatBoost: 22,
-            colorBaseResponsiveness: 10,
-            colorClarityBoost: 7,
-        },
-    } as const;
 
     const beatMove = {
         lastMoveAtMs: -Infinity,
@@ -178,19 +109,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         },
     });
 
-    type TimeState = {
-        deltaMs: number;
-        nowMs: number;
-        idleElapsedMs: number;
-        controlElapsedMs: number;
-    };
-
-    const time: TimeState = {
-        deltaMs: 0,
-        nowMs: 0,
-        idleElapsedMs: 0,
-        controlElapsedMs: 0,
-    };
+    const { state: time, tick: tickTime } = createTimeState();
 
     type AudioParams = {
         isPlaying: boolean;
@@ -369,8 +288,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     let wasPlaying = false;
 
     const onTick = () => {
-        time.deltaMs = app.ticker.deltaMS;
-        time.nowMs = getNowMs();
+        tickTime(getNowMs(), app.ticker.deltaMS);
 
         const audio = getAudioParams();
 
@@ -394,17 +312,14 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         beatFrame.envelope = envelope;
         beatFrame.moveGroup = moveGroup;
 
-        time.idleElapsedMs += time.deltaMs;
-        time.controlElapsedMs += time.deltaMs;
-
         if (time.idleElapsedMs >= TUNING.intervals.idleTargetUpdateIntervalMs) {
             updateIdleTargets(audio.isPlaying);
-            time.idleElapsedMs = 0;
+            resetIdleElapsed(time);
         }
 
         if (time.controlElapsedMs >= TUNING.intervals.controlTargetUpdateIntervalMs) {
             updateControlTargets(audio);
-            time.controlElapsedMs = 0;
+            resetControlElapsed(time);
         }
 
         renderFrame(audio.clarity, audio.isPlaying);
