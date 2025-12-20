@@ -1,7 +1,8 @@
 @use 'colors' as *;
-@use 'shadows' as *;
 @use 'variables' as *;
+@use 'shadows' as *;
 @use 'fonts' as *;
+@use 'sass:map';
 
 //////////////////////// Typography ////////////////////////
 // Main title coloring
@@ -351,8 +352,8 @@
 // Maps are defined in the variables file
 @mixin generate-media-queries($map) {
     @each $bp, $bp-info in $map { // Loop through the breakpoints
-        @media only screen and (max-width: map-get($bp-info, 'width')) { // Generate media queries for each breakpoint
-            @each $selector, $properties in map-get($bp-info, 'selectors') { // Loop through the selectors
+        @media only screen and (max-width: map.get($bp-info, 'width')) { // Generate media queries for each breakpoint
+            @each $selector, $properties in map.get($bp-info, 'selectors') { // Loop through the selectors
                 #{$selector} { // Generate the selector
                     @each $property, $value in $properties { // Loop through the properties
                         #{$property}: $value; // Generate the property
