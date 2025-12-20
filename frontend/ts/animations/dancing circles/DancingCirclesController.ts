@@ -75,7 +75,6 @@ export default class DancingCirclesController {
         this.evenGroup = even;
         this.oddGroup = odd;
     }
-
     updateForAudio(audio: AudioParams): void {
         this.latestAudio = audio;
 
@@ -99,7 +98,7 @@ export default class DancingCirclesController {
 
         const randomIndexArray = getRandomIndexArray(this.circles.length);
 
-        for (let i = 0; i < this.circles.length; i) {
+        for (let i = 0; i < this.circles.length; i++) {
             const circle = this.circles[randomIndexArray[i]];
 
             circle.targetX = this.bounds.clampX(
@@ -111,10 +110,8 @@ export default class DancingCirclesController {
                 circle.currentRadius
             );
 
-            if (!isPlaying) {
-                circle.targetRadius = circle.baseRadius;
-                circle.targetColor = getRandomHsl(circle.colorRanges);
-            }
+            circle.targetRadius = circle.baseRadius;
+            circle.targetColor = getRandomHsl(circle.colorRanges);
         }
     }
 
@@ -148,7 +145,7 @@ export default class DancingCirclesController {
         const indices = getRandomIndexArray(activeGroup.length);
         const count = Math.min(this.tuning.move.beatCapPerBeat, activeGroup.length);
 
-        for (let i = 0; i < count; i) {
+        for (let i = 0; i < count; i++) {
             const circle = activeGroup[indices[i]];
             const radius = circle.currentRadius;
             circle.targetX = this.bounds.clampX(
@@ -170,9 +167,10 @@ export default class DancingCirclesController {
         const count = Math.max(1, Math.floor(activeGroup.length * this.tuning.move.drift.rate));
         const indices = getRandomIndexArray(activeGroup.length);
 
-        const jitter = this.tuning.move.drift.jitterPx * (1 + vol * (this.tuning.move.drift.volumeScale * 3));
+        const jitter =
+            this.tuning.move.drift.jitterPx * (1 + vol * (this.tuning.move.drift.volumeScale * 3));
 
-        for (let i = 0; i < count; i) {
+        for (let i = 0; i < count; i++) {
             const circle = activeGroup[indices[i]];
             const radius = circle.currentRadius;
             circle.targetX = this.bounds.clampX(
