@@ -1,7 +1,6 @@
 import { Application, Graphics } from "pixi.js";
 
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
-import expSmoothing from "@/utils/expSmoothing";
 
 import audioEngine from "@/animations/helpers/AudioEngine";
 import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
@@ -11,12 +10,12 @@ import BeatEnvelope from "@/animations/helpers/BeatEnvelope";
 
 import { TUNING } from "./tuning";
 import { createTimeState, resetControlElapsed, resetIdleElapsed } from "./timeState";
+import { createRenderer } from "@/animations/dancing circles/renderer";
 
 import Circle from "./classes/Circle";
 import CircleBounds from "./classes/CircleBounds";
 import DancingCirclesController, { AudioParams, BeatFrame, BeatMove } from "@/animations/dancing circles/DancingCirclesController";
 import clamp from "@/utils/clamp";
-import { toHslaString } from "@/utils/hsl";
 
 type DancingCirclesDeps = {
     container: HTMLElement;
@@ -139,36 +138,11 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     const graphics = new Graphics();
     app.stage.addChild(graphics);
 
-    /**
-     * Draws the circles on the canvas with smooth interpolation.
-     */
-    const renderFrame = (clarity: number, isPlaying: boolean): void => {
-        graphics.clear();
-
-        // Use deltaTime-based smoothing so speed is consistent across FPS.
-        // Higher responsivenessPerSec => faster snapping to target.
-        const posAlpha = expSmoothing(time.deltaMs, TUNING.render.posResponsiveness);
-        const radiusAlpha = expSmoothing(
-            time.deltaMs, 
-            isPlaying
-            ? (TUNING.render.radiusBaseResponsiveness + beatFrame.envelope * TUNING.render.radiusBeatBoost) 
-            : 8
-        );
-
-        const colorAlpha = expSmoothing(
-            time.deltaMs, 
-            TUNING.render.colorBaseResponsiveness + clarity * TUNING.render.colorClarityBoost
-        );
-
-        circles.forEach((circle: Circle) => {
-            circle.step({ posAlpha, radiusAlpha, colorAlpha });
-
-            bounds.clampCircle(circle);
-
-            graphics.circle(circle.x, circle.y, circle.currentRadius);
-            graphics.fill(toHslaString(circle.color, 0.7));
-        });
-    };
+    const renderFrame = createRenderer(
+        graphics,
+        bounds,
+        TUNING
+    );
 
     let wasPlaying = false;
 
@@ -207,7 +181,13 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             resetControlElapsed(time);
         }
 
-        renderFrame(audio.clarity, audio.isPlaying);
+        renderFrame(
+            circles,
+            audio.clarity, 
+            audio.isPlaying,
+            beatFrame,
+            time.deltaMs
+        );
     };
     app.ticker.add(onTick);
 
