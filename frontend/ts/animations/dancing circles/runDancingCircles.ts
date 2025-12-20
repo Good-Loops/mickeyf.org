@@ -69,8 +69,8 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         minHoldMs: TUNING.color.minHoldMs,
         smoothingBase: 0.08,
         smoothingClarityScale: 0.32,
-        microSemitoneRange: 0.5,
-        deadbandFrac: 0.4,
+        microSemitoneRange: 0.65,
+        deadbandFrac: 0.5,
     });
 
     const colorPolicy = new PitchColorPolicy({
@@ -93,6 +93,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
             colorIntervalMs: TUNING.intervals.colorIntervalMs,
             listenAfterSilenceMs: TUNING.color.listenAfterSilenceMs,
             holdDrift: TUNING.color.holdDrift,
+            stableDrift: TUNING.color.stableDrift,
             commit: {
                 holdMs: TUNING.color.commit.holdMs,
                 smoothingResponsiveness: TUNING.color.commit.smoothingResponsiveness,

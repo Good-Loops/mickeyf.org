@@ -19,18 +19,18 @@ export type PitchHysteresisTuning = {
 };
 
 export type PitchResult =
-    | {
-        kind: "pitch";
-        hz: number;                 // smoothed
-        midi: number;               // continuous
-        pitchClass: number;           // committed pitch class (0..11)
-        fractionalDistance: number; // midi - midiStep (clamped)
-        changed: boolean;           // true when a new semitone commit happened
-    }
-    | {
-        kind: "silence";
-        silenceMs: number;
-    };
+| {
+    kind: "pitch";
+    hz: number;                 // smoothed
+    midi: number;               // continuous
+    pitchClass: number;           // committed pitch class (0..11)
+    fractionalDistance: number; // midi - midiStep (clamped)
+    changed: boolean;           // true when a new semitone commit happened
+}
+| {
+    kind: "silence";
+    silenceMs: number;
+};
 
 export default class PitchHysteresis {
     private smoothedHz = 0;

@@ -42,7 +42,7 @@ export const createRenderer = (
             bounds.clampCircle(circle);
 
             graphics.circle(circle.x, circle.y, circle.currentRadius);
-            graphics.fill(toHslaString(circle.color, 0.7));
+            graphics.fill(toHslaString(circle.color, .7));
         });
     };
 };

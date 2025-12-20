@@ -53,6 +53,13 @@ export type ColorTuning = {
         deg: number;
         hz: number;
     };
+    stableDrift: {
+        rampMs: number,
+        hz: number,         
+        hueDeg: number,       
+        satDeg: number,        
+        lightDeg: number,      
+    },
 };
 
 export type RenderTuning = {
@@ -103,7 +110,7 @@ export const TUNING: DancingCirclesTuning = {
         minClarity: 0.85,
         holdAfterSilenceMs: 3000,
         noteStep: true,
-        microHueDriftDeg: 6,
+        microHueDriftDeg: 8,
         commitSmoothing: {
             minHueDeltaDeg: 28,
             durationMs: 140,
@@ -115,15 +122,22 @@ export const TUNING: DancingCirclesTuning = {
             lightness: [40, 60],
         },
         minHoldMs: 90,
-        minStableMs: 90,
+        minStableMs: 160,
         listenAfterSilenceMs: 220,
         commit: {
-            holdMs: 220,
+            holdMs: 350,
             smoothingResponsiveness: 12,
         },
         holdDrift: {
-            deg: 3,
+            deg: 8,
             hz: 0.25,
+        },
+        stableDrift: {
+            rampMs: 1900,
+            hz: 0.05,         
+            hueDeg: 16,       
+            satDeg: 10,        
+            lightDeg: 5,      
         },
     },
     render: {
