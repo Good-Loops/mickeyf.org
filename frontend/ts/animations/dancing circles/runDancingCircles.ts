@@ -1,26 +1,22 @@
 import { Application, Graphics } from "pixi.js";
 
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
-import {
-  getRandomIndexArray,
-  getRandomX,
-  getRandomY,
-} from "@/utils/random";
-import clamp from "@/utils/clamp";
 import expSmoothing from "@/utils/expSmoothing";
-import { getRandomHsl, toHslaString } from "@/utils/hsl";
 
 import audioEngine from "@/animations/helpers/AudioEngine";
 import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
 import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
 import PitchColorPhaseController from "@/animations/helpers/PitchColorPhaseController";
 import BeatEnvelope from "@/animations/helpers/BeatEnvelope";
-import groupByParity from "@/animations/helpers/groupByParity";
+
 import { TUNING } from "./tuning";
 import { createTimeState, resetControlElapsed, resetIdleElapsed } from "./timeState";
 
 import Circle from "./classes/Circle";
 import CircleBounds from "./classes/CircleBounds";
+import DancingCirclesController, { AudioParams, BeatFrame, BeatMove } from "@/animations/dancing circles/DancingCirclesController";
+import clamp from "@/utils/clamp";
+import { toHslaString } from "@/utils/hsl";
 
 type DancingCirclesDeps = {
     container: HTMLElement;
@@ -43,20 +39,17 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     container.append(app.canvas);
 
     const bounds = new CircleBounds(CANVAS_WIDTH, CANVAS_HEIGHT);
-    const circleCount = 12;
-    const circles = Array.from({ length: circleCount }, (_, i) => 
+    const circles = Array.from({ length: 12 }, (_, i) => 
         new Circle({ index: i, gap: 14, colorRanges: {
             saturation: [95, 100],
             lightness: [60, 80],
     }}));
 
-    const BASE_SCALE = 1;
-
-    const beatMove = {
+    const beatMove: BeatMove = {
         lastMoveAtMs: -Infinity,
     };
 
-    const beatFrame = {
+    const beatFrame: BeatFrame = {
         envelope: 0,
         moveGroup: 0 as 0 | 1,
     };
@@ -111,14 +104,16 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
     const { state: time, tick: tickTime } = createTimeState();
 
-    type AudioParams = {
-        isPlaying: boolean;
-        volumePercentage: number;
-        clarity: number; // 0..1
-        pitchHz: number;
-    };
-
-    const { even: evenGroup, odd: oddGroup } = groupByParity(circles);
+    const controller = new DancingCirclesController({
+        bounds,
+        circles,
+        beatFrame,
+        beatMove,
+        pitchColorController,
+        beatEnvelope,
+        tuning: TUNING,
+        time,
+    });
 
     const getAudioParams = (): AudioParams => {
         const isPlaying = audioEngine.state.playing;
@@ -131,63 +126,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         };
     };
 
-    const updateGlobalPitchColorTargets = (clarity: number, pitchHz: number): void => {
-        const phaseResult = pitchColorController.step({
-            pitchHz,
-            clarity,
-            nowMs: time.nowMs,
-            deltaMs: time.deltaMs,
-        });
-
-        for (const circle of circles) circle.targetColor = phaseResult.color;
-    };
-
-    const updateTargetRadii = (): void => {
-        for (const circle of circles) {
-            const isActiveGroup = (circle.index % 2) === beatFrame.moveGroup;
-            const punch = isActiveGroup ? beatFrame.envelope * TUNING.beat.radiusPunch : 0;
-            circle.targetRadius = circle.baseRadius * BASE_SCALE * (1 + punch);
-        }
-    };
-
-    const applyBeatMovement = (activeGroup: Circle[], volumePercentage: number): void => {
-        if (beatFrame.envelope <= TUNING.beat.moveThreshold) return;
-        if (volumePercentage <= TUNING.beat.minVolumePercent) return;
-        if (time.nowMs - beatMove.lastMoveAtMs <= TUNING.beat.moveCooldownMs) return;
-        
-        beatMove.lastMoveAtMs = time.nowMs;
-        if (activeGroup.length === 0) return;
-
-        const indices = getRandomIndexArray(activeGroup.length);
-        const count = Math.min(TUNING.move.beatCapPerBeat, activeGroup.length);
-
-        for (let i = 0; i < count; i++) {
-            const circle = activeGroup[indices[i]];
-            const radius = circle.currentRadius;
-            circle.targetX = bounds.clampX(circle.targetX + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, radius);
-            circle.targetY = bounds.clampY(circle.targetY + (Math.random() * 2 - 1) * TUNING.move.beatJitterPx, radius);
-        }
-    };
-
-    const applyMusicDrift = (activeGroup: Circle[], volumePercentage: number): void => {
-        if (activeGroup.length === 0) return;
-
-        // volumePercentage is 0..100; map to 0..1
-        const vol = Math.min(1, Math.max(0, volumePercentage / 100));
-
-        const count = Math.max(1, Math.floor(activeGroup.length * TUNING.move.drift.rate));
-        const indices = getRandomIndexArray(activeGroup.length);
-
-        const jitter = TUNING.move.drift.jitterPx * (1 + vol * (TUNING.move.drift.volumeScale * 3));
-
-        for (let i = 0; i < count; i++) {
-            const circle = activeGroup[indices[i]];
-            const radius = circle.currentRadius;
-            circle.targetX = bounds.clampX(circle.targetX + (Math.random() * 2 - 1) * jitter, radius);
-            circle.targetY = bounds.clampY(circle.targetY + (Math.random() * 2 - 1) * jitter, radius);
-        }
-    };
-
     /**
      * Loads the initial state of the circles.
      * Sorts circles by their current radius in descending order.
@@ -196,59 +134,6 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         circles.sort(
             (circleA, circleB) => circleB.currentRadius - circleA.currentRadius
         );
-    };
-
-    /**
-     * Updates the position and color of a specified number of circles.
-     * 
-     * @param isPlaying - Indicates if the audio is currently playing.
-     */
-    const updateIdleTargets = (isPlaying: boolean): void => {
-        if(isPlaying) return;
-        const randomIndexArray = getRandomIndexArray(circleCount);
-        for (let i = 0; i < circleCount; i++) {
-            const circle = circles[randomIndexArray[i]];
-
-            circle.targetX = getRandomX(
-                circle.currentRadius,
-                circle.gap
-            );
-            circle.targetY = getRandomY(
-                circle.currentRadius,
-                circle.gap
-            );
-
-            circle.targetX = bounds.clampX(
-                circle.targetX, 
-                circle.currentRadius
-            );
-            circle.targetY = bounds.clampY(
-                circle.targetY, 
-                circle.currentRadius
-            );
-
-            if (!audioEngine.state.playing) {
-                circle.targetRadius = circle.baseRadius;
-
-                circle.targetColor = getRandomHsl(circle.colorRanges);
-            }
-        }
-    };
-
-    /**
-     * Updates the circles based on audio properties for music-driven animation.
-     * Uses pitch, volume, clarity, and beat detection for dynamic visual effects.
-     */
-    const updateControlTargets = (audio: AudioParams): void => {
-        if (!audio.isPlaying) { beatEnvelope.reset(); return; }
-
-        const activeGroup = beatFrame.moveGroup === 0 ? evenGroup : oddGroup;
-
-        updateGlobalPitchColorTargets(audio.clarity, audio.pitchHz);
-        updateTargetRadii();
-
-        applyMusicDrift(activeGroup, audio.volumePercentage);
-        applyBeatMovement(activeGroup, audio.volumePercentage);
     };
 
     const graphics = new Graphics();
@@ -313,12 +198,12 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         beatFrame.moveGroup = moveGroup;
 
         if (time.idleElapsedMs >= TUNING.intervals.idleTargetUpdateIntervalMs) {
-            updateIdleTargets(audio.isPlaying);
+            controller.updateIdle(audio.isPlaying);
             resetIdleElapsed(time);
         }
 
         if (time.controlElapsedMs >= TUNING.intervals.controlTargetUpdateIntervalMs) {
-            updateControlTargets(audio);
+            controller.updateForAudio(audio);
             resetControlElapsed(time);
         }
 
