@@ -23,6 +23,13 @@ export interface Settings {
  * Class to handle color operations for the dancing circles animation.
  */
 export default class ColorHandler {
+    private driftPhase = Math.random() * Math.PI * 2;
+    private readonly driftSpeed = 0.045;
+    private readonly hueDrift = 6;
+    private readonly saturationDriftRatio = 0.18;
+    private readonly lightnessDriftRatio = 0.14;
+    private readonly huePhaseMultiplier = 0.5;
+    private readonly lightnessPhaseOffset = Math.PI / 3;
     /**
      * Converts an HSL color string to an HSLA color string.
      * @param hsl - The HSL color string.
@@ -53,15 +60,40 @@ export default class ColorHandler {
         const rangeAmplifier = 7;
         const percentage = teraHertz * 0.00257 * rangeAmplifier;
 
-        const hue = 360 * percentage;
+        this.advancePhase();
+        const breatheWave = this.getBreathingWave();
+        // Convert 0-1 breathing wave into -1 to 1 for bipolar modulation.
+        const normalizedBreathWave = breatheWave * 2 - 1;
 
-        const randomHSL = this.getRandomColor(Settings);
-        const randomHSLhue = randomHSL
-            .substring(4, randomHSL.length - 1)
-            .split(',')[0];
-        const newHSL = randomHSL.replace(randomHSLhue, hue.toString());
+        const hue =
+            360 * percentage +
+            this.hueDrift * Math.sin(this.driftPhase * this.huePhaseMultiplier);
 
-        return newHSL;
+        const saturationMid =
+            (Settings.minSaturation + Settings.maxSaturation) * 0.5;
+        const saturationSpan =
+            (Settings.maxSaturation - Settings.minSaturation) * 0.5;
+        const saturation = this.clamp(
+            saturationMid +
+                saturationSpan * this.saturationDriftRatio * normalizedBreathWave,
+            Settings.minSaturation,
+            Settings.maxSaturation
+        );
+
+        const lightnessMid =
+            (Settings.minLightness + Settings.maxLightness) * 0.5;
+        const lightnessSpan =
+            (Settings.maxLightness - Settings.minLightness) * 0.5;
+        const lightness = this.clamp(
+            lightnessMid +
+                lightnessSpan *
+                    this.lightnessDriftRatio *
+                    Math.sin(this.driftPhase + this.lightnessPhaseOffset),
+            Settings.minLightness,
+            Settings.maxLightness
+        );
+
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
 
     /**
@@ -110,5 +142,26 @@ export default class ColorHandler {
             lightnessEnd * interpolationFactor;
 
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+
+    /**
+     * Advances the internal drift phase, wrapping around 2π.
+     */
+    private advancePhase(): void {
+        this.driftPhase = (this.driftPhase + this.driftSpeed) % (Math.PI * 2);
+    }
+
+    /**
+     * Generates a smooth breathing wave between 0 and 1 with eased edges.
+     */
+    private getBreathingWave(): number {
+        return (1 - Math.cos(this.driftPhase)) * 0.5;
+    }
+
+    /**
+     * Clamps a value between provided min and max bounds.
+     */
+    private clamp(value: number, min: number, max: number): number {
+        return Math.min(max, Math.max(min, value));
     }
 }
