@@ -233,12 +233,11 @@ export default class PitchColorPhaseController {
             dtSec * (this.deps.tuning.holdDrift.hz * Math.PI * 2);
 
         const sinceCommitMs = input.nowMs - this.state.committedAtMs;
-        const settle = 1 - clamp(sinceCommitMs / 250, 0, 1);
+        const settleTime = 400;
+        const settle = 1 - clamp(sinceCommitMs / settleTime, 0, 1);
 
-        const drift =
-            (Math.sin(this.state.holdHueLfoPhase) ** 2) *
-            this.deps.tuning.holdDrift.deg *
-            settle;
+        const wave = this.smoothBreathingWave(this.state.holdHueLfoPhase);
+        const drift = wave * this.deps.tuning.holdDrift.deg * settle;
 
         return {
             ...baseColor,
@@ -257,18 +256,32 @@ export default class PitchColorPhaseController {
         const dtSec = input.deltaMs / 1000;
         this.state.stableLfoPhase += dtSec * (t.hz * Math.PI * 2);
 
-        const phase = this.state.stableLfoPhase;
-
-        const slow = 0.5 - 0.5 * Math.cos(phase);
-        const slower = 0.5 - 0.5 * Math.cos(phase * 0.5);
-        const breath = slow * 0.75 + slower * 0.25;
-        const centered = (breath - 0.5) * 2;
+        const centered = this.continuousBreathingWave(this.state.stableLfoPhase);
 
         const hue = wrapHue(base.hue + centered * t.hueDeg * ramp);
         const saturation = clamp(base.saturation + centered * t.satDeg * ramp, 0, 100);
         const lightness = clamp(base.lightness + centered * t.lightDeg * ramp, 0, 100);
 
         return { hue, saturation, lightness };
+    }
+
+    /**
+     * Generates a smooth, unidirectional breathing wave (0..1 range).
+     * Uses sin^2 for a gentle, rounded oscillation without sharp peaks.
+     */
+    private smoothBreathingWave(phase: number): number {
+        return Math.sin(phase) ** 2;
+    }
+
+    /**
+     * Generates a smooth, continuous breathing wave centered at 0 (-1..1 range).
+     * Combines two harmonically related cosine waves for organic movement.
+     */
+    private continuousBreathingWave(phase: number): number {
+        const primary = 0.5 - 0.5 * Math.cos(phase);
+        const secondary = 0.5 - 0.5 * Math.cos(phase * 0.5);
+        const breath = primary * 0.7 + secondary * 0.3;
+        return (breath - 0.5) * 2;
     }
 
     private progressCommitTransition(deltaMs: number): HslColor {
