@@ -129,15 +129,15 @@ export const TUNING: DancingCirclesTuning = {
             smoothingResponsiveness: 12,
         },
         holdDrift: {
-            deg: 8,
+            deg: 6,
             hz: 0.25,
         },
         stableDrift: {
-            rampMs: 1900,
-            hz: 0.05,         
-            hueDeg: 16,       
-            satDeg: 10,        
-            lightDeg: 5,      
+            rampMs: 1600,
+            hz: 0.08,         
+            hueDeg: 12,       
+            satDeg: 12,        
+            lightDeg: 8,      
         },
     },
     render: {

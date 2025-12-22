@@ -198,6 +198,7 @@ export default class PitchColorPhaseController {
         };
 
         this.state.holdHueLfoPhase = 0;
+        this.state.stableLfoPhase = 0;
         this.state.hasCommittedHue = true;
         this.state.holdListening = false;
     }
@@ -250,22 +251,24 @@ export default class PitchColorPhaseController {
 
         // ramp from 0..1 based on time since commit
         const sinceCommitMs = input.nowMs - this.state.committedAtMs;
-        const ramp = t.rampMs <= 0 ? 1 : clamp(sinceCommitMs / t.rampMs, 0, 1);
+        const rampLinear = t.rampMs <= 0 ? 1 : clamp(sinceCommitMs / t.rampMs, 0, 1);
+        const ramp = rampLinear * rampLinear * (3 - 2 * rampLinear); // smoothstep easing
 
         const dtSec = input.deltaMs / 1000;
         this.state.stableLfoPhase += dtSec * (t.hz * Math.PI * 2);
 
         const phase = this.state.stableLfoPhase;
 
-        const breath = ((Math.sin(phase) + 1) / 2) ** 1.2;
-        const centered = breath * 2 - 1;
+        const slow = 0.5 - 0.5 * Math.cos(phase);
+        const slower = 0.5 - 0.5 * Math.cos(phase * 0.5);
+        const breath = slow * 0.75 + slower * 0.25;
+        const centered = (breath - 0.5) * 2;
 
         const hue = wrapHue(base.hue + centered * t.hueDeg * ramp);
         const saturation = clamp(base.saturation + centered * t.satDeg * ramp, 0, 100);
         const lightness = clamp(base.lightness + centered * t.lightDeg * ramp, 0, 100);
 
         return { hue, saturation, lightness };
-
     }
 
     private progressCommitTransition(deltaMs: number): HslColor {
