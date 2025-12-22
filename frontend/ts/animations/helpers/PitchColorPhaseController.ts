@@ -278,9 +278,12 @@ export default class PitchColorPhaseController {
      * Combines two harmonically related cosine waves for organic movement.
      */
     private continuousBreathingWave(phase: number): number {
+        const PRIMARY_WEIGHT = 0.7;
+        const SECONDARY_WEIGHT = 0.3;
+        
         const primary = 0.5 - 0.5 * Math.cos(phase);
         const secondary = 0.5 - 0.5 * Math.cos(phase * 0.5);
-        const breath = primary * 0.7 + secondary * 0.3;
+        const breath = primary * PRIMARY_WEIGHT + secondary * SECONDARY_WEIGHT;
         return (breath - 0.5) * 2;
     }
 
