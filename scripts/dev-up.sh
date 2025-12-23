@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 echo "Starting Cloud SQL Proxy..."
-docker compose up -d cloud-sql-proxy
-
+docker compose -f .devcontainer/docker-compose.yml up -d cloud-sql-proxy
 echo "Dev infrastructure ready."
+

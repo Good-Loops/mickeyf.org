@@ -5,7 +5,8 @@
   "workspaceFolder": "/workspaces/mickeyf.org",
 
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
 
   "customizations": {
@@ -20,5 +21,14 @@
   "remoteUser": "node",
   "forwardPorts": [8080],
   "postCreateCommand": "cd backend && npm ci",
-  "postStartCommand": "./scripts/devcontainer-backend-start.sh"
+  "postStartCommand": "./scripts/devcontainer-backend-start.sh",
+
+  "containerEnv": {
+    "DB_HOST": "cloud-sql-proxy",
+    "DB_PORT": "3306"
+  }, 
+
+  "mounts": [
+    "source=/home/mickey_f/.config/gcloud,target=/home/node/.config/gcloud,type=bind"
+  ]
 }

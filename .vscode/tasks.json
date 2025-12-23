@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Dev: backend (container)",
+      "label": "Backend: dev (nodemon)",
       "type": "shell",
       "command": "bash -lc 'cd backend && npm run dev'",
       "problemMatcher": [],
