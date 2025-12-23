@@ -11,6 +11,7 @@ import groupByParity from "@/animations/helpers/groupByParity";
 
 import { DancingCirclesTuning } from "./tuning";
 import { TimeState } from "./timeState";
+import expSmoothing from "@/utils/expSmoothing";
 
 export type BeatFrame = {
     envelope: number;
@@ -52,6 +53,10 @@ export default class DancingCirclesController {
     private readonly oddGroup: Circle[];
     private latestAudio?: AudioParams;
 
+    private lastBeatMoveMs = 0;
+    private volSmoothed = 0;
+    private lastImpulseMs = 0;
+
     constructor({
         bounds,
         circles,
@@ -75,6 +80,7 @@ export default class DancingCirclesController {
         this.evenGroup = even;
         this.oddGroup = odd;
     }
+
     updateForAudio(audio: AudioParams): void {
         this.latestAudio = audio;
 
@@ -90,6 +96,7 @@ export default class DancingCirclesController {
         this.updateTargetRadii();
 
         this.applyMusicDrift(activeGroup, audio.volumePercentage);
+        this.applyVolumeImpulse(activeGroup, audio.volumePercentage);
         this.applyBeatMovement(activeGroup, audio.volumePercentage);
     }
 
@@ -140,23 +147,30 @@ export default class DancingCirclesController {
         if (this.time.nowMs - this.beatMove.lastMoveAtMs <= this.tuning.beat.moveCooldownMs) return;
 
         this.beatMove.lastMoveAtMs = this.time.nowMs;
-        if (activeGroup.length === 0) return;
+        this.lastBeatMoveMs = this.time.nowMs;
 
-        const indices = getRandomIndexArray(activeGroup.length);
-        const count = Math.min(this.tuning.move.beatCapPerBeat, activeGroup.length);
+        this.nudgeGroup(activeGroup, this.tuning.move.beatJitterPx);
+    }
 
-        for (let i = 0; i < count; i++) {
-            const circle = activeGroup[indices[i]];
-            const radius = circle.currentRadius;
-            circle.targetX = this.bounds.clampX(
-                circle.targetX + (Math.random() * 2 - 1) * this.tuning.move.beatJitterPx,
-                radius
-            );
-            circle.targetY = this.bounds.clampY(
-                circle.targetY + (Math.random() * 2 - 1) * this.tuning.move.beatJitterPx,
-                radius
-            );
-        }
+    private applyVolumeImpulse(activeGroup: Circle[], volumePercentage: number): void {
+        if (!this.isPlaying()) return;
+
+        const vol = clamp(volumePercentage / 100, 0, 1);
+
+        // Smooth volume to get a "trend" baseline (prevents noise spam).
+        const alpha = expSmoothing(this.time.deltaMs, this.tuning.move.volumeImpulse.trendResponsiveness);
+        this.volSmoothed = this.volSmoothed + (vol - this.volSmoothed) * alpha;
+
+        const volDelta = vol - this.volSmoothed; // positive when volume spikes above trend
+        const canImpulse = (this.time.nowMs - this.lastImpulseMs) > this.tuning.move.volumeImpulse.cooldownMs;
+
+        if (!canImpulse) return;
+        if (volDelta <= this.tuning.move.volumeImpulse.deltaThreshold) return;
+
+        this.lastImpulseMs = this.time.nowMs;
+
+        // Small nudge, reusing the same movement mechanic as beats.
+        this.nudgeGroup(activeGroup, this.tuning.move.volumeImpulse.jitterPx);
     }
 
     private applyMusicDrift(activeGroup: Circle[], volumePercentage: number): void {
@@ -164,23 +178,49 @@ export default class DancingCirclesController {
 
         const vol = clamp(volumePercentage / 100, 0, 1);
 
+        const timeSinceBeatMs = this.time.nowMs - this.lastBeatMoveMs;
+        const shouldBoost =
+            this.isPlaying() &&
+            timeSinceBeatMs > this.tuning.move.fallback.noBeatMs;
+
+        let driftBoost = 1;
+        if (shouldBoost) {
+            const { minBoost, maxBoost } = this.tuning.move.fallback;
+            driftBoost = minBoost + (maxBoost - minBoost) * vol;
+        }
+
         const count = Math.max(1, Math.floor(activeGroup.length * this.tuning.move.drift.rate));
         const indices = getRandomIndexArray(activeGroup.length);
 
-        const jitter =
-            this.tuning.move.drift.jitterPx * (1 + vol * (this.tuning.move.drift.volumeScale * 3));
+        const VOLUME_BOOST_MULT = 3;
+        const baseJitter =
+            this.tuning.move.drift.jitterPx * (1 + vol * (this.tuning.move.drift.volumeScale * VOLUME_BOOST_MULT));
+
+        const jitter = baseJitter * driftBoost;
 
         for (let i = 0; i < count; i++) {
-            const circle = activeGroup[indices[i]];
-            const radius = circle.currentRadius;
-            circle.targetX = this.bounds.clampX(
-                circle.targetX + (Math.random() * 2 - 1) * jitter,
-                radius
-            );
-            circle.targetY = this.bounds.clampY(
-                circle.targetY + (Math.random() * 2 - 1) * jitter,
-                radius
-            );
+            this.nudgeCircle(activeGroup[indices[i]], jitter);
         }
+    }
+
+    private nudgeGroup(activeGroup: Circle[], jitterPx: number): void {
+        if (activeGroup.length === 0) return;
+
+        const indices = getRandomIndexArray(activeGroup.length);
+        const count = Math.min(this.tuning.move.beatCapPerBeat, activeGroup.length);
+
+        for (let i = 0; i < count; i++) {
+            this.nudgeCircle(activeGroup[indices[i]], jitterPx);
+        }
+    }
+
+    private nudgeCircle(circle: Circle, jitterPx: number): void {
+        const radius = circle.currentRadius;
+        circle.targetX = this.bounds.clampX(circle.targetX + (Math.random() * 2 - 1) * jitterPx, radius);
+        circle.targetY = this.bounds.clampY(circle.targetY + (Math.random() * 2 - 1) * jitterPx, radius);
+    }
+
+    private isPlaying(): boolean {
+        return this.latestAudio?.isPlaying ?? false;
     }
 }

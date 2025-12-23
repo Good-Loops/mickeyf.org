@@ -28,6 +28,17 @@ export type MoveTuning = {
         jitterPx: number;
         volumeScale: number;
     };
+    fallback: {
+        noBeatMs: number;
+        maxBoost: number;        
+        minBoost: number;        
+    };
+    volumeImpulse: {
+        deltaThreshold: number;
+        jitterPx: number;
+        cooldownMs: number;
+        trendResponsiveness: number; 
+    };
 };
 
 export type ColorTuning = {
@@ -85,7 +96,7 @@ export const TUNING: DancingCirclesTuning = {
         colorIntervalMs: 40,
     },
     beat: {
-        moveThreshold: 0.09,
+        moveThreshold: 0.075,
         minVolumePercent: 8,
         moveCooldownMs: 160,
         env: {
@@ -99,11 +110,22 @@ export const TUNING: DancingCirclesTuning = {
     },
     move: {
         beatJitterPx: 110,
-        beatCapPerBeat: 10,
+        beatCapPerBeat: 12,
         drift: {
-            rate: 0.28,
+            rate: 0.34,
+            jitterPx: 32,
+            volumeScale: 0.85,
+        },
+        fallback: {
+            noBeatMs: 650,
+            maxBoost: 2.0,        
+            minBoost: 1.2,        
+        },
+        volumeImpulse: {
+            deltaThreshold: 0.08,
             jitterPx: 26,
-            volumeScale: 0.75,
+            cooldownMs: 120,
+            trendResponsiveness: 10,
         },
     },
     color: {
@@ -135,9 +157,9 @@ export const TUNING: DancingCirclesTuning = {
         stableDrift: {
             rampMs: 2000,
             hz: 0.06,         
-            hueDeg: 8,       
-            satDeg: 8,        
-            lightDeg: 6,      
+            hueDeg: 12,       
+            satDeg: 10,        
+            lightDeg: 7,      
         },
     },
     render: {

@@ -6,7 +6,6 @@ import { HslColor, lerpHsl, wrapHue } from "@/utils/hsl";
 type CommitTransition = {
     active: boolean;
     color: HslColor;
-    target: HslColor;
 };
 
 type PitchColorPhaseState = {
@@ -86,7 +85,6 @@ export default class PitchColorPhaseController {
             commitTransition: {
                 active: false,
                 color: initialColor,
-                target: initialColor,
             },
             lastPitchChanged: false,
             lastKind: "silence",
@@ -110,7 +108,6 @@ export default class PitchColorPhaseController {
             commitTransition: {
                 active: false,
                 color: initialColor,
-                target: initialColor,
             },
             lastPitchChanged: false,
             lastKind: "silence",
@@ -131,31 +128,16 @@ export default class PitchColorPhaseController {
             dtMs: this.state.colorElapsedMs,
         });
 
-        this.state.lastKind = decision.result.kind;
-        if (decision.result.kind === "pitch") {
-            this.state.lastPitchChanged = decision.result.changed;
-        } else {
-            this.state.lastPitchChanged = false;
-        }
+        this.updateKindFlags(decision, this.state.colorElapsedMs);
 
         const isCommit =
             decision.result.kind === "pitch" &&
             decision.result.changed === true;
 
-        if (!isCommit && this.state.colorElapsedMs < this.deps.tuning.colorIntervalMs) {
-            let color = this.progressCommitTransition(input.deltaMs);
+        const shouldUpdatePolicy = isCommit || this.state.colorElapsedMs >= this.deps.tuning.colorIntervalMs;
 
-            const shouldStableDrift =
-                this.state.hasCommittedHue &&
-                this.state.lastKind === "pitch" &&
-                this.state.lastPitchChanged === false;
-
-            if (shouldStableDrift) {
-                color = this.applyStableDrift(color, input);
-            }
-
-            this.state.renderedColor = color;
-            return { color, decision: undefined };
+        if (!shouldUpdatePolicy) {
+            return { color: this.renderCurrent(input), decision: undefined };
         }
 
         const elapsedMs = this.state.colorElapsedMs;
@@ -167,19 +149,46 @@ export default class PitchColorPhaseController {
             this.startCommit(decision.color, input.nowMs);
         }
 
-        const colorAfterCommit = this.progressCommitTransition(input.deltaMs);
+        return { color: this.renderCurrent(input), decision };
+    }
 
-        const shouldStableDrift =
+    private updateKindFlags(decision: ColorDecision, colorElapsedMs: number): void {
+        const nextLocalSilenceMs =
+            decision.result.kind === "silence"
+            ? this.state.localSilenceMs + colorElapsedMs
+            : 0;
+
+        const isBriefSilence =
+            decision.result.kind === "silence" &&
+            this.state.hasCommittedHue &&
+            nextLocalSilenceMs < this.deps.tuning.listenAfterSilenceMs;
+
+        const effectiveKind: "silence" | "pitch" =
+            isBriefSilence ? "pitch" : decision.result.kind;
+
+        this.state.lastKind = effectiveKind;
+
+        this.state.lastPitchChanged =
+            effectiveKind === "pitch" && decision.result.kind === "pitch"
+            ? decision.result.changed
+            : false;
+    }
+
+    private shouldStableDrift(): boolean {
+        return (
             this.state.hasCommittedHue &&
             this.state.lastKind === "pitch" &&
-            this.state.lastPitchChanged === false;
+            this.state.lastPitchChanged === false
+        );
+    }
 
-        const finalColor = shouldStableDrift
-            ? this.applyStableDrift(colorAfterCommit, input)
-            : colorAfterCommit;
-
-        this.state.renderedColor = finalColor;
-        return { color: finalColor, decision };
+    private renderCurrent(input: PitchColorPhaseStepInput): HslColor {
+        let color = this.progressCommitTransition(input.deltaMs);
+        if (this.shouldStableDrift()) {
+            color = this.applyStableDrift(color, input);
+        }
+        this.state.renderedColor = color;
+        return color;
     }
 
     private startCommit(color: HslColor, nowMs: number): void {
@@ -194,7 +203,6 @@ export default class PitchColorPhaseController {
         this.state.commitTransition = {
             active: this.state.hasCommittedHue,
             color: startingColor,
-            target: color,
         };
 
         this.state.holdHueLfoPhase = 0;
@@ -233,8 +241,8 @@ export default class PitchColorPhaseController {
             dtSec * (this.deps.tuning.holdDrift.hz * Math.PI * 2);
 
         const sinceCommitMs = input.nowMs - this.state.committedAtMs;
-        const settleTime = 400;
-        const settle = 1 - clamp(sinceCommitMs / settleTime, 0, 1);
+        const SETTLE_TIME_MS = 400;
+        const settle = 1 - clamp(sinceCommitMs / SETTLE_TIME_MS, 0, 1);
 
         const wave = this.smoothBreathingWave(this.state.holdHueLfoPhase);
         const drift = wave * this.deps.tuning.holdDrift.deg * settle;
@@ -308,16 +316,19 @@ export default class PitchColorPhaseController {
         const saturationDelta = Math.abs(nextColor.saturation - target.saturation);
         const lightnessDelta = Math.abs(nextColor.lightness - target.lightness);
 
+        const SETTLED_HUE_EPS_DEG = 0.1;
+        const SETTLED_SAT_EPS_DEG = 0.5;
+        const SETTLED_LIGHT_EPS_DEG = 0.5;
+
         const isSettled =
-            Math.abs(hueDelta) < 0.1 &&
-            saturationDelta < 0.5 &&
-            lightnessDelta < 0.5;
+            Math.abs(hueDelta) < SETTLED_HUE_EPS_DEG &&
+            saturationDelta < SETTLED_SAT_EPS_DEG &&
+            lightnessDelta < SETTLED_LIGHT_EPS_DEG;
 
         if (isSettled) {
             this.state.commitTransition = {
                 active: false,
                 color: target,
-                target,
             };
             return target;
         }
