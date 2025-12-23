@@ -18,9 +18,14 @@
   },
 
   "remoteUser": "node",
-  "forwardPorts": [8080],
+  "forwardPorts": [],
   "postCreateCommand": "cd backend && npm ci",
   "postStartCommand": "./scripts/devcontainer-backend-start.sh",
+
+  "containerEnv": {
+    "DB_HOST": "cloud-sql-proxy",
+    "DB_PORT": "3306"
+  }, 
 
   "mounts": [
     "source=/home/mickey_f/.config/gcloud,target=/home/node/.config/gcloud,type=bind"
