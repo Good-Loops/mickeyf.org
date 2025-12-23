@@ -38,15 +38,16 @@ steps:
 
   # Notify Slack
   - name: 'gcr.io/cloud-builders/curl'
+    entrypoint: 'bash'
     args:
-      - -X
-      - POST
-      - -H
-      - 'Content-type: application/json'
-      - --data
-      - "{\"text\":\"✅ Backend deployed to Cloud Run. Commit: $COMMIT_SHA\"}"
-      - "$$SLACK_WEBHOOK_URL"
+      - -lc
+      - |
+        payload=$(printf '{"text":"✅ Backend deployed to Cloud Run. Commit: %s"}' "$COMMIT_SHA")
+        curl -fsS -X POST -H 'Content-type: application/json' \
+          --data-raw "$payload" \
+          "$$SLACK_WEBHOOK_URL"
     secretEnv: ['SLACK_WEBHOOK_URL']
+
 
 availableSecrets:
   secretManager:
