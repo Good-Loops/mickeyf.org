@@ -20,5 +20,9 @@
   "remoteUser": "node",
   "forwardPorts": [8080],
   "postCreateCommand": "cd backend && npm ci",
-  "postStartCommand": "./scripts/devcontainer-backend-start.sh"
+  "postStartCommand": "./scripts/devcontainer-backend-start.sh",
+
+  "mounts": [
+    "source=/home/mickey_f/.config/gcloud,target=/home/node/.config/gcloud,type=bind"
+  ]
 }
