@@ -11,11 +11,11 @@ const Animations: React.FC = () => {
                         <h3 className="animations__grid-item--dancing-circles floating">Dancing Circles</h3>
                     </Link>
                 </div> 
-                <div className="animations__grid-item">
+                {/* <div className="animations__grid-item">
                     <Link to="/animations/dancing-fractals">
                         <h3 className="animations__grid-item--dancing-circles floating">Dancing Fractals</h3>
                     </Link>
-                </div>
+                </div> */}
             </div>
         </section>
     );
