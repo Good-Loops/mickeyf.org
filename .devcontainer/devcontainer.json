@@ -19,7 +19,7 @@
   },
 
   "remoteUser": "node",
-  "forwardPorts": [],
+  "forwardPorts": [8080],
   "postCreateCommand": "cd backend && npm ci",
   "postStartCommand": "./scripts/devcontainer-backend-start.sh",
 
