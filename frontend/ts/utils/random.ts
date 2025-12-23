@@ -58,22 +58,16 @@ export const getRandomY = (width: number, gap: number = 0): number => {
  * @returns {number[]} An array of random indices.
  */
 export const getRandomIndexArray = (arrayLength: number): number[] => {
-    let indexArr: number[] = [];
-    for (let i: number = 0; i < arrayLength; i++) {
-        indexArr.push(getRandomInt(0, arrayLength - 1));
-        if (indexArr.length > 2) {
-            let repeats: number = 0;
-            for (let j: number = 0; j < indexArr.length - 1; j++) {
-                if (indexArr[j] == indexArr[indexArr.length - 1]) {
-                    repeats++;
-                    if (repeats > 1) {
-                        indexArr.pop();
-                        i--;
-                        repeats = 0;
-                    }
-                }
-            }
-        }
+    // Return a random permutation of [0..arrayLength-1].
+    // This avoids the previous unbounded retry loop which could occasionally stall the main thread.
+    const indices = Array.from({ length: arrayLength }, (_, i) => i);
+
+    for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = indices[i];
+        indices[i] = indices[j];
+        indices[j] = tmp;
     }
-    return indexArr;
+
+    return indices;
 }

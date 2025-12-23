@@ -1,7 +1,8 @@
 import { Application, Graphics } from "pixi.js";
 import FractalAnimation from "../interfaces/FractalAnimation";
-import ColorInterpolator from "../../helpers/ColorInterpolator";
+import PaletteTween from "../../helpers/PaletteTween";
 import { TreeConfig, defaultTreeConfig } from "../config/TreeConfig";
+import { toHslString } from "@/utils/hsl";
 
 export default class Tree implements FractalAnimation<TreeConfig> {
     constructor(
@@ -13,7 +14,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 
         this.config = { ...defaultTreeConfig, ...initialConfig };
 
-        this.colorInterpolator = new ColorInterpolator(
+        this.paletteTween = new PaletteTween(
             this.config.palette, 
             this.config.maxDepth + 1
         );
@@ -48,7 +49,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
     private disposalDelay = 0;
     private disposalTimer = 0;
 
-    private colorInterpolator: ColorInterpolator;
+    private paletteTween: PaletteTween;
 
     private colorChangeCounter: number = 0;
 
@@ -172,8 +173,8 @@ export default class Tree implements FractalAnimation<TreeConfig> {
             const depthRatio = depth / this.config.maxDepth;
             if (depthRatio > this.visibleFactor) continue; // not visible yet
 
-            const colorHsl = this.colorInterpolator.currentColors[depth];
-            const colorStr = this.colorInterpolator.hslToString(colorHsl);
+            const colorHsl = this.paletteTween.currentColors[depth];
+            const colorStr = toHslString(colorHsl);
 
             const width =
                 this.config.trunkWidthMin +
@@ -273,12 +274,12 @@ export default class Tree implements FractalAnimation<TreeConfig> {
         this.colorChangeCounter += deltaSeconds;
 
         if (this.colorChangeCounter >= this.config.colorChangeInterval) {
-            this.colorInterpolator.updateTargetColors();
+            this.paletteTween.retarget();
             this.colorChangeCounter = 0;
         }
 
         const t = this.colorChangeCounter / this.config.colorChangeInterval;
-        this.colorInterpolator.interpolateColors(t);
+        this.paletteTween.step(t);
     }
 
     // Allow external code to update some/all config fields.
@@ -309,7 +310,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
             }
 
             // Rebuild color interpolator with new depth count
-            this.colorInterpolator = new ColorInterpolator(
+            this.paletteTween = new PaletteTween(
                 this.config.palette,
                 this.config.maxDepth + 1
             );

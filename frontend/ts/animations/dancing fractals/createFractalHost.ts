@@ -33,7 +33,7 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     const fpsSmoothing = .01;
 
     // Single ticker that always calls into the current fractal, if any
-    app.ticker.add((time: Ticker): void => {
+    const onTick = (time: Ticker): void => {
         if (destroyed) return;
 
         // If the URL path changed, this page is no longer active → dispose host
@@ -63,7 +63,8 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
         if (!currentFractal) return;
         currentFractal.step(deltaSeconds, time.lastTime);
-    });
+    };
+    app.ticker.add(onTick);
 
     const applyLifetime = () => {
         if (!currentFractal) return;
@@ -156,6 +157,7 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
             currentFractal = null;
         }
         
+        app.ticker.remove(onTick);
         app.canvas.remove();
         app.destroy(true, { children: true, texture: true });
     };

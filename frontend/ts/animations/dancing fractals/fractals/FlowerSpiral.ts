@@ -1,8 +1,8 @@
 import { Application, Graphics } from "pixi.js";
-import { drawConfig } from "../../animations.types";
-import ColorInterpolator from "../../helpers/ColorInterpolator";
+import PaletteTween from "../../helpers/PaletteTween";
 import type FractalAnimation from "../interfaces/FractalAnimation";
 import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from "../config/FlowerSpiralConfig";
+import { toHslString } from "@/utils/hsl";
 
 export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig> {
     constructor(
@@ -12,7 +12,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     ) {
         this.config = { ...defaultFlowerSpiralConfig, ...initialConfig };
 
-        this.colorInterpolator = new ColorInterpolator(
+        this.paletteTween = new PaletteTween(
             this.config.palette,
             this.config.flowerAmount
         );
@@ -35,7 +35,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     private visibleFlowerCount = 0; // How many flowers are currently visible.
 
     // Color interpolator for smooth transitions between colors.
-    private colorInterpolator: ColorInterpolator;
+    private paletteTween: PaletteTween;
     
     private colorChangeCounter = 0;
 
@@ -81,7 +81,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.updateColors(deltaSeconds);
         
         // Animation config (thickness, radius)
-        const config = this.computeDrawConfig(timeMS);
+        const config = this.computeWidthAndRadius(timeMS);
         // Draw the frame
         this.draw(config);
         
@@ -89,7 +89,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     }
 
     // Render all flowers for the given frame using supplied draw configuration.
-    public draw = (drawConfig: drawConfig) => {
+    public draw = ({width, radius}: {width: number, radius: number}) => {
         const {
             flowerAmount,
             minRadiusScale,
@@ -109,8 +109,8 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             const growthFactor = raw * raw * (3 - 2 * raw); // Smoothstep ease-in-out
 
             // Get the current interpolated color for this flower.
-            const flowerColor: string = this.colorInterpolator.hslToString(
-                this.colorInterpolator.currentColors[flowerIndex]
+            const flowerColor: string = toHslString(
+                this.paletteTween.currentColors[flowerIndex]
             );
 
             // 0 at center, 1 at outermost
@@ -119,7 +119,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             const radiusScale = 
                 minRadiusScale + (maxRadiusScale - minRadiusScale) * radiusProgress;
 
-            const flowerRadius = drawConfig.radius * radiusScale * growthFactor;
+            const flowerRadius = radius * radiusScale * growthFactor;
             const effectiveAlpha = flowersAlpha * growthFactor;
 
             flower.forEach((petal: Graphics, petalIndex: number) => {
@@ -133,7 +133,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
                     flowerRadius * Math.sin(this.petalAngle + petalIndex * flowerIndex)
                 );
 
-                this.reusableStrokeOptions.width = drawConfig.width;
+                this.reusableStrokeOptions.width = width;
                 this.reusableStrokeOptions.color = flowerColor;
                 this.reusableStrokeOptions.alpha = effectiveAlpha;
 
@@ -189,7 +189,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         }
 
         // Rebuild color interpolator with new count
-        this.colorInterpolator = new ColorInterpolator(
+        this.paletteTween = new PaletteTween(
             this.config.palette,
             this.config.flowerAmount
         );
@@ -259,7 +259,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.childSpirals = childSpirals;
     };
 
-    public computeDrawConfig = (timeMS: number): drawConfig => {
+    public computeWidthAndRadius = (timeMS: number): {width: number, radius: number} => {
         const {
             petalThicknessBase,
             petalThicknessVariation,
@@ -285,13 +285,13 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
 
         // Pick a new set of target colors every `colorChangeInterval` seconds.
         if (this.colorChangeCounter >= this.config.colorChangeInterval) {
-            this.colorInterpolator.updateTargetColors();
+            this.paletteTween.retarget();
             this.colorChangeCounter = 0;
         }
 
         // Interpolation factor between current and target colors [0, 1].
         const t = this.colorChangeCounter / this.config.colorChangeInterval;
-        this.colorInterpolator.interpolateColors(t);
+        this.paletteTween.step(t);
     }
 
     private destroyGraphicsAndChildren = (): void => {
@@ -405,7 +405,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             patch.palette &&
             patch.palette !== oldConfig.palette
         ) {
-            this.colorInterpolator = new ColorInterpolator(
+            this.paletteTween = new PaletteTween(
                 this.config.palette,
                 this.config.flowerAmount
             );

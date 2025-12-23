@@ -7,23 +7,10 @@
     align-items: end;
 
     &__text {
+        color: $white;
         text-align: center;
         padding: 1em 0;
         font-size: 0.9rem;
-    }
-    
-    &__link {
-        color: $white;
-        text-decoration: none;
-
-        &:visited,
-        &:active {
-            color: $white;
-        }
-
-        &:hover {
-            text-decoration: underline;
-        }
     }
 }
 
