@@ -1,4 +1,4 @@
-import React, { use, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { runDancingCircles } from "@/animations/dancing circles/runDancingCircles"; 
 import FullscreenButton from "@/components/FullscreenButton";
 import MusicControls from "@/components/MusicControls";

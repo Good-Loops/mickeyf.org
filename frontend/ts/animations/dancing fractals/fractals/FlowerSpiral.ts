@@ -162,7 +162,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         const flower: Graphics[] = [];
 
         if (!this.app) {
-            throw new Error("FlowerSpiral: app is not set. Did you forget to call initializeFlowers(app)?");
+            throw new Error("FlowerSpiral: app is not set. Did you forget to call init(app)?");
         }
 
         // Create petals for this flower, all sharing same origin (x, y).
