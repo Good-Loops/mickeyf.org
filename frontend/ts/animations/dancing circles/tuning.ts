@@ -82,7 +82,7 @@ export const TUNING: DancingCirclesTuning = {
     intervals: {
         idleTargetUpdateIntervalMs: 1000,
         controlTargetUpdateIntervalMs: 10,
-        colorIntervalMs: 20,
+        colorIntervalMs: 40,
     },
     beat: {
         moveThreshold: 0.09,
@@ -129,22 +129,22 @@ export const TUNING: DancingCirclesTuning = {
             smoothingResponsiveness: 12,
         },
         holdDrift: {
-            deg: 6,
-            hz: 0.25,
+            deg: 4,
+            hz: 0.18,
         },
         stableDrift: {
-            rampMs: 1600,
-            hz: 0.08,         
-            hueDeg: 12,       
-            satDeg: 12,        
-            lightDeg: 8,      
+            rampMs: 2000,
+            hz: 0.06,         
+            hueDeg: 8,       
+            satDeg: 8,        
+            lightDeg: 6,      
         },
     },
     render: {
         posResponsiveness: 1.4,
         radiusBaseResponsiveness: 16,
         radiusBeatBoost: 22,
-        colorBaseResponsiveness: 10,
-        colorClarityBoost: 7,
+        colorBaseResponsiveness: 6,
+        colorClarityBoost: 3,
     },
 };

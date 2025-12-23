@@ -20,3 +20,4 @@ docker-compose.yml
 
 # Ignore Docker credentials directory
 .docker/creds/
+frontend/package-lock.json
