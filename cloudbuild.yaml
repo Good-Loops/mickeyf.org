@@ -37,15 +37,15 @@ steps:
     secretEnv: ['DB_PASS', 'SESSION_SECRET']
 
   # Notify Slack
-  - name: 'curlimages/curl:8.0.1'
-    entrypoint: 'sh'
+  - name: 'gcr.io/cloud-builders/curl'
     args:
-      - -c
-      - |
-        # Note: $$ syntax references secret environment variables defined in this step's secretEnv
-        curl -X POST -H 'Content-type: application/json' \
-        --data "{\"text\":\"✅ Backend deployed to Cloud Run. Commit: $COMMIT_SHA\"}" \
-        "$$SLACK_WEBHOOK_URL"
+      - -X
+      - POST
+      - -H
+      - 'Content-type: application/json'
+      - --data
+      - "{\"text\":\"✅ Backend deployed to Cloud Run. Commit: $COMMIT_SHA\"}"
+      - "$$SLACK_WEBHOOK_URL"
     secretEnv: ['SLACK_WEBHOOK_URL']
 
 availableSecrets:
