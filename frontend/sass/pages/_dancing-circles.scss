@@ -2,18 +2,45 @@
 
 .dancing-circles {
     display: grid;
-    gap: 2em;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 3em;
+    align-items: start;
+
+    &__title {
+        grid-column: 1 / -1;
+        justify-self: center;
+    }
+
+    &__canvas-wrapper {
+        grid-column: 2 / 3;
+        justify-self: center;
+    }
 
     &__canvas {
         @include canvas-shadow-effect;
+    }
+
+    &__transport {
+        grid-column: 2 / 3;
+
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        width: 100%;
+        column-gap: 1rem;
+        
+        &-controls {
+            grid-column: 1 / 2;
+            justify-self: center;
+        }
+    }
+
+    &__upload {
+        grid-column: 2 / 3;
         justify-self: center;
     }
 
     &__upload-btn {
-        justify-self: center;
-        
-        grid-row: 3;
-
         @include default-btn;
 
         &:not(.playing):hover,
@@ -29,4 +56,7 @@
     &__input[type="file"] {
         display: none;
     }
+
+    @include block-canvas-fullscreen('dancing-circles');
+    @include canvas-fullscreen-button-position('dancing-circles');
 }

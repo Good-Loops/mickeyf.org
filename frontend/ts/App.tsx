@@ -1,20 +1,20 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Header from "./Header";
-import Home from "./pages/Home";
+import Header from "@/Header";
+import Home from "@/pages/Home";
 
-import Animations from "./pages/Animations";
-import DancingCircles from "./pages/animations/DancingCircles";
-import DancingFractals from "./pages/animations/DancingFractals";
+import Animations from "@/pages/Animations";
+import DancingCircles from "@/pages/animations/DancingCircles";
+import DancingFractals from "@/pages/animations/DancingFractals";
 
-import Games from "./pages/Games";
-import P4Vega from "./pages/games/P4Vega";
+import Games from "@/pages/Games";
+import P4Vega from "@/pages/games/P4Vega";
 
-import Leaderboard from "./pages/Leaderboard";
-import Social from "./pages/Social";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import NotFound from "./pages/NotFound";
+import Leaderboard from "@/pages/Leaderboard";
+import Social from "@/pages/Social";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import NotFound from "@/pages/NotFound";
 
 const App: React.FC = () => {
   return (
@@ -26,7 +26,7 @@ const App: React.FC = () => {
 
           <Route path="/animations/*" element={<Animations />} />
           <Route path="/animations/dancing-circles" element={<DancingCircles />} />
-          <Route path="/animations/dancing-fractals" element={<DancingFractals />} />
+          {/* <Route path="/animations/dancing-fractals" element={<DancingFractals />} /> */}
           
           <Route path="/games/*" element={<Games />} />
           <Route path="/games/p4-Vega" element={<P4Vega />} />
@@ -40,7 +40,7 @@ const App: React.FC = () => {
       </main>
       <footer className="footer">
         <p className="footer__text">
-          <a className="footer__link" href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0 Universal</a>
+          © 2025 Michel Fingergut {/* · Portfolio */}
         </p>
       </footer>
     </div>

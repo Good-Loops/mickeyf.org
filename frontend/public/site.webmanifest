@@ -1,5 +1,5 @@
 {
-  "name": "mickeyf.org",
+  "name": "BeatCalc",
   "short_name": "BeatCalc",
   "icons": [
     {
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#4e6883",
+  "background_color": "#4e6883",
   "display": "standalone"
 }

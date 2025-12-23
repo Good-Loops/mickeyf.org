@@ -1,12 +1,12 @@
 steps:
   # Build the Docker image for the backend
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:v0.4.0', '.']
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:$SHORT_SHA', '.']
     dir: '.'
-  
+
   # Push the Docker image to Google Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:v0.4.0']
+    args: ['push', 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:$SHORT_SHA']
 
   # Deploy the image to Google Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:alpine'
@@ -16,7 +16,7 @@ steps:
       - 'deploy'
       - '${_SERVICE_NAME}'
       - '--image'
-      - 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:v0.4.0'
+      - 'us-central1-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_REPO_NAME}:$SHORT_SHA'
       - '--region'
       - '${_REGION}'
       - '--platform'
@@ -25,13 +25,37 @@ steps:
       - '--port'
       - '8080'
       - '--add-cloudsql-instances'
-      - '${_CLOUD_SQL_CONNECTION_NAME}' # Include the Cloud SQL instance
-      - '--set-env-vars' # Include the DB env vars
+      - '${_CLOUD_SQL_CONNECTION_NAME}'
+      - '--set-env-vars'
       - >-
         CLOUD_SQL_CONNECTION_NAME=${_CLOUD_SQL_CONNECTION_NAME},
         DB_USER=${_DB_USER},
         DB_NAME=${_DB_NAME},
-        SESSION_SECRET=${_SESSION_SECRET}
+        # Note: $$ syntax references secret environment variables defined in this step's secretEnv
+        DB_PASS=$$DB_PASS,
+        SESSION_SECRET=$$SESSION_SECRET
+    secretEnv: ['DB_PASS', 'SESSION_SECRET']
+
+  # Notify Slack
+  - name: 'curlimages/curl:8.0.1'
+    entrypoint: 'sh'
+    args:
+      - -c
+      - |
+        # Note: $$ syntax references secret environment variables defined in this step's secretEnv
+        curl -X POST -H 'Content-type: application/json' \
+        --data "{\"text\":\"✅ Backend deployed to Cloud Run. Commit: $COMMIT_SHA\"}" \
+        "$$SLACK_WEBHOOK_URL"
+    secretEnv: ['SLACK_WEBHOOK_URL']
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/${_GCP_PROJECT_ID}/secrets/DB_PASS/versions/latest
+      env: DB_PASS
+    - versionName: projects/${_GCP_PROJECT_ID}/secrets/SESSION_SECRET/versions/latest
+      env: SESSION_SECRET
+    - versionName: projects/${_GCP_PROJECT_ID}/secrets/SLACK_WEBHOOK_URL/versions/latest
+      env: SLACK_WEBHOOK_URL
 
 substitutions:
   _GCP_PROJECT_ID: 'noted-reef-387021'
@@ -41,7 +65,6 @@ substitutions:
   _CLOUD_SQL_CONNECTION_NAME: 'noted-reef-387021:us-central1:cms-mickeyf'
   _DB_USER: 'cms_mickeyf'
   _DB_NAME: 'cms'
-  _SESSION_SECRET: '9e6c991e3ad3cb10df18eced5bebf14bc89de75c96caf2dc85aa4f19eb9af27861091a59e6551370ce892ff1f56bf2fe497cf1ff147e92f62b5bd7af9a489303'
 
 options:
   logging: CLOUD_LOGGING_ONLY

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import { API_BASE } from '../config/apiConfig';
+import { API_BASE } from '@/config/apiConfig';
 
 interface LeaderboardEntry {
   user_name: string;

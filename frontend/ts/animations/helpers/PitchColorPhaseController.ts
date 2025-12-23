@@ -1,0 +1,362 @@
+import PitchColorPolicy, { type ColorDecision } from "@/animations/helpers/PitchColorPolicy";
+import clamp from "@/utils/clamp";
+import expSmoothing from "@/utils/expSmoothing";
+import { HslColor, lerpHsl, wrapHue } from "@/utils/hsl";
+
+type CommitTransition = {
+    active: boolean;
+    color: HslColor;
+};
+
+type PitchColorPhaseState = {
+    committedHueBase: number;
+    committedColorBase: HslColor | null;
+    committedAtMs: number;
+    hasCommittedHue: boolean;
+    holdListening: boolean;
+    holdHueLfoPhase: number;
+    stableLfoPhase: number;
+    localSilenceMs: number;
+    colorElapsedMs: number;
+    renderedColor: HslColor;
+    commitTransition: CommitTransition;
+    lastPitchChanged: boolean;
+    lastKind: "silence" | "pitch";
+};
+
+type PitchColorPhaseTuning = {
+    colorIntervalMs: number;
+    listenAfterSilenceMs: number;
+    
+    holdDrift: {
+        deg: number;
+        hz: number;
+    };
+
+    stableDrift: {
+        rampMs: number;
+        hz: number;
+        hueDeg: number;
+        satDeg: number;
+        lightDeg: number;
+    };
+
+    commit: {
+        holdMs: number;
+        smoothingResponsiveness: number;
+    };
+    noteStep: boolean;
+};
+
+export type PitchColorPhaseStepInput = {
+    pitchHz: number;
+    clarity: number;
+    nowMs: number;
+    deltaMs: number;
+};
+
+export type PitchColorPhaseStepResult = {
+    color: HslColor;
+    decision?: ColorDecision;
+};
+
+export default class PitchColorPhaseController {
+    private state: PitchColorPhaseState;
+
+    constructor(
+        private deps: {
+            policy: PitchColorPolicy;
+            tuning: PitchColorPhaseTuning;
+        }
+    ) {
+        const initialColor = deps.policy.lastGoodColor;
+
+        this.state = {
+            committedHueBase: 0,
+            committedColorBase: null,
+            committedAtMs: 0,
+            hasCommittedHue: false,
+            holdListening: true,
+            holdHueLfoPhase: 0,
+            stableLfoPhase: 0,
+            localSilenceMs: 0,
+            colorElapsedMs: 0,
+            renderedColor: initialColor,
+            commitTransition: {
+                active: false,
+                color: initialColor,
+            },
+            lastPitchChanged: false,
+            lastKind: "silence",
+        };
+    }
+
+    reset(): void {
+        const initialColor = this.deps.policy.lastGoodColor;
+
+        this.state = {
+            committedHueBase: 0,
+            committedColorBase: null,
+            committedAtMs: 0,
+            hasCommittedHue: false,
+            holdListening: true,
+            holdHueLfoPhase: 0,
+            stableLfoPhase: 0,
+            localSilenceMs: 0,
+            colorElapsedMs: 0,
+            renderedColor: initialColor,
+            commitTransition: {
+                active: false,
+                color: initialColor,
+            },
+            lastPitchChanged: false,
+            lastKind: "silence",
+        };
+    }
+
+    step(input: PitchColorPhaseStepInput): PitchColorPhaseStepResult {
+        this.state.colorElapsedMs += input.deltaMs;
+
+        if (this.state.hasCommittedHue && !this.state.holdListening) {
+            return this.handleHoldPhase(input);
+        }
+
+        const decision = this.deps.policy.decide({
+            pitchHz: input.pitchHz,
+            clarity: input.clarity,
+            nowMs: input.nowMs,
+            dtMs: this.state.colorElapsedMs,
+        });
+
+        this.updateKindFlags(decision, this.state.colorElapsedMs);
+
+        const isCommit =
+            decision.result.kind === "pitch" &&
+            decision.result.changed === true;
+
+        const shouldUpdatePolicy = isCommit || this.state.colorElapsedMs >= this.deps.tuning.colorIntervalMs;
+
+        if (!shouldUpdatePolicy) {
+            return { color: this.renderCurrent(input), decision: undefined };
+        }
+
+        const elapsedMs = this.state.colorElapsedMs;
+        this.state.colorElapsedMs = 0;
+
+        this.updateSilence(decision, elapsedMs);
+
+        if (isCommit || !this.state.hasCommittedHue) {
+            this.startCommit(decision.color, input.nowMs);
+        }
+
+        return { color: this.renderCurrent(input), decision };
+    }
+
+    private updateKindFlags(decision: ColorDecision, colorElapsedMs: number): void {
+        const nextLocalSilenceMs =
+            decision.result.kind === "silence"
+            ? this.state.localSilenceMs + colorElapsedMs
+            : 0;
+
+        const isBriefSilence =
+            decision.result.kind === "silence" &&
+            this.state.hasCommittedHue &&
+            nextLocalSilenceMs < this.deps.tuning.listenAfterSilenceMs;
+
+        const effectiveKind: "silence" | "pitch" =
+            isBriefSilence ? "pitch" : decision.result.kind;
+
+        this.state.lastKind = effectiveKind;
+
+        this.state.lastPitchChanged =
+            effectiveKind === "pitch" && decision.result.kind === "pitch"
+            ? decision.result.changed
+            : false;
+    }
+
+    private shouldStableDrift(): boolean {
+        return (
+            this.state.hasCommittedHue &&
+            this.state.lastKind === "pitch" &&
+            this.state.lastPitchChanged === false
+        );
+    }
+
+    private renderCurrent(input: PitchColorPhaseStepInput): HslColor {
+        let color = this.progressCommitTransition(input.deltaMs);
+        if (this.shouldStableDrift()) {
+            color = this.applyStableDrift(color, input);
+        }
+        this.state.renderedColor = color;
+        return color;
+    }
+
+    private startCommit(color: HslColor, nowMs: number): void {
+        this.state.committedColorBase = color;
+        this.state.committedHueBase = color.hue;
+        this.state.committedAtMs = nowMs;
+
+        const startingColor = this.state.hasCommittedHue
+            ? this.state.renderedColor
+            : color;
+
+        this.state.commitTransition = {
+            active: this.state.hasCommittedHue,
+            color: startingColor,
+        };
+
+        this.state.holdHueLfoPhase = 0;
+        this.state.stableLfoPhase = 0;
+        this.state.hasCommittedHue = true;
+        this.state.holdListening = false;
+    }
+
+    private handleHoldPhase(input: PitchColorPhaseStepInput): PitchColorPhaseStepResult {
+        const elapsedMs = this.state.colorElapsedMs;
+        const holdDurationMs = input.nowMs - this.state.committedAtMs;
+
+        if (holdDurationMs >= this.deps.tuning.commit.holdMs) {
+            this.state.holdListening = true;
+            this.state.localSilenceMs = 0;
+            this.state.colorElapsedMs = 0;
+        }
+
+        let color = this.progressCommitTransition(input.deltaMs);
+
+        if (!this.state.holdListening && elapsedMs >= this.deps.tuning.colorIntervalMs) {
+            this.state.colorElapsedMs = 0;
+            color = this.applyHoldDrift(color, input);
+        }
+
+        this.state.renderedColor = color;
+
+        return {
+            color,
+        };
+    }
+
+    private applyHoldDrift(baseColor: HslColor, input: PitchColorPhaseStepInput): HslColor {
+        const dtSec = input.deltaMs / 1000;
+        this.state.holdHueLfoPhase +=
+            dtSec * (this.deps.tuning.holdDrift.hz * Math.PI * 2);
+
+        const sinceCommitMs = input.nowMs - this.state.committedAtMs;
+        const SETTLE_TIME_MS = 400;
+        const settle = 1 - clamp(sinceCommitMs / SETTLE_TIME_MS, 0, 1);
+
+        const wave = this.smoothBreathingWave(this.state.holdHueLfoPhase);
+        const drift = wave * this.deps.tuning.holdDrift.deg * settle;
+
+        return {
+            ...baseColor,
+            hue: wrapHue(this.state.committedHueBase + drift),
+        };
+    }
+
+    private applyStableDrift(base: HslColor, input: PitchColorPhaseStepInput): HslColor {
+        const t = this.deps.tuning.stableDrift;
+
+        // ramp from 0..1 based on time since commit
+        const sinceCommitMs = input.nowMs - this.state.committedAtMs;
+        const rampLinear = t.rampMs <= 0 ? 1 : clamp(sinceCommitMs / t.rampMs, 0, 1);
+        const ramp = rampLinear * rampLinear * (3 - 2 * rampLinear); // smoothstep easing
+
+        const dtSec = input.deltaMs / 1000;
+        this.state.stableLfoPhase += dtSec * (t.hz * Math.PI * 2);
+
+        const centered = this.continuousBreathingWave(this.state.stableLfoPhase);
+
+        const hue = wrapHue(base.hue + centered * t.hueDeg * ramp);
+        const saturation = clamp(base.saturation + centered * t.satDeg * ramp, 0, 100);
+        const lightness = clamp(base.lightness + centered * t.lightDeg * ramp, 0, 100);
+
+        return { hue, saturation, lightness };
+    }
+
+    /**
+     * Generates a smooth, unidirectional breathing wave (0..1 range).
+     * Uses sin^2 for a gentle, rounded oscillation without sharp peaks.
+     */
+    private smoothBreathingWave(phase: number): number {
+        return Math.sin(phase) ** 2;
+    }
+
+    /**
+     * Generates a smooth, continuous breathing wave centered at 0 (-1..1 range).
+     * Combines two harmonically related cosine waves for organic movement.
+     */
+    private continuousBreathingWave(phase: number): number {
+        const PRIMARY_WEIGHT = 0.7;
+        const SECONDARY_WEIGHT = 0.3;
+        
+        const primary = 0.5 - 0.5 * Math.cos(phase);
+        const secondary = 0.5 - 0.5 * Math.cos(phase * 0.5);
+        const breath = primary * PRIMARY_WEIGHT + secondary * SECONDARY_WEIGHT;
+        return (breath - 0.5) * 2;
+    }
+
+    private progressCommitTransition(deltaMs: number): HslColor {
+        const target = this.state.committedColorBase ?? this.state.renderedColor;
+
+        if (!this.state.commitTransition.active || !target) {
+            return target;
+        }
+
+        const alpha = expSmoothing(deltaMs, this.deps.tuning.commit.smoothingResponsiveness);
+
+        const nextColor = lerpHsl(
+            this.state.commitTransition.color,
+            target,
+            alpha
+        );
+
+        this.state.commitTransition.color = nextColor;
+
+        const hueDelta = this.hueDistance(nextColor.hue, target.hue);
+        const saturationDelta = Math.abs(nextColor.saturation - target.saturation);
+        const lightnessDelta = Math.abs(nextColor.lightness - target.lightness);
+
+        const SETTLED_HUE_EPS_DEG = 0.1;
+        const SETTLED_SAT_EPS_DEG = 0.5;
+        const SETTLED_LIGHT_EPS_DEG = 0.5;
+
+        const isSettled =
+            Math.abs(hueDelta) < SETTLED_HUE_EPS_DEG &&
+            saturationDelta < SETTLED_SAT_EPS_DEG &&
+            lightnessDelta < SETTLED_LIGHT_EPS_DEG;
+
+        if (isSettled) {
+            this.state.commitTransition = {
+                active: false,
+                color: target,
+            };
+            return target;
+        }
+
+        return nextColor;
+    }
+
+    private updateSilence(decision: ColorDecision, elapsedMs: number): void {
+        if (decision.result.kind === "silence") {
+            this.state.localSilenceMs += elapsedMs;
+
+            if (this.state.localSilenceMs >= this.deps.tuning.listenAfterSilenceMs) {
+                this.state.holdHueLfoPhase = 0;
+                this.state.holdListening = true;
+                this.state.localSilenceMs = 0;
+                this.state.colorElapsedMs = 0;
+            }
+        } else {
+            this.state.localSilenceMs = 0;
+        }
+    }
+
+    private hueDistance(from: number, to: number): number {
+        const a = wrapHue(from);
+        const b = wrapHue(to);
+        let delta = b - a;
+        if (delta > 180) delta -= 360;
+        if (delta < -180) delta += 360;
+        return delta;
+    }
+}

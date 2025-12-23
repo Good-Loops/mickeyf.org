@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import Entity from '../actions/games/helpers/Entity';
+import Entity from '@/games/helpers/Entity';
 
 /**
  * Checks if two animated sprites are colliding.

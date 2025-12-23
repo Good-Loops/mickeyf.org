@@ -1,0 +1,74 @@
+@use '../abstracts' as *;
+
+// Generic dropdown styles, reused across features.
+// Works with the React Dropdown component via BEM-ish hooks.
+
+.dropdown {
+    position: relative;
+
+    &.active .dropdown__menu {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+
+    &.active .dropdown__caret {
+        transform: rotate(180deg);
+        opacity: 1;
+    }
+
+    &__button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5em;
+
+        font-size: 0.9rem;
+        transition: all .2s ease;
+
+        &:disabled {
+            cursor: inherit;
+        }
+    }
+
+    &__caret {
+        font-size: 1.2rem;
+        transition: transform .2s ease, opacity .2s ease;
+        pointer-events: none; // caret shouldn't block clicking
+    }
+
+    &__selected {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__menu {
+        position: absolute;
+        top: calc(100% + 3px);
+        left: 0;
+        right: 0;
+        z-index: $front;
+
+        margin: 0;
+        padding: 0.35rem 0;
+        list-style: none;
+
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-0.4rem);
+        transition: opacity 150ms ease, transform 150ms ease;
+    }
+
+    &__option {
+        width: 100%;
+        padding: 0.55rem 0.8rem;
+        text-align: left;
+        background: transparent;
+        border: none;
+
+        cursor: $cursor-hover;
+        transition: all 0.2s ease;
+    }
+}

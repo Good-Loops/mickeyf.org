@@ -1,16 +1,38 @@
 @use '../abstracts' as *;
 
 .p4-vega {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     gap: 3em;
+    align-items: flex-start;
 
     &__title {
+        grid-column: 1 / -1;
+        justify-self: center;
+        margin-bottom: .5em;
+    }
+
+    &__canvas-wrapper {
         grid-column: 2 / 3;
+        grid-row: 2;
+        justify-self: center;
+        align-self: center;
+
+        width: fit-content;
+        height: fit-content;
+        margin: 0 auto;
+    }
+
+    &__canvas {
+        @include canvas-shadow-effect;
+        display: block;
+        overflow: hidden;
     }
 
     &__ui {
         grid-column: 1 / 2;
+        grid-row: 2;
 
         display: grid;
         grid-auto-rows: max-content;
@@ -69,29 +91,25 @@
                 display: flex;
             }
 
+            // Theming and positioning for the shared .dropdown menu
             &-menu {
                 cursor: $cursor-hover;
 
-                max-height: 20em;
+                max-height: 20rem;
                 overflow-y: auto; 
                 overflow-x: hidden; 
 
                 position: absolute;
-                left: 1em;
+                left: 1rem;
+                right: .3rem;
                 top: 95%;
 
-                padding: .5em;
+                margin-left: -.8rem;
 
                 border-bottom-left-radius: $border-radius-s;
                 border-bottom-right-radius: $border-radius-s;
 
-                box-shadow: $darl-box-shadow-s;
-
-                pointer-events: none;
-                opacity: 0;
-                transform: translateY(-1em);
-                transition: opacity .15s ease-in-out,
-                            transform .15s ease-in-out;
+                box-shadow: $dark-box-shadow-s;
 
                 &-keys {
                     white-space: nowrap;
@@ -108,32 +126,16 @@
                         border-radius: $border-radius-s;
                     }
                 }
+            }
 
-                &.active {
-                    display: block;
-                }
+            // Button hover state; open/close behavior is handled
+            // by the shared .dropdown styles.
+            &-btn:hover {
+                background-color: $primary-darker;
             }
         }
-
-        &--dropdown.active + &--dropdown-btn,
-        &--dropdown-btn:hover {
-            background-color: $primary-darker;
-        }
-
-        &--dropdown.active > &--dropdown-btn + &--dropdown-menu {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
     }
 
-    &__canvas {
-        @include canvas-shadow-effect;
-        justify-self: center;
-        grid-column: 2 / 3;
-    }
-
-    &__img {
-        display: none;
-    }
+    @include canvas-fullscreen-button-position("p4-vega");
+    @include block-canvas-fullscreen("p4-vega");
 }

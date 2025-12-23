@@ -1,21 +1,24 @@
 import React, { useEffect, useRef } from "react";
-import dancingCirclesRunner from "../../actions/animations/dancing circles/dancingCirclesRunner"; 
+import { runDancingCircles } from "@/animations/dancing circles/runDancingCircles"; 
+import FullscreenButton from "@/components/FullscreenButton";
+import MusicControls from "@/components/MusicControls";
+import audioEngine from "@/animations/helpers/AudioEngine";
+import useAudioEngineState from "@/hooks/useAudioEngineState";
+import { CANVAS_WIDTH } from "@/utils/constants";
 
 const DancingCircles: React.FC = () => {
-	const containerRef = useRef<HTMLElement | null>(null);
-  	const uploadRef = useRef<HTMLLabelElement | null>(null);
+	const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
   	const inputRef = useRef<HTMLInputElement | null>(null);
+	const audio = useAudioEngineState();
 
 	useEffect(() => {
-		if (!containerRef.current || !uploadRef.current || !inputRef.current) return;
+		if (!canvasWrapperRef.current) return;
 
 		let dispose: (() => void) | undefined;
 
 		(async () => {
-			dispose = await dancingCirclesRunner({
-				container: containerRef.current!,
-				uploadButton: uploadRef.current!,
-				fileInput: inputRef.current!,
+			dispose = await runDancingCircles({
+				container: canvasWrapperRef.current!,
 			});
 		})();
 
@@ -24,26 +27,69 @@ const DancingCircles: React.FC = () => {
 		};
 	}, []);
 
+    // Hook upload button to audio engine
+	useEffect(() => {
+        const input = inputRef.current;
+        if (!input) return;
+
+        return audioEngine.initializeUploadButton(input);
+    }, []);
+
+	// Stop audio on unmount
+	useEffect(() => {
+        return () => {
+            audioEngine.dispose();
+        };
+    }, []);
+
+    const handlePlay = () => audioEngine.play();
+    const handlePause = () => audioEngine.pause();
+    const handleStop = () => audioEngine.stop();
+
 	return (
-		<section className="dancing-circles" ref={containerRef}>
-		<h1 className="u-canvas-title">Dancing Circles</h1>
+		<section 
+            className="dancing-circles"
+            style={{ ["--canvas-width" as any]: `${CANVAS_WIDTH}px` }}
+        >
+			<h1 className="dancing-circles__title canvas-title">Dancing Circles</h1>
 
-		<label
-			className="dancing-circles__upload-btn floating"
-			htmlFor="file-upload"
-			ref={uploadRef}
-		>
-			Upload Music
-		</label>
+			<div 
+				className="dancing-circles__canvas-wrapper" 
+				ref={canvasWrapperRef}
+			>
+				<FullscreenButton
+					targetRef={canvasWrapperRef}
+					className="dancing-circles__fullscreen-btn"
+				/>
+    	   </div>
 
-		<input
-			className="dancing-circles__input"
-			id="file-upload"
-			type="file"
-			name="fileupload"
-			accept="audio/*"
-			ref={inputRef}
-		/>
+			<div className="dancing-circles__transport">
+                <div className="dancing-circles__transport-controls">
+                    <MusicControls
+                        hasAudio={audio.hasAudio}
+                        isPlaying={audio.playing}
+                        onPlay={handlePlay}
+                        onPause={handlePause}
+                        onStop={handleStop}
+                    />
+                </div>
+
+                <div className="dancing-circles__upload floating">
+                    <label
+                        className="dancing-circles__upload-btn"
+                        htmlFor="dancing-circles-file-upload"
+                    >
+                        Upload Music
+                    </label>
+                    <input
+                        id="dancing-circles-file-upload"
+                        type="file"
+                        accept="audio/*"
+                        className="dancing-circles__input"
+                        ref={inputRef}
+                    />
+                </div>
+            </div>
 		</section>
 	);
 };

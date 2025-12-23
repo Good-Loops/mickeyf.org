@@ -1,4 +1,4 @@
-import { API_BASE } from '../config/apiConfig';
+import { API_BASE } from '@/config/apiConfig';
 
 type LoginPayload = {
     user_name: string;

@@ -3,49 +3,9 @@
         {
             "splitTerminals": [
                 {
-                    "name": "front-server",
+                    "name": "front",
                     "commands": [
-                        "sleep 10s && cd frontend && npm run live"
-                    ]
-                }
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
-                    "name": "front-compiler",
-                    "commands": [
-                        "sleep 5s && cd frontend && npm run dev"
-                    ]
-                }
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
-                    "name": "sass-compiler",
-                    "commands": [
-                        "sleep 6s && cd frontend && npm run sass"
-                    ]
-                }
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
-                    "name": "back-compiler",
-                    "commands": [
-                        "sleep 7s && cd backend && npm run dev"
-                    ]
-                }
-            ]
-        },
-        {
-            "splitTerminals": [
-                {
-                    "name": "back-server",
-                    "commands": [
-                        "sleep 8s && cd backend && npm run serve"
+                        "cd frontend && npm run dev"
                     ]
                 }
             ]
@@ -56,22 +16,10 @@
                     "name": "general",
                 }
             ]
-        },
-        {
-            "splitTerminals": [
-                {
-                    "name": "temp-bash",
-                    "commands": [
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'blue~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'magenta~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'yellow~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'red~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'cyan~'",
-                        "xdotool key '^{PGUP}' && xdotool key '^+j' && xdotool key 'green~'",
-                        "exit",
-                    ]
-                }
-            ]
         }
     ],
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "editor.inlineSuggest.enabled": true,
+    "editor.suggest.preview": true,
+    "editor.tabCompletion": "onlySnippets"
 }

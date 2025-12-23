@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { loginRequest, verifyRequest } from '../services/authService';
+import { loginRequest, verifyRequest } from '@/services/authService';
 import Swal from 'sweetalert2';
-import { API_BASE } from '../config/apiConfig';
+import { API_BASE } from '@/config/apiConfig';
 
 type AuthContextType = {
   userName: string | null;

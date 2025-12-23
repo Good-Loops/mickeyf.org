@@ -1,0 +1,80 @@
+@use '../abstracts' as *;
+@use 'sass:color';
+
+.music-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    pointer-events: auto;
+
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+
+    backdrop-filter: blur(10px);
+    background: rgba($primary, 0.06);
+    box-shadow: 0 0 .6em rgba($white, .6), 0 0 0em rgba($primary, .5) inset;
+
+    color: $primary;
+    z-index: $front-9;
+
+    &__btn {
+        position: relative;
+
+        width: 3rem;
+        height: 3rem;
+        border-radius: 999px;
+
+        padding: 0.5rem;
+        font-size: 0;
+        line-height: 1;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: $cursor-hover;
+        pointer-events: auto;
+
+        background: $secondary-light;
+        color: $primary;
+
+        transition: box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+        // Subtle hover state: brighten background + glow, no scaling
+        &:hover:not(:disabled) {
+            background: color.adjust($secondary-light, $lightness: 5%);
+            box-shadow:
+                0 0 0.35rem rgba($white, 0.8),
+                0 0 0.4rem rgba($primary, 0.45);
+            color: $primary-dark;
+        }
+
+        // Active state: slightly stronger inner shadow, still no scale
+        &:active:not(:disabled) {
+            background: color.adjust($secondary-light, $lightness: -3%);
+            box-shadow:
+                0 0 0.15rem rgba($white, 0.7) inset,
+                0 0 0.3rem rgba($primary, 0.35) inset;
+        }
+
+        &:disabled {
+            opacity: .4;
+            cursor: $cursor-notallowed;
+            box-shadow: none;
+        }
+    }
+
+    &__icon {
+        position: relative;
+        transform: none;
+
+        width: 2rem;
+        height: 2rem;
+        display: block;
+        fill: currentColor;
+        pointer-events: none;
+    }
+
+    &--disabled {
+        opacity: 0.6;
+    }
+}

@@ -2,9 +2,9 @@
     "name": "backend",
     "version": "0.4.0",
     "scripts": {
-        "dev": "webpack --mode development --watch",
+        "watch": "webpack --mode development --watch",
         "prod": "webpack --mode production",
-        "serve": "nodemon dist/server.min.js"
+        "dev": "fuser -k 8080/tcp 2>/dev/null || true && nodemon dist/server.min.js"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
