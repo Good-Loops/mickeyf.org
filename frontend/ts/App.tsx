@@ -26,7 +26,7 @@ const App: React.FC = () => {
 
           <Route path="/animations/*" element={<Animations />} />
           <Route path="/animations/dancing-circles" element={<DancingCircles />} />
-          {/* <Route path="/animations/dancing-fractals" element={<DancingFractals />} /> */}
+          <Route path="/animations/dancing-fractals" element={<DancingFractals />} />
           
           <Route path="/games/*" element={<Games />} />
           <Route path="/games/p4-Vega" element={<P4Vega />} />

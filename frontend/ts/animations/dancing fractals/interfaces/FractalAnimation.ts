@@ -1,4 +1,3 @@
-// FractalAnimation.ts
 import type { Application } from 'pixi.js';
 
 /**
