@@ -129,10 +129,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.app = null;
     }
 
-    // -----------------------
-    // Rendering
-    // -----------------------
-
     private allocateSurface(): void {
         if (!this.app || !this.root) return;
 
@@ -241,20 +237,20 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         let i = 0;
 
         while (i < maxIter && (xx + yy) <= bailoutSq) {
-        // z^2 + c
-        y = 2 * x * y + cy;
-        x = xx - yy + cx;
+            // z^2 + c
+            y = 2 * x * y + cy;
+            x = xx - yy + cx;
 
-        xx = x * x;
-        yy = y * y;
-        i += 1;
+            xx = x * x;
+            yy = y * y;
+            i += 1;
         }
 
         // Inside set -> black
         if (i >= maxIter) return 0;
 
         if (!smooth) {
-        return i / maxIter;
+            return i / maxIter;
         }
 
         // Smooth coloring (classic)
@@ -325,9 +321,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             return p;
         };
 
-        let r: number;
-        let g: number;
-        let b: number;
+        let r: number, g: number, b: number;
 
         if (s === 0) {
             r = g = b = l;
