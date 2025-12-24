@@ -1,7 +1,7 @@
-import { type color } from "@/animations/animations.types";
+import { type HslColor } from "@/utils/hsl";
 
 export interface FlowerSpiralConfig {
-    palette: color[];
+    palette: HslColor[];
 
     flowerAmount: number;        // how many flowers in the spiral
     petalsPerFlower: number;     // petals per flower

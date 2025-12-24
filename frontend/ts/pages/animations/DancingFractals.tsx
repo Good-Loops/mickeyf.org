@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Dropdown from '@/components/Dropdown';
 
-import TreeControls from '@/animations/dancing fractals/components/TreeControls';
-import FlowerSpiralControls from '@/animations/dancing fractals/components/FlowerSpiralControls';
-
-import Tree from '@/animations/dancing fractals/fractals/Tree';
 import { type TreeConfig, defaultTreeConfig } from '@/animations/dancing fractals/config/TreeConfig'; 
+import TreeControls from '@/animations/dancing fractals/components/TreeControls';
+import Tree from '@/animations/dancing fractals/fractals/Tree';
 
-import FlowerSpiral from '@/animations/dancing fractals/fractals/FlowerSpiral';
 import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '@/animations/dancing fractals/config/FlowerSpiralConfig';
+import FlowerSpiralControls from '@/animations/dancing fractals/components/FlowerSpiralControls';
+import FlowerSpiral from '@/animations/dancing fractals/fractals/FlowerSpiral';
+
 import { FractalHost } from '@/animations/dancing fractals/interfaces/FractalHost';
 import { createFractalHost } from '@/animations/dancing fractals/createFractalHost';
 

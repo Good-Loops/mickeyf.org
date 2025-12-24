@@ -1,9 +1,9 @@
-import { type color } from "@/animations/animations.types";
+import { type HslColor } from "@/utils/hsl";
 
 export interface TreeConfig {
     maxDepth: number;
 
-    palette: color[];
+    palette: HslColor[];
 
     baseLength: number;
     branchScale: number;

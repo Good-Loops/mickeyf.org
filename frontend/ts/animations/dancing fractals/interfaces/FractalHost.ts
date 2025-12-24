@@ -1,4 +1,3 @@
-// FractalHost.ts
 import type { FractalAnimationConstructor } from "./FractalAnimation";
 
 export interface FractalHost {
