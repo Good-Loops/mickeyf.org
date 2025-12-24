@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import Dropdown from '@/components/Dropdown';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type TreeConfig, defaultTreeConfig } from '@/animations/dancing fractals/config/TreeConfig'; 
 import TreeControls from '@/animations/dancing fractals/components/TreeControls';
@@ -9,16 +8,27 @@ import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '@/animations
 import FlowerSpiralControls from '@/animations/dancing fractals/components/FlowerSpiralControls';
 import FlowerSpiral from '@/animations/dancing fractals/fractals/FlowerSpiral';
 
+import { type MandelbrotConfig, defaultMandelbrotConfig } from '@/animations/dancing fractals/config/MandelbrotConfig';
+import MandelbrotControls from '@/animations/dancing fractals/components/MandelbrotControls';
+import Mandelbrot from '@/animations/dancing fractals/fractals/Mandelbrot';
+
 import { FractalHost } from '@/animations/dancing fractals/interfaces/FractalHost';
 import { createFractalHost } from '@/animations/dancing fractals/createFractalHost';
+import type { FractalAnimationConstructor } from '@/animations/dancing fractals/interfaces/FractalAnimation';
 
 import audioEngine from '@/animations/helpers/AudioEngine';
-import MusicControls from '@/components/MusicControls';
-import notAllowedCursor from '@/assets/cursors/notallowed.cur';
-import FullscreenButton from '@/components/FullscreenButton';
 import useAudioEngineState from '@/hooks/useAudioEngineState';
+import notAllowedCursor from '@/assets/cursors/notallowed.cur';
+import Dropdown from '@/components/Dropdown';
+import FullscreenButton from '@/components/FullscreenButton';
+import MusicControls from '@/components/MusicControls';
 
-type FractalKind = 'tree' | 'flower';
+type FractalKind = 'tree' | 'flower' | 'mandelbrot';
+
+type FractalEntry<C> = {
+    ctor: FractalAnimationConstructor<C>;
+    getConfig: () => C;
+};
 
 const DancingFractals: React.FC = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -38,6 +48,13 @@ const DancingFractals: React.FC = () => {
     // Separate config state for each fractal type
     const [treeConfig, setTreeConfig] = useState<TreeConfig>(defaultTreeConfig);
     const [flowerSpiralConfig, setFlowerSpiralConfig] = useState<FlowerSpiralConfig>(defaultFlowerSpiralConfig);
+    const [mandelbrotConfig, setMandelbrotConfig] = useState<MandelbrotConfig>(defaultMandelbrotConfig);
+
+    const FRACTALS = useMemo(() => ({
+        tree: { ctor: Tree, getConfig: () => treeConfig },
+        flower: { ctor: FlowerSpiral, getConfig: () => flowerSpiralConfig },
+        mandelbrot: { ctor: Mandelbrot, getConfig: () => mandelbrotConfig },
+    }) satisfies Record<FractalKind, FractalEntry<any>>, [treeConfig, flowerSpiralConfig, mandelbrotConfig]);
 
     // Create the host (PIXI app + canvas) once
     useEffect(() => {
@@ -55,12 +72,8 @@ const DancingFractals: React.FC = () => {
 
             hostRef.current = host;
 
-            // Mount initial fractal based on current kind
-            if (fractalKind === 'tree') {
-                host.setFractal(Tree, treeConfig);
-            } else {
-                host.setFractal(FlowerSpiral, flowerSpiralConfig);
-            }
+            const entry = FRACTALS[fractalKind];
+            host.setFractal(entry.ctor as any, entry.getConfig());
 
             host.setLifetime(autoDisposeEnabled ? lifetime : null);
         })();
@@ -77,11 +90,8 @@ const DancingFractals: React.FC = () => {
         const host = hostRef.current;
         if (!host) return;
 
-        if (fractalKind === 'tree') {
-            host.setFractal(Tree, treeConfig);
-        } else {
-            host.setFractal(FlowerSpiral, flowerSpiralConfig);
-        }
+        const entry = FRACTALS[fractalKind];
+        host.setFractal(entry.ctor as any, entry.getConfig());
     }, [fractalKind]);
 
     // Hook upload button to audio engine
@@ -132,19 +142,24 @@ const DancingFractals: React.FC = () => {
 
     const handleRestart = () => { hostRef.current?.restart(); };
 
-    // Handle tree config changes: update React state + push patch into fractal
     const handleTreeConfigChange = (patch: Partial<TreeConfig>) => {
         setTreeConfig(prev => {
             const next = { ...prev, ...patch };
-            // Send only the patch down to the fractal
             hostRef.current?.updateConfig(patch);
             return next;
         });
     };
 
-    // Handle flower spiral config changes: update React state + push patch into fractal
     const handleFlowerConfigChange = (patch: Partial<FlowerSpiralConfig>) => {
         setFlowerSpiralConfig(prev => {
+            const next = { ...prev, ...patch };
+            hostRef.current?.updateConfig(patch);
+            return next;
+        });
+    };
+
+    const handleMandelbrotConfigChange = (patch: Partial<MandelbrotConfig>) => {
+        setMandelbrotConfig(prev => {
             const next = { ...prev, ...patch };
             hostRef.current?.updateConfig(patch);
             return next;
@@ -183,6 +198,7 @@ const DancingFractals: React.FC = () => {
                     options={[
                         { value: 'tree', label: 'Tree' },
                         { value: 'flower', label: 'Flower Spiral' },
+                        { value: 'mandelbrot', label: 'Mandelbrot' },
                     ]}
                     value={fractalKind}
                     onChange={(val) => setFractalKind(val as FractalKind)}
@@ -250,6 +266,16 @@ const DancingFractals: React.FC = () => {
                             onChange={patch => {
                                 if(audio.playing) return;
                                 handleFlowerConfigChange(patch);
+                            }}
+                        />
+                    )}
+
+                    {fractalKind === 'mandelbrot' && (
+                        <MandelbrotControls
+                            config={mandelbrotConfig}
+                            onChange={patch => {
+                                if (audio.playing) return;
+                                handleMandelbrotConfigChange(patch);
                             }}
                         />
                     )}
