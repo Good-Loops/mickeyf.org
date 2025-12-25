@@ -93,6 +93,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private elapsedSeconds = 0;
 
     private readonly viewAnimator = new MandelbrotViewAnimator();
+    
+        // Zoom safety sampling (to avoid getting "lost" too deep or too far outside).
+        private zoomSafetyMode: "in" | "out" = "in";
+        private zoomSafetyTotal = 0;
+        private zoomSafetyInside = 0;
+        private zoomSafetyFastEscape = 0;
 
     private viewCenterX = 0;
     private viewCenterY = 0;
@@ -132,6 +138,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.syncViewFromConfig();
         this.syncRenderScaleFromEffectiveQuality();
+        
+            this.viewAnimator.setZoomMode("in");
     }
 
     init(app: Application): void {
@@ -548,6 +556,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.needsCompute = true;
         this.nextComputeTile = 0;
+        
+            this.resetZoomSafetyStats();
         this.frontComplete = renderIntoFront ? false : this.frontComplete;
 
         // Clear escape buffers to a sentinel value (rendered as stable background color in shader).
@@ -579,6 +589,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.needsCompute = true;
         this.nextComputeTile = 0;
+        
+            this.resetZoomSafetyStats();
 
         if (clearFront) {
             const sentinel = float32ToFloat16Bits(-1000);
@@ -624,6 +636,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const sinR = Math.sin(this.computeViewRotation);
 
         let didWrite = false;
+        
+            // Sample 1 out of N pixels for stats to keep overhead low.
+            const sampleMask = 3; // sample where x%4==0 and y%4==0 (1/16)
+            const fastEscapeThreshold = 0.02;
 
         const budgetMs = this.config.animate ? this.maxComputeBudgetMsPerFrameAnimated : this.maxBudgetMsPerFrame;
 
@@ -654,6 +670,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
                     const t = escapeTimeNormalized(cx, cy, maxIter, bailoutSq, cfg.smoothColoring);
                     buffer.resource[y * w + x] = float32ToFloat16Bits(t);
                     didWrite = true;
+                    
+                    if ((x & sampleMask) === 0 && (y & sampleMask) === 0) {
+                        this.zoomSafetyTotal += 1;
+                        if (t < 0) this.zoomSafetyInside += 1;
+                        else if (t < fastEscapeThreshold) this.zoomSafetyFastEscape += 1;
+                    }
                 }
             }
 
@@ -665,7 +687,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         if (this.nextComputeTile >= this.tileOrder.length) {
             this.needsCompute = false;
-
+            
+            if (this.config.animate) {
+                this.applyZoomSafetyDecision();
+            }
             if (this.config.animate) {
                 if (renderFirstFrameIntoFront) {
                     // First front-buffer progressive render finished; start animating immediately.
@@ -685,6 +710,37 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
                 this.frontComplete = true;
                 flushBufferTextureSurface(this.front);
             }
+        }
+    }
+
+    private resetZoomSafetyStats(): void {
+        this.zoomSafetyTotal = 0;
+        this.zoomSafetyInside = 0;
+        this.zoomSafetyFastEscape = 0;
+    }
+
+    private applyZoomSafetyDecision(): void {
+        // Not enough samples? Ignore (prevents flapping on tiny viewports).
+        if (this.zoomSafetyTotal < 64) return;
+
+        const insideFrac = this.zoomSafetyInside / this.zoomSafetyTotal;
+        const fastFrac = this.zoomSafetyFastEscape / this.zoomSafetyTotal;
+
+        // Hysteresis: enter zoom-out aggressively, exit more conservatively.
+        const insideHigh = 0.985;
+        const insideLow = 0.97;
+        const fastHigh = 0.985;
+        const fastLow = 0.97;
+
+        const tooFar = insideFrac > insideHigh || fastFrac > fastHigh;
+        const recovered = insideFrac < insideLow && fastFrac < fastLow;
+
+        if (this.zoomSafetyMode === "in" && tooFar) {
+            this.zoomSafetyMode = "out";
+            this.viewAnimator.setZoomMode("out");
+        } else if (this.zoomSafetyMode === "out" && recovered) {
+            this.zoomSafetyMode = "in";
+            this.viewAnimator.setZoomMode("in");
         }
     }
 

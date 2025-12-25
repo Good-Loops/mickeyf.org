@@ -10,6 +10,9 @@ export type MandelbrotView = {
 export default class MandelbrotViewAnimator {
     private readonly smoothing = 10;
 
+    private zoomLogMul = 0;
+    private zoomMode: "in" | "out" = "in";
+
     private hasDesired = false;
     private desired: MandelbrotView = { centerX: 0, centerY: 0, zoom: 1, rotation: 0 };
 
@@ -30,14 +33,34 @@ export default class MandelbrotViewAnimator {
         this.hasSmoothed = false;
     }
 
+    getZoomMode(): "in" | "out" {
+        return this.zoomMode;
+    }
+
+    setZoomMode(mode: "in" | "out"): void {
+        this.zoomMode = mode;
+    }
+
+    resetZoom(): void {
+        this.zoomLogMul = 0;
+        this.zoomMode = "in";
+    }
+
     step(config: MandelbrotConfig, elapsedSeconds: number, deltaSeconds: number): void {
+        // Clamp dt so GC/tab-switch hitches don't cause large jumps.
+        const dt = Math.min(Math.max(0, deltaSeconds), 1 / 30);
+
+        // Integrate zoom so we can reverse direction (zoom-in vs zoom-out).
+        const zoomRate = Math.max(0, config.zoomBreathSpeed);
+        if (zoomRate !== 0) {
+            const dir = this.zoomMode === "in" ? 1 : -1;
+            this.zoomLogMul += dir * zoomRate * dt;
+        }
+
         const target = this.computeDesiredView(config, elapsedSeconds);
         this.desired = target;
         this.hasDesired = true;
 
-        // Clamp deltaSeconds so a sporadic hitch (GC/tab switch/etc) doesn't cause
-        // the smoothing to "teleport" the view in a single frame.
-        const dt = Math.min(Math.max(0, deltaSeconds), 1 / 30);
         const alpha = 1 - Math.exp(-this.smoothing * dt);
 
         if (!this.hasSmoothed) {
@@ -97,12 +120,8 @@ export default class MandelbrotViewAnimator {
         const baseZoom = Math.max(1, config.zoom);
         const baseRotation = config.rotation;
 
-        // Continuous zoom-in (monotonic). Use zoomBreathSpeed as a growth rate (1/s).
-        // NOTE: We intentionally do *not* cap this multiplier, so the camera can keep
-        // zooming indefinitely.
-        const zoomRate = Math.max(0, config.zoomBreathSpeed);
-        const zoomMul = zoomRate === 0 ? 1 : Math.exp(zoomRate * now);
-        const targetZoom = baseZoom * zoomMul;
+        // Continuous zoom (reversible). zoomLogMul integrates +/- zoomBreathSpeed over time.
+        const targetZoom = Math.max(1, baseZoom * Math.exp(this.zoomLogMul));
 
         // Lock center exactly to the configured focus point (no time-varying drift, no hidden bias).
         const targetCenterX = baseCenterX;
