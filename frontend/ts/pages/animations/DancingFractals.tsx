@@ -180,16 +180,7 @@ const DancingFractals: React.FC = () => {
 
     return (
         <section className='dancing-fractals'>
-            <h1 className='dancing-fractals__title canvas-title'>Dancing Fractals</h1>
-
-            <div className="dancing-fractals__canvas-wrapper" ref={containerRef}>
-                <FullscreenButton 
-                    targetRef={containerRef} 
-                    className='dancing-fractals__fullscreen-btn'
-                />
-            </div>
-
-            <div className={uiClassName} style={uiStyle}>
+            <aside className={uiClassName} style={uiStyle}>
                 {audio.playing && (
                     <div className="dancing-fractals__ui--overlay" />
                 )}
@@ -294,36 +285,48 @@ const DancingFractals: React.FC = () => {
                         )}
                     </div>
                 )}
-            </div>
-            
-            <div className="dancing-fractals__transport">
-                <div className="dancing-fractals__transport-left">
-                    <MusicControls
-                        hasAudio={audio.hasAudio}
-                        isPlaying={audio.playing}
-                        onPlay={handlePlay}
-                        onPause={handlePause}
-                        onStop={handleStop}
+            </aside>
+
+            <div className="dancing-fractals__stage">
+
+                <div className="dancing-fractals__canvas-wrapper" ref={containerRef}>
+                    <h1 className='dancing-fractals__title canvas-title'>Dancing Fractals</h1>
+                    <FullscreenButton 
+                        targetRef={containerRef} 
+                        className='dancing-fractals__fullscreen-btn'
                     />
                 </div>
 
-                <div className="dancing-fractals__upload floating">
-                    <label
-                        className="dancing-fractals__upload-btn"
-                        htmlFor="fractal-music-upload"
-                    >
-                        Upload Music
-                    </label>
+                <div className="dancing-fractals__transport">
+                    <div className="dancing-fractals__transport-left">
+                        <MusicControls
+                            hasAudio={audio.hasAudio}
+                            isPlaying={audio.playing}
+                            onPlay={handlePlay}
+                            onPause={handlePause}
+                            onStop={handleStop}
+                        />
+                    </div>
 
-                    <input
-                        id="fractal-music-upload"
-                        type="file"
-                        accept="audio/*"
-                        className="dancing-fractals__input"
-                        ref={fileInputRef}
-                    />
+                    <div className="dancing-fractals__upload floating">
+                        <label
+                            className="dancing-fractals__upload-btn"
+                            htmlFor="fractal-music-upload"
+                        >
+                            Upload Music
+                        </label>
+
+                        <input
+                            id="fractal-music-upload"
+                            type="file"
+                            accept="audio/*"
+                            className="dancing-fractals__input"
+                            ref={fileInputRef}
+                        />
+                    </div>
                 </div>
             </div>
+            <div className="dancing-fractals__ghost" aria-hidden="true" />
         </section>   
     );
 }

@@ -3,21 +3,46 @@
 .dancing-fractals {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 3em;
+    column-gap: 3rem;
+    padding-top: 8rem;
+
+    --ui-w: clamp(14rem, 22vw, 22rem);
+
+    grid-template-columns: var(--ui-w) minmax(0, 1fr) var(--ui-w);
+    grid-template-areas: "ui stage ghost";
+
     align-items: start;
 
     // Title centered above everything
     &__title {
-        grid-column: 1 / -1;
         justify-self: center;
-        margin-bottom: 0.5rem;
+        position: absolute;
+        top: -9rem;        // adjust visually
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    &__stage {
+        grid-area: stage;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.2rem;
+
+        width: fit-content;
+        justify-self: center;
+    }
+
+    &__ghost {
+        grid-area: ghost;
     }
 
     &__canvas-wrapper {
-        grid-column: 2 / 3;
-        grid-row: 2;
-        justify-self: center;
+        width: fit-content;
         align-self: center;
         position: relative;
     }
@@ -30,10 +55,6 @@
     }
 
     &__transport {
-        grid-column: 2 / 3;
-        grid-row: 3;
-        justify-self: center;
-
         display: grid;
         grid-template-columns: 1fr auto 1fr;
         align-items: center;
@@ -43,9 +64,8 @@
 
         &-left {
             grid-column: 1 / 2;
-            justify-self: center;
+            justify-self: start;
             display: flex;
-            margin-top: -2rem;
         }
     }
 
@@ -79,11 +99,19 @@
 
     // Left-side UI panel
     &__ui {
-        grid-column: 1 / 2;
+        grid-area: ui;
+
+        position: sticky;
+        top: 1rem;
+
+        overflow: auto;
+        max-height: calc(100vh - 2rem);
+
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
-        max-width: 320px;
+        width: fit-content;
+        max-width: clamp(14rem, 22vw, 22rem);
 
         padding: 1rem 1.25rem;
         border-radius: 0.75rem;

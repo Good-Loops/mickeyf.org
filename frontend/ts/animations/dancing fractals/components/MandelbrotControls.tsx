@@ -10,6 +10,191 @@ const MandelbrotControls: React.FC<Props> = ({ config, onChange }) => {
     return (
         <div className="dancing-fractals__ui--controls">
             <div className="dancing-fractals__ui--controls__group">
+                <label className="dancing-fractals__ui--checkbox">
+                    <input
+                        type="checkbox"
+                        checked={config.animate}
+                        onChange={e =>
+                            onChange({ animate: e.target.checked })
+                        }
+                    />
+                    <span className="dancing-fractals__ui--checkbox-box" />
+                    <span className="dancing-fractals__ui--checkbox-text">
+                        Animate (pan/zoom/rotate)
+                    </span>
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Animation quality: {config.animationQuality.toFixed(2)}x
+                    <input
+                        type="range"
+                        min={0.5}
+                        max={2}
+                        step={0.05}
+                        value={config.animationQuality}
+                        onChange={e =>
+                            onChange({ animationQuality: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Pan radius: {config.panRadiusPx.toFixed(0)}px
+                    <input
+                        type="range"
+                        min={0}
+                        max={300}
+                        step={5}
+                        value={config.panRadiusPx}
+                        onChange={e =>
+                            onChange({ panRadiusPx: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Pan speed: {config.panSpeed.toFixed(3)} cyc/s
+                    <input
+                        type="range"
+                        min={0}
+                        max={0.2}
+                        step={0.001}
+                        value={config.panSpeed}
+                        onChange={e =>
+                            onChange({ panSpeed: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Zoom-in amount: {(config.zoomBreathAmount * 100).toFixed(1)}%
+                    <input
+                        type="range"
+                        min={0}
+                        max={0.8}
+                        step={0.001}
+                        value={config.zoomBreathAmount}
+                        onChange={e =>
+                            onChange({ zoomBreathAmount: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Zoom-in speed: {config.zoomBreathSpeed.toFixed(3)}
+                    <input
+                        type="range"
+                        min={0}
+                        max={0.2}
+                        step={0.001}
+                        value={config.zoomBreathSpeed}
+                        onChange={e =>
+                            onChange({ zoomBreathSpeed: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Rotation speed: {config.rotationSpeed.toFixed(3)} rad/s
+                    <input
+                        type="range"
+                        min={-1}
+                        max={1}
+                        step={0.01}
+                        value={config.rotationSpeed}
+                        onChange={e =>
+                            onChange({ rotationSpeed: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Palette phase: {config.palettePhase.toFixed(3)}
+                    <input
+                        type="range"
+                        min={0}
+                        max={0.999}
+                        step={0.001}
+                        value={config.palettePhase}
+                        onChange={e =>
+                            onChange({ palettePhase: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Palette speed: {config.paletteSpeed.toFixed(3)}
+                    <input
+                        type="range"
+                        min={0}
+                        max={0.5}
+                        step={0.001}
+                        value={config.paletteSpeed}
+                        onChange={e =>
+                            onChange({ paletteSpeed: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Palette gamma: {config.paletteGamma.toFixed(2)}
+                    <input
+                        type="range"
+                        min={0.2}
+                        max={3}
+                        step={0.05}
+                        value={config.paletteGamma}
+                        onChange={e =>
+                            onChange({ paletteGamma: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
+                <label>
+                    Quality: {config.quality.toFixed(2)}x
+                    <input
+                        type="range"
+                        min={1}
+                        max={2}
+                        step={0.05}
+                        value={config.quality}
+                        onChange={e =>
+                            onChange({ quality: Number(e.target.value) })
+                        }
+                        className="dancing-fractals__ui--slider"
+                    />
+                </label>
+            </div>
+
+            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Max iterations: {config.maxIterations}
                     <input
