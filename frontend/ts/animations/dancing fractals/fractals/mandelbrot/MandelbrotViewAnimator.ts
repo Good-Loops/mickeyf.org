@@ -1,4 +1,3 @@
-import clamp from "@/utils/clamp";
 import type { MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
 
 export type MandelbrotView = {
@@ -36,7 +35,10 @@ export default class MandelbrotViewAnimator {
         this.desired = target;
         this.hasDesired = true;
 
-        const alpha = 1 - Math.exp(-this.smoothing * Math.max(0, deltaSeconds));
+        // Clamp deltaSeconds so a sporadic hitch (GC/tab switch/etc) doesn't cause
+        // the smoothing to "teleport" the view in a single frame.
+        const dt = Math.min(Math.max(0, deltaSeconds), 1 / 30);
+        const alpha = 1 - Math.exp(-this.smoothing * dt);
 
         if (!this.hasSmoothed) {
             this.smoothed = { ...target };
@@ -95,30 +97,16 @@ export default class MandelbrotViewAnimator {
         const baseZoom = Math.max(1, config.zoom);
         const baseRotation = config.rotation;
 
-        // Continuous zoom-in (monotonic). Use zoomBreathSpeed as a growth rate (1/s)
-        // and zoomBreathAmount to cap the max multiplier so it never runs away.
-        const zoomAmt = clamp(config.zoomBreathAmount, 0, 0.8);
+        // Continuous zoom-in (monotonic). Use zoomBreathSpeed as a growth rate (1/s).
+        // NOTE: We intentionally do *not* cap this multiplier, so the camera can keep
+        // zooming indefinitely.
         const zoomRate = Math.max(0, config.zoomBreathSpeed);
-        const maxMul = 1 + zoomAmt * 200; // 0.22 -> ~45x
-        const zoomMul = zoomRate === 0 ? 1 : Math.min(maxMul, Math.exp(zoomRate * now));
+        const zoomMul = zoomRate === 0 ? 1 : Math.exp(zoomRate * now);
         const targetZoom = baseZoom * zoomMul;
 
-        // Seahorse curls focus: keep the camera on a boundary-rich anchor.
-        // Add a very small drift in *screen pixels* (converted to complex units) so the
-        // zoom tends to ride along the curl boundary instead of settling into the interior.
-        // The drift shrinks with zoom, so it doesn't look like obvious panning.
-        const seahorseX = -0.743643887037151;
-        const seahorseY = 0.13182590420533;
-
-        const driftRadiusPx = 55; // tuned to keep the "front" curl edge in view
-        const driftCyclesPerSecond = 0.03;
-        const theta = now * driftCyclesPerSecond * Math.PI * 2;
-
-        const dxComplex = (driftRadiusPx / targetZoom) * Math.cos(theta);
-        const dyComplex = (driftRadiusPx / targetZoom) * Math.sin(theta);
-
-        const targetCenterX = seahorseX + dxComplex;
-        const targetCenterY = seahorseY + dyComplex;
+        // Lock center exactly to the configured focus point (no time-varying drift, no hidden bias).
+        const targetCenterX = baseCenterX;
+        const targetCenterY = baseCenterY;
 
         // Rotation
         const rotSpeed = config.rotationSpeed;

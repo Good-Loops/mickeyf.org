@@ -68,7 +68,7 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     panRadiusPx: 0,
     panSpeed: 0,
     zoomBreathAmount: 0.22,
-    zoomBreathSpeed: 0.03,
+    zoomBreathSpeed: 0.04,
     rotation: 0,
     rotationSpeed: 0.25,
 
@@ -77,9 +77,9 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     animationMinZoomRelative: 0.001,
     animationMinRotationRadians: 0.001,
 
-    // Boundary-focused starting view (seahorse valley)
-    centerX: -0.743643887037151,
-    centerY: 0.13182590420533,
+    // Focus point
+    centerX: -1.4,
+    centerY: 0.00018,
 
     // Higher = more zoomed in (pixels per unit)
     zoom: 250,

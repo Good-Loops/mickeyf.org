@@ -1,4 +1,4 @@
-import { Application, Container } from "pixi.js";
+import { Application, Container, MeshPlane } from "pixi.js";
 
 import type FractalAnimation from "@/animations/dancing fractals/interfaces/FractalAnimation";
 import { defaultMandelbrotConfig, type MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
@@ -7,16 +7,23 @@ import mod1 from "@/utils/mod1";
 import SpriteCrossfader, { type SpriteTransform } from "@/animations/helpers/SpriteCrossfader";
 import { buildCircularSpiralTileOrder } from "@/animations/helpers/tileOrder";
 import {
-    createCanvasTextureSurface,
-    destroyCanvasTextureSurface,
-    fillPixels,
-    flushCanvasTextureSurface,
-    type CanvasTextureSurface,
-} from "@/animations/helpers/CanvasTextureSurface";
-import { colorFromT, escapeTimeNormalized, writePixel } from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotRenderer";
+    createBufferTextureSurface,
+    destroyBufferTextureSurface,
+    flushBufferTextureSurface,
+    type BufferTextureSurface,
+} from "@/animations/helpers/BufferTextureSurface";
+import { float32ToFloat16Bits } from "@/animations/helpers/float16";
+import { escapeTimeNormalized } from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotRenderer";
 import MandelbrotViewAnimator, { type MandelbrotView } from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotViewAnimator";
+import {
+    createMandelbrotRecolorShader,
+    createMandelbrotRecolorSharedResources,
+    updateMandelbrotPalette,
+    updateMandelbrotRecolorShaderTexture,
+    updateMandelbrotRecolorUniforms,
+} from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotRecolorShader";
 
-type SurfaceBuffer = CanvasTextureSurface & { escapeT: Float32Array };
+type EscapeSurface = BufferTextureSurface<Uint16Array>;
 
 export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
@@ -28,10 +35,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private app: Application | null = null;
     private root: Container | null = null;
 
-    private crossfader: SpriteCrossfader | null = null;
+    private crossfader: SpriteCrossfader<any> | null = null;
 
     private pendingSwap = false;
-    private swapQueued = false;
     private pendingSwapViewCenterX = 0;
     private pendingSwapViewCenterY = 0;
     private pendingSwapViewZoom = 0;
@@ -40,8 +46,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private width = 0;
     private height = 0;
 
-    private front: SurfaceBuffer | null = null;
-    private back: SurfaceBuffer | null = null;
+    private front: EscapeSurface | null = null;
+    private back: EscapeSurface | null = null;
     private frontComplete = false;
 
     private config: MandelbrotConfig;
@@ -49,8 +55,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     // Progressive compute (escape values) state
     private needsCompute = true;
     private nextComputeTile = 0;
-    private computeLockedPhase: number | null = null;
-    private computeLockedGamma: number | null = null;
 
     // Compute target view (used while rendering the next frame)
     private computeViewCenterX = 0;
@@ -58,11 +62,11 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private computeViewZoom = 0;
     private computeViewRotation = 0;
 
-    // Progressive recolor state (palette changes without recompute)
-    private needsRecolor = true;
-    private nextRecolorTile = 0;
-    private recolorLockedPhase: number | null = null;
-    private recolorLockedGamma: number | null = null;
+    // GPU recolor resources (palette LUT + uniforms)
+    private recolorShared = createMandelbrotRecolorSharedResources(
+        defaultMandelbrotConfig.palette,
+        Mandelbrot.backgroundColor,
+    );
 
     // Tile traversal (spiral)
     private readonly tileSize = 16;
@@ -74,8 +78,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     // renderScale < 1 means supersampling (more internal pixels) => smoother edges.
     private renderScale = 1;
     private readonly maxBudgetMsPerFrame = 6; // time budget to avoid freezing
-    private readonly maxRecolorBudgetMsPerFrameAnimated = 14; // extra budget: recolor-only work is cheap-ish
-    private readonly maxComputeBudgetMsPerFrameAnimated = 26;
+    // Animated mode budgets: trade compute/recolor *latency* for higher FPS.
+    // (No quality loss, just slower convergence of tiles/palette updates.)
+    private readonly maxRecolorBudgetMsPerFrameAnimated = 6;
+    private readonly maxComputeBudgetMsPerFrameAnimated = 10;
 
     // Disposal state
     private disposalDelaySeconds = 0;
@@ -172,16 +178,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         }
 
         // Palette animation is cheap: update phase continuously and recolor progressively.
-        if (this.config.paletteSpeed !== 0 && !this.pendingSwap && !this.swapQueued) {
+        if (this.config.paletteSpeed !== 0 && !this.pendingSwap) {
             this.config.palettePhase = mod1(this.config.palettePhase + this.config.paletteSpeed * deltaSeconds);
-            // If recolor finished previously, restart so the frame keeps updating.
-            this.needsRecolor = true;
-            if (this.nextRecolorTile >= this.tileOrder.length) {
-                this.nextRecolorTile = 0;
-                this.recolorLockedPhase = null;
-                this.recolorLockedGamma = null;
-            }
         }
+
+        // Update GPU recolor uniforms every frame (phase/gamma).
+        updateMandelbrotRecolorUniforms(this.recolorShared, this.config.palettePhase, this.config.paletteGamma);
 
         // Handle scheduled disposal delay
         if (this.disposalDelaySeconds > 0) {
@@ -192,13 +194,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         // Progressive work (only if not disposing)
         if (!this.isDisposing) {
             this.computePassStep();
-            this.recolorPassStep();
-        }
-
-        // If a swap is queued, begin the fade only after the front buffer has been
-        // fully recolored to match the palette phase/gamma used for the computed back buffer.
-        if (animating) {
-            this.beginQueuedSwapIfReady();
         }
 
         // Finish any pending crossfade swap (animation mode).
@@ -268,7 +263,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             sanitizedPatch.paletteGamma !== undefined;
 
         if (requiresRecolor) {
-            this.resetRecolor();
+            if (sanitizedPatch.palette) {
+                updateMandelbrotPalette(this.recolorShared, this.config.palette);
+            }
         }
     }
 
@@ -292,8 +289,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.root.removeFromParent();
 
         this.crossfader?.destroy();
-        destroyCanvasTextureSurface(this.front);
-        destroyCanvasTextureSurface(this.back);
+        destroyBufferTextureSurface(this.front);
+        destroyBufferTextureSurface(this.back);
 
         this.crossfader = null;
         this.front = null;
@@ -314,13 +311,23 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.width = w;
         this.height = h;
 
-        destroyCanvasTextureSurface(this.front);
-        destroyCanvasTextureSurface(this.back);
+        destroyBufferTextureSurface(this.front);
+        destroyBufferTextureSurface(this.back);
 
-        const createBuffer = (): SurfaceBuffer => {
-            const surface = createCanvasTextureSurface(w, h);
-            const escapeT = new Float32Array(w * h);
-            return { ...surface, escapeT };
+        const createBuffer = (): EscapeSurface => {
+            // Store escape-time as half-float (r16float) to stay filterable on WebGPU.
+            // Resource is Uint16Array of raw float16 bits (one channel per pixel).
+            return createBufferTextureSurface(
+                w,
+                h,
+                new Uint16Array(w * h),
+                {
+                    format: "r16float",
+                    alphaMode: "no-premultiply-alpha",
+                    // Half-float linear filtering is optional on WebGL; nearest is more robust.
+                    scaleMode: "nearest",
+                }
+            );
         };
 
         this.front = createBuffer();
@@ -334,15 +341,36 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.tileOrder = buildCircularSpiralTileOrder(this.tilesW, this.tilesH);
 
         this.crossfader?.destroy();
-        this.crossfader = new SpriteCrossfader(this.front.texture);
+
+        // Crossfade between *escape-value* textures, but render them through a custom shader
+        // that maps escape values to palette colors (GPU recolor).
+        this.crossfader = new SpriteCrossfader(this.front.texture, {
+            createView: (tex) => {
+                const shader = createMandelbrotRecolorShader(this.recolorShared, tex);
+                return new MeshPlane({ texture: tex, shader });
+            },
+            onTextureSet: (view: any, tex) => {
+                // Keep the shader sampling the same texture as the mesh.
+                if (view?.shader) updateMandelbrotRecolorShaderTexture(view.shader, tex);
+            },
+        });
         this.crossfader.setFadeSeconds(0.2);
         this.setSpriteBaseTransform();
+        this.viewAnimator.resetSmoothing();
 
         this.root.addChild(this.crossfader.displayObject);
     }
 
     private setSpriteBaseTransform(): void {
         if (!this.crossfader) return;
+
+        const w = Math.max(1, this.app?.screen.width ?? 1);
+        const h = Math.max(1, this.app?.screen.height ?? 1);
+
+        // Match the preview path's minimum cover scale so we don't "jump" in scale
+        // when we transition from the first progressive frame to animated preview.
+        const coverAnyRotation = Math.hypot(w, h) / Math.max(1e-6, Math.min(w, h));
+        const baseScale = this.config.animate ? (this.renderScale * coverAnyRotation) : this.renderScale;
 
         // Rotate/scale around the screen center.
         this.crossfader.applyTransform(
@@ -351,26 +379,18 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             this.canvasCenterX,
             this.canvasCenterY,
             0,
-            this.renderScale,
-            this.renderScale
+            baseScale,
+            baseScale
         );
-
-        this.viewAnimator.resetSmoothing();
     }
 
     private updateSpritePreviewTransform(deltaSeconds: number): void {
         if (!this.crossfader) return;
         if (!this.config.animate) return;
 
-        // Until we have a completed front frame, keep the sprite stable.
-        if (!this.frontComplete) {
-            this.setSpriteBaseTransform();
-            return;
-        }
-
         // Always preview towards the smoothed desired view so motion appears continuous.
         // (Recomputes happen in the background and crossfade in when ready.)
-        const targetView = this.viewAnimator.getSmoothedDesiredView();
+        const targetView = this.viewAnimator.getSmoothedDesiredView() ?? this.viewAnimator.getDesiredView();
         if (!targetView) {
             this.setSpriteBaseTransform();
             return;
@@ -379,14 +399,22 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const w = Math.max(1, this.app?.screen.width ?? 1);
         const h = Math.max(1, this.app?.screen.height ?? 1);
 
+        // If the visible front buffer is still being computed (first render in animation mode),
+        // treat the computeView as the base view for preview transforms so we don't introduce
+        // a mismatch between what pixels represent and how we transform the sprite.
+        const frontBaseCenterX = this.frontComplete ? this.viewCenterX : this.computeViewCenterX;
+        const frontBaseCenterY = this.frontComplete ? this.viewCenterY : this.computeViewCenterY;
+        const frontBaseZoom = this.frontComplete ? this.viewZoom : this.computeViewZoom;
+        const frontBaseRotation = this.frontComplete ? this.viewRotation : this.computeViewRotation;
+
         this.computePreviewTransformForBaseView(
             this.previewFrontTransform,
             w,
             h,
-            this.viewCenterX,
-            this.viewCenterY,
-            this.viewZoom,
-            this.viewRotation,
+            frontBaseCenterX,
+            frontBaseCenterY,
+            frontBaseZoom,
+            frontBaseRotation,
             targetView.centerX,
             targetView.centerY,
             targetView.zoom,
@@ -435,9 +463,26 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const zoomRatioRaw = desiredZoom / baseZoom;
         const rotDelta = this.wrapAngleRadians(desiredRotation - baseRotation);
 
-        // Screen-space translation approximation.
-        const targetDxPx = -(desiredCenterX - baseCenterX) * baseZoom;
-        const targetDyPx = (desiredCenterY - baseCenterY) * baseZoom;
+        // Compute translation exactly (and consistently with scale/rotation).
+        // 1) Find where the desired center lands in the *base* view (screen pixels, PIXI y-down).
+        // 2) Apply the similarity transform (rotDelta + zoomScale) and translate so that point
+        //    moves back to the screen center.
+        const dxC = desiredCenterX - baseCenterX;
+        const dyC = desiredCenterY - baseCenterY;
+        const cosB = Math.cos(baseRotation);
+        const sinB = Math.sin(baseRotation);
+        const pxUp = dxC * cosB + dyC * sinB;
+        const pyUp = -dxC * sinB + dyC * cosB;
+        const vBaseX = pxUp * baseZoom;
+        const vBaseY = -pyUp * baseZoom;
+
+        const zoomScale = Math.max(1, zoomRatioRaw);
+        const cosD = Math.cos(rotDelta);
+        const sinD = Math.sin(rotDelta);
+
+        // tZoom = -zoomScale * R(rotDelta) * vBase
+        let targetDxPx = -zoomScale * (vBaseX * cosD - vBaseY * sinD);
+        let targetDyPx = -zoomScale * (vBaseX * sinD + vBaseY * cosD);
 
         // Compute a cover scale so the rotated sprite fully covers the viewport (no exposed corners),
         // while also accounting for the requested translation.
@@ -454,7 +499,11 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const coverMin = Math.max(1, coverAnyRotation, needScaleX, needScaleY);
 
         // Never zoom out in preview (would expose uncomputed pixels).
-        const targetScale = coverMin * Math.max(1, zoomRatioRaw);
+        const targetScale = coverMin * zoomScale;
+
+        // Keep translation consistent with the final scale.
+        targetDxPx *= coverMin;
+        targetDyPx *= coverMin;
 
         out.pivotX = this.canvasCenterX / this.renderScale;
         out.pivotY = this.canvasCenterY / this.renderScale;
@@ -499,15 +548,15 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.needsCompute = true;
         this.nextComputeTile = 0;
-        this.computeLockedPhase = null;
-        this.computeLockedGamma = null;
         this.frontComplete = renderIntoFront ? false : this.frontComplete;
 
-        this.resetRecolor();
-
-        if (clear && renderIntoFront) {
-            fillPixels(this.front.pixels, 210, 250, 255, 255);
-            this.flushTexture(this.front);
+        // Clear escape buffers to a sentinel value (rendered as stable background color in shader).
+        if (clear) {
+            const sentinel = float32ToFloat16Bits(-1000);
+            this.front.resource.fill(sentinel);
+            this.back.resource.fill(sentinel);
+            flushBufferTextureSurface(this.front);
+            flushBufferTextureSurface(this.back);
         }
 
         // Compute view is whatever we're targeting next.
@@ -530,21 +579,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.needsCompute = true;
         this.nextComputeTile = 0;
-        this.computeLockedPhase = null;
-        this.computeLockedGamma = null;
 
         if (clearFront) {
-            fillPixels(this.front.pixels, 210, 250, 255, 255);
-            this.flushTexture(this.front);
+            const sentinel = float32ToFloat16Bits(-1000);
+            this.front.resource.fill(sentinel);
+            flushBufferTextureSurface(this.front);
             this.frontComplete = false;
         }
-    }
-
-    private resetRecolor(): void {
-        this.needsRecolor = true;
-        this.nextRecolorTile = 0;
-        this.recolorLockedPhase = null;
-        this.recolorLockedGamma = null;
     }
 
     private computePassStep(): void {
@@ -552,9 +593,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         // During crossfade, we keep the previous front visible; with only two buffers
         // we must not overwrite either buffer until the fade completes.
-        if (this.config.animate && (this.pendingSwap || this.swapQueued)) return;
+        if (this.config.animate && this.pendingSwap) return;
 
-        const buffer = this.config.animate ? this.back : this.front;
+        // For the very first frame in animation mode, render progressively into the visible
+        // front buffer so the animation appears immediately (no long blank delay).
+        const renderFirstFrameIntoFront = this.config.animate && !this.frontComplete;
+        const buffer = this.config.animate && !renderFirstFrameIntoFront ? this.back : this.front;
 
         const start = performance.now();
         const w = this.width;
@@ -579,14 +623,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const cosR = Math.cos(this.computeViewRotation);
         const sinR = Math.sin(this.computeViewRotation);
 
-        // Lock visual params for the duration of a full compute pass.
-        if (this.computeLockedPhase == null || this.computeLockedGamma == null) {
-            this.computeLockedPhase = cfg.palettePhase;
-            this.computeLockedGamma = cfg.paletteGamma;
-        }
-
-        const palettePhase = this.computeLockedPhase;
-        const paletteGamma = this.computeLockedGamma;
+        let didWrite = false;
 
         const budgetMs = this.config.animate ? this.maxComputeBudgetMsPerFrameAnimated : this.maxBudgetMsPerFrame;
 
@@ -615,30 +652,38 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
                     const cy = this.computeViewCenterY + ry;
 
                     const t = escapeTimeNormalized(cx, cy, maxIter, bailoutSq, cfg.smoothColoring);
-                    buffer.escapeT[y * w + x] = t;
-                    writePixel(buffer.pixels, w, x, y, colorFromT(t, cfg.palette, palettePhase, paletteGamma));
+                    buffer.resource[y * w + x] = float32ToFloat16Bits(t);
+                    didWrite = true;
                 }
             }
 
             this.nextComputeTile += 1;
         }
 
-        // Only flush progressively when drawing into the visible front buffer.
-        if (!this.config.animate) this.flushTexture(buffer);
+        // Flush progressively when drawing into the visible front buffer.
+        if (didWrite && buffer === this.front) flushBufferTextureSurface(buffer);
 
         if (this.nextComputeTile >= this.tileOrder.length) {
             this.needsCompute = false;
-            // Ensure we recolor the full frame at least once with the current palette.
-            this.resetRecolor();
 
             if (this.config.animate) {
-                // Finalize the back buffer and crossfade it into view.
-                this.flushTexture(this.back);
-                this.beginSwapToBack();
+                if (renderFirstFrameIntoFront) {
+                    // First front-buffer progressive render finished; start animating immediately.
+                    this.frontComplete = true;
+                    this.viewCenterX = this.computeViewCenterX;
+                    this.viewCenterY = this.computeViewCenterY;
+                    this.viewZoom = this.computeViewZoom;
+                    this.viewRotation = this.computeViewRotation;
+                    flushBufferTextureSurface(this.front);
+                } else {
+                    // Finalize the back buffer and crossfade it into view.
+                    flushBufferTextureSurface(this.back);
+                    this.beginSwapToBack();
+                }
             } else {
                 // Front-buffer progressive render finished.
                 this.frontComplete = true;
-                this.flushTexture(this.front);
+                flushBufferTextureSurface(this.front);
             }
         }
     }
@@ -659,39 +704,19 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             this.viewZoom = this.computeViewZoom;
             this.viewRotation = this.computeViewRotation;
             this.frontComplete = true;
-
-            this.resetRecolor();
             return;
         }
 
         // Crossfade avoids the visible "twitch" from a hard texture swap.
         if (this.crossfader.isFading()) return;
 
-        // Queue the swap, but don't start the fade until the front buffer has been
-        // recolored to match the palette used for the computed back buffer.
-        this.swapQueued = true;
-        this.pendingSwap = false;
+        // Begin fade immediately; palette is applied in the shader uniformly to both frames.
         this.pendingSwapViewCenterX = this.computeViewCenterX;
         this.pendingSwapViewCenterY = this.computeViewCenterY;
         this.pendingSwapViewZoom = this.computeViewZoom;
         this.pendingSwapViewRotation = this.computeViewRotation;
 
-        // Lock recolor palette to the palette used for the computed back frame,
-        // so the crossfade blends between like-colored frames.
-        this.resetRecolor();
-        if (this.computeLockedPhase != null) this.recolorLockedPhase = this.computeLockedPhase;
-        if (this.computeLockedGamma != null) this.recolorLockedGamma = this.computeLockedGamma;
-    }
-
-    private beginQueuedSwapIfReady(): void {
-        if (!this.swapQueued || this.pendingSwap || !this.crossfader || !this.back) return;
-        if (this.crossfader.isFading()) return;
-
-        // Wait until recolor completes so the fade blends between matching palettes.
-        if (this.needsRecolor) return;
-
         this.pendingSwap = true;
-        this.swapQueued = false;
         this.crossfader.beginFadeTo(this.back.texture);
     }
 
@@ -711,75 +736,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.viewRotation = this.pendingSwapViewRotation;
 
         this.pendingSwap = false;
-
-        // New front needs a recolor pass to sync with the current palette phase.
-        this.resetRecolor();
     }
 
-    private recolorPassStep(): void {
-        if (!this.needsRecolor || !this.front || !this.crossfader) return;
-
-        const start = performance.now();
-        const w = this.width;
-        const h = this.height;
-
-        // If the currently displayed buffer isn't complete yet, recolor isn't meaningful.
-        if (!this.frontComplete) return;
-
-        const cfg = this.config;
-        // Lock phase/gamma for the duration of a full recolor pass.
-        // This prevents subtle banding caused by palettePhase changing mid-pass.
-        // If beginSwapToBack already set recolorLockedPhase/Gamma, preserve it.
-        if (this.recolorLockedPhase == null || this.recolorLockedGamma == null) {
-            this.recolorLockedPhase = cfg.palettePhase;
-            this.recolorLockedGamma = cfg.paletteGamma;
-        }
-
-        const palettePhase = this.recolorLockedPhase;
-        const paletteGamma = this.recolorLockedGamma;
-
-        const budgetMs =
-            this.config.paletteSpeed !== 0
-                ? this.maxRecolorBudgetMsPerFrameAnimated
-                : this.maxBudgetMsPerFrame;
-
-        while (this.nextRecolorTile < this.tileOrder.length && (performance.now() - start) < budgetMs) {
-            const tileIndex = this.tileOrder[this.nextRecolorTile];
-            const tx = tileIndex % this.tilesW;
-            const ty = Math.floor(tileIndex / this.tilesW);
-
-            const x0 = tx * this.tileSize;
-            const y0 = ty * this.tileSize;
-            const x1 = Math.min(w, x0 + this.tileSize);
-            const y1 = Math.min(h, y0 + this.tileSize);
-
-            for (let y = y0; y < y1; y += 1) {
-                const rowIdx = y * w;
-                for (let x = x0; x < x1; x += 1) {
-                    const t = this.front.escapeT[rowIdx + x];
-                    writePixel(this.front.pixels, w, x, y, colorFromT(t, cfg.palette, palettePhase, paletteGamma));
-                }
-            }
-
-            this.nextRecolorTile += 1;
-        }
-
-        this.flushTexture(this.front);
-
-        if (this.nextRecolorTile >= this.tileOrder.length) {
-            // When animating palettes, keep repainting in a rolling loop.
-            if (this.config.paletteSpeed !== 0 && !this.pendingSwap && !this.swapQueued) {
-                this.nextRecolorTile = 0;
-                this.recolorLockedPhase = null;
-                this.recolorLockedGamma = null;
-            } else {
-                this.needsRecolor = false;
-            }
-        }
-    }
-
-    private flushTexture(buffer: SurfaceBuffer): void {
-        flushCanvasTextureSurface(buffer);
-    }
 
 }

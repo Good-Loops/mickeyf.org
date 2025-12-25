@@ -11,40 +11,6 @@ const MandelbrotControls: React.FC<Props> = ({ config, onChange }) => {
         <div className="dancing-fractals__ui--controls">
             <div className="dancing-fractals__ui--controls__group">
                 <label>
-                    Zoom-in amount: {(config.zoomBreathAmount * 100).toFixed(1)}%
-                    <input
-                        type="range"
-                        min={0}
-                        max={0.8}
-                        step={0.001}
-                        value={config.zoomBreathAmount}
-                        onChange={e =>
-                            onChange({ zoomBreathAmount: Number(e.target.value) })
-                        }
-                        className="dancing-fractals__ui--slider"
-                    />
-                </label>
-            </div>
-
-            <div className="dancing-fractals__ui--controls__group">
-                <label>
-                    Zoom-in speed: {config.zoomBreathSpeed.toFixed(3)}
-                    <input
-                        type="range"
-                        min={0}
-                        max={0.2}
-                        step={0.001}
-                        value={config.zoomBreathSpeed}
-                        onChange={e =>
-                            onChange({ zoomBreathSpeed: Number(e.target.value) })
-                        }
-                        className="dancing-fractals__ui--slider"
-                    />
-                </label>
-            </div>
-
-            <div className="dancing-fractals__ui--controls__group">
-                <label>
                     Rotation speed: {config.rotationSpeed.toFixed(3)} rad/s
                     <input
                         type="range"
@@ -121,23 +87,6 @@ const MandelbrotControls: React.FC<Props> = ({ config, onChange }) => {
                         value={config.maxIterations}
                         onChange={e =>
                             onChange({ maxIterations: Number(e.target.value) })
-                        }
-                        className="dancing-fractals__ui--slider"
-                    />
-                </label>
-            </div>
-
-            <div className="dancing-fractals__ui--controls__group">
-                <label>
-                    Zoom: {config.zoom.toFixed(0)}
-                    <input
-                        type="range"
-                        min={50}
-                        max={1000}
-                        step={10}
-                        value={config.zoom}
-                        onChange={e =>
-                            onChange({ zoom: Number(e.target.value) })
                         }
                         className="dancing-fractals__ui--slider"
                     />

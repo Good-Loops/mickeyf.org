@@ -1,4 +1,11 @@
-import { Container, Sprite, type Texture } from "pixi.js";
+import { Container, Sprite, type ContainerChild, type Texture } from "pixi.js";
+
+type TextureView = ContainerChild & { texture: Texture };
+
+export type SpriteCrossfaderOptions<T extends TextureView> = {
+    createView?: (initialTexture: Texture) => T;
+    onTextureSet?: (view: T, texture: Texture) => void;
+};
 
 export type SpriteTransform = {
     pivotX: number;
@@ -10,32 +17,40 @@ export type SpriteTransform = {
     scaleY: number;
 };
 
-export default class SpriteCrossfader {
+export default class SpriteCrossfader<T extends TextureView = TextureView> {
     private readonly container: Container;
-    private readonly spriteA: Sprite;
-    private readonly spriteB: Sprite;
+    private readonly viewA: T;
+    private readonly viewB: T;
 
-    private frontSprite: Sprite;
-    private backSprite: Sprite;
+    private frontSprite: T;
+    private backSprite: T;
 
     private fadeSeconds = 0.1;
     private fadeT = 1;
 
-    constructor(initialTexture: Texture) {
+    private readonly onTextureSet?: (view: T, texture: Texture) => void;
+
+    constructor(initialTexture: Texture, options: SpriteCrossfaderOptions<T> = {}) {
         this.container = new Container();
 
-        this.spriteA = new Sprite(initialTexture);
-        this.spriteB = new Sprite(initialTexture);
+        const createView = options.createView ?? ((t) => new Sprite(t) as any as T);
+        this.onTextureSet = options.onTextureSet;
 
-        this.spriteA.alpha = 1;
-        this.spriteB.alpha = 0;
+        this.viewA = createView(initialTexture);
+        this.viewB = createView(initialTexture);
 
-        this.frontSprite = this.spriteA;
-        this.backSprite = this.spriteB;
+        this.viewA.alpha = 1;
+        this.viewB.alpha = 0;
+
+        this.frontSprite = this.viewA;
+        this.backSprite = this.viewB;
 
         // Ensure the fading-in sprite is on top.
         this.container.addChild(this.frontSprite);
         this.container.addChild(this.backSprite);
+
+        this.onTextureSet?.(this.frontSprite, initialTexture);
+        this.onTextureSet?.(this.backSprite, initialTexture);
     }
 
     get displayObject(): Container {
@@ -52,12 +67,14 @@ export default class SpriteCrossfader {
 
     setFrontTexture(texture: Texture): void {
         this.frontSprite.texture = texture;
+        this.onTextureSet?.(this.frontSprite, texture);
     }
 
     beginFadeTo(texture: Texture): void {
         if (this.frontSprite.texture === texture) return;
 
         this.backSprite.texture = texture;
+        this.onTextureSet?.(this.backSprite, texture);
         this.backSprite.alpha = 0;
         this.frontSprite.alpha = 1;
 
@@ -101,7 +118,7 @@ export default class SpriteCrossfader {
         scaleX: number,
         scaleY: number
     ): void {
-        const applyTo = (s: Sprite) => {
+        const applyTo = (s: TextureView) => {
             s.pivot.set(pivotX, pivotY);
             s.position.set(positionX, positionY);
             s.rotation = rotation;
@@ -113,7 +130,7 @@ export default class SpriteCrossfader {
     }
 
     applyTransforms(front: SpriteTransform, back: SpriteTransform): void {
-        const applyTo = (s: Sprite, t: SpriteTransform) => {
+        const applyTo = (s: TextureView, t: SpriteTransform) => {
             s.pivot.set(t.pivotX, t.pivotY);
             s.position.set(t.positionX, t.positionY);
             s.rotation = t.rotation;
@@ -125,8 +142,8 @@ export default class SpriteCrossfader {
     }
 
     destroy(): void {
-        this.spriteA.destroy();
-        this.spriteB.destroy();
+        this.viewA.destroy();
+        this.viewB.destroy();
         this.container.destroy({ children: true });
     }
 }

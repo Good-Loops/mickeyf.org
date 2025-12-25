@@ -51,6 +51,12 @@ const DancingFractals: React.FC = () => {
     const [flowerSpiralConfig, setFlowerSpiralConfig] = useState<FlowerSpiralConfig>(defaultFlowerSpiralConfig);
     const [mandelbrotConfig, setMandelbrotConfig] = useState<MandelbrotConfig>(defaultMandelbrotConfig);
 
+    const cloneConfig = <T,>(cfg: T): T => {
+        // structuredClone is available in modern browsers; fall back to JSON clone.
+        const sc = (globalThis as any).structuredClone as ((v: T) => T) | undefined;
+        return sc ? sc(cfg) : JSON.parse(JSON.stringify(cfg));
+    };
+
     const FRACTALS = useMemo(() => ({
         tree: { ctor: Tree, getConfig: () => treeConfig },
         flower: { ctor: FlowerSpiral, getConfig: () => flowerSpiralConfig },
@@ -143,6 +149,30 @@ const DancingFractals: React.FC = () => {
 
     const handleRestart = () => { hostRef.current?.restart(); };
 
+    const handleResetDefaults = () => {
+        if (audio.playing) return;
+        const host = hostRef.current;
+        if (!host) return;
+
+        if (fractalKind === 'tree') {
+            const cfg = cloneConfig(defaultTreeConfig);
+            setTreeConfig(cfg);
+            host.setFractal(Tree as any, cfg);
+            return;
+        }
+
+        if (fractalKind === 'flower') {
+            const cfg = cloneConfig(defaultFlowerSpiralConfig);
+            setFlowerSpiralConfig(cfg);
+            host.setFractal(FlowerSpiral as any, cfg);
+            return;
+        }
+
+        const cfg = cloneConfig(defaultMandelbrotConfig);
+        setMandelbrotConfig(cfg);
+        host.setFractal(Mandelbrot as any, cfg);
+    };
+
     const handleTreeConfigChange = (patch: Partial<TreeConfig>) => {
         setTreeConfig(prev => {
             const next = { ...prev, ...patch };
@@ -209,6 +239,14 @@ const DancingFractals: React.FC = () => {
                     disabled={audio.playing}
                 >
                     Restart
+                </button>
+
+                <button className="dancing-fractals__ui--restart-btn"
+                    type="button"
+                    onClick={handleResetDefaults}
+                    disabled={audio.playing}
+                >
+                    Reset defaults
                 </button>
 
                 <div className="dancing-fractals__ui--lifetime">
