@@ -10,73 +10,6 @@ const MandelbrotControls: React.FC<Props> = ({ config, onChange }) => {
     return (
         <div className="dancing-fractals__ui--controls">
             <div className="dancing-fractals__ui--controls__group">
-                <label className="dancing-fractals__ui--checkbox">
-                    <input
-                        type="checkbox"
-                        checked={config.animate}
-                        onChange={e =>
-                            onChange({ animate: e.target.checked })
-                        }
-                    />
-                    <span className="dancing-fractals__ui--checkbox-box" />
-                    <span className="dancing-fractals__ui--checkbox-text">
-                        Animate (pan/zoom/rotate)
-                    </span>
-                </label>
-            </div>
-
-            <div className="dancing-fractals__ui--controls__group">
-                <label>
-                    Animation quality: {config.animationQuality.toFixed(2)}x
-                    <input
-                        type="range"
-                        min={0.5}
-                        max={2}
-                        step={0.05}
-                        value={config.animationQuality}
-                        onChange={e =>
-                            onChange({ animationQuality: Number(e.target.value) })
-                        }
-                        className="dancing-fractals__ui--slider"
-                    />
-                </label>
-            </div>
-
-            <div className="dancing-fractals__ui--controls__group">
-                <label>
-                    Pan radius: {config.panRadiusPx.toFixed(0)}px
-                    <input
-                        type="range"
-                        min={0}
-                        max={300}
-                        step={5}
-                        value={config.panRadiusPx}
-                        onChange={e =>
-                            onChange({ panRadiusPx: Number(e.target.value) })
-                        }
-                        className="dancing-fractals__ui--slider"
-                    />
-                </label>
-            </div>
-
-            <div className="dancing-fractals__ui--controls__group">
-                <label>
-                    Pan speed: {config.panSpeed.toFixed(3)} cyc/s
-                    <input
-                        type="range"
-                        min={0}
-                        max={0.2}
-                        step={0.001}
-                        value={config.panSpeed}
-                        onChange={e =>
-                            onChange({ panSpeed: Number(e.target.value) })
-                        }
-                        className="dancing-fractals__ui--slider"
-                    />
-                </label>
-            </div>
-
-            <div className="dancing-fractals__ui--controls__group">
                 <label>
                     Zoom-in amount: {(config.zoomBreathAmount * 100).toFixed(1)}%
                     <input
@@ -179,23 +112,6 @@ const MandelbrotControls: React.FC<Props> = ({ config, onChange }) => {
 
             <div className="dancing-fractals__ui--controls__group">
                 <label>
-                    Quality: {config.quality.toFixed(2)}x
-                    <input
-                        type="range"
-                        min={1}
-                        max={2}
-                        step={0.05}
-                        value={config.quality}
-                        onChange={e =>
-                            onChange({ quality: Number(e.target.value) })
-                        }
-                        className="dancing-fractals__ui--slider"
-                    />
-                </label>
-            </div>
-
-            <div className="dancing-fractals__ui--controls__group">
-                <label>
                     Max iterations: {config.maxIterations}
                     <input
                         type="range"
@@ -242,22 +158,6 @@ const MandelbrotControls: React.FC<Props> = ({ config, onChange }) => {
                         }
                         className="dancing-fractals__ui--slider"
                     />
-                </label>
-            </div>
-
-            <div className="dancing-fractals__ui--controls__group">
-                <label className="dancing-fractals__ui--checkbox">
-                    <input
-                        type="checkbox"
-                        checked={config.smoothColoring}
-                        onChange={e =>
-                            onChange({ smoothColoring: e.target.checked })
-                        }
-                    />
-                    <span className="dancing-fractals__ui--checkbox-box" />
-                    <span className="dancing-fractals__ui--checkbox-text">
-                        Smooth coloring
-                    </span>
                 </label>
             </div>
         </div>

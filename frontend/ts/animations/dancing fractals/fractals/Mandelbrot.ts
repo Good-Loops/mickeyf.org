@@ -31,6 +31,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private crossfader: SpriteCrossfader | null = null;
 
     private pendingSwap = false;
+    private swapQueued = false;
     private pendingSwapViewCenterX = 0;
     private pendingSwapViewCenterY = 0;
     private pendingSwapViewZoom = 0;
@@ -74,7 +75,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private renderScale = 1;
     private readonly maxBudgetMsPerFrame = 6; // time budget to avoid freezing
     private readonly maxRecolorBudgetMsPerFrameAnimated = 14; // extra budget: recolor-only work is cheap-ish
-    private readonly maxComputeBudgetMsPerFrameAnimated = 20;
+    private readonly maxComputeBudgetMsPerFrameAnimated = 26;
 
     // Disposal state
     private disposalDelaySeconds = 0;
@@ -119,6 +120,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         // Merge defaults so new config options are always present.
         this.config = { ...defaultMandelbrotConfig, ...(initialConfig ?? {}) };
 
+        // These are always-on UX choices.
+        this.config.animate = true;
+        this.config.smoothColoring = true;
+
         this.syncViewFromConfig();
         this.syncRenderScaleFromEffectiveQuality();
     }
@@ -139,8 +144,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.elapsedSeconds += deltaSeconds;
 
+        const animating = this.config.animate;
+
         // Camera animation (requires recompute, so we throttle updates)
-        if (this.config.animate) {
+        if (animating) {
             this.viewAnimator.step(this.config, this.elapsedSeconds, deltaSeconds);
 
             const currentView: MandelbrotView = {
@@ -157,18 +164,15 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
                 this.pendingSwap,
                 this.needsCompute
             )) {
-                const desired = this.viewAnimator.getDesiredView();
-                if (desired) {
-                    this.startComputeForView(desired.centerX, desired.centerY, desired.zoom, desired.rotation, false);
+                const target = this.viewAnimator.getSmoothedDesiredView() ?? this.viewAnimator.getDesiredView();
+                if (target) {
+                    this.startComputeForView(target.centerX, target.centerY, target.zoom, target.rotation, false);
                 }
             }
-            this.updateSpritePreviewTransform(deltaSeconds);
-        } else {
-            this.setSpriteBaseTransform();
         }
 
         // Palette animation is cheap: update phase continuously and recolor progressively.
-        if (this.config.paletteSpeed !== 0) {
+        if (this.config.paletteSpeed !== 0 && !this.pendingSwap && !this.swapQueued) {
             this.config.palettePhase = mod1(this.config.palettePhase + this.config.paletteSpeed * deltaSeconds);
             // If recolor finished previously, restart so the frame keeps updating.
             this.needsRecolor = true;
@@ -191,9 +195,23 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             this.recolorPassStep();
         }
 
+        // If a swap is queued, begin the fade only after the front buffer has been
+        // fully recolored to match the palette phase/gamma used for the computed back buffer.
+        if (animating) {
+            this.beginQueuedSwapIfReady();
+        }
+
         // Finish any pending crossfade swap (animation mode).
-        if (this.config.animate) {
+        if (animating) {
             this.finalizeSwapIfReady(deltaSeconds);
+        }
+
+        // Apply sprite transforms at the end of the frame so we account for any
+        // state changes caused by compute completion / swap start / swap finalize.
+        if (animating) {
+            this.updateSpritePreviewTransform(deltaSeconds);
+        } else {
+            this.setSpriteBaseTransform();
         }
 
         // Fade-out disposal
@@ -210,12 +228,17 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
     updateConfig(patch: Partial<MandelbrotConfig>): void {
         const oldConfig = this.config;
-        this.config = { ...this.config, ...patch };
+
+        // Always-on options: ignore patches trying to disable them.
+        const sanitizedPatch: Partial<MandelbrotConfig> = { ...patch };
+        delete sanitizedPatch.animate;
+        delete sanitizedPatch.smoothColoring;
+
+        this.config = { ...this.config, ...sanitizedPatch, animate: true, smoothColoring: true };
 
         const effectiveQualityChanged =
-            (patch.quality !== undefined && patch.quality !== oldConfig.quality) ||
-            (patch.animationQuality !== undefined && patch.animationQuality !== oldConfig.animationQuality) ||
-            (patch.animate !== undefined && patch.animate !== oldConfig.animate);
+            (sanitizedPatch.quality !== undefined && sanitizedPatch.quality !== oldConfig.quality) ||
+            (sanitizedPatch.animationQuality !== undefined && sanitizedPatch.animationQuality !== oldConfig.animationQuality);
 
         if (effectiveQualityChanged) {
             this.syncRenderScaleFromEffectiveQuality();
@@ -225,13 +248,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         }
 
         const requiresRecompute =
-            (patch.maxIterations !== undefined && patch.maxIterations !== oldConfig.maxIterations) ||
-            (patch.bailoutRadius !== undefined && patch.bailoutRadius !== oldConfig.bailoutRadius) ||
-            (patch.centerX !== undefined && patch.centerX !== oldConfig.centerX) ||
-            (patch.centerY !== undefined && patch.centerY !== oldConfig.centerY) ||
-            (patch.zoom !== undefined && patch.zoom !== oldConfig.zoom) ||
-            (patch.rotation !== undefined && patch.rotation !== oldConfig.rotation) ||
-            (patch.smoothColoring !== undefined && patch.smoothColoring !== oldConfig.smoothColoring);
+            (sanitizedPatch.maxIterations !== undefined && sanitizedPatch.maxIterations !== oldConfig.maxIterations) ||
+            (sanitizedPatch.bailoutRadius !== undefined && sanitizedPatch.bailoutRadius !== oldConfig.bailoutRadius) ||
+            (sanitizedPatch.centerX !== undefined && sanitizedPatch.centerX !== oldConfig.centerX) ||
+            (sanitizedPatch.centerY !== undefined && sanitizedPatch.centerY !== oldConfig.centerY) ||
+            (sanitizedPatch.zoom !== undefined && sanitizedPatch.zoom !== oldConfig.zoom) ||
+            (sanitizedPatch.rotation !== undefined && sanitizedPatch.rotation !== oldConfig.rotation);
 
         if (requiresRecompute) {
             this.syncViewFromConfig();
@@ -240,10 +262,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         }
 
         const requiresRecolor =
-            patch.palette !== undefined ||
-            patch.palettePhase !== undefined ||
-            patch.paletteSpeed !== undefined ||
-            patch.paletteGamma !== undefined;
+            sanitizedPatch.palette !== undefined ||
+            sanitizedPatch.palettePhase !== undefined ||
+            sanitizedPatch.paletteSpeed !== undefined ||
+            sanitizedPatch.paletteGamma !== undefined;
 
         if (requiresRecolor) {
             this.resetRecolor();
@@ -313,7 +335,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.crossfader?.destroy();
         this.crossfader = new SpriteCrossfader(this.front.texture);
-        this.crossfader.setFadeSeconds(0.1);
+        this.crossfader.setFadeSeconds(0.2);
         this.setSpriteBaseTransform();
 
         this.root.addChild(this.crossfader.displayObject);
@@ -346,8 +368,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             return;
         }
 
-        const smoothed = this.viewAnimator.getSmoothedDesiredView();
-        if (!smoothed) {
+        // Always preview towards the smoothed desired view so motion appears continuous.
+        // (Recomputes happen in the background and crossfade in when ready.)
+        const targetView = this.viewAnimator.getSmoothedDesiredView();
+        if (!targetView) {
             this.setSpriteBaseTransform();
             return;
         }
@@ -363,10 +387,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             this.viewCenterY,
             this.viewZoom,
             this.viewRotation,
-            smoothed.centerX,
-            smoothed.centerY,
-            smoothed.zoom,
-            smoothed.rotation
+            targetView.centerX,
+            targetView.centerY,
+            targetView.zoom,
+            targetView.rotation
         );
 
         // While crossfading, also transform the fade-in sprite based on the view it was rendered for.
@@ -383,10 +407,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             backBaseCenterY,
             backBaseZoom,
             backBaseRotation,
-            smoothed.centerX,
-            smoothed.centerY,
-            smoothed.zoom,
-            smoothed.rotation
+            targetView.centerX,
+            targetView.centerY,
+            targetView.zoom,
+            targetView.rotation
         );
 
         this.crossfader.applyTransforms(this.previewFrontTransform, this.previewBackTransform);
@@ -415,16 +439,19 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const targetDxPx = -(desiredCenterX - baseCenterX) * baseZoom;
         const targetDyPx = (desiredCenterY - baseCenterY) * baseZoom;
 
-        // Compute a cover scale that accounts for rotation and translation together.
-        // Bounding box (in pixels) of a rotated w×h rectangle: (|cos|w + |sin|h, |sin|w + |cos|h)
+        // Compute a cover scale so the rotated sprite fully covers the viewport (no exposed corners),
+        // while also accounting for the requested translation.
         const c = Math.abs(Math.cos(rotDelta));
         const s = Math.abs(Math.sin(rotDelta));
-        const denomX = Math.max(1e-6, c * viewportW + s * viewportH);
-        const denomY = Math.max(1e-6, s * viewportW + c * viewportH);
-
-        const needScaleX = (viewportW + 2 * Math.abs(targetDxPx)) / denomX;
-        const needScaleY = (viewportH + 2 * Math.abs(targetDyPx)) / denomY;
-        const coverMin = Math.max(1, needScaleX, needScaleY);
+        const halfW = Math.max(1e-6, viewportW / 2);
+        const halfH = Math.max(1e-6, viewportH / 2);
+        const A = halfW + Math.abs(targetDxPx);
+        const B = halfH + Math.abs(targetDyPx);
+        const needScaleX = (A * c + B * s) / halfW;
+        const needScaleY = (A * s + B * c) / halfH;
+        // Constant cover factor for *any* rotation angle, avoids periodic scale changes (“breathing”).
+        const coverAnyRotation = Math.hypot(viewportW, viewportH) / Math.max(1e-6, Math.min(viewportW, viewportH));
+        const coverMin = Math.max(1, coverAnyRotation, needScaleX, needScaleY);
 
         // Never zoom out in preview (would expose uncomputed pixels).
         const targetScale = coverMin * Math.max(1, zoomRatioRaw);
@@ -525,7 +552,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         // During crossfade, we keep the previous front visible; with only two buffers
         // we must not overwrite either buffer until the fade completes.
-        if (this.config.animate && this.pendingSwap) return;
+        if (this.config.animate && (this.pendingSwap || this.swapQueued)) return;
 
         const buffer = this.config.animate ? this.back : this.front;
 
@@ -534,10 +561,11 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const h = this.height;
 
         const cfg = this.config;
-        // While animating, we intentionally reduce iterations to finish frames faster.
-        // More aggressive than quality^2 so swaps happen frequently.
-        const iterScale = this.config.animate ? Math.pow(clamp(cfg.animationQuality, 0.5, 1), 4) : 1;
-        const maxIter = Math.max(60, Math.floor(cfg.maxIterations * iterScale));
+        // While animating, keep iterations lower so we can swap frames more frequently.
+        // This reduces visible "step" when the new computed texture fades in.
+        const maxIter = this.config.animate
+            ? Math.max(60, Math.floor(cfg.maxIterations * 0.6))
+            : Math.max(60, Math.floor(cfg.maxIterations));
         const bailout = Math.max(0.0001, cfg.bailoutRadius);
         const bailoutSq = bailout * bailout;
 
@@ -600,8 +628,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         if (this.nextComputeTile >= this.tileOrder.length) {
             this.needsCompute = false;
-            this.computeLockedPhase = null;
-            this.computeLockedGamma = null;
             // Ensure we recolor the full frame at least once with the current palette.
             this.resetRecolor();
 
@@ -641,12 +667,31 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         // Crossfade avoids the visible "twitch" from a hard texture swap.
         if (this.crossfader.isFading()) return;
 
-        this.pendingSwap = true;
+        // Queue the swap, but don't start the fade until the front buffer has been
+        // recolored to match the palette used for the computed back buffer.
+        this.swapQueued = true;
+        this.pendingSwap = false;
         this.pendingSwapViewCenterX = this.computeViewCenterX;
         this.pendingSwapViewCenterY = this.computeViewCenterY;
         this.pendingSwapViewZoom = this.computeViewZoom;
         this.pendingSwapViewRotation = this.computeViewRotation;
 
+        // Lock recolor palette to the palette used for the computed back frame,
+        // so the crossfade blends between like-colored frames.
+        this.resetRecolor();
+        if (this.computeLockedPhase != null) this.recolorLockedPhase = this.computeLockedPhase;
+        if (this.computeLockedGamma != null) this.recolorLockedGamma = this.computeLockedGamma;
+    }
+
+    private beginQueuedSwapIfReady(): void {
+        if (!this.swapQueued || this.pendingSwap || !this.crossfader || !this.back) return;
+        if (this.crossfader.isFading()) return;
+
+        // Wait until recolor completes so the fade blends between matching palettes.
+        if (this.needsRecolor) return;
+
+        this.pendingSwap = true;
+        this.swapQueued = false;
         this.crossfader.beginFadeTo(this.back.texture);
     }
 
@@ -684,7 +729,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const cfg = this.config;
         // Lock phase/gamma for the duration of a full recolor pass.
         // This prevents subtle banding caused by palettePhase changing mid-pass.
-        if (this.nextRecolorTile === 0 || this.recolorLockedPhase == null || this.recolorLockedGamma == null) {
+        // If beginSwapToBack already set recolorLockedPhase/Gamma, preserve it.
+        if (this.recolorLockedPhase == null || this.recolorLockedGamma == null) {
             this.recolorLockedPhase = cfg.palettePhase;
             this.recolorLockedGamma = cfg.paletteGamma;
         }
@@ -722,7 +768,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         if (this.nextRecolorTile >= this.tileOrder.length) {
             // When animating palettes, keep repainting in a rolling loop.
-            if (this.config.paletteSpeed !== 0) {
+            if (this.config.paletteSpeed !== 0 && !this.pendingSwap && !this.swapQueued) {
                 this.nextRecolorTile = 0;
                 this.recolorLockedPhase = null;
                 this.recolorLockedGamma = null;

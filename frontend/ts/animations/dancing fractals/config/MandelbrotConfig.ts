@@ -60,26 +60,26 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     maxIterations: 250,
     bailoutRadius: 2,
 
-    quality: 1,
+    quality: 2,
 
-    animate: false,
-    animationQuality: 0.8,
+    animate: true,
+    animationQuality: 2,
 
-    panRadiusPx: 90,
-    panSpeed: 0.3,
+    panRadiusPx: 0,
+    panSpeed: 0,
     zoomBreathAmount: 0.22,
     zoomBreathSpeed: 0.03,
     rotation: 0,
     rotationSpeed: 0.25,
 
-    animationMinUpdateIntervalSeconds: 1 / 12,
+    animationMinUpdateIntervalSeconds: 1 / 30,
     animationMinPanPixels: 1,
-    animationMinZoomRelative: 0.002,
-    animationMinRotationRadians: 0.003,
+    animationMinZoomRelative: 0.001,
+    animationMinRotationRadians: 0.001,
 
-    // Classic starting view
-    centerX: -0.5,
-    centerY: 0,
+    // Boundary-focused starting view (seahorse valley)
+    centerX: -0.743643887037151,
+    centerY: 0.13182590420533,
 
     // Higher = more zoomed in (pixels per unit)
     zoom: 250,

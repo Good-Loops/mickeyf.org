@@ -95,27 +95,34 @@ export default class MandelbrotViewAnimator {
         const baseZoom = Math.max(1, config.zoom);
         const baseRotation = config.rotation;
 
-        // Zoom-in animation (monotonic): this fractal always rewards zooming deeper.
-        // Keep it stable over time (no runaway exponential growth).
+        // Continuous zoom-in (monotonic). Use zoomBreathSpeed as a growth rate (1/s)
+        // and zoomBreathAmount to cap the max multiplier so it never runs away.
         const zoomAmt = clamp(config.zoomBreathAmount, 0, 0.8);
-        const zoomSpeed = Math.max(0, config.zoomBreathSpeed);
-        const zoomMul = (zoomAmt === 0 || zoomSpeed === 0) ? 1 : 1 + zoomAmt * zoomSpeed * now;
-        const targetZoom = baseZoom * Math.min(50, zoomMul);
+        const zoomRate = Math.max(0, config.zoomBreathSpeed);
+        const maxMul = 1 + zoomAmt * 200; // 0.22 -> ~45x
+        const zoomMul = zoomRate === 0 ? 1 : Math.min(maxMul, Math.exp(zoomRate * now));
+        const targetZoom = baseZoom * zoomMul;
 
-        // Pan in screen-pixel space -> convert to complex units using zoom.
-        const panRadiusPx = Math.max(0, config.panRadiusPx);
-        const panSpeed = Math.max(0, config.panSpeed);
-        const panTheta = panSpeed === 0 ? 0 : (now * panSpeed * Math.PI * 2);
-        const panZoom = Math.max(1, targetZoom);
-        const panDxComplex = (panRadiusPx / panZoom) * Math.cos(panTheta);
-        const panDyComplex = (panRadiusPx / panZoom) * Math.sin(panTheta);
+        // Seahorse curls focus: keep the camera on a boundary-rich anchor.
+        // Add a very small drift in *screen pixels* (converted to complex units) so the
+        // zoom tends to ride along the curl boundary instead of settling into the interior.
+        // The drift shrinks with zoom, so it doesn't look like obvious panning.
+        const seahorseX = -0.743643887037151;
+        const seahorseY = 0.13182590420533;
 
-        const targetCenterX = baseCenterX + panDxComplex;
-        const targetCenterY = baseCenterY + panDyComplex;
+        const driftRadiusPx = 55; // tuned to keep the "front" curl edge in view
+        const driftCyclesPerSecond = 0.03;
+        const theta = now * driftCyclesPerSecond * Math.PI * 2;
+
+        const dxComplex = (driftRadiusPx / targetZoom) * Math.cos(theta);
+        const dyComplex = (driftRadiusPx / targetZoom) * Math.sin(theta);
+
+        const targetCenterX = seahorseX + dxComplex;
+        const targetCenterY = seahorseY + dyComplex;
 
         // Rotation
         const rotSpeed = config.rotationSpeed;
-        const targetRotation = baseRotation + rotSpeed * now;
+        const targetRotation = wrapAngleRadians(baseRotation + rotSpeed * now);
 
         return { centerX: targetCenterX, centerY: targetCenterY, zoom: targetZoom, rotation: targetRotation };
     }

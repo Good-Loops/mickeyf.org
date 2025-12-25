@@ -45,6 +45,7 @@ const DancingFractals: React.FC = () => {
 
     const [fps, setFps] = useState<number | null>(null);
 
+
     // Separate config state for each fractal type
     const [treeConfig, setTreeConfig] = useState<TreeConfig>(defaultTreeConfig);
     const [flowerSpiralConfig, setFlowerSpiralConfig] = useState<FlowerSpiralConfig>(defaultFlowerSpiralConfig);
