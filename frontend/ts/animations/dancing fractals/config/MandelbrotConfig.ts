@@ -77,9 +77,9 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     animationMinZoomRelative: 0.001,
     animationMinRotationRadians: 0.001,
 
-    // Focus point
-    centerX: -1.4,
-    centerY: 0.00018,
+    // Focus point (Seahorse Valley)
+    centerX: -0.743643887037151,
+    centerY: 0.13182590420533,
 
     // Higher = more zoomed in (pixels per unit)
     zoom: 250,
