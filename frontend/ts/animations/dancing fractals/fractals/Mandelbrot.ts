@@ -25,7 +25,7 @@ import {
 
 type EscapeSurface = BufferTextureSurface<Uint16Array>;
 
-const DEBUG_ZOOM = false; // Enable for manual zoom safety diagnostics.
+const DEBUG_ZOOM = true; // Enable for manual zoom safety diagnostics.
 
 export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
@@ -507,9 +507,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const vBaseX = pxUp * baseZoom;
         const vBaseY = -pyUp * baseZoom;
 
-        const zoomScale = Math.max(1, zoomRatioRaw);
         const cosD = Math.cos(rotDelta);
         const sinD = Math.sin(rotDelta);
+
+        // Allow limited preview zoom-out (to smooth the zoom-out phase) but never enough
+        // to expose uncomputed corners. We enforce that via the computed cover factor.
+        let zoomScale = Math.max(1e-6, zoomRatioRaw);
 
         // tZoom = -zoomScale * R(rotDelta) * vBase
         let targetDxPx = -zoomScale * (vBaseX * cosD - vBaseY * sinD);
@@ -521,15 +524,28 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const s = Math.abs(Math.sin(rotDelta));
         const halfW = Math.max(1e-6, viewportW / 2);
         const halfH = Math.max(1e-6, viewportH / 2);
-        const A = halfW + Math.abs(targetDxPx);
-        const B = halfH + Math.abs(targetDyPx);
-        const needScaleX = (A * c + B * s) / halfW;
-        const needScaleY = (A * s + B * c) / halfH;
-        // Constant cover factor for *any* rotation angle, avoids periodic scale changes (“breathing”).
-        const coverAnyRotation = Math.hypot(viewportW, viewportH) / Math.max(1e-6, Math.min(viewportW, viewportH));
-        const coverMin = Math.max(1, coverAnyRotation, needScaleX, needScaleY);
 
-        // Never zoom out in preview (would expose uncomputed pixels).
+        const computeCoverMin = (dxPx: number, dyPx: number): number => {
+            const A = halfW + Math.abs(dxPx);
+            const B = halfH + Math.abs(dyPx);
+            const needScaleX = (A * c + B * s) / halfW;
+            const needScaleY = (A * s + B * c) / halfH;
+            // Constant cover factor for *any* rotation angle, avoids periodic scale changes (“breathing”).
+            const coverAnyRotation = Math.hypot(viewportW, viewportH) / Math.max(1e-6, Math.min(viewportW, viewportH));
+            return Math.max(1, coverAnyRotation, needScaleX, needScaleY);
+        };
+
+        let coverMin = computeCoverMin(targetDxPx, targetDyPx);
+
+        // Clamp zoom-out so the sprite still covers the viewport. (Allows smooth zoom-out up to ~1/coverMin.)
+        const minZoomScale = 1 / coverMin;
+        if (zoomScale < minZoomScale) {
+            zoomScale = minZoomScale;
+            targetDxPx = -zoomScale * (vBaseX * cosD - vBaseY * sinD);
+            targetDyPx = -zoomScale * (vBaseX * sinD + vBaseY * cosD);
+            coverMin = computeCoverMin(targetDxPx, targetDyPx);
+        }
+
         const targetScale = coverMin * zoomScale;
 
         // Keep translation consistent with the final scale.
@@ -759,12 +775,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         // Not enough samples? Ignore (prevents flapping on tiny viewports).
         if (this.zoomSafetyTotal < 64) return;
 
-        // Prefer the current desired target zoom; fall back to the last rendered zoom.
-        const desiredZoom = this.viewAnimator.getDesiredView()?.zoom ?? this.viewZoom;
+        // The view used during sampling.
+        const sampledZoom = Math.max(1, this.computeViewZoom);
         // Natural log yields a smooth, unbounded zoom depth metric (additive per multiplicative zoom),
         // making the cooldown independent of frame rate or absolute zoom values. ΔzoomLevel of ~0.69 ≈ 2x zoom.
         const zoomLevel = Math.log(
-            Math.max(1, desiredZoom) / Math.max(1, this.zoomBaseline)
+           sampledZoom / Math.max(1, this.zoomBaseline)
         );
 
         const insideFrac = this.zoomSafetyInside / this.zoomSafetyTotal;
@@ -785,29 +801,38 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const fastLow = 0.75;
         const flatRangeHigh = 0.012;
         const flatRangeLow = 0.03;
-        const midLow = 0.02;
-        const midHigh = 0.08;
 
-        const hardBad = insideFrac > insideHigh || fastFrac > fastHigh;
-        const softBad = (outsideRange > 0 && outsideRange < flatRangeHigh) || midFrac < midLow;
-        const recovered =
-            insideFrac < insideLow &&
-            fastFrac < fastLow &&
-            (outsideRange === 0 || outsideRange > flatRangeLow) &&
-            midFrac > midHigh;
+        const outsideNonFast = Math.max(0, this.zoomSafetyOutsideCount - this.zoomSafetyFastEscape);
+        const outsideNonFastFrac = outsideNonFast / this.zoomSafetyTotal;
 
         const minZoomDepthForHard = 0.2;
         const minZoomDepthForSoft = 0.6;
         const allowHard = zoomLevel >= minZoomDepthForHard;
         const allowSoft = zoomLevel >= minZoomDepthForSoft;
-        const badTriggered = (allowHard && hardBad) || (allowSoft && softBad);
-        this.zoomBadStreak = badTriggered ? this.zoomBadStreak + 1 : 0;
+
+        const hardBad = insideFrac > insideHigh || fastFrac > fastHigh;
+        const softBad =
+            allowSoft &&
+            ((outsideRange > 0 && outsideRange < flatRangeHigh) || outsideNonFastFrac < 0.05);
+
+        const recovered =
+            insideFrac < insideLow &&
+            fastFrac < fastLow &&
+            (outsideRange === 0 || outsideRange > flatRangeLow) &&
+            outsideNonFastFrac > 0.08;
+
+        this.zoomBadStreak = (allowSoft && softBad) ? this.zoomBadStreak + 1 : 0;
 
         const minSwitchDeltaZ = 0.6;
         const cooldownOK = Math.abs(zoomLevel - this.lastFlipZoomLevel) >= minSwitchDeltaZ;
         const softBadStreakMin = 3;
-        const zoomOutRecoveryLevel = 0.15;
+        const zoomOutRecoveryLevel = 0.0;
         const zoomedOutEnough = zoomLevel <= zoomOutRecoveryLevel;
+
+        // Re-entry is gated by both: (1) scene has "recovered" and (2) we are no longer extremely deep.
+        // This prevents early flip-backs right after leaving the interior-heavy region.
+        const reEntryZoomLevel = 0.0;
+        const canReEnter = zoomLevel <= reEntryZoomLevel;
 
         if (DEBUG_ZOOM && typeof console !== "undefined" && typeof console.debug === "function") {
             console.debug(
@@ -822,6 +847,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
                     midFrac,
                     outsideRange,
                     zoomBadStreak: this.zoomBadStreak,
+                    sampledZoom: this.computeViewZoom,
+                    outsideNonFastFrac,
+                    canReEnter,
                 }
             );
         }
@@ -841,8 +869,18 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             return;
         }
 
+        // Hard safety reset: if we are basically back at baseline, always allow re-entry.
+        // Keep this separate from "recovered" so leaving the interior doesn't immediately flip back to zoom-in.
+        if (this.zoomSafetyMode === "out" && zoomedOutEnough) {
+            this.zoomSafetyMode = "in";
+            this.viewAnimator.setZoomMode("in");
+            this.lastFlipZoomLevel = zoomLevel;
+            this.zoomBadStreak = 0;
+            return;
+        }
+
         const shouldFlipToIn =
-            this.zoomSafetyMode === "out" && cooldownOK && (recovered || zoomedOutEnough);
+            this.zoomSafetyMode === "out" && cooldownOK && recovered && canReEnter;
 
         if (shouldFlipToIn) {
             this.zoomSafetyMode = "in";
@@ -901,6 +939,4 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.pendingSwap = false;
     }
-
-
 }
