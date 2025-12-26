@@ -25,6 +25,8 @@ import {
 
 type EscapeSurface = BufferTextureSurface<Uint16Array>;
 
+const DEBUG_ZOOM = false; // Enable for manual zoom safety diagnostics.
+
 export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
     static backgroundColor = "#c8f7ff";
@@ -103,7 +105,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private zoomSafetyMinOutsideT = Number.POSITIVE_INFINITY;
     private zoomSafetyMaxOutsideT = Number.NEGATIVE_INFINITY;
     private zoomSafetyMidCount = 0;
-    private zoomSafetyLastFlipSeconds = Number.NEGATIVE_INFINITY;
+    private zoomBaseline = 1; // Reference zoom for depth calculations.
+    private lastFlipZoomLevel = 0; // Zoom level when the safety mode last flipped.
+    private zoomBadStreak = 0; // Consecutive frames flagged as bad.
 
     private viewCenterX = 0;
     private viewCenterY = 0;
@@ -143,8 +147,11 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.syncViewFromConfig();
         this.syncRenderScaleFromEffectiveQuality();
-        
-            this.viewAnimator.setZoomMode("in");
+        this.zoomBaseline = Math.max(1, this.config.zoom);
+        this.lastFlipZoomLevel = 0;
+        this.zoomBadStreak = 0;
+
+        this.viewAnimator.setZoomMode("in");
     }
 
     init(app: Application): void {
@@ -243,6 +250,17 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         delete sanitizedPatch.smoothColoring;
 
         this.config = { ...this.config, ...sanitizedPatch, animate: true, smoothColoring: true };
+
+        const centerChanged = sanitizedPatch.centerX !== undefined || sanitizedPatch.centerY !== undefined;
+        if (centerChanged) {
+            const previousZoom = oldConfig?.zoom ?? 1;
+            const nextZoomBaseline = sanitizedPatch.zoom ?? previousZoom;
+            this.zoomBaseline = Math.max(1, nextZoomBaseline);
+            this.lastFlipZoomLevel = 0;
+            this.zoomBadStreak = 0;
+            this.zoomSafetyMode = "in";
+            this.viewAnimator.setZoomMode("in");
+        }
 
         const effectiveQualityChanged =
             (sanitizedPatch.quality !== undefined && sanitizedPatch.quality !== oldConfig.quality) ||
@@ -741,9 +759,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         // Not enough samples? Ignore (prevents flapping on tiny viewports).
         if (this.zoomSafetyTotal < 64) return;
 
-        const desiredZoom = this.viewAnimator.getDesiredView()?.zoom;
-        const baseZoom = Math.max(1, this.config.zoom);
-        const zoomMul = desiredZoom ? (desiredZoom / baseZoom) : null;
+        // Prefer the current desired target zoom; fall back to the last rendered zoom.
+        const desiredZoom = this.viewAnimator.getDesiredView()?.zoom ?? this.viewZoom;
+        // Natural log yields a smooth, unbounded zoom depth metric (additive per multiplicative zoom),
+        // making the cooldown independent of frame rate or absolute zoom values. ΔzoomLevel of ~0.69 ≈ 2x zoom.
+        const zoomLevel = Math.log(
+            Math.max(1, desiredZoom) / Math.max(1, this.zoomBaseline)
+        );
 
         const insideFrac = this.zoomSafetyInside / this.zoomSafetyTotal;
         const fastFrac = this.zoomSafetyFastEscape / this.zoomSafetyTotal;
@@ -766,43 +788,67 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const midLow = 0.02;
         const midHigh = 0.08;
 
+        const hardBad = insideFrac > insideHigh || fastFrac > fastHigh;
+        const softBad = (outsideRange > 0 && outsideRange < flatRangeHigh) || midFrac < midLow;
         const recovered =
             insideFrac < insideLow &&
             fastFrac < fastLow &&
             (outsideRange === 0 || outsideRange > flatRangeLow) &&
             midFrac > midHigh;
 
-        const minZoomOutSeconds = 1.25;
-        const canFlipBackIn = (this.elapsedSeconds - this.zoomSafetyLastFlipSeconds) >= minZoomOutSeconds;
+        const minZoomDepthForHard = 0.2;
+        const minZoomDepthForSoft = 0.6;
+        const allowHard = zoomLevel >= minZoomDepthForHard;
+        const allowSoft = zoomLevel >= minZoomDepthForSoft;
+        const badTriggered = (allowHard && hardBad) || (allowSoft && softBad);
+        this.zoomBadStreak = badTriggered ? this.zoomBadStreak + 1 : 0;
 
-        // If we've zoomed back out near the configured "whole fractal" view, always resume zoom-in.
-        // This prevents getting stuck in zoom-out due to overly strict recovered heuristics.
-        const zoomedOutEnough = zoomMul != null && zoomMul <= 1.15;
+        const minSwitchDeltaZ = 0.6;
+        const cooldownOK = Math.abs(zoomLevel - this.lastFlipZoomLevel) >= minSwitchDeltaZ;
+        const softBadStreakMin = 3;
+        const zoomOutRecoveryLevel = 0.15;
+        const zoomedOutEnough = zoomLevel <= zoomOutRecoveryLevel;
 
-        // Also avoid immediately flipping back to zoom-out (prevents oscillation).
-        const minZoomInSeconds = 2.5;
-        const canFlipToOut = (this.elapsedSeconds - this.zoomSafetyLastFlipSeconds) >= minZoomInSeconds;
+        if (DEBUG_ZOOM && typeof console !== "undefined" && typeof console.debug === "function") {
+            console.debug(
+                "[Mandelbrot zoom]",
+                {
+                    mode: this.zoomSafetyMode,
+                    zoomLevel,
+                    lastFlipZoomLevel: this.lastFlipZoomLevel,
+                    cooldownOK,
+                    insideFrac,
+                    fastFrac,
+                    midFrac,
+                    outsideRange,
+                    zoomBadStreak: this.zoomBadStreak,
+                }
+            );
+        }
 
-        // Don't let the safety system "panic" near the baseline view.
-        // We only start acting on the weaker "flat/boring" signals once we're meaningfully zoomed in.
-        const allowSoftTriggers = zoomMul == null ? true : zoomMul >= 1.6;
-        const allowAnyZoomOut = zoomMul == null ? true : zoomMul >= 1.2;
+        const hardTrigger = allowHard && hardBad;
+        const softTrigger = allowSoft && softBad && this.zoomBadStreak >= softBadStreakMin;
+        const shouldFlipToOut =
+            this.zoomSafetyMode === "in" &&
+            cooldownOK &&
+            (hardTrigger || softTrigger);
 
-        const tooFarHard = insideFrac > insideHigh || fastFrac > fastHigh;
-        const tooFarSoft = (outsideRange > 0 && outsideRange < flatRangeHigh) || midFrac < midLow;
-
-        const tooFarGated =
-            (allowAnyZoomOut && tooFarHard) ||
-            (allowSoftTriggers && (tooFarHard || tooFarSoft));
-
-        if (this.zoomSafetyMode === "in" && canFlipToOut && tooFarGated) {
+        if (shouldFlipToOut) {
             this.zoomSafetyMode = "out";
             this.viewAnimator.setZoomMode("out");
-            this.zoomSafetyLastFlipSeconds = this.elapsedSeconds;
-        } else if (this.zoomSafetyMode === "out" && canFlipBackIn && (recovered || zoomedOutEnough)) {
+            this.lastFlipZoomLevel = zoomLevel;
+            this.zoomBadStreak = 0;
+            return;
+        }
+
+        const shouldFlipToIn =
+            this.zoomSafetyMode === "out" && cooldownOK && (recovered || zoomedOutEnough);
+
+        if (shouldFlipToIn) {
             this.zoomSafetyMode = "in";
             this.viewAnimator.setZoomMode("in");
-            this.zoomSafetyLastFlipSeconds = this.elapsedSeconds;
+            this.lastFlipZoomLevel = zoomLevel;
+            this.zoomBadStreak = 0;
         }
     }
 
