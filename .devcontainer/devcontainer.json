@@ -1,34 +1,36 @@
 {
-  "name": "mickeyf.org (backend dev)",
-  "dockerComposeFile": "docker-compose.yml",
-  "service": "dev",
-  "workspaceFolder": "/workspaces/mickeyf.org",
+    "name": "mickeyf-backend",
 
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {}
-  },
+    "build": {
 
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
-      ]
-    }
-  },
+        "dockerfile": "Dockerfile"
 
-  "remoteUser": "node",
-  "forwardPorts": [8080],
-  "postCreateCommand": "cd backend && npm ci",
-  "postStartCommand": "./scripts/devcontainer-backend-start.sh",
+    },
+    
+    "mounts": [
+        "source=${localEnv:HOME}/.config/gcloud,target=/home/node/.config/gcloud,type=bind,consistency=cached"
+    ],
 
-  "containerEnv": {
-    "DB_HOST": "cloud-sql-proxy",
-    "DB_PORT": "3306"
-  }, 
+    "remoteEnv": {
+        "CLOUDSDK_CONFIG": "/home/node/.config/gcloud"
+    },
 
-  "mounts": [
-    "source=/home/mickey_f/.config/gcloud,target=/home/node/.config/gcloud,type=bind"
-  ]
+    "workspaceFolder": "/workspaces/mickeyf.org",
+
+    "remoteUser": "node",
+
+    "customizations": {
+
+        "vscode": {
+
+            "extensions": [
+
+                "dbaeumer.vscode-eslint",
+
+                "esbenp.prettier-vscode"
+
+            ]
+        }
+    },
+    "postStartCommand": "cd backend && ./scripts/dev-db.sh"
 }
