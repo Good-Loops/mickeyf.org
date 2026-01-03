@@ -54,7 +54,12 @@ export default class MandelbrotViewAnimator {
         const zoomRate = Math.max(0, config.zoomBreathSpeed);
         if (zoomRate !== 0) {
             const dir = this.zoomMode === "in" ? 1 : -1;
-            this.zoomLogMul += dir * zoomRate * dt;
+
+            // Speed up safety zoom-out so it feels responsive.
+            const outBoost = 3; // tune: 2..6 usually feels good
+            const rate = (this.zoomMode === "out") ? zoomRate * outBoost : zoomRate;
+
+            this.zoomLogMul += dir * rate * dt;
         }
 
         const target = this.computeDesiredView(config, elapsedSeconds);

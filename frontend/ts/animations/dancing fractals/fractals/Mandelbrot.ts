@@ -398,10 +398,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const w = Math.max(1, this.app?.screen.width ?? 1);
         const h = Math.max(1, this.app?.screen.height ?? 1);
 
-        // Match the preview path's minimum cover scale so we don't "jump" in scale
-        // when we transition from the first progressive frame to animated preview.
-        const coverAnyRotation = Math.hypot(w, h) / Math.max(1e-6, Math.min(w, h));
-        const baseScale = this.config.animate ? (this.renderScale * coverAnyRotation) : this.renderScale;
+        const baseScale = this.renderScale;
 
         // Rotate/scale around the screen center.
         this.crossfader.applyTransform(
@@ -493,6 +490,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         const zoomRatioRaw = desiredZoom / baseZoom;
         const rotDelta = this.wrapAngleRadians(desiredRotation - baseRotation);
+
 
         // Compute translation exactly (and consistently with scale/rotation).
         // 1) Find where the desired center lands in the *base* view (screen pixels, PIXI y-down).
@@ -728,6 +726,35 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             }
 
             this.nextComputeTile += 1;
+
+            if (this.config.animate && this.zoomSafetyMode === "in" && this.zoomSafetyTotal >= 64) {
+                const insideFracNow = this.zoomSafetyInside / this.zoomSafetyTotal;
+                const fastFracNow = this.zoomSafetyFastEscape / this.zoomSafetyTotal;
+
+                const hardBadNow = insideFracNow > 0.97 || fastFracNow > 0.97;
+
+                if (hardBadNow) {
+                    // Flip mode immediately
+                    this.applyZoomSafetyDecision();
+
+                    // Force a fresh compute cycle right away (don't wait for shouldKickRender)
+                    this.needsCompute = true;
+                    this.nextComputeTile = 0;
+
+                    // Optional but recommended: reset stats so next decision is based on the new view
+                    this.resetZoomSafetyStats();
+
+                    console.debug("[zoom abort]", JSON.stringify({
+                        tile: this.nextComputeTile,
+                        tilesTotal: this.tileOrder.length,
+                        insideFracNow,
+                        fastFracNow,
+                        computeZoom: this.computeViewZoom,
+                    }));
+
+                    return;
+                }
+            }
         }
 
         // Flush progressively when drawing into the visible front buffer.
@@ -799,8 +826,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const insideLow = 0.75;
         const fastHigh = 0.9;
         const fastLow = 0.75;
-        const flatRangeHigh = 0.012;
-        const flatRangeLow = 0.03;
+        const flatRangeHigh = 0.08;
+        const flatRangeLow = 0.12;
 
         const outsideNonFast = Math.max(0, this.zoomSafetyOutsideCount - this.zoomSafetyFastEscape);
         const outsideNonFastFrac = outsideNonFast / this.zoomSafetyTotal;
@@ -823,9 +850,11 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.zoomBadStreak = (allowSoft && softBad) ? this.zoomBadStreak + 1 : 0;
 
-        const minSwitchDeltaZ = 0.6;
-        const cooldownOK = Math.abs(zoomLevel - this.lastFlipZoomLevel) >= minSwitchDeltaZ;
-        const softBadStreakMin = 3;
+        const minSwitchDeltaZOut = 0.2;
+        const minSwitchDeltaZIn = 0.6;
+        const cooldownOutOK = Math.abs(zoomLevel - this.lastFlipZoomLevel) >= minSwitchDeltaZOut;
+        const cooldownInOK = Math.abs(zoomLevel - this.lastFlipZoomLevel) >= minSwitchDeltaZIn;
+        const softBadStreakMin = 1;
         const zoomOutRecoveryLevel = 0.0;
         const zoomedOutEnough = zoomLevel <= zoomOutRecoveryLevel;
 
@@ -836,12 +865,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         if (DEBUG_ZOOM && typeof console !== "undefined" && typeof console.debug === "function") {
             console.debug(
-                "[Mandelbrot zoom]",
+                "[Mandelbrot zoom]", JSON.stringify(
                 {
                     mode: this.zoomSafetyMode,
                     zoomLevel,
                     lastFlipZoomLevel: this.lastFlipZoomLevel,
-                    cooldownOK,
+                    cooldownOutOK,
+                    cooldownInOK,
                     insideFrac,
                     fastFrac,
                     midFrac,
@@ -851,14 +881,14 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
                     outsideNonFastFrac,
                     canReEnter,
                 }
-            );
+            ));
         }
 
         const hardTrigger = allowHard && hardBad;
         const softTrigger = allowSoft && softBad && this.zoomBadStreak >= softBadStreakMin;
         const shouldFlipToOut =
             this.zoomSafetyMode === "in" &&
-            cooldownOK &&
+            cooldownOutOK &&
             (hardTrigger || softTrigger);
 
         if (shouldFlipToOut) {
@@ -880,7 +910,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         }
 
         const shouldFlipToIn =
-            this.zoomSafetyMode === "out" && cooldownOK && recovered && canReEnter;
+            this.zoomSafetyMode === "out" && cooldownInOK && recovered && canReEnter;
 
         if (shouldFlipToIn) {
             this.zoomSafetyMode = "in";
