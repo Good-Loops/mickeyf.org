@@ -28,6 +28,8 @@ type EscapeSurface = BufferTextureSurface<Uint16Array>;
 const DEBUG_ZOOM = true; // Enable for manual zoom safety diagnostics.
 const DEBUG_ANIMATION_SPEED = 8; // 1 = normal speed, >1 = faster (testing only)
 
+const DEFAULT_ZOOM_OUT_LERP_MS = 300;
+
 export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
     static backgroundColor = "#c8f7ff";
@@ -111,6 +113,14 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private zoomBadStreak = 0; // Consecutive frames flagged as bad.
 
     private justFlippedZoomMode = false;
+
+    // Zoom-out smoothing (commit-to-commit interpolation; compute-authoritative).
+    private zoomOutLerpActive = false;
+    private zoomOutFrom = 1;
+    private zoomOutTo = 1;
+    private zoomOutStartMs = 0;
+    private zoomOutDurationMs = DEFAULT_ZOOM_OUT_LERP_MS;
+    private zoomOutLastMode: "in" | "out" | "none" = "none";
 
     private viewCenterX = 0;
     private viewCenterY = 0;
@@ -284,6 +294,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             this.zoomBadStreak = 0;
             this.zoomSafetyMode = "in";
             this.viewAnimator.setZoomMode("in");
+
+            this.zoomOutLerpActive = false;
+            this.zoomOutLastMode = "none";
         }
 
         const effectiveQualityChanged =
@@ -443,6 +456,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         // Always preview towards the smoothed desired view so motion appears continuous.
         // (Recomputes happen in the background and crossfade in when ready.)
         const targetView = this.viewAnimator.getSmoothedDesiredView() ?? this.viewAnimator.getDesiredView();
+        const isZoomingOut = this.zoomSafetyMode === "out";
         if (!targetView) {
             this.setSpriteBaseTransform();
             return;
@@ -458,6 +472,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const frontBaseCenterY = this.frontComplete ? this.viewCenterY : this.computeViewCenterY;
         const frontBaseZoom = this.frontComplete ? this.viewZoom : this.computeViewZoom;
         const frontBaseRotation = this.frontComplete ? this.viewRotation : this.computeViewRotation;
+
+        const nowMs = performance.now();
+        const previewZoom = isZoomingOut ? this.getZoomOutInterpolatedZoom(nowMs, frontBaseZoom) : targetView.zoom;
 
         this.rebasePreviewRotDeltaForBaseRotationChange(frontBaseRotation);
 
@@ -491,7 +508,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             frontBaseRotation,
             targetView.centerX,
             targetView.centerY,
-            targetView.zoom,
+            previewZoom,
             previewDesiredRotationUnwrapped
         );
 
@@ -511,7 +528,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             backBaseRotation,
             targetView.centerX,
             targetView.centerY,
-            targetView.zoom,
+            previewZoom,
             previewDesiredRotationUnwrapped
         );
 
@@ -956,6 +973,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             (hardTrigger || softTrigger);
 
         if (shouldFlipToOut) {
+            const baseZoom = Math.max(1, this.frontComplete ? this.viewZoom : this.computeViewZoom);
+            this.maybeEnterZoomOutMode(performance.now(), baseZoom);
             this.zoomSafetyMode = "out";
             this.justFlippedZoomMode = true;
             this.viewAnimator.setZoomMode("out");
@@ -972,6 +991,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             this.viewAnimator.setZoomMode("in");
             this.lastFlipZoomLevel = zoomLevel;
             this.zoomBadStreak = 0;
+
+            this.zoomOutLerpActive = false;
+            this.zoomOutLastMode = "in";
             return;
         }
 
@@ -983,6 +1005,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             this.viewAnimator.setZoomMode("in");
             this.lastFlipZoomLevel = zoomLevel;
             this.zoomBadStreak = 0;
+
+            this.zoomOutLerpActive = false;
+            this.zoomOutLastMode = "in";
         }
     }
 
@@ -1016,6 +1041,15 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.pendingSwapViewRotation = this.computeViewRotation;
 
         this.pendingSwap = true;
+
+        if (this.zoomSafetyMode === "out") {
+            const nowMs = performance.now();
+            const baseZoom = Math.max(1, this.viewZoom);
+            const currentDisplayedZoom = this.getZoomOutInterpolatedZoom(nowMs, baseZoom);
+            const nextCommittedZoom = Math.max(1, this.pendingSwapViewZoom);
+            this.startZoomOutLerpSegment(nowMs, currentDisplayedZoom, nextCommittedZoom);
+        }
+
         this.crossfader.beginFadeTo(this.back.texture);
     }
 
@@ -1024,6 +1058,14 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.crossfader.step(deltaSeconds);
         if (this.crossfader.isFading()) return;
+
+        let displayedZoomBeforeCommit: number | null = null;
+        let nowMs = 0;
+        if (this.zoomSafetyMode === "out") {
+            nowMs = performance.now();
+            const baseZoomBefore = Math.max(1, this.viewZoom);
+            displayedZoomBeforeCommit = this.getZoomOutInterpolatedZoom(nowMs, baseZoomBefore);
+        }
 
         const tmp = this.front;
         this.front = this.back;
@@ -1036,6 +1078,49 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.rebasePreviewRotDeltaForBaseRotationChange(this.viewRotation);
 
+        if (this.zoomSafetyMode === "out" && displayedZoomBeforeCommit !== null) {
+            const nextCommittedZoom = Math.max(1, this.viewZoom);
+            this.startZoomOutLerpSegment(nowMs, displayedZoomBeforeCommit, nextCommittedZoom);
+        }
+
         this.pendingSwap = false;
+    }
+
+    private maybeEnterZoomOutMode(nowMs: number, baseZoom: number): void {
+        if (this.zoomOutLastMode === "out") return;
+
+        const z = Math.max(1, baseZoom);
+        this.zoomOutFrom = z;
+        this.zoomOutTo = z;
+        this.zoomOutStartMs = nowMs;
+        this.zoomOutDurationMs = DEFAULT_ZOOM_OUT_LERP_MS;
+        this.zoomOutLerpActive = true;
+        this.zoomOutLastMode = "out";
+    }
+
+    private startZoomOutLerpSegment(nowMs: number, fromZoom: number, toZoom: number): void {
+        const from = Math.max(1, fromZoom);
+        const to = Math.max(1, toZoom);
+
+        this.zoomOutFrom = from;
+        this.zoomOutTo = to;
+        this.zoomOutStartMs = nowMs;
+        this.zoomOutDurationMs = DEFAULT_ZOOM_OUT_LERP_MS;
+        this.zoomOutLerpActive = true;
+        this.zoomOutLastMode = "out";
+    }
+
+    private getZoomOutInterpolatedZoom(nowMs: number, fallbackZoom: number): number {
+        const fallback = Math.max(1, fallbackZoom);
+        if (!this.zoomOutLerpActive) return fallback;
+
+        const duration = Math.max(1, this.zoomOutDurationMs);
+        const tRaw = (nowMs - this.zoomOutStartMs) / duration;
+        const t = clamp(tRaw, 0, 1);
+
+        // Smoothstep easing: avoids visible kinks at segment endpoints.
+        const e = t * t * (3 - 2 * t);
+
+        return this.zoomOutFrom + (this.zoomOutTo - this.zoomOutFrom) * e;
     }
 }
