@@ -110,10 +110,23 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private lastFlipZoomLevel = 0; // Zoom level when the safety mode last flipped.
     private zoomBadStreak = 0; // Consecutive frames flagged as bad.
 
+    private justFlippedZoomMode = false;
+
     private viewCenterX = 0;
     private viewCenterY = 0;
     private viewZoom = 0;
     private viewRotation = 0;
+
+    // Preview rotation accumulator state (used by some debug/preview modes)
+    private previewRotDelta = 0;
+    private lastDesiredRotation = 0;
+    private desiredRotationUnwrapped = 0;
+    private hasDesiredRotationUnwrapped = false;
+
+    private lastPreviewBaseRotation = 0;
+    private hasLastPreviewBaseRotation = false;
+
+    private readonly maxPreviewRotSpeedRadPerSec = 1.5;
 
     private readonly previewFrontTransform: SpriteTransform = {
         pivotX: 0,
@@ -175,6 +188,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.elapsedSeconds += dt;
 
         const animating = this.config.animate;
+
+        if (animating && this.justFlippedZoomMode) {
+            this.justFlippedZoomMode = false;
+            // Force the animator to generate a fresh desired view under the new zoom mode.
+            // dt=0 prevents motion but recomputes internal desired/smoothed state.
+            this.viewAnimator.step(this.config, this.elapsedSeconds, 0);
+        }
 
         // Camera animation (requires recompute, so we throttle updates)
         if (animating) {
@@ -439,6 +459,28 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const frontBaseZoom = this.frontComplete ? this.viewZoom : this.computeViewZoom;
         const frontBaseRotation = this.frontComplete ? this.viewRotation : this.computeViewRotation;
 
+        this.rebasePreviewRotDeltaForBaseRotationChange(frontBaseRotation);
+
+        // Always unwrap the animator's rotation (in all modes) so preview is continuous.
+        const raw = targetView.rotation;
+        if (!this.hasDesiredRotationUnwrapped) {
+            this.hasDesiredRotationUnwrapped = true;
+            this.lastDesiredRotation = raw;
+            this.desiredRotationUnwrapped = raw;
+        } else {
+            const step = this.wrapAngleRadians(raw - this.lastDesiredRotation);
+            this.desiredRotationUnwrapped += step;
+            this.lastDesiredRotation = raw;
+        }
+
+        // Compute preview rotation relative to the currently displayed base rotation.
+        const targetRotDelta = this.desiredRotationUnwrapped - frontBaseRotation;
+        const maxStep = this.maxPreviewRotSpeedRadPerSec * Math.max(0, deltaSeconds);
+        const delta = targetRotDelta - this.previewRotDelta;
+        this.previewRotDelta += clamp(delta, -maxStep, maxStep);
+
+        const previewDesiredRotationUnwrapped = frontBaseRotation + this.previewRotDelta;
+
         this.computePreviewTransformForBaseView(
             this.previewFrontTransform,
             w,
@@ -450,7 +492,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             targetView.centerX,
             targetView.centerY,
             targetView.zoom,
-            targetView.rotation
+            previewDesiredRotationUnwrapped
         );
 
         // While crossfading, also transform the fade-in sprite based on the view it was rendered for.
@@ -470,7 +512,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             targetView.centerX,
             targetView.centerY,
             targetView.zoom,
-            targetView.rotation
+            previewDesiredRotationUnwrapped
         );
 
         this.crossfader.applyTransforms(this.previewFrontTransform, this.previewBackTransform);
@@ -493,7 +535,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const desiredZoom = Math.max(1, desiredZoomRaw);
 
         const zoomRatioRaw = desiredZoom / baseZoom;
-        const rotDelta = this.wrapAngleRadians(desiredRotation - baseRotation);
+        const rotDeltaUnwrapped = desiredRotation - baseRotation;
+        const rotDelta = this.wrapAngleRadians(rotDeltaUnwrapped);
 
 
         // Compute translation exactly (and consistently with scale/rotation).
@@ -569,6 +612,22 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         if (t <= -Math.PI) t += twoPi;
         if (t > Math.PI) t -= twoPi;
         return t;
+    }
+
+    private rebasePreviewRotDeltaForBaseRotationChange(newBaseRotation: number): void {
+        if (!this.hasLastPreviewBaseRotation) {
+            this.hasLastPreviewBaseRotation = true;
+            this.lastPreviewBaseRotation = newBaseRotation;
+            return;
+        }
+
+        const oldBase = this.lastPreviewBaseRotation;
+        const deltaBase = newBaseRotation - oldBase;
+
+        // Preserve previewDesiredRotationUnwrapped = oldBase + previewRotDelta
+        this.previewRotDelta -= deltaBase;
+
+        this.lastPreviewBaseRotation = newBaseRotation;
     }
 
     private getEffectiveQuality(): number {
@@ -778,6 +837,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
                     this.viewCenterY = this.computeViewCenterY;
                     this.viewZoom = this.computeViewZoom;
                     this.viewRotation = this.computeViewRotation;
+                    this.rebasePreviewRotDeltaForBaseRotationChange(this.viewRotation);
                     flushBufferTextureSurface(this.front);
                 } else {
                     // Finalize the back buffer and crossfade it into view.
@@ -897,7 +957,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         if (shouldFlipToOut) {
             this.zoomSafetyMode = "out";
+            this.justFlippedZoomMode = true;
             this.viewAnimator.setZoomMode("out");
+            this.viewAnimator.resetSmoothing();
             this.lastFlipZoomLevel = zoomLevel;
             this.zoomBadStreak = 0;
             return;
@@ -939,6 +1001,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             this.viewCenterY = this.computeViewCenterY;
             this.viewZoom = this.computeViewZoom;
             this.viewRotation = this.computeViewRotation;
+            this.rebasePreviewRotDeltaForBaseRotationChange(this.viewRotation);
             this.frontComplete = true;
             return;
         }
@@ -970,6 +1033,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.viewCenterY = this.pendingSwapViewCenterY;
         this.viewZoom = this.pendingSwapViewZoom;
         this.viewRotation = this.pendingSwapViewRotation;
+
+        this.rebasePreviewRotDeltaForBaseRotationChange(this.viewRotation);
 
         this.pendingSwap = false;
     }
