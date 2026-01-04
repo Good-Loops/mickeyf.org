@@ -61,6 +61,20 @@ export default class SpriteCrossfader<T extends TextureView = TextureView> {
         return this.fadeT < 1;
     }
 
+    // Forcefully stop any fade and restore a stable state where the current front is fully visible.
+    // Higher-level logic may call this to abort a transition immediately.
+    cancelFadeToFront(): void {
+        this.fadeT = 1;
+        this.container.alpha = 1;
+
+        this.frontSprite.alpha = 1;
+        this.backSprite.alpha = 0;
+
+        // Keep the invisible sprite below to avoid any ordering surprises.
+        this.container.setChildIndex(this.backSprite, 0);
+        this.container.setChildIndex(this.frontSprite, this.container.children.length - 1);
+    }
+
     setFadeSeconds(seconds: number): void {
         this.fadeSeconds = Math.max(0.001, seconds);
     }
@@ -73,15 +87,15 @@ export default class SpriteCrossfader<T extends TextureView = TextureView> {
     beginFadeTo(texture: Texture): void {
         if (this.frontSprite.texture === texture) return;
 
-        this.backSprite.texture = texture;
-        this.onTextureSet?.(this.backSprite, texture);
-        this.backSprite.alpha = 0;
+        // Diagnostic: disable fading. Swap immediately.
+        this.setFrontTexture(texture);
+        this.fadeT = 1;
+        this.container.alpha = 1;
+
         this.frontSprite.alpha = 1;
-
-        // Ensure backSprite is on top during fade.
-        this.container.setChildIndex(this.backSprite, this.container.children.length - 1);
-
-        this.fadeT = 0;
+        this.backSprite.alpha = 0;
+        this.container.setChildIndex(this.backSprite, 0);
+        this.container.setChildIndex(this.frontSprite, this.container.children.length - 1);
     }
 
     step(deltaSeconds: number): void {

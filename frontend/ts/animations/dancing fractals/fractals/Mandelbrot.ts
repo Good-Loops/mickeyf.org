@@ -26,6 +26,7 @@ import {
 type EscapeSurface = BufferTextureSurface<Uint16Array>;
 
 const DEBUG_ZOOM = true; // Enable for manual zoom safety diagnostics.
+const DEBUG_ANIMATION_SPEED = 8; // 1 = normal speed, >1 = faster (testing only)
 
 export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
@@ -168,13 +169,16 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     step(deltaSeconds: number, _timeMS: number): void {
         if (!this.root) return;
 
-        this.elapsedSeconds += deltaSeconds;
+        // DEBUG: speed up animation time to reach zoom-safety flips faster during testing.
+        // Set DEBUG_ANIMATION_SPEED back to 1 to restore normal behavior.
+        const dt = deltaSeconds * DEBUG_ANIMATION_SPEED;
+        this.elapsedSeconds += dt;
 
         const animating = this.config.animate;
 
         // Camera animation (requires recompute, so we throttle updates)
         if (animating) {
-            this.viewAnimator.step(this.config, this.elapsedSeconds, deltaSeconds);
+            this.viewAnimator.step(this.config, this.elapsedSeconds, dt);
 
             const currentView: MandelbrotView = {
                 centerX: this.viewCenterX,
@@ -199,7 +203,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         // Palette animation is cheap: update phase continuously and recolor progressively.
         if (this.config.paletteSpeed !== 0 && !this.pendingSwap) {
-            this.config.palettePhase = mod1(this.config.palettePhase + this.config.paletteSpeed * deltaSeconds);
+            this.config.palettePhase = mod1(this.config.palettePhase + this.config.paletteSpeed * dt);
         }
 
         // Update GPU recolor uniforms every frame (phase/gamma).
@@ -207,7 +211,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         // Handle scheduled disposal delay
         if (this.disposalDelaySeconds > 0) {
-            this.disposalDelaySeconds = Math.max(0, this.disposalDelaySeconds - deltaSeconds);
+            this.disposalDelaySeconds = Math.max(0, this.disposalDelaySeconds - dt);
             if (this.disposalDelaySeconds === 0) this.isDisposing = true;
         }
 
@@ -218,20 +222,20 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         // Finish any pending crossfade swap (animation mode).
         if (animating) {
-            this.finalizeSwapIfReady(deltaSeconds);
+            this.finalizeSwapIfReady(dt);
         }
 
         // Apply sprite transforms at the end of the frame so we account for any
         // state changes caused by compute completion / swap start / swap finalize.
         if (animating) {
-            this.updateSpritePreviewTransform(deltaSeconds);
+            this.updateSpritePreviewTransform(dt);
         } else {
             this.setSpriteBaseTransform();
         }
 
         // Fade-out disposal
         if (this.isDisposing) {
-            this.disposalElapsed += deltaSeconds;
+            this.disposalElapsed += dt;
             const t =
                 this.disposalSeconds <= 0 ? 1 : Math.min(1, this.disposalElapsed / this.disposalSeconds);
 
