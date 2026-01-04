@@ -2,6 +2,7 @@ import { MeshPlane, type Application, type Container } from "pixi.js";
 
 import SpriteCrossfader from "@/animations/helpers/SpriteCrossfader";
 import { buildCircularSpiralTileOrder } from "@/animations/helpers/tileOrder";
+import { float32ToFloat16Bits } from "@/animations/helpers/float16";
 import {
     createBufferTextureSurface,
     destroyBufferTextureSurface,
@@ -58,10 +59,16 @@ export default class MandelbrotSurfaces {
         const createBuffer = (): EscapeSurface => {
             // Store escape-time as half-float (r16float) to stay filterable on WebGPU.
             // Resource is Uint16Array of raw float16 bits (one channel per pixel).
+            // Important: initialize to an "uncomputed" sentinel so progressive rendering
+            // doesn't show palette-cycling garbage in untouched tiles.
+            const sentinel = float32ToFloat16Bits(-1000);
+            const resource = new Uint16Array(w * h);
+            resource.fill(sentinel);
+
             return createBufferTextureSurface(
                 w,
                 h,
-                new Uint16Array(w * h),
+                resource,
                 {
                     format: "r16float",
                     alphaMode: "no-premultiply-alpha",

@@ -164,7 +164,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private resetAfterModeFlip(nextMode: "in" | "out"): void {
         this.zoomSafetyMode = nextMode;
         this.justFlippedZoomMode = true;
-        this.runtime.elapsedAnimSeconds = 0;
 
         this.viewAnimator.setZoomMode(nextMode);
         this.viewAnimator.resetSmoothing();
