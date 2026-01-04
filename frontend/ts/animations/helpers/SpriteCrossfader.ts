@@ -155,6 +155,30 @@ export default class SpriteCrossfader<T extends TextureView = TextureView> {
         applyTo(this.backSprite, back);
     }
 
+    // Debug-only helpers (used by Mandelbrot zoom-out instrumentation).
+    getDebugFrontRotation(): number {
+        return (this.frontSprite as any)?.rotation ?? 0;
+    }
+
+    getDebugBackRotation(): number {
+        return (this.backSprite as any)?.rotation ?? 0;
+    }
+
+    getDebugFrontAlpha(): number {
+        return (this.frontSprite as any)?.alpha ?? 0;
+    }
+
+    getDebugBackAlpha(): number {
+        return (this.backSprite as any)?.alpha ?? 0;
+    }
+
+    getDebugVisibleTarget(): "front" | "back" | "mixed" {
+        const aF = this.getDebugFrontAlpha();
+        const aB = this.getDebugBackAlpha();
+        if (Math.abs(aF - aB) < 1e-6) return "mixed";
+        return aF > aB ? "front" : "back";
+    }
+
     destroy(): void {
         this.viewA.destroy();
         this.viewB.destroy();

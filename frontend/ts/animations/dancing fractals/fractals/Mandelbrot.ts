@@ -6,6 +6,13 @@ import clamp from "@/utils/clamp";
 import mod1 from "@/utils/mod1";
 import { flushBufferTextureSurface } from "@/animations/helpers/BufferTextureSurface";
 import { float32ToFloat16Bits } from "@/animations/helpers/float16";
+
+import { 
+    DEBUG_ZOOM_OUT_ROT, DEBUG_ANIMATION_SPEED, 
+    DEBUG_ZOOM, DEBUG_ZOOM_OUT_FORCE_ROTATION_PASSTHROUGH, 
+    DEBUG_ZOOM_OUT_LOG_INTERVAL_MS 
+} from "@/animations/helpers/DebugFlags";
+
 import MandelbrotViewAnimator, { type MandelbrotView } from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotViewAnimator";
 import {
     createMandelbrotRecolorSharedResources,
@@ -13,6 +20,7 @@ import {
     updateMandelbrotRecolorUniforms,
 } from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotRecolorShader";
 import ZoomSafety from "@/animations/helpers/ZoomSafety";
+import type { ZoomSafetyDebugInfo, ZoomSafetyNextMode } from "@/animations/helpers/ZoomSafety";
 import ZoomOutGovernor from "@/animations/helpers/ZoomOutGovernor";
 import MandelbrotSurfaces from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotSurfaces";
 import MandelbrotComputePass from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotComputePass";
@@ -20,9 +28,6 @@ import MandelbrotPreviewTransform from "@/animations/dancing fractals/fractals/m
 import MandelbrotSwapController from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotSwapController";
 import applyZoomSafetyDecisionFromSamples from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotZoomSafetyController";
 import { ZOOM_SAFETY_PARAMS } from "@/animations/dancing fractals/fractals/mandelbrot/MandelbrotZoomSafetyParams";
-
-const DEBUG_ZOOM = true; // Enable for manual zoom safety diagnostics.
-const DEBUG_ANIMATION_SPEED = 8; // 1 = normal speed, >1 = faster (testing only)
 
 type MandelbrotRuntime = {
     elapsedAnimSeconds: number;
@@ -95,6 +100,67 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         maxSpeedZoomLevelsPerSec: 3.0,
     });
 
+    private debugZoomOutLastLogMs = 0;
+    private lastZoomSafetyDebugInfo: ZoomSafetyDebugInfo | null = null;
+    private lastZoomSafetyDecisionNextMode: ZoomSafetyNextMode | null = null;
+
+    // Local, removable flip instrumentation.
+    // Keep default `false` so production builds remain quiet even if shared debug flags are enabled.
+    private static readonly DEBUG_ZOOM_FLIP = true;
+    private static readonly DEBUG_ZOOM_FLIP_WINDOW_MS = 1800;
+    private static readonly DEBUG_ZOOM_FLIP_LOG_INTERVAL_MS = 120;
+
+    private debugZoomFlipUntilMs = 0;
+    private debugZoomFlipLastLogMs = 0;
+    private debugZoomFlipBaseZoom: number | null = null;
+    private debugZoomFlipAnchorZoom: number | null = null;
+
+    // Defer the zoom-out flip coverMin-cap snapshot until after the first post-flip commit
+    // (which rebases the preview transform to the committed base rotation).
+    private pendingZoomOutFlipCoverCapSnapshotAtMs: number | null = null;
+
+    private isZoomFlipDebugActive(nowMs: number): boolean {
+        return Mandelbrot.DEBUG_ZOOM_FLIP && nowMs > 0 && nowMs < this.debugZoomFlipUntilMs;
+    }
+
+    private maybeLogZoomFlip(nowMs: number, message: string): void {
+        if (!this.isZoomFlipDebugActive(nowMs)) return;
+        if (nowMs - this.debugZoomFlipLastLogMs < Mandelbrot.DEBUG_ZOOM_FLIP_LOG_INTERVAL_MS) return;
+        this.debugZoomFlipLastLogMs = nowMs;
+        console.log(`[ZOOM_FLIP] ${message}`);
+    }
+
+    private getZoomOutProgress01(): number {
+        // During swap, the back surface is fully computed (swap begins only after compute finishes).
+        if (this.swapController.isPending()) return 1;
+
+        // Critical: if compute is inactive, treat progress as 0 for zoom-out preview easing.
+        // `frontComplete` does not mean we're "complete" with the next zoom-out frame.
+        if (!this.computePass.isActive()) return 0;
+
+        // Pure query (no side effects): derive progress from tile cursor.
+        const totalTiles = Math.max(1, this.surfaces.tileOrder.length);
+        const tilesDone = this.computePass.getNextTileIndex();
+        return clamp(tilesDone / totalTiles, 0, 1);
+    }
+
+    private updateZoomOutGovernorAnchor(frontBaseZoom: number, computeZoom: number, progress01: number): boolean {
+        // During swap, rely on backReadyZoom (set at swap begin). Avoid mutating anchors mid-fade.
+        if (this.swapController.isPending()) return false;
+        if (!this.computePass.isActive()) return false;
+        if (!Number.isFinite(progress01)) return false;
+        if (progress01 < 0 || progress01 >= 1) return false;
+        if (this.surfaces.tileOrder.length === 0) return false;
+        this.zoomOutGovernor.setComputeProgressAnchor(frontBaseZoom, computeZoom, progress01);
+
+        return true;
+    }
+
+    private getPreviewZoom(desiredZoom: number, frontBaseZoom: number, deltaSeconds: number): number {
+        if (this.zoomSafetyMode !== "out") return desiredZoom;
+        return this.zoomOutGovernor.step({ desiredZoom, frontBaseZoom, deltaSeconds, nowMs: performance.now() });
+    }
+
     private resetAfterModeFlip(nextMode: "in" | "out"): void {
         this.zoomSafetyMode = nextMode;
         this.justFlippedZoomMode = true;
@@ -108,8 +174,49 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.zoomOutGovernor.setBackReadyZoom(null);
 
         if (nextMode === "out") {
+            const nowMs = performance.now();
+
+            // Important: do NOT snapshot the coverMin cap here.
+            // A view commit often happens shortly after the flip and calls
+            // `rebaseForBaseRotationChange(...)`, which clears any cap. If we snapshot here,
+            // it can be applied and then immediately invalidated within the same tick,
+            // producing a single-frame cut. Instead, defer the snapshot until the first
+            // post-flip `commitDisplayedView` (after the rebase), so snapshot + basis align.
+            this.pendingZoomOutFlipCoverCapSnapshotAtMs = nowMs;
+
+            this.computePass.resetProgressTracking();
             const baseZoom = Math.max(1, this.frontComplete ? this.view.zoom : this.computeView.zoom);
-            this.zoomOutGovernor.reset(performance.now(), baseZoom);
+            this.zoomOutGovernor.reset(nowMs, baseZoom);
+
+            // Anchor the flip governor to the zoom that best represents what is currently displayed.
+            // Using `computeView.zoom` here can be ahead/behind the visible buffer and can produce a
+            // single-frame "cut" plus clamp-induced stalling.
+            const flipAnchorZoom = baseZoom;
+            this.zoomOutGovernor.onZoomOutFlip({ nowMs, anchorZoom: flipAnchorZoom });
+
+            if (Mandelbrot.DEBUG_ZOOM_FLIP) {
+                this.debugZoomFlipUntilMs = nowMs + Mandelbrot.DEBUG_ZOOM_FLIP_WINDOW_MS;
+                this.debugZoomFlipLastLogMs = 0;
+                this.debugZoomFlipBaseZoom = baseZoom;
+                this.debugZoomFlipAnchorZoom = flipAnchorZoom;
+
+                const safety = this.lastZoomSafetyDebugInfo;
+                console.log(
+                    `[ZOOM_FLIP] flip->out nowMs=${Math.round(nowMs)} ` +
+                    `mode=${this.zoomSafetyMode} justFlipped=${this.justFlippedZoomMode ? 1 : 0} ` +
+                    `viewRot=${this.view.rotation.toFixed(5)} viewZoom=${this.view.zoom.toFixed(3)} ` +
+                    `computeRot=${this.computeView.rotation.toFixed(5)} computeZoom=${this.computeView.zoom.toFixed(3)} ` +
+                    `frontComplete=${this.frontComplete ? 1 : 0} computeActive=${this.computePass.isActive() ? 1 : 0} ` +
+                    `baseZoom=${baseZoom.toFixed(3)} flipAnchorZoom=${flipAnchorZoom.toFixed(3)} ` +
+                    `pendingCoverCapAtMs=${Math.round(nowMs)} ` +
+                    `decisionNextMode=${this.lastZoomSafetyDecisionNextMode ?? "null"} ` +
+                    `cooldownOutOK=${safety ? (safety.cooldownOutOK ? 1 : 0) : "null"} ` +
+                    `cooldownInOK=${safety ? (safety.cooldownInOK ? 1 : 0) : "null"} ` +
+                    `zoomBadStreak=${safety ? safety.zoomBadStreak : "null"} ` +
+                    `insideFrac=${safety ? safety.insideFrac.toFixed(3) : "null"} ` +
+                    `outsideRange=${safety ? (safety.outsideRange ? 1 : 0) : "null"}`,
+                );
+            }
             return;
         }
     }
@@ -152,6 +259,32 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     ): void {
         this.view = { ...view };
         this.previewTransform.rebaseForBaseRotationChange(this.view.rotation);
+
+        if (this.zoomSafetyMode === "out") {
+            const nowMs = performance.now();
+
+            // If we just flipped to zoom-out, apply the deferred flip snapshot *after* the rebase.
+            // This prevents a base-rotation mismatch (and cap invalidation) from producing a
+            // single-frame discontinuity.
+            if (this.pendingZoomOutFlipCoverCapSnapshotAtMs !== null) {
+                this.previewTransform.requestCoverMinCapSnapshot(
+                    "zoomSafetyFlip",
+                    this.pendingZoomOutFlipCoverCapSnapshotAtMs,
+                );
+                this.pendingZoomOutFlipCoverCapSnapshotAtMs = null;
+            } else {
+                this.previewTransform.requestCoverMinCapSnapshot("commitDisplayedView", nowMs);
+            }
+
+            this.maybeLogZoomFlip(
+                nowMs,
+                `commitDisplayedView mode=out justFlipped=${this.justFlippedZoomMode ? 1 : 0} ` +
+                `viewRot=${this.view.rotation.toFixed(5)} viewZoom=${this.view.zoom.toFixed(3)} ` +
+                `computeRot=${this.computeView.rotation.toFixed(5)} computeZoom=${this.computeView.zoom.toFixed(3)} ` +
+                `frontComplete=${this.frontComplete ? 1 : 0} pendingCoverCap=${this.pendingZoomOutFlipCoverCapSnapshotAtMs !== null ? 1 : 0}`,
+            );
+        }
+
         if (opts?.frontComplete === true) this.frontComplete = true;
         if (opts?.clearBackReadyZoom === true) this.zoomOutGovernor.setBackReadyZoom(null);
     }
@@ -433,40 +566,52 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             return;
         }
 
+        const isZoomOut = this.zoomSafetyMode === "out";
+
+        let didAnchor = false;
+        let computeProgress01 = NaN;
+
+        const nowMs = DEBUG_ZOOM_OUT_ROT && isZoomOut ? performance.now() : 0;
+        const shouldLog =
+            DEBUG_ZOOM_OUT_ROT &&
+            isZoomOut &&
+            (nowMs - this.debugZoomOutLastLogMs >= DEBUG_ZOOM_OUT_LOG_INTERVAL_MS);
+
         const viewportW = Math.max(1, this.app?.screen.width ?? 1);
         const viewportH = Math.max(1, this.app?.screen.height ?? 1);
 
         // If the visible front buffer is still being computed (first render in animation mode),
         // treat the computeView as the base view for preview transforms so we don't introduce
         // a mismatch between what pixels represent and how we transform the sprite.
-        const frontBaseView: MandelbrotView = this.frontComplete
+        const frontBaseViewForPreview: MandelbrotView = this.frontComplete
             ? this.view
             : this.computeView;
 
-        const backBaseView: MandelbrotView = this.swapController.isPending()
+        const backBaseViewForPreview: MandelbrotView = this.swapController.isPending()
             ? (this.swapController.getPendingView() ?? this.view)
             : this.view;
 
-        const isZoomOut = this.zoomSafetyMode === "out";
+        // Ensure zoom-out flip cover-cap snapshot request is forwarded even if no
+        // `commitDisplayedView` happens shortly after the flip.
+        if (isZoomOut && this.pendingZoomOutFlipCoverCapSnapshotAtMs !== null) {
+            this.previewTransform.requestCoverMinCapSnapshot(
+                "zoomSafetyFlip",
+                this.pendingZoomOutFlipCoverCapSnapshotAtMs,
+            );
+            this.pendingZoomOutFlipCoverCapSnapshotAtMs = null;
+        }
+
         let previewZoom = desiredView.zoom;
         if (isZoomOut) {
-            const total = this.surfaces.tileOrder.length;
-
-            let progress01 = this.computePass.getLastProgress01();
-
-            if (this.computePass.isActive()) progress01 = this.computePass.getProgress01(total);
-            else if (this.frontComplete) progress01 = 1;
-
-            if (!this.swapController.isPending() && Number.isFinite(progress01)) {
-                this.zoomOutGovernor.setComputeProgressAnchor(frontBaseView.zoom, this.computeView.zoom, progress01);
-            }
-
-            previewZoom = this.zoomOutGovernor.step({ 
-                desiredZoom: desiredView.zoom, 
-                frontBaseZoom: frontBaseView.zoom, 
-                deltaSeconds 
-            });
+            computeProgress01 = this.getZoomOutProgress01();
+            didAnchor = this.updateZoomOutGovernorAnchor(
+                frontBaseViewForPreview.zoom,
+                this.computeView.zoom,
+                computeProgress01
+            );
+            previewZoom = this.getPreviewZoom(desiredView.zoom, frontBaseViewForPreview.zoom, deltaSeconds);
         }
+
 
         const transforms = this.previewTransform.getTransforms({
             viewportW,
@@ -476,14 +621,106 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             canvasCenterY: this.canvasCenterY,
             zoomSafetyMode: this.zoomSafetyMode,
             isZoomOut,
-            frontBaseView,
-            backBaseView,
+            zoomOutProgress01: computeProgress01,
+            frontBaseView: frontBaseViewForPreview,
+            backBaseView: backBaseViewForPreview,
             desiredView,
             previewZoom,
             deltaSeconds,
         });
 
+        if (DEBUG_ZOOM_OUT_ROT && DEBUG_ZOOM_OUT_FORCE_ROTATION_PASSTHROUGH && isZoomOut) {
+            transforms.front.rotation = desiredView.rotation - frontBaseViewForPreview.rotation;
+            transforms.back.rotation = desiredView.rotation - backBaseViewForPreview.rotation;
+        }
+
         crossfader.applyTransforms(transforms.front, transforms.back);
+
+        if (Mandelbrot.DEBUG_ZOOM_FLIP && isZoomOut) {
+            const nowMsFlip = performance.now();
+            if (this.isZoomFlipDebugActive(nowMsFlip)) {
+                const govBackReadyZoom = this.zoomOutGovernor.getDebugBackReadyZoom?.() ?? null;
+                const govDisplayedZoom = this.zoomOutGovernor.getDebugDisplayedZoom?.() ?? null;
+                const govFlipAnchorZoom = this.zoomOutGovernor.getDebugFlipAnchorZoom?.() ?? null;
+                const govFlipSettleUntilMs = this.zoomOutGovernor.getDebugFlipSettleUntilMs?.() ?? null;
+                const safety = this.lastZoomSafetyDebugInfo;
+
+                this.maybeLogZoomFlip(
+                    nowMsFlip,
+                    `frame mode=${this.zoomSafetyMode} justFlipped=${this.justFlippedZoomMode ? 1 : 0} ` +
+                    `dvRot=${desiredView.rotation.toFixed(5)} dvZoom=${desiredView.zoom.toFixed(3)} ` +
+                    `viewRot=${this.view.rotation.toFixed(5)} viewZoom=${this.view.zoom.toFixed(3)} ` +
+                    `cvRot=${this.computeView.rotation.toFixed(5)} cvZoom=${this.computeView.zoom.toFixed(3)} ` +
+                    `baseZoom=${this.debugZoomFlipBaseZoom === null ? "null" : this.debugZoomFlipBaseZoom.toFixed(3)} ` +
+                    `flipAnchorZoom=${this.debugZoomFlipAnchorZoom === null ? "null" : this.debugZoomFlipAnchorZoom.toFixed(3)} ` +
+                    `previewZoom=${previewZoom.toFixed(3)} ` +
+                    `frontComplete=${this.frontComplete ? 1 : 0} computeActive=${this.computePass.isActive() ? 1 : 0} swapPending=${this.swapController.isPending() ? 1 : 0} ` +
+                    `govBackReadyZoom=${govBackReadyZoom === null ? "null" : govBackReadyZoom.toFixed(3)} ` +
+                    `govDisplayedZoom=${govDisplayedZoom === null ? "null" : govDisplayedZoom.toFixed(3)} ` +
+                    `govFlipAnchorZoom=${govFlipAnchorZoom === null ? "null" : govFlipAnchorZoom.toFixed(3)} ` +
+                    `govFlipSettleUntilMs=${govFlipSettleUntilMs === null ? "null" : Math.round(govFlipSettleUntilMs)} ` +
+                    `decisionNextMode=${this.lastZoomSafetyDecisionNextMode ?? "null"} ` +
+                    `outsideRange=${safety ? (safety.outsideRange ? 1 : 0) : "null"} insideFrac=${safety ? safety.insideFrac.toFixed(3) : "null"}`,
+                );
+            }
+        }
+
+        if (DEBUG_ZOOM_OUT_ROT && shouldLog) {
+            this.debugZoomOutLastLogMs = nowMs;
+
+            const visibleTarget = crossfader.getDebugVisibleTarget();
+            const safety = this.lastZoomSafetyDebugInfo;
+            const coverMinUsed = this.previewTransform.getDebugCoverMinUsedFront();
+            const coverMinCap = this.previewTransform.getDebugCoverMinCapUsed();
+            const coverMinCapSetAtMs = this.previewTransform.getDebugCoverMinCapSetAtMs();
+            const coverMinCapReason = this.previewTransform.getDebugCoverMinCapReason();
+
+            const govAnchor = this.zoomOutGovernor.getDebugAnchorZoom();
+            const govAnchorSource = this.zoomOutGovernor.getDebugAnchorSource();
+            const govLagClampActive = this.zoomOutGovernor.getDebugLagClampActive();
+            const govMinAllowedZoom = this.zoomOutGovernor.getDebugMinAllowedZoom();
+            const govMaxAllowedZoom = this.zoomOutGovernor.getDebugMaxAllowedZoom();
+            const govAnchorLocked = this.zoomOutGovernor.getDebugAnchorLocked();
+            const govBoundApplied = this.zoomOutGovernor.getDebugBoundApplied();
+
+            console.log(
+                `[ZOOM_OUT_ROT] mode=${this.zoomSafetyMode} isZoomOut=${isZoomOut} dt=${deltaSeconds.toFixed(4)} ` +
+                `dvRot=${desiredView.rotation.toFixed(5)} dvZoom=${desiredView.zoom.toFixed(3)} ` +
+                `fbRot=${frontBaseViewForPreview.rotation.toFixed(5)} fbZoom=${frontBaseViewForPreview.zoom.toFixed(3)} ` +
+                `cvRot=${this.computeView.rotation.toFixed(5)} cvZoom=${this.computeView.zoom.toFixed(3)} ` +
+                `zoomCandidate=${desiredView.zoom.toFixed(3)} zoomRequested=${previewZoom.toFixed(3)} ` +
+                `tfRotF=${transforms.front.rotation.toFixed(5)} tfRotB=${transforms.back.rotation.toFixed(5)} ` +
+                `tfScaleF=${transforms.front.scaleX.toFixed(5)} tfScaleB=${transforms.back.scaleX.toFixed(5)} ` +
+                `sprRotF=${crossfader.getDebugFrontRotation().toFixed(5)} sprRotB=${crossfader.getDebugBackRotation().toFixed(5)} ` +
+                `sprAlphaF=${crossfader.getDebugFrontAlpha().toFixed(3)} sprAlphaB=${crossfader.getDebugBackAlpha().toFixed(3)} ` +
+                `visibleTarget=${visibleTarget} ` +
+                `decisionNextMode=${this.lastZoomSafetyDecisionNextMode ?? "null"} ` +
+                `cooldownOutOK=${safety ? (safety.cooldownOutOK ? 1 : 0) : "null"} ` +
+                `cooldownInOK=${safety ? (safety.cooldownInOK ? 1 : 0) : "null"} ` +
+                `zoomBadStreak=${safety ? safety.zoomBadStreak : "null"} ` +
+                `insideFrac=${safety ? safety.insideFrac.toFixed(3) : "null"} ` +
+                `outsideRange=${safety ? (safety.outsideRange ? 1 : 0) : "null"} ` +
+                `outsideNonFastFrac=${safety ? safety.outsideNonFastFrac.toFixed(3) : "null"} ` +
+                `coverMinUsed=${coverMinUsed === null ? "null" : coverMinUsed.toFixed(5)} ` +
+                `coverMinCap=${coverMinCap === null ? "null" : coverMinCap.toFixed(5)} ` +
+                `coverMinCapSetAtMs=${coverMinCapSetAtMs === null ? "null" : Math.round(coverMinCapSetAtMs)} ` +
+                `coverMinCapReason=${coverMinCapReason ?? "null"} ` +
+                `govAnchor=${govAnchor === null ? "null" : govAnchor.toFixed(3)} ` +
+                `govAnchorSource=${govAnchorSource ?? "null"} ` +
+                `govAnchorLocked=${govAnchorLocked === null ? "null" : (govAnchorLocked ? 1 : 0)} ` +
+                `govLagClampActive=${govLagClampActive === null ? "null" : (govLagClampActive ? 1 : 0)} ` +
+                `govMinAllowedZoom=${govMinAllowedZoom === null ? "null" : govMinAllowedZoom.toFixed(3)} ` +
+                `govMaxAllowedZoom=${govMaxAllowedZoom === null ? "null" : govMaxAllowedZoom.toFixed(3)} ` +
+                `govBoundApplied=${govBoundApplied ?? "null"} ` +
+                `passthrough=${DEBUG_ZOOM_OUT_FORCE_ROTATION_PASSTHROUGH ? 1 : 0} ` +
+                `progress01=${Number.isFinite(computeProgress01) ? computeProgress01.toFixed(3) : "nan"} ` +
+                `didAnchor=${didAnchor ? 1 : 0} ` +
+                `computeActive=${this.computePass.isActive() ? 1 : 0} ` +
+                `swapPending=${this.swapController.isPending() ? 1 : 0} ` +
+                `frontComplete=${this.frontComplete ? 1 : 0} ` +
+                `nextTile=${this.computePass.getNextTileIndex()}`
+            );
+        }
     }
 
     private getEffectiveQuality(): number {
@@ -626,6 +863,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             existingDecision,
         );
 
+        this.lastZoomSafetyDecisionNextMode = result.decisionNextMode;
+        this.lastZoomSafetyDebugInfo = result.debugInfo ?? null;
+
         this.zoomSafetyMode = result.nextMode;
         this.lastFlipZoomLevel = result.lastFlipZoomLevel;
 
@@ -650,6 +890,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         }
 
         if (result.kind === "immediate") {
+            if (this.zoomSafetyMode === "out") {
+                this.previewTransform.requestCoverMinCapSnapshot("beginSwapImmediate", performance.now());
+            }
             this.commitDisplayedView(result.committedView, { frontComplete: true, clearBackReadyZoom: true });
         }
     }
@@ -661,6 +904,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         });
 
         if (result.kind !== "committed") return;
+
+        if (this.zoomSafetyMode === "out") {
+            this.previewTransform.requestCoverMinCapSnapshot("finalizeSwap", performance.now());
+        }
 
         this.commitDisplayedView(result.committedView, { clearBackReadyZoom: true });
     }

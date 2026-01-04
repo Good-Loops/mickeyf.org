@@ -7,6 +7,8 @@ import clamp from "@/utils/clamp";
 
 import type { EscapeSurface } from "./MandelbrotSurfaces";
 
+const DEBUG_COMPUTE_PROGRESS = true;
+
 export type MandelbrotComputeView = {
     centerX: number;
     centerY: number;
@@ -77,6 +79,13 @@ export default class MandelbrotComputePass {
     start(): void {
         this.active = true;
         this.nextComputeTile = 0;
+        this.lastProgress01 = 0;
+    }
+
+    resetProgressTracking(): void {
+        this.lastProgress01 = 0;
+        // Avoid disrupting an in-flight compute pass.
+        if (!this.active) this.nextComputeTile = 0;
     }
 
     stop(): void {
@@ -177,7 +186,18 @@ export default class MandelbrotComputePass {
 
         const finished = this.nextComputeTile >= params.tileOrder.length;
         if (finished) {
+            const totalTiles = params.tileOrder.length;
+            this.nextComputeTile = Math.max(this.nextComputeTile, totalTiles);
+            this.lastProgress01 = 1;
             this.active = false;
+
+            if (DEBUG_COMPUTE_PROGRESS && (this.lastProgress01 !== 1 || this.nextComputeTile < totalTiles)) {
+                console.warn("[ComputePass] Finished but progress != 1", {
+                    lastProgress01: this.lastProgress01,
+                    nextComputeTile: this.nextComputeTile,
+                    totalTiles,
+                });
+            }
         }
 
         return {
@@ -188,9 +208,17 @@ export default class MandelbrotComputePass {
     }
 
     getProgress01(totalTiles: number): number {
-        this.lastProgress01 = Math.max(1, totalTiles);
-        return this.lastProgress01;
+        const denom = Math.max(1, totalTiles);
+
+        // If nextComputeTile is the index of the next tile to compute,
+        // then tilesDone == nextComputeTile (because 0 means none done).
+        const tilesDone = this.nextComputeTile;
+
+        const progress01 = clamp(tilesDone / denom, 0, 1);
+        this.lastProgress01 = progress01;
+        return progress01;
     }
+
 
     getLastProgress01(): number {
         return this.lastProgress01;

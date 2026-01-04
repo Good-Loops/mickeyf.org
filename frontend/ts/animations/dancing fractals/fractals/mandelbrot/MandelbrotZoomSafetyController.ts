@@ -1,4 +1,5 @@
 import type ZoomSafety from "@/animations/helpers/ZoomSafety";
+import type { ZoomSafetyDebugInfo, ZoomSafetyNextMode } from "@/animations/helpers/ZoomSafety";
 
 export type ZoomSafetyMode = "in" | "out";
 
@@ -39,6 +40,8 @@ export interface ZoomSafetyApplyResult {
     nextMode: ZoomSafetyMode;
     lastFlipZoomLevel: number;
     justFlippedZoomMode: boolean;
+    decisionNextMode: ZoomSafetyNextMode;
+    debugInfo?: ZoomSafetyDebugInfo;
 }
 
 export default function applyZoomSafetyDecisionFromSamples(
@@ -67,6 +70,8 @@ export default function applyZoomSafetyDecisionFromSamples(
             nextMode: ctx.currentMode,
             lastFlipZoomLevel: ctx.lastFlipZoomLevel,
             justFlippedZoomMode: false,
+            decisionNextMode: decision.nextMode,
+            debugInfo: decision.debugInfo,
         };
     }
 
@@ -79,5 +84,7 @@ export default function applyZoomSafetyDecisionFromSamples(
         nextMode: decision.nextMode,
         lastFlipZoomLevel: nextLastFlipZoomLevel,
         justFlippedZoomMode: true,
+        decisionNextMode: decision.nextMode,
+        debugInfo: decision.debugInfo,
     };
 }
