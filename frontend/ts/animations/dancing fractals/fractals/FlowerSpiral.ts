@@ -1,5 +1,5 @@
 import { Application, Graphics } from "pixi.js";
-import PaletteTween from "../../helpers/PaletteTween";
+import PaletteTween from "../../helpers/color/PaletteTween";
 import type FractalAnimation from "../interfaces/FractalAnimation";
 import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from "../config/FlowerSpiralConfig";
 import { toHslString } from "@/utils/hsl";

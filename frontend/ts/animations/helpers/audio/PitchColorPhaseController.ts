@@ -1,4 +1,4 @@
-import PitchColorPolicy, { type ColorDecision } from "@/animations/helpers/PitchColorPolicy";
+import PitchColorPolicy, { type ColorDecision } from "@/animations/helpers/audio/PitchColorPolicy";
 import clamp from "@/utils/clamp";
 import expSmoothing from "@/utils/expSmoothing";
 import { HslColor, lerpHsl, wrapHue } from "@/utils/hsl";

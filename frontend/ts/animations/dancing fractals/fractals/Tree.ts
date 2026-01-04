@@ -1,6 +1,6 @@
 import { Application, Graphics } from "pixi.js";
 import FractalAnimation from "../interfaces/FractalAnimation";
-import PaletteTween from "../../helpers/PaletteTween";
+import PaletteTween from "../../helpers/color/PaletteTween";
 import { TreeConfig, defaultTreeConfig } from "../config/TreeConfig";
 import { toHslString } from "@/utils/hsl";
 
