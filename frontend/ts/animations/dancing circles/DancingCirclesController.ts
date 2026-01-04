@@ -7,7 +7,7 @@ import CircleBounds from "./classes/CircleBounds";
 
 import PitchColorPhaseController from "@/animations/helpers/PitchColorPhaseController";
 import BeatEnvelope from "@/animations/helpers/BeatEnvelope";
-import groupByParity from "@/animations/helpers/groupByParity";
+import groupByParity from "@/utils/groupByParity";
 
 import { DancingCirclesTuning } from "./tuning";
 import { TimeState } from "./timeState";
