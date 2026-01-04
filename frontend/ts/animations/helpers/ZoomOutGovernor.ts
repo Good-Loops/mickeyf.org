@@ -175,21 +175,35 @@ export default class ZoomOutGovernor {
             ? Math.max(1, this.flipAnchorZoom ?? frontBaseZoom)
             : Math.max(1, this.backReadyZoom ?? this.computeAnchorZoom ?? frontBaseZoom);
 
-        const anchorSource = this.anchorLockedZoom !== null ? "anchorLockedZoom" : anchorSource0;
-        const anchorZoom = this.anchorLockedZoom !== null ? Math.max(1, this.anchorLockedZoom) : anchorZoom0;
-
         if (this.lastMode !== "out") {
             this.reset(0, frontBaseZoom);
         }
 
         const desiredLevel = Math.log(desiredZoom);
         const displayedLevel0 = Math.log(Math.max(1, this.displayedZoom));
-        const anchorLevel = Math.log(anchorZoom);
 
         const maxStep = this.maxSpeedZoomLevelsPerSec * Math.max(0, args.deltaSeconds);
         const movedLevel = this.moveTowards(displayedLevel0, desiredLevel, maxStep);
 
         const mode: "in" | "out" = "out";
+
+        // If we previously locked the anchor to avoid a feedback loop, release it as soon as the
+        // *current* (unlocked) anchor would no longer require clamping.
+        // This prevents the lock itself from becoming the reason the clamp persists.
+        if (!settleActive && this.anchorLockedZoom !== null) {
+            const unlockedBounds = this.computeBounds({
+                mode,
+                anchorLevel: Math.log(anchorZoom0),
+                movedLevel,
+            });
+            if (!unlockedBounds.lagClampActive) {
+                this.anchorLockedZoom = null;
+            }
+        }
+
+        const anchorSource = this.anchorLockedZoom !== null ? "anchorLockedZoom" : anchorSource0;
+        const anchorZoom = this.anchorLockedZoom !== null ? Math.max(1, this.anchorLockedZoom) : anchorZoom0;
+        const anchorLevel = Math.log(anchorZoom);
         const bounds = this.computeBounds({ mode, anchorLevel, movedLevel });
 
         let displayedLevel = movedLevel;

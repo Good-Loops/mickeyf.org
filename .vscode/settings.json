@@ -18,7 +18,7 @@
             ]
         }
     ],
-    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.defaultProfile.linux": "rbash",
     "editor.inlineSuggest.enabled": true,
     "editor.suggest.preview": true,
     "editor.tabCompletion": "onlySnippets"
