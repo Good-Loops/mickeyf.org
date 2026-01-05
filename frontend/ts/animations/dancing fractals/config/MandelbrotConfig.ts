@@ -141,7 +141,7 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     lightOrbitSpeed: 0.05,
     lightOrbitTilt: 0.25,
 
-    vignetteStrength: 0.45,
+    vignetteStrength: 0.3,
     vignettePower: 2.2,
     grainStrength: 0.03,
     grainSpeed: 0.45,
