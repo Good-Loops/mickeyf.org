@@ -3,6 +3,8 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 import type { FractalAnimationConstructor } from "./interfaces/FractalAnimation";
 import type FractalAnimation from "./interfaces/FractalAnimation";
 import type { FractalHost } from "./interfaces/FractalHost";
+import audioEngine from "@/animations/helpers/audio/AudioEngine";
+import createMusicFeatureExtractor from "@/animations/helpers/music/createMusicFeatureExtractor";
 
 export const createFractalHost = async (container: HTMLElement): Promise<FractalHost> => {
     const app = new Application();
@@ -32,6 +34,8 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
     let fps = 0;
     const fpsSmoothing = .01;
+
+    const musicExtractor = createMusicFeatureExtractor();
 
     // Single ticker that always calls into the current fractal, if any
     const onTick = (time: Ticker): void => {
@@ -63,7 +67,15 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         }
 
         if (!currentFractal) return;
-        currentFractal.step(deltaSeconds, time.lastTime);
+
+        const audio = audioEngine.state;
+        const music = musicExtractor.step({
+            deltaSeconds,
+            nowMs: time.lastTime,
+            audio,
+        });
+
+        currentFractal.step(deltaSeconds, time.lastTime, audio, music);
     };
     app.ticker.add(onTick);
 
@@ -90,6 +102,8 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
         currentCtor = Fractal as FractalAnimationConstructor<any>;
         currentConfig = config;
+
+        musicExtractor.reset();
 
         // Update background for the new fractal
         (app.renderer as any).background.color = Fractal.backgroundColor;
@@ -118,6 +132,8 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         }
 
         const Fractal = currentCtor;
+
+        musicExtractor.reset();
 
         // Recreate fractal with last known config
         const fractal = new Fractal(centerX, centerY, currentConfig);

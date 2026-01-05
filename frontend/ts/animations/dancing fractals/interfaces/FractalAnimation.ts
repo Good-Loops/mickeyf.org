@@ -1,3 +1,5 @@
+import { AudioState } from '@/animations/helpers/audio/AudioEngine';
+import type { MusicFeaturesFrame } from '@/animations/helpers/music/MusicFeatureExtractor';
 import type { Application } from 'pixi.js';
 
 /**
@@ -16,7 +18,7 @@ export default interface FractalAnimation<C> {
      * @param deltaSeconds - elapsed time since last frame, in seconds
      * @param timeMS - absolute elapsed time since app start, in milliseconds
      */
-    step(deltaSeconds: number, timeMS: number): void;
+    step(deltaSeconds: number, timeMS: number, audio: AudioState, music: MusicFeaturesFrame): void;
 
     /**
      * Update the configuration of this fractal.

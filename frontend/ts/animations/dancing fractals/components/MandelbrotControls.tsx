@@ -92,23 +92,6 @@ const MandelbrotControls: React.FC<Props> = ({ config, onChange }) => {
                     />
                 </label>
             </div>
-
-            <div className="dancing-fractals__ui--controls__group">
-                <label>
-                    Bailout radius: {config.bailoutRadius}
-                    <input
-                        type="range"
-                        min={2}
-                        max={10}
-                        step={0.5}
-                        value={config.bailoutRadius}
-                        onChange={e =>
-                            onChange({ bailoutRadius: Number(e.target.value) })
-                        }
-                        className="dancing-fractals__ui--slider"
-                    />
-                </label>
-            </div>
         </div>
     );
 };

@@ -1,0 +1,101 @@
+import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
+import type { ColorDecision } from "@/animations/helpers/audio/PitchColorPolicy";
+import type BeatEnvelope from "@/animations/helpers/audio/BeatEnvelope";
+import type PitchColorPhaseController from "@/animations/helpers/audio/PitchColorPhaseController";
+import clamp from "@/utils/clamp";
+import type { HslColor } from "@/utils/hsl";
+
+export type MusicFeaturesFrame = {
+    nowMs: number;
+    dtMs: number;
+
+    // availability
+    hasMusic: boolean; // audio.hasAudio && audio.playing
+    musicWeight: number; // 0..1 (clarity-gated)
+
+    // beat
+    isBeat: boolean;
+    beatStrength01: number; // 0..1
+    beatEnv01: number; // 0..1 (smoothed)
+    beatHit: boolean; // envelope didTrigger
+    moveGroup: 0 | 1; // BeatEnvelope toggler
+
+    // pitch
+    pitchHz: number;
+    clarity01: number;
+
+    // stable color derived from pitch policy/controller
+    pitchColor: HslColor;
+    pitchDecision?: ColorDecision;
+};
+
+export default class MusicFeatureExtractor {
+    constructor(
+        private deps: {
+            beatEnvelope: BeatEnvelope;
+            pitchColor: PitchColorPhaseController;
+            clarityMin: number; // e.g. 0.30
+            clarityFull: number; // e.g. 1.00
+        }
+    ) {}
+
+    reset(): void {
+        this.deps.beatEnvelope.reset();
+        this.deps.pitchColor.reset();
+    }
+
+    step(args: {
+        deltaSeconds: number;
+        nowMs: number;
+        audio: AudioState;
+    }): MusicFeaturesFrame {
+        const { deltaSeconds, nowMs, audio } = args;
+        const dtMs = deltaSeconds * 1000;
+
+        const hasMusic = !!audio.hasAudio && !!audio.playing;
+
+        const beat = this.deps.beatEnvelope.step({
+            dtMs,
+            nowMs,
+            isBeat: audio.beat.isBeat,
+            strength: audio.beat.strength,
+        });
+
+        const pitch = this.deps.pitchColor.step({
+            pitchHz: audio.pitchHz,
+            clarity: audio.clarity,
+            nowMs,
+            deltaMs: dtMs,
+        });
+
+        const c0 = this.deps.clarityMin;
+        const c1 = this.deps.clarityFull;
+
+        const clarity01 = clamp(audio.clarity, 0, 1);
+        const denom = Math.max(1e-6, c1 - c0);
+
+        const musicWeight = hasMusic
+            ? clamp((clarity01 - c0) / denom, 0, 1)
+            : 0;
+
+        return {
+            nowMs,
+            dtMs,
+
+            hasMusic,
+            musicWeight,
+
+            isBeat: audio.beat.isBeat,
+            beatStrength01: clamp(audio.beat.strength, 0, 1),
+            beatEnv01: clamp(beat.envelope, 0, 1),
+            beatHit: beat.didTrigger,
+            moveGroup: beat.moveGroup,
+
+            pitchHz: audio.pitchHz,
+            clarity01,
+
+            pitchColor: pitch.color,
+            pitchDecision: pitch.decision,
+        };
+    }
+}
