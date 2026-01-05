@@ -35,7 +35,7 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     let fps = 0;
     const fpsSmoothing = .01;
 
-    const musicExtractor = createMusicFeatureExtractor();
+    const musicFeatureExtractor = createMusicFeatureExtractor();
 
     // Single ticker that always calls into the current fractal, if any
     const onTick = (time: Ticker): void => {
@@ -48,7 +48,9 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
             return;
         }
 
-        const deltaSeconds = time.deltaMS / 1000;
+        const deltaMs = time.deltaMS;
+        const deltaSeconds = deltaMs / 1000;
+        const nowMs = time.lastTime;
 
         // Update FPS estimate
         if (deltaSeconds > 0) {
@@ -68,14 +70,14 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
         if (!currentFractal) return;
 
-        const audio = audioEngine.state;
-        const music = musicExtractor.step({
+        const audioState = audioEngine.state;
+        const musicFeatures = musicFeatureExtractor.step({
             deltaSeconds,
-            nowMs: time.lastTime,
-            audio,
+            nowMs,
+            audioState,
         });
 
-        currentFractal.step(deltaSeconds, time.lastTime, audio, music);
+        currentFractal.step(deltaSeconds, nowMs, audioState, musicFeatures);
     };
     app.ticker.add(onTick);
 
@@ -103,7 +105,7 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         currentCtor = Fractal as FractalAnimationConstructor<any>;
         currentConfig = config;
 
-        musicExtractor.reset();
+        musicFeatureExtractor.reset();
 
         // Update background for the new fractal
         (app.renderer as any).background.color = Fractal.backgroundColor;
@@ -133,7 +135,7 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
         const Fractal = currentCtor;
 
-        musicExtractor.reset();
+        musicFeatureExtractor.reset();
 
         // Recreate fractal with last known config
         const fractal = new Fractal(centerX, centerY, currentConfig);

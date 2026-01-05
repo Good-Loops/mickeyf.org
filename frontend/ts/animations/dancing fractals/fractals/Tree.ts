@@ -5,7 +5,7 @@ import { TreeConfig, defaultTreeConfig } from "../config/TreeConfig";
 import clamp from "@/utils/clamp";
 import expSmoothing from "@/utils/expSmoothing";
 import { HslColor, lerpHsl, toHslString, wrapHue } from "@/utils/hsl";
-import { AudioState } from "@/animations/helpers/audio/AudioEngine";
+import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
 
 const ROT_BOOST = 0.9;
@@ -83,7 +83,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		}
 	};
 
-	step = (deltaSeconds: number, timeMS: number, audio: AudioState, music: MusicFeaturesFrame): void => {
+	step = (deltaSeconds: number, nowMs: number, audioState: AudioState, musicFeatures?: MusicFeaturesFrame): void => {
 		if (!this.app || this.depthGraphics.length === 0) return;
 
 		// Handle scheduled auto-disposal
@@ -117,23 +117,30 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 			}
 		}
 
-		const musicFeatures = music ?? this.createFallbackMusicFeatures(deltaSeconds, timeMS, audio);
+		if (!musicFeatures) {
+			musicFeatures = this.createFallbackMusicFeatures(deltaSeconds, nowMs, audioState);
+		}
 
 		// Update colors over time (palette tween always runs; retarget behavior changes with music)
 		this.updateColors(deltaSeconds, musicFeatures.hasMusic, musicFeatures.beatHit);
 
 		// Motion sync (beat envelope → config targets)
 		{
-			const dtMs = deltaSeconds * 1000;
-			const alpha = expSmoothing(dtMs, MUSIC_MOTION_RESPONSIVENESS);
+			const deltaMs = deltaSeconds * 1000;
+			const alpha = expSmoothing(deltaMs, MUSIC_MOTION_RESPONSIVENESS);
 
-			const rotTarget = this.baseConfig.rotationSpeed + musicFeatures.beatEnv01 * ROT_BOOST;
-			const wiggleTarget = this.baseConfig.wiggleAmplitude + musicFeatures.beatEnv01 * WIGGLE_BOOST;
-			const depthSpinTarget = this.baseConfig.depthSpinFactor + musicFeatures.beatEnv01 * SPIN_BOOST;
+			const treeTargets = {
+				rotationSpeedTarget: this.baseConfig.rotationSpeed + musicFeatures.beatEnv01 * ROT_BOOST,
+				wiggleAmplitudeTarget: this.baseConfig.wiggleAmplitude + musicFeatures.beatEnv01 * WIGGLE_BOOST,
+				depthSpinFactorTarget: this.baseConfig.depthSpinFactor + musicFeatures.beatEnv01 * SPIN_BOOST,
+			};
 
-			this.config.rotationSpeed += (rotTarget - this.config.rotationSpeed) * alpha;
-			this.config.wiggleAmplitude += (wiggleTarget - this.config.wiggleAmplitude) * alpha;
-			this.config.depthSpinFactor += (depthSpinTarget - this.config.depthSpinFactor) * alpha;
+			this.config.rotationSpeed +=
+				(treeTargets.rotationSpeedTarget - this.config.rotationSpeed) * alpha;
+			this.config.wiggleAmplitude +=
+				(treeTargets.wiggleAmplitudeTarget - this.config.wiggleAmplitude) * alpha;
+			this.config.depthSpinFactor +=
+				(treeTargets.depthSpinFactorTarget - this.config.depthSpinFactor) * alpha;
 
 			this.config.rotationSpeed = clamp(this.config.rotationSpeed, ...ROTATION_SPEED_RANGE);
 			this.config.wiggleAmplitude = clamp(this.config.wiggleAmplitude, ...WIGGLE_AMPLITUDE_RANGE);
@@ -149,7 +156,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		this.rotationAngle += deltaSeconds * this.config.rotationSpeed;
 
 		const spin = this.rotationAngle;
-		const timePhase = timeMS * 0.003;
+		const timePhase = nowMs * 0.003;
 
 		// Draw trunk + branches (upwards)
 		this.drawBranch(
@@ -210,29 +217,29 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 			const graphic = this.depthGraphics[depth];
 			if (!graphic) continue;
 
-			const depthRatio = depth / maxDepthSafe;
-			if (depthRatio > this.visibleFactor) continue; // not visible yet
+			const depthRatio01 = depth / maxDepthSafe;
+			if (depthRatio01 > this.visibleFactor) continue; // not visible yet
 
 			const paletteColor = this.paletteTween.currentColors[depth];
 
 			const musicColor = this.getMusicColorForDepth({
 				depth,
-				depthRatio,
+				depthRatio01,
 				maxDepth: maxDepthSafe,
 				pitchHue: musicFeatures.pitchColor.hue,
 				beatEnv01: musicFeatures.beatEnv01,
 			});
 
-			const depthWeight = musicFeatures.musicWeight * (1 - depthRatio * 0.5);
-			const finalColor = lerpHsl(paletteColor, musicColor, depthWeight);
+			const depthWeight01 = musicFeatures.musicWeight01 * (1 - depthRatio01 * 0.5);
+			const finalColor = lerpHsl(paletteColor, musicColor, depthWeight01);
 
 			const colorStr = toHslString(finalColor);
 
 			const width =
 				this.config.trunkWidthMin +
-				(this.config.trunkWidthBase - this.config.trunkWidthMin) * (1 - depthRatio);
+				(this.config.trunkWidthBase - this.config.trunkWidthMin) * (1 - depthRatio01);
 
-			const alpha = 1 - depthRatio * 0.3; // slightly fade tips
+			const alpha = 1 - depthRatio01 * 0.3; // slightly fade tips
 
 			graphic.stroke({
 				width,
@@ -246,28 +253,28 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 	private createFallbackMusicFeatures(
 		deltaSeconds: number,
 		nowMs: number,
-		audio: AudioState
+		audioState: AudioState
 	): MusicFeaturesFrame {
-		const dtMs = deltaSeconds * 1000;
-		const hasMusic = !!audio.hasAudio && !!audio.playing;
+		const deltaMs = deltaSeconds * 1000;
+		const hasMusic = !!audioState.hasAudio && !!audioState.playing;
 
-		const clarity01 = clamp(audio.clarity, 0, 1);
-		const musicWeight = hasMusic ? clamp((clarity01 - 0.3) / 0.7, 0, 1) : 0;
+		const clarity01 = clamp(audioState.clarity, 0, 1);
+		const musicWeight01 = hasMusic ? clamp((clarity01 - 0.3) / 0.7, 0, 1) : 0;
 
-		const beatStrength01 = clamp(audio.beat.strength, 0, 1);
-		const beatEnv01 = audio.beat.isBeat ? beatStrength01 : 0;
+		const beatStrength01 = clamp(audioState.beat.strength, 0, 1);
+		const beatEnv01 = audioState.beat.isBeat ? beatStrength01 : 0;
 
 		return {
 			nowMs,
-			dtMs,
+			deltaMs,
 			hasMusic,
-			musicWeight,
-			isBeat: audio.beat.isBeat,
+			musicWeight01,
+			isBeat: audioState.beat.isBeat,
 			beatStrength01,
 			beatEnv01,
-			beatHit: audio.beat.isBeat,
+			beatHit: audioState.beat.isBeat,
 			moveGroup: 0,
-			pitchHz: audio.pitchHz,
+			pitchHz: audioState.pitchHz,
 			clarity01,
 			pitchColor: { hue: 0, saturation: 85, lightness: 55 },
 			pitchDecision: undefined,
@@ -276,14 +283,14 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 
 	private getMusicColorForDepth(params: {
 		depth: number;
-		depthRatio: number;
+		depthRatio01: number;
 		maxDepth: number;
 		pitchHue: number;
 		beatEnv01: number;
 	}): HslColor {
 		const musicHue = wrapHue(params.pitchHue + params.depth * DEPTH_HUE_STEP_DEG);
 		const musicSat = clamp(70 + params.beatEnv01 * 25, 0, 100);
-		const musicLight = clamp(30 + params.beatEnv01 * 15 - params.depthRatio * 10, 0, 100);
+		const musicLight = clamp(30 + params.beatEnv01 * 15 - params.depthRatio01 * 10, 0, 100);
 		return { hue: musicHue, saturation: musicSat, lightness: musicLight };
 	}
 
@@ -300,8 +307,8 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		if (depth > this.config.maxDepth || length < 2) return;
 
 		// Only draw this depth if it's within the current "visible" portion
-		const depthRatio = depth / this.config.maxDepth;
-		if (depthRatio > this.visibleFactor) return;
+		const depthRatio01 = depth / this.config.maxDepth;
+		if (depthRatio01 > this.visibleFactor) return;
 
 		const TWO_PI = Math.PI * 2;
 		let baseAngle = angle % TWO_PI;
@@ -315,7 +322,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		// Optional: control how strong quadrant shaping is
 		const quadrantStrength = 0.5; // try 0.5–1.5
 
-		const depthSpinMultiplier = 0.3 + depthRatio * this.config.depthSpinFactor;
+		const depthSpinMultiplier = 0.3 + depthRatio01 * this.config.depthSpinFactor;
 
 		const localSpin = spin * depthSpinMultiplier * quadBlend * quadrantStrength;
 
@@ -326,10 +333,10 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 
 		const wiggle =
 			Math.sin(
-				timePhase * (1 + depthRatio * this.config.wiggleFrequencyFactor) + depth * 0.5
+				timePhase * (1 + depthRatio01 * this.config.wiggleFrequencyFactor) + depth * 0.5
 			) *
 			this.config.wiggleAmplitude *
-			depthRatio;
+			depthRatio01;
 
 		const angleWithSpin = angle + localSpin + wiggle;
 
@@ -366,8 +373,8 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 			this.colorChangeCounter = 0;
 		}
 
-		const t = interval <= 0 ? 1 : clamp(this.colorChangeCounter / interval, 0, 1);
-		this.paletteTween.step(t);
+		const colorTween01 = interval <= 0 ? 1 : clamp(this.colorChangeCounter / interval, 0, 1);
+		this.paletteTween.step(colorTween01);
 	};
 
 	// Allow external code to update some/all config fields.

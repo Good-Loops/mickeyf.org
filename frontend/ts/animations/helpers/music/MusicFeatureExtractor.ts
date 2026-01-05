@@ -7,11 +7,11 @@ import type { HslColor } from "@/utils/hsl";
 
 export type MusicFeaturesFrame = {
     nowMs: number;
-    dtMs: number;
+    deltaMs: number;
 
     // availability
     hasMusic: boolean; // audio.hasAudio && audio.playing
-    musicWeight: number; // 0..1 (clarity-gated)
+    musicWeight01: number; // 0..1 (clarity-gated)
 
     // beat
     isBeat: boolean;
@@ -47,51 +47,51 @@ export default class MusicFeatureExtractor {
     step(args: {
         deltaSeconds: number;
         nowMs: number;
-        audio: AudioState;
+        audioState: AudioState;
     }): MusicFeaturesFrame {
-        const { deltaSeconds, nowMs, audio } = args;
-        const dtMs = deltaSeconds * 1000;
+        const { deltaSeconds, nowMs, audioState } = args;
+        const deltaMs = deltaSeconds * 1000;
 
-        const hasMusic = !!audio.hasAudio && !!audio.playing;
+        const hasMusic = !!audioState.hasAudio && !!audioState.playing;
 
         const beat = this.deps.beatEnvelope.step({
-            dtMs,
+            dtMs: deltaMs,
             nowMs,
-            isBeat: audio.beat.isBeat,
-            strength: audio.beat.strength,
+            isBeat: audioState.beat.isBeat,
+            strength: audioState.beat.strength,
         });
 
         const pitch = this.deps.pitchColor.step({
-            pitchHz: audio.pitchHz,
-            clarity: audio.clarity,
+            pitchHz: audioState.pitchHz,
+            clarity: audioState.clarity,
             nowMs,
-            deltaMs: dtMs,
+            deltaMs,
         });
 
         const c0 = this.deps.clarityMin;
         const c1 = this.deps.clarityFull;
 
-        const clarity01 = clamp(audio.clarity, 0, 1);
+        const clarity01 = clamp(audioState.clarity, 0, 1);
         const denom = Math.max(1e-6, c1 - c0);
 
-        const musicWeight = hasMusic
+        const musicWeight01 = hasMusic
             ? clamp((clarity01 - c0) / denom, 0, 1)
             : 0;
 
         return {
             nowMs,
-            dtMs,
+            deltaMs,
 
             hasMusic,
-            musicWeight,
+            musicWeight01,
 
-            isBeat: audio.beat.isBeat,
-            beatStrength01: clamp(audio.beat.strength, 0, 1),
+            isBeat: audioState.beat.isBeat,
+            beatStrength01: clamp(audioState.beat.strength, 0, 1),
             beatEnv01: clamp(beat.envelope, 0, 1),
             beatHit: beat.didTrigger,
             moveGroup: beat.moveGroup,
 
-            pitchHz: audio.pitchHz,
+            pitchHz: audioState.pitchHz,
             clarity01,
 
             pitchColor: pitch.color,
