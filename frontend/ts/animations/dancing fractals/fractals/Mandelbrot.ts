@@ -57,6 +57,12 @@ uniform float uSpecPower;
 uniform float uDeEpsilonPx;
 uniform float uDeScale;
 
+uniform float uRimStrength;
+uniform float uRimPower;
+uniform float uAtmosStrength;
+uniform float uAtmosFalloff;
+uniform float uNormalZ;
+
 vec2 rotate2d(vec2 v, float a)
 {
     float c = cos(a);
@@ -252,12 +258,12 @@ void main(void)
             float hy = heightFromDE(deY);
 
             float normalGain = 6.0;
-            vec3 n = normalize(vec3((h0 - hx) * normalGain, (h0 - hy) * normalGain, 0.15));
+            vec3 n = normalize(vec3((h0 - hx) * normalGain, (h0 - hy) * normalGain, uNormalZ));
 
             vec3 L = normalize(uLightDir);
             float ndl = max(0.0, dot(n, L));
 
-            float boundaryMask = 1.0 - smoothstep(0.002, 0.05, de0);
+            float boundaryMask = 1.0 - smoothstep(0.002, 0.08, de0);
 
             float ambient = 0.25;
             vec3 base = col;
@@ -267,6 +273,16 @@ void main(void)
             vec3 H = normalize(L + V);
             float spec = pow(max(0.0, dot(n, H)), uSpecPower) * uSpecStrength * boundaryMask;
             lit += vec3(spec);
+
+            float ndv = max(dot(n, V), 0.0);
+            float rim = pow(1.0 - ndv, uRimPower) * uRimStrength;
+            rim *= boundaryMask;
+
+            float atmos = exp(-uAtmosFalloff * de0) * uAtmosStrength;
+            atmos *= boundaryMask;
+
+            lit += base * rim;
+            lit += base * atmos;
 
             col = lit;
         }
@@ -419,6 +435,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uSpecPower: { value: this.config.specPower, type: "f32" },
             uDeEpsilonPx: { value: this.config.deEpsilonPx, type: "f32" },
             uDeScale: { value: this.config.deScale, type: "f32" },
+
+            uRimStrength: { value: this.config.rimStrength, type: "f32" },
+            uRimPower: { value: this.config.rimPower, type: "f32" },
+            uAtmosStrength: { value: this.config.atmosStrength, type: "f32" },
+            uAtmosFalloff: { value: this.config.atmosFalloff, type: "f32" },
+            uNormalZ: { value: this.config.normalZ, type: "f32" },
         });
 
         const filter = new Filter({
@@ -507,6 +529,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uSpecPower: number;
             uDeEpsilonPx: number;
             uDeScale: number;
+
+            uRimStrength: number;
+            uRimPower: number;
+            uAtmosStrength: number;
+            uAtmosFalloff: number;
+            uNormalZ: number;
         };
 
         if (this.config.paletteSpeed !== 0) {
@@ -616,6 +644,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uSpecPower: number;
             uDeEpsilonPx: number;
             uDeScale: number;
+
+            uRimStrength: number;
+            uRimPower: number;
+            uAtmosStrength: number;
+            uAtmosFalloff: number;
+            uNormalZ: number;
         };
 
         uniforms.uResolution[0] = this.screenW;
@@ -640,6 +674,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         uSpecPower: number;
         uDeEpsilonPx: number;
         uDeScale: number;
+
+        uRimStrength: number;
+        uRimPower: number;
+        uAtmosStrength: number;
+        uAtmosFalloff: number;
+        uNormalZ: number;
     }): void {
         uniforms.uLightingEnabled = this.config.lightingEnabled ? 1 : 0;
 
@@ -652,6 +692,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         uniforms.uSpecPower = this.config.specPower;
         uniforms.uDeEpsilonPx = this.config.deEpsilonPx;
         uniforms.uDeScale = this.config.deScale;
+
+        uniforms.uRimStrength = this.config.rimStrength;
+        uniforms.uRimPower = this.config.rimPower;
+        uniforms.uAtmosStrength = this.config.atmosStrength;
+        uniforms.uAtmosFalloff = this.config.atmosFalloff;
+        uniforms.uNormalZ = this.config.normalZ;
     }
 
     private rebuildPaletteUniforms(): void {

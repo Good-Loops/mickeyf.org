@@ -52,6 +52,12 @@ export type MandelbrotConfig = {
     specPower: number; // e.g. 16..128
     deEpsilonPx: number; // finite-diff step in pixels for normal
     deScale: number; // distance estimate scale multiplier
+
+    rimStrength: number;
+    rimPower: number;
+    atmosStrength: number;
+    atmosFalloff: number;
+    normalZ: number;
 };
 
 export const defaultMandelbrotConfig: MandelbrotConfig = {
@@ -63,7 +69,7 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     animate: true,
     animationQuality: 2,
 
-    zoomOscillationMaxFactor: 15000,
+    zoomOscillationMaxFactor: 30000,
     zoomOscillationSpeed: 0.04,
     rotation: 0,
     rotationSpeed: 0.25,
@@ -98,4 +104,10 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     specPower: 48,
     deEpsilonPx: 2.0,
     deScale: 1.0,
+
+    normalZ: 1.2,
+    rimStrength: 0.3,
+    rimPower: 3.0,
+    atmosStrength: 0.25,
+    atmosFalloff: 9.0,
 };
