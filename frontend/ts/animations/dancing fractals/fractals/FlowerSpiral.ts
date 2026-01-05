@@ -2,15 +2,22 @@ import { Application, Graphics } from "pixi.js";
 import PaletteTween from "../../helpers/color/PaletteTween";
 import type FractalAnimation from "../interfaces/FractalAnimation";
 import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from "../config/FlowerSpiralConfig";
-import { toHslString } from "@/utils/hsl";
+import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
+import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
+import clamp from "@/utils/clamp";
+import { lerpHsl, toHslString, wrapHue, type HslColor } from "@/utils/hsl";
 
 export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig> {
     constructor(
         private readonly centerX: number,
         private readonly centerY: number,
-        initialConfig: Partial<FlowerSpiralConfig> = {}
+        initialConfig: Partial<FlowerSpiralConfig> = {},
+        isRoot: boolean = true,
     ) {
         this.config = { ...defaultFlowerSpiralConfig, ...initialConfig };
+
+        this.baseConfig = { ...this.config };
+        this.isRoot = isRoot;
 
         this.paletteTween = new PaletteTween(
             this.config.palette,
@@ -26,6 +33,13 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     static backgroundColor: string = "hsla(184, 100%, 89%, 1.00)";
     
     private config: FlowerSpiralConfig;
+
+    private readonly baseConfig: FlowerSpiralConfig;
+    private lastRebuildAtMs = -Infinity;
+    private beatRetargetCooldownMs = 0;
+    private readonly isRoot: boolean;
+
+    private beatKick01 = 0;
 
     // For recursiveness
     private childSpirals: FlowerSpiral[] = []; 
@@ -64,8 +78,41 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.buildChildSpirals();
     }
 
+    private computeDrawParams = (args: {
+        nowMs: number;
+        hasMusic: boolean;
+        beatEnv01: number;
+    }): { width: number; radius: number } => {
+        const { nowMs, hasMusic, beatEnv01 } = args;
+
+        if (!hasMusic) {
+            // Existing idle behavior
+            return this.computeWidthAndRadius(nowMs);
+        }
+
+        // Music mode: NO idle LFO. Use only music.
+        const env = clamp(beatEnv01, 0, 1);
+        const envShaped = Math.pow(env, 0.6);
+        const kick = clamp(this.beatKick01, 0, 1);
+
+        const intensity01 = clamp(envShaped * 0.7 + kick * 0.9, 0, 1.5);
+
+        const thicknessPulse = clamp(1 + intensity01 * 2.0, 1, 4.0);
+        const radiusPulse = clamp(1 + intensity01 * 0.9, 1, 2.5);
+
+        const width = this.baseConfig.petalThicknessBase * thicknessPulse;
+        const radius = this.baseConfig.petalLengthBase * radiusPulse;
+
+        return { width, radius };
+    };
+
     // Advance the animation by deltaSeconds and timeMS
-    public step = (deltaSeconds: number, timeMS: number): void => {
+    step = (
+        deltaSeconds: number,
+        nowMs: number,
+        audioState: AudioState,
+        musicFeatures: MusicFeaturesFrame,
+    ): void => {
         if (this.autoDispose) {
             this.disposalTimer += deltaSeconds;
             if (this.disposalTimer >= this.disposalDelay) {
@@ -73,29 +120,77 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             }
         }
 
+        const features = musicFeatures;
+        const hasMusic = !!features?.hasMusic;
+        const musicWeight01 = clamp(features?.musicWeight01 ?? 0, 0, 1);
+        const beatEnv01 = clamp(features?.beatEnv01 ?? 0, 0, 1);
+        const beatHit = !!features?.beatHit;
+        const pitchHue = features?.pitchColor?.hue ?? this.config.palette[0]?.hue ?? 0;
+
+        if (hasMusic) {
+            if (beatHit) {
+                this.beatKick01 = 1;
+            } else {
+                const decayPerSecond = 10;
+                this.beatKick01 = Math.max(
+                    0,
+                    this.beatKick01 - deltaSeconds * decayPerSecond,
+                );
+            }
+        } else {
+            this.beatKick01 = 0;
+        }
+
+        const env = clamp(beatEnv01, 0, 1);
+        const envShaped = Math.pow(env, 0.6);
+        const kick = clamp(this.beatKick01, 0, 1);
+        const intensity01 = clamp(envShaped * 0.7 + kick * 0.9, 0, 1.5);
+
         // Rotate petals
-        this.rotatePetals(deltaSeconds);
+        const rotBoost = 1 + intensity01 * 0.9;
+        const rotationSpeed = this.baseConfig.petalRotationSpeed * rotBoost;
+        this.rotatePetals(deltaSeconds, rotationSpeed);
         // Grow or shrink depending on disposal state
         this.update(deltaSeconds);
         // Update color transitions
-        this.updateColors(deltaSeconds);
-        
-        // Animation config (thickness, radius)
-        const config = this.computeWidthAndRadius(timeMS);
+        this.updateColors(deltaSeconds, hasMusic, beatHit);
+
+        const drawParams = this.computeDrawParams({
+            nowMs,
+            hasMusic,
+            beatEnv01,
+        });
+
+        const width = drawParams.width;
+        const radius = drawParams.radius;
+
         // Draw the frame
-        this.draw(config);
-        
-        this.childSpirals.forEach(child => child.step(deltaSeconds, timeMS));
+        this.draw({ width, radius, musicWeight01, pitchHue });
+
+        this.childSpirals.forEach(child => child.step(deltaSeconds, nowMs, audioState, musicFeatures));
     }
 
     // Render all flowers for the given frame using supplied draw configuration.
-    public draw = ({width, radius}: {width: number, radius: number}) => {
+    draw = ({
+        width,
+        radius,
+        musicWeight01 = 0,
+        pitchHue = 0,
+    }: {
+        width: number;
+        radius: number;
+        musicWeight01?: number;
+        pitchHue?: number;
+    }) => {
         const {
             flowerAmount,
             minRadiusScale,
             maxRadiusScale,
             flowersAlpha,
         } = this.config;
+
+        const safeMusicWeight01 = clamp(musicWeight01, 0, 1);
+        const safePitchHue = wrapHue(pitchHue);
 
         this.flowers.forEach((flower: Graphics[], flowerIndex: number) => {
             // How "visible" this flower should be, based on visibleFlowerCount
@@ -108,13 +203,25 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             const raw = Math.min(visibility, 1);
             const growthFactor = raw * raw * (3 - 2 * raw); // Smoothstep ease-in-out
 
-            // Get the current interpolated color for this flower.
-            const flowerColor: string = toHslString(
-                this.paletteTween.currentColors[flowerIndex]
+            const paletteColor = this.paletteTween.currentColors[flowerIndex];
+            const flowerRatio01 = flowerAmount > 1 ? flowerIndex / (flowerAmount - 1) : 0;
+            const flowerWeight01 = clamp(
+                safeMusicWeight01 * (1 - flowerRatio01 * 0.5),
+                0,
+                1,
             );
 
+            const musicColor: HslColor = {
+                hue: wrapHue(safePitchHue + flowerIndex * 12),
+                saturation: paletteColor.saturation,
+                lightness: paletteColor.lightness,
+            };
+
+            const finalColor = lerpHsl(paletteColor, musicColor, flowerWeight01);
+            const flowerColor: string = toHslString(finalColor);
+
             // 0 at center, 1 at outermost
-            const radiusProgress = flowerIndex / (flowerAmount - 1);
+            const radiusProgress = flowerAmount > 1 ? flowerIndex / (flowerAmount - 1) : 0;
             // Scale radius so center flowers are smaller
             const radiusScale = 
                 minRadiusScale + (maxRadiusScale - minRadiusScale) * radiusProgress;
@@ -245,11 +352,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
                         scale: childScale,
                     };
 
-                const child = new FlowerSpiral(
-                    x,
-                    y,
-                    childConfig
-                );
+                const child = new FlowerSpiral(x, y, childConfig, false);
 
                 child.init(this.app!);
                 childSpirals.push(child);
@@ -259,7 +362,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.childSpirals = childSpirals;
     };
 
-    public computeWidthAndRadius = (timeMS: number): {width: number, radius: number} => {
+    private computeWidthAndRadius = (timeMS: number): {width: number, radius: number} => {
         const {
             petalThicknessBase,
             petalThicknessVariation,
@@ -280,17 +383,29 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         return { width, radius };
     }
 
-    public updateColors = (deltaSeconds: number): void => {
+    private updateColors = (
+        deltaSeconds: number,
+        hasMusic: boolean,
+        beatHit: boolean,
+    ): void => {
         this.colorChangeCounter += deltaSeconds;
 
-        // Pick a new set of target colors every `colorChangeInterval` seconds.
-        if (this.colorChangeCounter >= this.config.colorChangeInterval) {
+        const deltaMs = deltaSeconds * 1000;
+        this.beatRetargetCooldownMs = Math.max(0, this.beatRetargetCooldownMs - deltaMs);
+
+        if (beatHit && this.beatRetargetCooldownMs <= 0) {
+            this.paletteTween.retarget();
+            this.beatRetargetCooldownMs = 120;
+            this.colorChangeCounter = 0;
+        }
+
+        if (!hasMusic && this.colorChangeCounter >= this.config.colorChangeInterval) {
             this.paletteTween.retarget();
             this.colorChangeCounter = 0;
         }
 
-        // Interpolation factor between current and target colors [0, 1].
-        const t = this.colorChangeCounter / this.config.colorChangeInterval;
+        const safeInterval = Math.max(0.0001, this.config.colorChangeInterval);
+        const t = clamp(this.colorChangeCounter / safeInterval, 0, 1);
         this.paletteTween.step(t);
     }
 
@@ -315,11 +430,11 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         };
     }
 
-    public rotatePetals = (deltaSeconds: number): void => {
-        this.petalAngle += this.config.petalRotationSpeed * deltaSeconds;
+    private rotatePetals = (deltaSeconds: number, rotationSpeed: number): void => {
+        this.petalAngle += rotationSpeed * deltaSeconds;
     }
 
-    public update = (deltaSeconds: number): void => {
+    update = (deltaSeconds: number): void => {
         if(!this.isDisposing) {
             // GROW: reveal flowers
             this.visibleFlowerCount += this.config.flowersPerSecond * deltaSeconds;
@@ -336,7 +451,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         }
     }
     
-    public startDisposal = (): void => {
+    startDisposal = (): void => {
         if(this.isDisposing) return;
         this.isDisposing = true;
 
@@ -344,7 +459,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.childSpirals.forEach(child => child.startDisposal());
     }
     
-    public scheduleDisposal = (seconds: number): void => {
+    scheduleDisposal = (seconds: number): void => {
         
         this.disposalDelay = seconds;
         this.disposalTimer = 0;
@@ -363,7 +478,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.visibleFlowerCount = 0;
     }
 
-    public dispose = (): void => {
+    dispose = (): void => {
         // Stop any auto-disposal logic
         this.autoDispose = false;
         this.isDisposing = false;

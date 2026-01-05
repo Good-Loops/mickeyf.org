@@ -18,7 +18,7 @@ export default interface FractalAnimation<C> {
      * @param deltaSeconds - elapsed time since last frame, in seconds
     * @param nowMs - absolute elapsed time since app start, in milliseconds
      */
-    step(deltaSeconds: number, nowMs: number, audioState: AudioState, musicFeatures?: MusicFeaturesFrame): void;
+    step(deltaSeconds: number, nowMs: number, audioState: AudioState, musicFeatures: MusicFeaturesFrame): void;
 
     /**
      * Update the configuration of this fractal.

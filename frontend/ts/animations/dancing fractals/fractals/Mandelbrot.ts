@@ -13,21 +13,26 @@ type MandelbrotRuntime = {
     palettePhase: number;
 };
 
-const FILTER_VERTEX_SRC =
-  "in vec2 aPosition;\n" +
-  "out vec2 vUv;\n\n" +
-  "uniform vec4 uOutputFrame;\n" +
-  "uniform vec4 uOutputTexture;\n\n" +
-  "void main(void)\n" +
-  "{\n" +
-  "    vec2 position = aPosition * uOutputFrame.zw + uOutputFrame.xy;\n" +
-  "    position.x = position.x * (2.0 / uOutputTexture.x) - 1.0;\n" +
-  "    position.y = position.y * (2.0 * uOutputTexture.z / uOutputTexture.y) - uOutputTexture.z;\n" +
-  "    gl_Position = vec4(position, 0.0, 1.0);\n" +
-  "    vUv = aPosition;\n" +
-  "}\n";
+const FILTER_VERTEX_SRC = /* glsl */`
+in vec2 aPosition;
+out vec2 vUv;
 
-const MANDELBROT_FRAGMENT_SRC = `precision highp float;
+uniform vec4 uOutputFrame;
+uniform vec4 uOutputTexture;
+
+void main(void)
+{
+        vec2 position = aPosition * uOutputFrame.zw + uOutputFrame.xy;
+        position.x = position.x * (2.0 / uOutputTexture.x) - 1.0;
+        position.y = position.y * (2.0 * uOutputTexture.z / uOutputTexture.y) - uOutputTexture.z;
+        gl_Position = vec4(position, 0.0, 1.0);
+        vUv = aPosition;
+}
+`;
+
+  
+const MANDELBROT_FRAGMENT_SRC = /* glsl */`
+precision highp float;
 precision highp int;
 
 in vec2 vUv;

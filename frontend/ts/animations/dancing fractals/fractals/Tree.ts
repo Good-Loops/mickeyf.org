@@ -83,7 +83,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		}
 	};
 
-	step = (deltaSeconds: number, nowMs: number, audioState: AudioState, musicFeatures?: MusicFeaturesFrame): void => {
+	step = (deltaSeconds: number, nowMs: number, audioState: AudioState, musicFeatures: MusicFeaturesFrame): void => {
 		if (!this.app || this.depthGraphics.length === 0) return;
 
 		// Handle scheduled auto-disposal
