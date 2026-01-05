@@ -79,6 +79,8 @@ uniform float uGrainScale;
 
 uniform float uTime;
 
+uniform float uFade;
+
 vec2 rotate2d(vec2 v, float a)
 {
     float c = cos(a);
@@ -330,14 +332,19 @@ void main(void)
     col *= vigMul;
 
     // Micro film grain / dither (applies to both inside + escaped)
-    vec2 pix = vUv * uResolution * uGrainScale;
-    float t = floor(uTime * uGrainSpeed * 60.0) / 60.0;
-    float gn = hash12(pix + t);
-    float grain = (gn - 0.5) * 2.0;
-    col += grain * uGrainStrength;
+    // Guard so grainStrength=0 is a true hard-off.
+    if (uGrainStrength > 0.0)
+    {
+        vec2 pix = vUv * uResolution * uGrainScale;
+        float t = floor(uTime * uGrainSpeed * 60.0) / 60.0;
+        float gn = hash12(pix + t);
+        float grain = (gn - 0.5) * 2.0;
+        col += grain * uGrainStrength;
+    }
 
     col = clamp(col, 0.0, 1.0);
-    finalColor = vec4(col, 1.0);
+    col *= uFade;
+    finalColor = vec4(col, uFade);
 }
 `;
 
@@ -506,6 +513,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uGrainScale: { value: this.config.grainScale, type: "f32" },
 
             uTime: { value: 0, type: "f32" },
+            uFade: { value: 1, type: "f32" },
         });
 
         const filter = new Filter({
@@ -558,16 +566,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             }
         }
 
-        if (this.isDisposing) {
-            this.disposalElapsed += deltaSeconds;
-            const t = this.disposalSeconds <= 0 ? 1 : Math.min(1, this.disposalElapsed / this.disposalSeconds);
-            this.root.alpha = 1 - t;
-            if (t >= 1) {
-                this.dispose();
-                return;
-            }
-        }
-
         this.runtime.elapsedAnimSeconds += deltaSeconds;
 
         const uniformGroup = this.mandelbrotUniforms;
@@ -616,9 +614,28 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uGrainScale: number;
 
             uTime: number;
+            uFade: number;
         };
 
         uniforms.uTime = this.runtime.elapsedAnimSeconds;
+        uniforms.uFade = 1;
+
+        if (this.isDisposing) {
+            this.disposalElapsed += deltaSeconds;
+
+            const t =
+              this.disposalSeconds <= 0
+                ? 1
+                : Math.min(1, this.disposalElapsed / this.disposalSeconds);
+
+            const e = smoothstep01(t);
+            uniforms.uFade = 1 - e;
+
+            if (t >= 1) {
+                this.dispose();
+                return;
+            }
+        }
 
         if (this.config.lightOrbitEnabled) {
             const a = this.runtime.elapsedAnimSeconds * this.config.lightOrbitSpeed;
@@ -683,14 +700,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.disposalDelaySeconds = Math.max(0, seconds);
         this.isDisposing = false;
         this.disposalElapsed = 0;
-        if (this.root) this.root.alpha = 1;
     }
 
     startDisposal(): void {
         this.disposalDelaySeconds = 0;
         this.isDisposing = true;
         this.disposalElapsed = 0;
-        if (this.root) this.root.alpha = 1;
     }
 
     dispose(): void {
@@ -763,6 +778,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uGrainScale: number;
 
             uTime: number;
+            uFade: number;
         };
 
         uniforms.uResolution[0] = this.screenW;
