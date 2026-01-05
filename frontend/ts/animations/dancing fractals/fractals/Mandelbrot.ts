@@ -70,6 +70,15 @@ uniform float uAtmosStrength;
 uniform float uAtmosFalloff;
 uniform float uNormalZ;
 
+uniform float uVignetteStrength;
+uniform float uVignettePower;
+
+uniform float uGrainStrength;
+uniform float uGrainSpeed;
+uniform float uGrainScale;
+
+uniform float uTime;
+
 vec2 rotate2d(vec2 v, float a)
 {
     float c = cos(a);
@@ -110,6 +119,14 @@ vec3 paletteAt(int idx)
 vec2 cmul(vec2 a, vec2 b)
 {
     return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+float hash12(vec2 p)
+{
+    // Simple, fast hash. Good enough for subtle grain/dither.
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
 }
 
 float computeDE(vec2 cIn, out bool escapedOut)
@@ -185,6 +202,8 @@ void main(void)
         if (r2 > b2) { iter = i; escaped = true; break; }
     }
 
+    vec3 col;
+
     // Inside-set subtle glow (palette-derived, cycles with phase)
     if (!escaped)
     {
@@ -209,38 +228,37 @@ void main(void)
         edge = clamp(edge, 0.0, 1.0);
         float g = smoothstep(0.0, 0.45, edge);
         g = pow(g, 0.6);
-        vec3 insideCol = mix(vec3(0.0), glowCol, g);
-
-        finalColor = vec4(insideCol, 1.0);
-        return;
-    }
-
-    // Escaped coloring (unchanged)
-    float t01;
-    if (uSmoothColoring == 1)
-    {
-        float nu = float(iter) + 1.0 - log2(log2(length(z)));
-        t01 = nu / max(1.0, float(uMaxIter));
+        col = mix(vec3(0.0), glowCol, g);
     }
     else
     {
-        t01 = float(iter) / max(1.0, float(uMaxIter));
-    }
 
-    t01 = clamp(t01, 0.0, 1.0);
-    t01 = pow(t01, max(0.0001, uPaletteGamma));
+        // Escaped coloring (unchanged)
+        float t01;
+        if (uSmoothColoring == 1)
+        {
+            float nu = float(iter) + 1.0 - log2(log2(length(z)));
+            t01 = nu / max(1.0, float(uMaxIter));
+        }
+        else
+        {
+            t01 = float(iter) / max(1.0, float(uMaxIter));
+        }
 
-    int n = (uPaletteSize > 0) ? uPaletteSize : 1;
-    float x = fract(t01 + uPalettePhase);
-    float pIdx = x * float(n);
-    int i0 = int(floor(pIdx));
-    int i1 = i0 + 1;
-    if (i1 >= n) i1 = 0;
-    float f = fract(pIdx);
+        t01 = clamp(t01, 0.0, 1.0);
+        t01 = pow(t01, max(0.0001, uPaletteGamma));
 
-    vec3 c0 = paletteAt(i0);
-    vec3 c1 = paletteAt(i1);
-    vec3 col = mix(c0, c1, f);
+        int n = (uPaletteSize > 0) ? uPaletteSize : 1;
+        float x = fract(t01 + uPalettePhase);
+        float pIdx = x * float(n);
+        int i0 = int(floor(pIdx));
+        int i1 = i0 + 1;
+        if (i1 >= n) i1 = 0;
+        float f = fract(pIdx);
+
+        vec3 c0 = paletteAt(i0);
+        vec3 c1 = paletteAt(i1);
+        col = mix(c0, c1, f);
 
     if (uLightingEnabled == 1)
     {
@@ -300,10 +318,25 @@ void main(void)
         }
     }
 
-    // Tone-map escaped shading only (inside-set glow returns early)
-    col *= uToneMapExposure;
-    col = col / (1.0 + uToneMapShoulder * col);
+        // Tone-map escaped shading only
+        col *= uToneMapExposure;
+        col = col / (1.0 + uToneMapShoulder * col);
+    }
 
+    // Vignette (applies to both inside + escaped)
+    float r = length(uv);
+    float vig = pow(clamp(1.0 - r, 0.0, 1.0), uVignettePower);
+    float vigMul = mix(1.0 - uVignetteStrength, 1.0, vig);
+    col *= vigMul;
+
+    // Micro film grain / dither (applies to both inside + escaped)
+    vec2 pix = vUv * uResolution * uGrainScale;
+    float t = floor(uTime * uGrainSpeed * 60.0) / 60.0;
+    float gn = hash12(pix + t);
+    float grain = (gn - 0.5) * 2.0;
+    col += grain * uGrainStrength;
+
+    col = clamp(col, 0.0, 1.0);
     finalColor = vec4(col, 1.0);
 }
 `;
@@ -464,6 +497,15 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uAtmosStrength: { value: this.config.atmosStrength, type: "f32" },
             uAtmosFalloff: { value: this.config.atmosFalloff, type: "f32" },
             uNormalZ: { value: this.config.normalZ, type: "f32" },
+
+            uVignetteStrength: { value: this.config.vignetteStrength, type: "f32" },
+            uVignettePower: { value: this.config.vignettePower, type: "f32" },
+
+            uGrainStrength: { value: this.config.grainStrength, type: "f32" },
+            uGrainSpeed: { value: this.config.grainSpeed, type: "f32" },
+            uGrainScale: { value: this.config.grainScale, type: "f32" },
+
+            uTime: { value: 0, type: "f32" },
         });
 
         const filter = new Filter({
@@ -565,7 +607,18 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uAtmosStrength: number;
             uAtmosFalloff: number;
             uNormalZ: number;
+
+            uVignetteStrength: number;
+            uVignettePower: number;
+
+            uGrainStrength: number;
+            uGrainSpeed: number;
+            uGrainScale: number;
+
+            uTime: number;
         };
+
+        uniforms.uTime = this.runtime.elapsedAnimSeconds;
 
         if (this.config.lightOrbitEnabled) {
             const a = this.runtime.elapsedAnimSeconds * this.config.lightOrbitSpeed;
@@ -701,6 +754,15 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uAtmosStrength: number;
             uAtmosFalloff: number;
             uNormalZ: number;
+
+            uVignetteStrength: number;
+            uVignettePower: number;
+
+            uGrainStrength: number;
+            uGrainSpeed: number;
+            uGrainScale: number;
+
+            uTime: number;
         };
 
         uniforms.uResolution[0] = this.screenW;
@@ -738,6 +800,15 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         uAtmosStrength: number;
         uAtmosFalloff: number;
         uNormalZ: number;
+
+        uVignetteStrength: number;
+        uVignettePower: number;
+
+        uGrainStrength: number;
+        uGrainSpeed: number;
+        uGrainScale: number;
+
+        uTime: number;
     }): void {
         uniforms.uLightingEnabled = this.config.lightingEnabled ? 1 : 0;
 
@@ -763,6 +834,15 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         uniforms.uAtmosStrength = this.config.atmosStrength;
         uniforms.uAtmosFalloff = this.config.atmosFalloff;
         uniforms.uNormalZ = this.config.normalZ;
+
+        uniforms.uVignetteStrength = this.config.vignetteStrength;
+        uniforms.uVignettePower = this.config.vignettePower;
+
+        uniforms.uGrainStrength = this.config.grainStrength;
+        uniforms.uGrainSpeed = this.config.grainSpeed;
+        uniforms.uGrainScale = this.config.grainScale;
+
+        // uTime is driven per-frame from runtime state in step().
     }
 
     private rebuildPaletteUniforms(): void {

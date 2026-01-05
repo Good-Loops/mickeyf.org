@@ -70,6 +70,13 @@ export type MandelbrotConfig = {
     lightOrbitEnabled: boolean;
     lightOrbitSpeed: number;
     lightOrbitTilt: number;
+
+    // Post (ultra-cheap finish)
+    vignetteStrength: number;
+    vignettePower: number;
+    grainStrength: number;
+    grainSpeed: number;
+    grainScale: number;
 };
 
 export const defaultMandelbrotConfig: MandelbrotConfig = {
@@ -133,4 +140,10 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     lightOrbitEnabled: true,
     lightOrbitSpeed: 0.05,
     lightOrbitTilt: 0.25,
+
+    vignetteStrength: 0.45,
+    vignettePower: 2.2,
+    grainStrength: 0.03,
+    grainSpeed: 0.45,
+    grainScale: 1.5,
 };
