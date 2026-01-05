@@ -1,60 +1,52 @@
-import { Application, Graphics } from "pixi.js";
+import { Application, Filter, GlProgram, Sprite, Texture, UniformGroup } from "pixi.js";
+
 import PaletteTween from "../../helpers/color/PaletteTween";
-import type FractalAnimation from "../interfaces/FractalAnimation";
-import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from "../config/FlowerSpiralConfig";
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
 import clamp from "@/utils/clamp";
-import { lerpHsl, toHslString, wrapHue, type HslColor } from "@/utils/hsl";
+import type FractalAnimation from "../interfaces/FractalAnimation";
+import { defaultFlowerSpiralConfig, type FlowerSpiralConfig } from "../config/FlowerSpiralConfig";
+import { FLOWER_MAX, clampFlowerAmount, createFlowerSpiralFilter, createFlowerSpiralUniformGroup } from "./flower spiral/FlowerSpiralShader";
 
 export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig> {
     constructor(
         private readonly centerX: number,
         private readonly centerY: number,
         initialConfig: Partial<FlowerSpiralConfig> = {},
-        isRoot: boolean = true,
     ) {
         this.config = { ...defaultFlowerSpiralConfig, ...initialConfig };
+        this.baseConfig = FlowerSpiral.deepCopyConfig(this.config);
 
-        this.baseConfig = { ...this.config };
-        this.isRoot = isRoot;
-
-        this.paletteTween = new PaletteTween(
-            this.config.palette,
-            this.config.flowerAmount
-        );
-
-        this.petalAngle = this.angleOffset;
+        this.paletteTween = new PaletteTween(this.config.palette, this.config.flowerAmount);
     }
-    
-    // Class-wide default disposal time for this fractal type
+
     static disposalSeconds = 10;
-
     static backgroundColor: string = "hsla(184, 100%, 89%, 1.00)";
-    
+
     private config: FlowerSpiralConfig;
-
     private readonly baseConfig: FlowerSpiralConfig;
-    private lastRebuildAtMs = -Infinity;
-    private beatRetargetCooldownMs = 0;
-    private readonly isRoot: boolean;
 
-    private beatKick01 = 0;
+    private app: Application | null = null;
 
-    // For recursiveness
-    private childSpirals: FlowerSpiral[] = []; 
-    
-    // Each "flower" is an array of Graphics petals.
-    private flowers: Graphics[][] = [];
-    private visibleFlowerCount = 0; // How many flowers are currently visible.
+    // Fullscreen quad (single draw call) + GLSL filter.
+    private mesh: Sprite | null = null;
+    private filter: Filter | null = null;
+    private uniformGroup: UniformGroup | null = null;
+    private paletteHsl: Float32Array | null = null;
 
-    // Color interpolator for smooth transitions between colors.
+    private configDirty = true;
+    private paletteDirty = true;
+
+    // Visible flower count (float) for smooth appear/disappear.
+    private visibleFlowerCount = 0;
+
+    // PaletteTween state
     private paletteTween: PaletteTween;
-    
     private colorChangeCounter = 0;
+    private beatRetargetCooldownMs = 0;
 
-    private angleOffset = 0; // Per-instance offset for petal rotation animation.
-    private petalAngle = 0; // Global angular phase used to animate the petal endpoints.
+    // Music beat impulse
+    private beatKick01 = 0;
 
     // Disposal logic
     private disposalDelay = 0;
@@ -62,63 +54,55 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     private autoDispose = false;
     private isDisposing = false;
 
-    private app: Application | null = null; // PIXI application
-    private reusableStrokeOptions = { 
-        width: 0, 
-        color: '', 
-        alpha: 0, 
-        cap: 'round' as const,
-    };
-
-    // Initialize the flower spiral within the given PIXI application.
-    init = (app: Application): void => {
+    init(app: Application): void {
         this.app = app;
 
-        this.buildFlowers();
-        this.buildChildSpirals();
+        const quad = Sprite.from(Texture.WHITE);
+        this.mesh = quad;
+        quad.position.set(0, 0);
+        quad.width = app.screen.width;
+        quad.height = app.screen.height;
+
+        const { uniformGroup, paletteHsl } = createFlowerSpiralUniformGroup({
+            widthPx: app.screen.width,
+            heightPx: app.screen.height,
+            centerX: this.centerX,
+            centerY: this.centerY,
+        });
+        this.uniformGroup = uniformGroup;
+        this.paletteHsl = paletteHsl;
+
+        const filter = createFlowerSpiralFilter(uniformGroup);
+        this.filter = filter;
+        quad.filters = [filter];
+
+        app.stage.addChild(quad);
+
+        this.visibleFlowerCount = 0;
+        this.beatKick01 = 0;
+
+        this.configDirty = true;
+        this.paletteDirty = true;
     }
 
-    private computeDrawParams = (args: {
-        nowMs: number;
-        hasMusic: boolean;
-        beatEnv01: number;
-    }): { width: number; radius: number } => {
-        const { nowMs, hasMusic, beatEnv01 } = args;
+    step(deltaSeconds: number, nowMs: number, _audioState: AudioState, musicFeatures: MusicFeaturesFrame): void {
+        const app = this.app;
+        const quad = this.mesh;
+        const uniformGroup = this.uniformGroup;
+        const paletteHsl = this.paletteHsl;
 
-        if (!hasMusic) {
-            // Existing idle behavior
-            return this.computeWidthAndRadius(nowMs);
-        }
+        if (!app || !quad || !uniformGroup || !paletteHsl) return;
 
-        // Music mode: NO idle LFO. Use only music.
-        const env = clamp(beatEnv01, 0, 1);
-        const envShaped = Math.pow(env, 0.6);
-        const kick = clamp(this.beatKick01, 0, 1);
-
-        const intensity01 = clamp(envShaped * 0.7 + kick * 0.9, 0, 1.5);
-
-        const thicknessPulse = clamp(1 + intensity01 * 2.0, 1, 4.0);
-        const radiusPulse = clamp(1 + intensity01 * 0.9, 1, 2.5);
-
-        const width = this.baseConfig.petalThicknessBase * thicknessPulse;
-        const radius = this.baseConfig.petalLengthBase * radiusPulse;
-
-        return { width, radius };
-    };
-
-    // Advance the animation by deltaSeconds and timeMS
-    step = (
-        deltaSeconds: number,
-        nowMs: number,
-        audioState: AudioState,
-        musicFeatures: MusicFeaturesFrame,
-    ): void => {
         if (this.autoDispose) {
             this.disposalTimer += deltaSeconds;
             if (this.disposalTimer >= this.disposalDelay) {
                 this.startDisposal();
             }
         }
+
+        // Keep quad size synced to renderer.
+        quad.width = app.screen.width;
+        quad.height = app.screen.height;
 
         const features = musicFeatures;
         const hasMusic = !!features?.hasMusic;
@@ -127,403 +111,216 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         const beatHit = !!features?.beatHit;
         const pitchHue = features?.pitchColor?.hue ?? this.config.palette[0]?.hue ?? 0;
 
+        // Beat kick (fast impulse)
+        const KICK_DECAY_PER_SEC = 6;
         if (hasMusic) {
             if (beatHit) {
                 this.beatKick01 = 1;
             } else {
-                const decayPerSecond = 10;
-                this.beatKick01 = Math.max(
-                    0,
-                    this.beatKick01 - deltaSeconds * decayPerSecond,
-                );
+                this.beatKick01 = Math.max(0, this.beatKick01 - deltaSeconds * KICK_DECAY_PER_SEC);
             }
         } else {
             this.beatKick01 = 0;
         }
 
-        const env = clamp(beatEnv01, 0, 1);
-        const envShaped = Math.pow(env, 0.6);
-        const kick = clamp(this.beatKick01, 0, 1);
-        const intensity01 = clamp(envShaped * 0.7 + kick * 0.9, 0, 1.5);
+        this.updateVisibleFlowers(deltaSeconds);
 
-        // Rotate petals
-        const rotBoost = 1 + intensity01 * 0.9;
-        const rotationSpeed = this.baseConfig.petalRotationSpeed * rotBoost;
-        this.rotatePetals(deltaSeconds, rotationSpeed);
-        // Grow or shrink depending on disposal state
-        this.update(deltaSeconds);
-        // Update color transitions
-        this.updateColors(deltaSeconds, hasMusic, beatHit);
+        this.updatePaletteTween(deltaSeconds, hasMusic, beatHit);
+        this.uploadPaletteUniforms(paletteHsl);
 
-        const drawParams = this.computeDrawParams({
+        if (this.configDirty) {
+            this.uploadConfigUniforms(uniformGroup);
+            this.configDirty = false;
+        }
+
+        this.uploadFrameAndMusicUniforms(uniformGroup, {
             nowMs,
+            widthPx: app.screen.width,
+            heightPx: app.screen.height,
             hasMusic,
+            musicWeight01,
             beatEnv01,
-        });
-
-        const width = drawParams.width;
-        const radius = drawParams.radius;
-
-        // Draw the frame
-        this.draw({ width, radius, musicWeight01, pitchHue });
-
-        this.childSpirals.forEach(child => child.step(deltaSeconds, nowMs, audioState, musicFeatures));
-    }
-
-    // Render all flowers for the given frame using supplied draw configuration.
-    draw = ({
-        width,
-        radius,
-        musicWeight01 = 0,
-        pitchHue = 0,
-    }: {
-        width: number;
-        radius: number;
-        musicWeight01?: number;
-        pitchHue?: number;
-    }) => {
-        const {
-            flowerAmount,
-            minRadiusScale,
-            maxRadiusScale,
-            flowersAlpha,
-        } = this.config;
-
-        const safeMusicWeight01 = clamp(musicWeight01, 0, 1);
-        const safePitchHue = wrapHue(pitchHue);
-
-        this.flowers.forEach((flower: Graphics[], flowerIndex: number) => {
-            // How "visible" this flower should be, based on visibleFlowerCount
-            const visibility = this.visibleFlowerCount - flowerIndex;
-            if (visibility <= 0) {
-                flower.forEach(petal => petal.clear());
-                return;
-            }
-
-            const raw = Math.min(visibility, 1);
-            const growthFactor = raw * raw * (3 - 2 * raw); // Smoothstep ease-in-out
-
-            const paletteColor = this.paletteTween.currentColors[flowerIndex];
-            const flowerRatio01 = flowerAmount > 1 ? flowerIndex / (flowerAmount - 1) : 0;
-            const flowerWeight01 = clamp(
-                safeMusicWeight01 * (1 - flowerRatio01 * 0.5),
-                0,
-                1,
-            );
-
-            const musicColor: HslColor = {
-                hue: wrapHue(safePitchHue + flowerIndex * 12),
-                saturation: paletteColor.saturation,
-                lightness: paletteColor.lightness,
-            };
-
-            const finalColor = lerpHsl(paletteColor, musicColor, flowerWeight01);
-            const flowerColor: string = toHslString(finalColor);
-
-            // 0 at center, 1 at outermost
-            const radiusProgress = flowerAmount > 1 ? flowerIndex / (flowerAmount - 1) : 0;
-            // Scale radius so center flowers are smaller
-            const radiusScale = 
-                minRadiusScale + (maxRadiusScale - minRadiusScale) * radiusProgress;
-
-            const flowerRadius = radius * radiusScale * growthFactor;
-            const effectiveAlpha = flowersAlpha * growthFactor;
-
-            flower.forEach((petal: Graphics, petalIndex: number) => {
-                // Clear previous stroke and start at local origin.
-                petal.clear();
-                petal.moveTo(0, 0);
-
-                // Compute end point of the petal.
-                petal.lineTo(
-                    flowerRadius * Math.cos(this.petalAngle + (petalIndex)) - Math.sin(flowerIndex),
-                    flowerRadius * Math.sin(this.petalAngle + petalIndex * flowerIndex)
-                );
-
-                this.reusableStrokeOptions.width = width;
-                this.reusableStrokeOptions.color = flowerColor;
-                this.reusableStrokeOptions.alpha = effectiveAlpha;
-
-                // Draw the petal as a stroked line.
-                petal.stroke(this.reusableStrokeOptions);
-            });
+            beatKick01: this.beatKick01,
+            pitchHue,
+            visibleFlowerCount: this.visibleFlowerCount,
         });
     }
 
-    private computeFlowerPosition = (flowerIndex: number): { x: number, y: number } => {
-        const { spiralIncrement, scale, revolutions, flowerAmount } = this.config;
+    updateConfig(patch: Partial<FlowerSpiralConfig>): void {
+        const prev = this.config;
+        this.config = { ...this.config, ...patch };
 
-        // Spiral parameters: radius grows linearly with each flower index.
-        const spiralRadius = flowerIndex * spiralIncrement * scale;
+        const paletteChanged = patch.palette != null && patch.palette !== prev.palette;
+        const flowerAmountChanged = patch.flowerAmount != null && patch.flowerAmount !== prev.flowerAmount;
 
-        // Map index i to angle along a spiral with `revolutions` turns.
-        const angle = (flowerIndex * 2 * Math.PI * revolutions) / flowerAmount;
-
-        const x = this.centerX + spiralRadius * Math.cos(angle);
-        const y = this.centerY + spiralRadius * Math.sin(angle);
-
-        return { x, y };
-    }
-
-    private createFlowerAt = (x: number, y: number): Graphics[] => {
-        const flower: Graphics[] = [];
-
-        if (!this.app) {
-            throw new Error("FlowerSpiral: app is not set. Did you forget to call init(app)?");
+        if (paletteChanged || flowerAmountChanged) {
+            this.paletteTween = new PaletteTween(this.config.palette, this.config.flowerAmount);
+            this.colorChangeCounter = 0;
+            this.beatRetargetCooldownMs = 0;
+            this.paletteDirty = true;
         }
 
-        // Create petals for this flower, all sharing same origin (x, y).
-        for (let j = 0; j < this.config.petalsPerFlower; j++) {
-                const petal = new Graphics();
-    
-                flower.push(petal);
-                petal.x = x;
-                petal.y = y;
-    
-                this.app.stage.addChild(petal);
-            }
-
-        return flower;
+        this.configDirty = true;
     }
 
-    private buildFlowers = (): void => {
-        this.flowers = [];
-        if (!this.app) return;
+    scheduleDisposal(seconds: number): void {
+        this.disposalDelay = seconds;
+        this.disposalTimer = 0;
+        this.autoDispose = true;
+        this.isDisposing = false;
+    }
 
-        for (let i = 0; i < this.config.flowerAmount; i++) {
-            const { x, y } = this.computeFlowerPosition(i);
-            this.flowers.push(this.createFlowerAt(x, y));
+    startDisposal(): void {
+        if (this.isDisposing) return;
+        this.isDisposing = true;
+    }
+
+    dispose(): void {
+        this.autoDispose = false;
+        this.isDisposing = false;
+
+        if (this.mesh) {
+            this.mesh.removeFromParent();
+            // Do not destroy Texture.WHITE (shared). Destroying the Sprite + filter is enough.
+            this.mesh.destroy({ children: true, texture: false, textureSource: false });
+            this.mesh = null;
         }
 
-        // Rebuild color interpolator with new count
-        this.paletteTween = new PaletteTween(
-            this.config.palette,
-            this.config.flowerAmount
-        );
-    };
+        if (this.filter) {
+            this.filter.destroy();
+            this.filter = null;
+        }
 
-    private buildChildSpirals = (): void => {
-        if (!this.app) return;
+        this.uniformGroup = null;
+        this.paletteHsl = null;
 
-        this.childSpirals.forEach(child => child.dispose());
-        this.childSpirals = [];
-
-        const { recursionDepth, scale, minRadiusScale, maxRadiusScale, petalLengthBase } =
-            this.config;
-
-        if (recursionDepth <= 0) return;
-
-        const childScale = scale * 0.45;
-        const childDepth = recursionDepth - 1;
-        const childSpirals: FlowerSpiral[] = [];
-
-        this.flowers.forEach((flower, flowerIndex) => {
-            flower.forEach((petal, petalIndex) => {
-                if (flowerIndex % 4 !== 0 || petalIndex !== 0)
-                    return;
-
-                const radiusProgress =
-                    flowerIndex / (this.config.flowerAmount - 1);
-                const radiusScale =
-                    minRadiusScale +
-                    (maxRadiusScale - minRadiusScale) *
-                        radiusProgress;
-
-                // Compute the endpoint for this specific petal
-                const angle =
-                    this.petalAngle + petalIndex;
-                const len =
-                    petalLengthBase *
-                    radiusScale *
-                    scale;
-                const endX = len * Math.cos(angle);
-                const endY = len * Math.sin(angle);
-
-                const { x, y } = this.getPetalEndpoint(
-                    petal,
-                    endX,
-                    endY
-                );
-
-                const childConfig: Partial<FlowerSpiralConfig> =
-                    {
-                        ...this.config,
-                        recursionDepth: childDepth,
-                        scale: childScale,
-                    };
-
-                const child = new FlowerSpiral(x, y, childConfig, false);
-
-                child.init(this.app!);
-                childSpirals.push(child);
-            });
-        });
-
-        this.childSpirals = childSpirals;
-    };
-
-    private computeWidthAndRadius = (timeMS: number): {width: number, radius: number} => {
-        const {
-            petalThicknessBase,
-            petalThicknessVariation,
-            petalThicknessSpeed,
-            petalLengthBase,
-            petalLengthVariation,
-            petalLengthSpeed,
-        } = this.config;
-
-        const width = petalThicknessBase +
-            petalThicknessVariation *
-            Math.sin(timeMS * petalThicknessSpeed);
-
-        const radius = petalLengthBase +
-            petalLengthVariation *
-            Math.cos(timeMS * petalLengthSpeed);
-
-        return { width, radius };
+        this.app = null;
     }
 
-    private updateColors = (
-        deltaSeconds: number,
-        hasMusic: boolean,
-        beatHit: boolean,
-    ): void => {
+    private updateVisibleFlowers(deltaSeconds: number): void {
+        const target = clampFlowerAmount(this.config.flowerAmount);
+        const speed = this.config.flowersPerSecond;
+
+        if (!this.isDisposing) {
+            this.visibleFlowerCount += speed * deltaSeconds;
+            if (this.visibleFlowerCount > target) this.visibleFlowerCount = target;
+            return;
+        }
+
+        this.visibleFlowerCount -= speed * deltaSeconds;
+        if (this.visibleFlowerCount <= 0) {
+            this.visibleFlowerCount = 0;
+            this.dispose();
+        }
+    }
+
+    private updatePaletteTween(deltaSeconds: number, hasMusic: boolean, beatHit: boolean): void {
         this.colorChangeCounter += deltaSeconds;
 
         const deltaMs = deltaSeconds * 1000;
         this.beatRetargetCooldownMs = Math.max(0, this.beatRetargetCooldownMs - deltaMs);
 
-        if (beatHit && this.beatRetargetCooldownMs <= 0) {
+        if (hasMusic && beatHit && this.beatRetargetCooldownMs <= 0) {
             this.paletteTween.retarget();
             this.beatRetargetCooldownMs = 120;
             this.colorChangeCounter = 0;
+            this.paletteDirty = true;
         }
 
         if (!hasMusic && this.colorChangeCounter >= this.config.colorChangeInterval) {
             this.paletteTween.retarget();
             this.colorChangeCounter = 0;
+            this.paletteDirty = true;
         }
 
         const safeInterval = Math.max(0.0001, this.config.colorChangeInterval);
         const t = clamp(this.colorChangeCounter / safeInterval, 0, 1);
         this.paletteTween.step(t);
+        this.paletteDirty = true;
     }
 
-    private destroyGraphicsAndChildren = (): void => {
-        // Destroy all petals
-        this.flowers.forEach(flower => {
-            flower.forEach(petal => petal.destroy());
-        });
+    private uploadPaletteUniforms(paletteHsl: Float32Array): void {
+        if (!this.paletteDirty) return;
 
-        this.flowers = [];
+        const n = clampFlowerAmount(this.config.flowerAmount);
 
-        // Dispose child spirals
-        this.childSpirals.forEach(child => child.dispose());
-        this.childSpirals = [];
+        for (let i = 0; i < FLOWER_MAX; i++) {
+            const base = i * 3;
+            if (i < n) {
+                const c = this.paletteTween.currentColors[i];
+                paletteHsl[base + 0] = c.hue;
+                paletteHsl[base + 1] = clamp(c.saturation / 100, 0, 1);
+                paletteHsl[base + 2] = clamp(c.lightness / 100, 0, 1);
+            } else {
+                paletteHsl[base + 0] = 0;
+                paletteHsl[base + 1] = 0;
+                paletteHsl[base + 2] = 0;
+            }
+        }
+
+        this.paletteDirty = false;
     }
 
+    private uploadConfigUniforms(uniformGroup: UniformGroup): void {
+        const u = uniformGroup.uniforms as any;
+        const cfg = this.config;
 
-    private getPetalEndpoint = (petal: Graphics, endX: number, endY: number) => {
+        u.uFlowerAmount = clampFlowerAmount(cfg.flowerAmount);
+        u.uPetalsPerFlower = clamp(cfg.petalsPerFlower | 0, 1, 64);
+        u.uFlowersPerSecond = cfg.flowersPerSecond;
+        u.uFlowersAlpha = cfg.flowersAlpha;
+        u.uPetalRotationSpeed = cfg.petalRotationSpeed;
+        u.uMinRadiusScale = cfg.minRadiusScale;
+        u.uMaxRadiusScale = cfg.maxRadiusScale;
+        u.uSpiralIncrement = cfg.spiralIncrement;
+        u.uRevolutions = cfg.revolutions;
+        u.uScale = cfg.scale;
+
+        u.uPetalThicknessBase = cfg.petalThicknessBase;
+        u.uPetalThicknessVariation = cfg.petalThicknessVariation;
+        u.uPetalThicknessSpeed = cfg.petalThicknessSpeed;
+        u.uPetalLengthBase = cfg.petalLengthBase;
+        u.uPetalLengthVariation = cfg.petalLengthVariation;
+        u.uPetalLengthSpeed = cfg.petalLengthSpeed;
+    }
+
+    private uploadFrameAndMusicUniforms(
+        uniformGroup: UniformGroup,
+        args: {
+            nowMs: number;
+            widthPx: number;
+            heightPx: number;
+            hasMusic: boolean;
+            musicWeight01: number;
+            beatEnv01: number;
+            beatKick01: number;
+            pitchHue: number;
+            visibleFlowerCount: number;
+        },
+    ): void {
+        const u = uniformGroup.uniforms as any;
+
+        u.uTimeMs = args.nowMs;
+
+        u.uResolution[0] = args.widthPx;
+        u.uResolution[1] = args.heightPx;
+
+        u.uCenterPx[0] = this.centerX;
+        u.uCenterPx[1] = this.centerY;
+
+        u.uHasMusic = args.hasMusic ? 1 : 0;
+        u.uMusicWeight01 = args.musicWeight01;
+        u.uBeatEnv01 = args.beatEnv01;
+        u.uBeatKick01 = args.beatKick01;
+        u.uPitchHue = args.pitchHue;
+
+        u.uVisibleFlowerCount = args.visibleFlowerCount;
+    }
+
+    private static deepCopyConfig(cfg: FlowerSpiralConfig): FlowerSpiralConfig {
         return {
-            x: petal.x + endX,
-            y: petal.y + endY
+            ...cfg,
+            palette: cfg.palette.map(c => ({ ...c })),
         };
-    }
-
-    private rotatePetals = (deltaSeconds: number, rotationSpeed: number): void => {
-        this.petalAngle += rotationSpeed * deltaSeconds;
-    }
-
-    update = (deltaSeconds: number): void => {
-        if(!this.isDisposing) {
-            // GROW: reveal flowers
-            this.visibleFlowerCount += this.config.flowersPerSecond * deltaSeconds;
-            if (this.visibleFlowerCount > this.config.flowerAmount) {
-                this.visibleFlowerCount = this.config.flowerAmount;
-            }
-        } else {
-            // SHRINK: hide flowers
-            this.visibleFlowerCount -= this.config.flowersPerSecond * deltaSeconds;
-            if (this.visibleFlowerCount <= 0) {
-                this.visibleFlowerCount = 0;
-                this.finishDisposal();
-            }
-        }
-    }
-    
-    startDisposal = (): void => {
-        if(this.isDisposing) return;
-        this.isDisposing = true;
-
-        // Propagate to child spirals
-        this.childSpirals.forEach(child => child.startDisposal());
-    }
-    
-    scheduleDisposal = (seconds: number): void => {
-        
-        this.disposalDelay = seconds;
-        this.disposalTimer = 0;
-        this.autoDispose = true;
-        this.isDisposing = false;
-        
-        // Propagate to child spirals
-        this.childSpirals.forEach(child => child.scheduleDisposal(seconds));
-    }
-    
-    private finishDisposal = (): void => {
-        this.destroyGraphicsAndChildren();
-
-        // Reset disposal state, but keep app reference alive
-        this.isDisposing = false;
-        this.visibleFlowerCount = 0;
-    }
-
-    dispose = (): void => {
-        // Stop any auto-disposal logic
-        this.autoDispose = false;
-        this.isDisposing = false;
-
-        this.destroyGraphicsAndChildren();
-
-        // Reset internal state so this spiral is truly dead
-        this.visibleFlowerCount = 0;
-        this.petalAngle = 0;
-        this.disposalTimer = 0;
-        this.disposalDelay = 0;
-
-        this.app = null; 
-    }
-
-    updateConfig = (
-        patch: Partial<FlowerSpiralConfig>
-    ): void => {
-        const oldConfig = this.config;
-        this.config = { ...this.config, ...patch };
-
-        if (!this.app) return;
-
-        const flowerCountChanged =
-            patch.flowerAmount !== undefined &&
-            patch.flowerAmount !== oldConfig.flowerAmount;
-
-        const petalCountChanged =
-            patch.petalsPerFlower !== undefined &&
-            patch.petalsPerFlower !== oldConfig.petalsPerFlower;
-
-        if (flowerCountChanged || petalCountChanged) {
-            this.destroyGraphicsAndChildren();
-            this.buildFlowers();
-            this.buildChildSpirals();
-        }
-
-        if (
-            patch.palette &&
-            patch.palette !== oldConfig.palette
-        ) {
-            this.paletteTween = new PaletteTween(
-                this.config.palette,
-                this.config.flowerAmount
-            );
-        }
     }
 }
