@@ -43,6 +43,15 @@ export type MandelbrotConfig = {
     paletteSpeed: number;
     // iteration mapping curve (>0). 1 = linear, <1 boosts highlights, >1 boosts shadows.
     paletteGamma: number;
+
+    // Lighting (escaped pixels only)
+    lightingEnabled: boolean;
+    lightDir: { x: number; y: number; z: number };
+    lightStrength: number; // 0..2
+    specStrength: number; // 0..2
+    specPower: number; // e.g. 16..128
+    deEpsilonPx: number; // finite-diff step in pixels for normal
+    deScale: number; // distance estimate scale multiplier
 };
 
 export const defaultMandelbrotConfig: MandelbrotConfig = {
@@ -54,7 +63,7 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     animate: true,
     animationQuality: 2,
 
-    zoomOscillationMaxFactor: 10000,
+    zoomOscillationMaxFactor: 15000,
     zoomOscillationSpeed: 0.04,
     rotation: 0,
     rotationSpeed: 0.25,
@@ -81,4 +90,12 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     palettePhase: 0,
     paletteSpeed: 0.06,
     paletteGamma: 1,
+
+    lightingEnabled: true,
+    lightDir: { x: 0.35, y: 0.45, z: 0.85 },
+    lightStrength: 1.5,
+    specStrength: 0.35,
+    specPower: 48,
+    deEpsilonPx: 2.0,
+    deScale: 1.0,
 };

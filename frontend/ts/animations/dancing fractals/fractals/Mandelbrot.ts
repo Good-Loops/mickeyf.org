@@ -4,6 +4,9 @@ import type FractalAnimation from "@/animations/dancing fractals/interfaces/Frac
 import { defaultMandelbrotConfig, type MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
 import clamp from "@/utils/clamp";
 import lerp from "@/utils/lerp";
+import { hslToRgb } from "@/utils/hsl";
+
+const MAX_PALETTE = 16;
 
 type MandelbrotRuntime = {
     elapsedAnimSeconds: number;
@@ -24,46 +27,254 @@ const FILTER_VERTEX_SRC =
   "    vUv = aPosition;\n" +
   "}\n";
 
-const MANDELBROT_FRAGMENT_SRC = "precision highp float;\n"
-    + "precision highp int;\n\n"
-    + "in vec2 vUv;\n\n"
-    + "out vec4 finalColor;\n\n"
-    + "uniform sampler2D uTexture;\n\n"
-    + "uniform vec2 uResolution;\n"
-    + "uniform vec2 uCenter;\n"
-    + "uniform float uLogZoom;\n"
-    + "uniform float uRotation;\n"
-    + "uniform int uMaxIter;\n"
-    + "uniform float uBailout;\n\n"
-    + "vec2 rotate2d(vec2 v, float a)\n"
-    + "{\n"
-    + "    float c = cos(a);\n"
-    + "    float s = sin(a);\n"
-    + "    return vec2(c * v.x - s * v.y, s * v.x + c * v.y);\n"
-    + "}\n\n"
-    + "void main(void)\n"
-    + "{\n"
-    + "    vec2 fragCoord = vUv * uResolution;\n"
-    + "    vec2 p = fragCoord - 0.5 * uResolution;\n"
-    + "    float zoom = exp(uLogZoom);\n"
-    + "    vec2 delta = p / zoom;\n"
-    + "    delta = rotate2d(delta, uRotation);\n"
-    + "    vec2 c = uCenter + delta;\n\n"
-    + "    vec2 z = vec2(0.0, 0.0);\n"
-    + "    int iter = 0;\n"
-    + "    bool escaped = false;\n"
-    + "    for (int i = 0; i < 4096; i++)\n"
-    + "    {\n"
-    + "        if (i >= uMaxIter) { break; }\n"
-    + "        // z = z^2 + c\n"
-    + "        float x = z.x;\n"
-    + "        float y = z.y;\n"
-    + "        z = vec2(x * x - y * y, 2.0 * x * y) + c;\n"
-    + "        if (dot(z, z) > uBailout * uBailout) { iter = i; escaped = true; break; }\n"
-    + "    }\n\n"
-    + "    float v = escaped ? (float(iter) / max(1.0, float(uMaxIter))) : 0.0;\n"
-    + "    finalColor = vec4(vec3(v), 1.0);\n"
-    + "}\n";
+const MANDELBROT_FRAGMENT_SRC = `precision highp float;
+precision highp int;
+
+in vec2 vUv;
+
+out vec4 finalColor;
+
+uniform sampler2D uTexture;
+
+uniform vec2 uResolution;
+uniform vec2 uCenter;
+uniform float uLogZoom;
+uniform float uRotation;
+uniform int uMaxIter;
+uniform float uBailout;
+
+uniform vec3 uPaletteRgb[${MAX_PALETTE}];
+uniform int uPaletteSize;
+uniform float uPalettePhase;
+uniform float uPaletteGamma;
+uniform int uSmoothColoring;
+
+uniform int uLightingEnabled;
+uniform vec3 uLightDir;
+uniform float uLightStrength;
+uniform float uSpecStrength;
+uniform float uSpecPower;
+uniform float uDeEpsilonPx;
+uniform float uDeScale;
+
+vec2 rotate2d(vec2 v, float a)
+{
+    float c = cos(a);
+    float s = sin(a);
+    return vec2(c * v.x - s * v.y, s * v.x + c * v.y);
+}
+
+vec2 screenToComplexDelta(vec2 uv, float scale, float rot)
+{
+    vec2 d = uv * scale;
+    return rotate2d(d, rot);
+}
+
+void complexDerivatives(out vec2 dcDx, out vec2 dcDy, float scale, float rot)
+{
+    float aspect = uResolution.x / uResolution.y;
+    vec2 uvPerPixel = vec2(2.0 / uResolution.x, 2.0 / uResolution.y);
+    uvPerPixel.x *= aspect;
+
+    vec2 duvDx = vec2(uDeEpsilonPx, 0.0) * uvPerPixel;
+    vec2 duvDy = vec2(0.0, uDeEpsilonPx) * uvPerPixel;
+
+    dcDx = screenToComplexDelta(duvDx, scale, rot);
+    dcDy = screenToComplexDelta(duvDy, scale, rot);
+}
+
+vec3 paletteAt(int idx)
+{
+    vec3 c = uPaletteRgb[0];
+    for (int i = 1; i < ${MAX_PALETTE}; i++)
+    {
+        float m = float(i == idx);
+        c = mix(c, uPaletteRgb[i], m);
+    }
+    return c;
+}
+
+vec2 cmul(vec2 a, vec2 b)
+{
+    return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+float computeDE(vec2 cIn, out bool escapedOut)
+{
+    vec2 z = vec2(0.0, 0.0);
+    vec2 dz = vec2(0.0, 0.0);
+
+    float b2 = uBailout * uBailout;
+    escapedOut = false;
+
+    for (int i = 0; i < 4096; i++)
+    {
+        if (i >= uMaxIter) { break; }
+
+        vec2 zPrev = z;
+
+        float xz = z.x;
+        float yz = z.y;
+        z = vec2(xz * xz - yz * yz, 2.0 * xz * yz) + cIn;
+
+        dz = 2.0 * cmul(zPrev, dz) + vec2(1.0, 0.0);
+
+        if (dot(z, z) > b2) { escapedOut = true; break; }
+    }
+
+    if (!escapedOut) return 0.0;
+
+    float r = length(z);
+    float dr = length(dz);
+    if (dr <= 1e-9 || r <= 1e-9) return 0.0;
+
+    float de = 0.5 * log(r) * r / dr;
+    de = clamp(de, 0.0, 10.0);
+    return de * uDeScale;
+}
+
+float heightFromDE(float de)
+{
+    float d = max(de, 1e-9);
+    return exp(-2.0 * d);
+}
+
+void main(void)
+{
+    // normalized coordinates centered at 0
+    vec2 uv = vUv * 2.0 - 1.0;
+    // aspect correct so uv is isotropic in screen space
+    uv.x *= (uResolution.x / uResolution.y);
+
+    // scale = complex half-height visible on screen
+    float scale = exp(-uLogZoom);
+    vec2 c = uCenter + screenToComplexDelta(uv, scale, uRotation);
+
+    vec2 z = vec2(0.0, 0.0);
+    float maxR2 = 0.0;
+    int iter = 0;
+    bool escaped = false;
+
+    float b2 = uBailout * uBailout;
+
+    for (int i = 0; i < 4096; i++)
+    {
+        if (i >= uMaxIter) { break; }
+
+        // z = z^2 + c
+        float xz = z.x;
+        float yz = z.y;
+        z = vec2(xz * xz - yz * yz, 2.0 * xz * yz) + c;
+
+        float r2 = dot(z, z);
+        maxR2 = max(maxR2, r2);
+
+        if (r2 > b2) { iter = i; escaped = true; break; }
+    }
+
+    // Inside-set subtle glow (palette-derived, cycles with phase)
+    if (!escaped)
+    {
+        int nGlow = uPaletteSize;
+        if (nGlow < 1) nGlow = 1;
+        if (nGlow > ${MAX_PALETTE}) nGlow = ${MAX_PALETTE};
+
+        // --- Inside-set glow color (smoothly cycles through palette) ---
+        float gx = fract(uPalettePhase) * float(nGlow);
+        int gi0 = int(floor(gx));
+        int gi1 = gi0 + 1;
+        if (gi1 >= nGlow) gi1 = 0;
+        float gf = fract(gx);
+
+        gf = gf * gf * (3.0 - 2.0 * gf);
+
+        vec3 g0 = paletteAt(gi0);
+        vec3 g1 = paletteAt(gi1);
+        vec3 glowCol = mix(g0, g1, gf) * 0.8;
+
+        float edge = maxR2 / max(1e-6, b2);
+        edge = clamp(edge, 0.0, 1.0);
+        float g = smoothstep(0.0, 0.45, edge);
+        g = pow(g, 0.6);
+        vec3 insideCol = mix(vec3(0.0), glowCol, g);
+
+        finalColor = vec4(insideCol, 1.0);
+        return;
+    }
+
+    // Escaped coloring (unchanged)
+    float t01;
+    if (uSmoothColoring == 1)
+    {
+        float nu = float(iter) + 1.0 - log2(log2(length(z)));
+        t01 = nu / max(1.0, float(uMaxIter));
+    }
+    else
+    {
+        t01 = float(iter) / max(1.0, float(uMaxIter));
+    }
+
+    t01 = clamp(t01, 0.0, 1.0);
+    t01 = pow(t01, max(0.0001, uPaletteGamma));
+
+    int n = (uPaletteSize > 0) ? uPaletteSize : 1;
+    float x = fract(t01 + uPalettePhase);
+    float pIdx = x * float(n);
+    int i0 = int(floor(pIdx));
+    int i1 = i0 + 1;
+    if (i1 >= n) i1 = 0;
+    float f = fract(pIdx);
+
+    vec3 c0 = paletteAt(i0);
+    vec3 c1 = paletteAt(i1);
+    vec3 col = mix(c0, c1, f);
+
+    if (uLightingEnabled == 1)
+    {
+        bool esc0;
+        float de0 = computeDE(c, esc0);
+
+        if (esc0)
+        {
+            vec2 dcDx;
+            vec2 dcDy;
+            complexDerivatives(dcDx, dcDy, scale, uRotation);
+
+            bool escX;
+            bool escY;
+            float deX = computeDE(c + dcDx, escX);
+            float deY = computeDE(c + dcDy, escY);
+            if (!escX) deX = de0;
+            if (!escY) deY = de0;
+
+            float h0 = heightFromDE(de0);
+            float hx = heightFromDE(deX);
+            float hy = heightFromDE(deY);
+
+            float normalGain = 6.0;
+            vec3 n = normalize(vec3((h0 - hx) * normalGain, (h0 - hy) * normalGain, 0.15));
+
+            vec3 L = normalize(uLightDir);
+            float ndl = max(0.0, dot(n, L));
+
+            float boundaryMask = 1.0 - smoothstep(0.002, 0.05, de0);
+
+            float ambient = 0.25;
+            vec3 base = col;
+            vec3 lit = base * (ambient + uLightStrength * ndl * boundaryMask);
+
+            vec3 V = vec3(0.0, 0.0, 1.0);
+            vec3 H = normalize(L + V);
+            float spec = pow(max(0.0, dot(n, H)), uSpecPower) * uSpecStrength * boundaryMask;
+            lit += vec3(spec);
+
+            col = lit;
+        }
+    }
+
+    finalColor = vec4(col, 1.0);
+}
+`;
 
 const smoothstep01 = (x: number): number => {
     const t = clamp(x, 0, 1);
@@ -84,6 +295,11 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private screenH = 0;
 
     private config: MandelbrotConfig;
+
+    private paletteRgb = new Float32Array(MAX_PALETTE * 3);
+    private paletteSize = 1;
+
+    private lightDir = new Float32Array([0, 0, 1]);
 
     // Mutable runtime state that changes every frame; config is treated as immutable inputs during step().
     // `config.palettePhase` is only an initial/externally-set seed; rendering uses `runtime.palettePhase`.
@@ -107,7 +323,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
     private baseLogZoom = 0;
 
-    constructor(initialConfig?: MandelbrotConfig) {
+    constructor(centerX: number, centerY: number, initialConfig?: MandelbrotConfig) {
         // Merge defaults so new config options are always present.
         this.config = { ...defaultMandelbrotConfig, ...(initialConfig ?? {}) };
 
@@ -121,6 +337,14 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         if (patch.palettePhase != null) {
             this.runtime.palettePhase = patch.palettePhase;
+            const uniformGroup = this.mandelbrotUniforms;
+            if (uniformGroup) {
+                (uniformGroup.uniforms as any).uPalettePhase = this.runtime.palettePhase;
+            }
+        }
+
+        if (patch.palette != null || patch.paletteGamma != null || patch.smoothColoring != null) {
+            this.rebuildPaletteUniforms();
         }
 
         if (patch.centerX != null || patch.centerY != null) {
@@ -170,6 +394,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         this.rotation = this.config.rotation;
 
+        this.lightDir[0] = this.config.lightDir.x;
+        this.lightDir[1] = this.config.lightDir.y;
+        this.lightDir[2] = this.config.lightDir.z;
+
         const uniforms = new UniformGroup({
             uResolution: { value: new Float32Array([this.screenW, this.screenH]), type: "vec2<f32>" },
             uCenter: { value: new Float32Array([this.viewCenter[0], this.viewCenter[1]]), type: "vec2<f32>" },
@@ -177,6 +405,20 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uRotation: { value: this.rotation, type: "f32" },
             uMaxIter: { value: this.config.maxIterations | 0, type: "i32" },
             uBailout: { value: this.config.bailoutRadius, type: "f32" },
+
+            uPaletteRgb: { value: this.paletteRgb, type: "vec3<f32>", size: MAX_PALETTE },
+            uPaletteSize: { value: this.paletteSize, type: "i32" },
+            uPalettePhase: { value: this.runtime.palettePhase, type: "f32" },
+            uPaletteGamma: { value: this.config.paletteGamma, type: "f32" },
+            uSmoothColoring: { value: this.config.smoothColoring ? 1 : 0, type: "i32" },
+
+            uLightingEnabled: { value: this.config.lightingEnabled ? 1 : 0, type: "i32" },
+            uLightDir: { value: this.lightDir, type: "vec3<f32>" },
+            uLightStrength: { value: this.config.lightStrength, type: "f32" },
+            uSpecStrength: { value: this.config.specStrength, type: "f32" },
+            uSpecPower: { value: this.config.specPower, type: "f32" },
+            uDeEpsilonPx: { value: this.config.deEpsilonPx, type: "f32" },
+            uDeScale: { value: this.config.deScale, type: "f32" },
         });
 
         const filter = new Filter({
@@ -198,14 +440,23 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const complexWidth = 3.5;
         const complexHeight = 3.0;
         const marginFactor = 0.95;
-        const zoomFit = Math.min(this.screenW / complexWidth, this.screenH / complexHeight) * marginFactor;
-        const logZoomFit = Math.log(zoomFit);
 
-        this.baseLogZoom = logZoomFit;
+        const aspect = this.screenW / this.screenH;
+        const scaleFitH = (complexHeight / 2) / marginFactor;
+        const scaleFitW = (complexWidth / (2 * aspect)) / marginFactor;
+        const scaleFit = Math.max(scaleFitH, scaleFitW);
+
+        // scale = exp(-uLogZoom)
+        this.baseLogZoom = -Math.log(scaleFit);
         uniforms.uniforms.uLogZoom = this.baseLogZoom;
         uniforms.uniforms.uRotation = this.rotation;
         uniforms.uniforms.uCenter[0] = this.viewCenter[0];
         uniforms.uniforms.uCenter[1] = this.viewCenter[1];
+
+        this.rebuildPaletteUniforms();
+        (uniforms.uniforms as any).uPalettePhase = this.runtime.palettePhase;
+
+        this.syncUniforms();
     }
 
     step(deltaSeconds: number, _timeMS: number): void {
@@ -242,7 +493,27 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uRotation: number;
             uMaxIter: number;
             uBailout: number;
+
+            uPaletteRgb: Float32Array;
+            uPaletteSize: number;
+            uPalettePhase: number;
+            uPaletteGamma: number;
+            uSmoothColoring: number;
+
+            uLightingEnabled: number;
+            uLightDir: Float32Array;
+            uLightStrength: number;
+            uSpecStrength: number;
+            uSpecPower: number;
+            uDeEpsilonPx: number;
+            uDeScale: number;
         };
+
+        if (this.config.paletteSpeed !== 0) {
+            this.runtime.palettePhase = (this.runtime.palettePhase + this.config.paletteSpeed * deltaSeconds) % 1;
+            if (this.runtime.palettePhase < 0) this.runtime.palettePhase += 1;
+        }
+        uniforms.uPalettePhase = this.runtime.palettePhase;
 
         if (!this.config.animate) {
             uniforms.uLogZoom = this.baseLogZoom;
@@ -331,6 +602,20 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uRotation: number;
             uMaxIter: number;
             uBailout: number;
+
+            uPaletteRgb: Float32Array;
+            uPaletteSize: number;
+            uPalettePhase: number;
+            uPaletteGamma: number;
+            uSmoothColoring: number;
+
+            uLightingEnabled: number;
+            uLightDir: Float32Array;
+            uLightStrength: number;
+            uSpecStrength: number;
+            uSpecPower: number;
+            uDeEpsilonPx: number;
+            uDeScale: number;
         };
 
         uniforms.uResolution[0] = this.screenW;
@@ -339,5 +624,68 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         uniforms.uCenter[1] = this.viewCenter[1];
         uniforms.uMaxIter = this.config.maxIterations | 0;
         uniforms.uBailout = this.config.bailoutRadius;
+
+        // Safe to sync (but do not override uPalettePhase here)
+        uniforms.uPaletteGamma = this.config.paletteGamma;
+        uniforms.uSmoothColoring = this.config.smoothColoring ? 1 : 0;
+
+        this.syncLightingUniforms(uniforms);
+    }
+
+    private syncLightingUniforms(uniforms: {
+        uLightingEnabled: number;
+        uLightDir: Float32Array;
+        uLightStrength: number;
+        uSpecStrength: number;
+        uSpecPower: number;
+        uDeEpsilonPx: number;
+        uDeScale: number;
+    }): void {
+        uniforms.uLightingEnabled = this.config.lightingEnabled ? 1 : 0;
+
+        uniforms.uLightDir[0] = this.config.lightDir.x;
+        uniforms.uLightDir[1] = this.config.lightDir.y;
+        uniforms.uLightDir[2] = this.config.lightDir.z;
+
+        uniforms.uLightStrength = this.config.lightStrength;
+        uniforms.uSpecStrength = this.config.specStrength;
+        uniforms.uSpecPower = this.config.specPower;
+        uniforms.uDeEpsilonPx = this.config.deEpsilonPx;
+        uniforms.uDeScale = this.config.deScale;
+    }
+
+    private rebuildPaletteUniforms(): void {
+        const palette = this.config.palette;
+        const count = clamp(palette.length, 1, MAX_PALETTE);
+
+        this.paletteSize = count;
+
+        for (let i = 0; i < MAX_PALETTE; i++) {
+            const base = i * 3;
+            if (i < count) {
+                const [r8, g8, b8] = hslToRgb(palette[i]);
+                this.paletteRgb[base + 0] = r8 / 255;
+                this.paletteRgb[base + 1] = g8 / 255;
+                this.paletteRgb[base + 2] = b8 / 255;
+            } else {
+                this.paletteRgb[base + 0] = 0;
+                this.paletteRgb[base + 1] = 0;
+                this.paletteRgb[base + 2] = 0;
+            }
+        }
+
+        const uniformGroup = this.mandelbrotUniforms;
+        if (!uniformGroup) return;
+
+        const uniforms = uniformGroup.uniforms as {
+            uPaletteRgb: Float32Array;
+            uPaletteSize: number;
+            uPaletteGamma: number;
+            uSmoothColoring: number;
+        };
+
+        uniforms.uPaletteSize = this.paletteSize;
+        uniforms.uPaletteGamma = this.config.paletteGamma;
+        uniforms.uSmoothColoring = this.config.smoothColoring ? 1 : 0;
     }
 }
