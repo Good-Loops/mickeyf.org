@@ -13,6 +13,8 @@ export type FlowerSpiralUniforms = {
     uResolution: Float32Array;
     uCenterPx: Float32Array;
 
+    uZoom: number;
+
     // Config
     uFlowerAmount: number;
     uPetalsPerFlower: number;
@@ -58,6 +60,8 @@ export const createFlowerSpiralUniformGroup = (args: {
         uResolution: new Float32Array([args.widthPx, args.heightPx]),
         uCenterPx: new Float32Array([args.centerX, args.centerY]),
 
+        uZoom: 1,
+
         uFlowerAmount: 1,
         uPetalsPerFlower: 6,
         uFlowersPerSecond: 10,
@@ -90,6 +94,8 @@ export const createFlowerSpiralUniformGroup = (args: {
         uTimeMs: { value: uniforms.uTimeMs, type: "f32" },
         uResolution: { value: uniforms.uResolution, type: "vec2<f32>" },
         uCenterPx: { value: uniforms.uCenterPx, type: "vec2<f32>" },
+
+        uZoom: { value: uniforms.uZoom, type: "f32" },
 
         uFlowerAmount: { value: uniforms.uFlowerAmount | 0, type: "i32" },
         uPetalsPerFlower: { value: uniforms.uPetalsPerFlower | 0, type: "i32" },

@@ -3,6 +3,8 @@ import { Application, Filter, GlProgram, Sprite, Texture, UniformGroup } from "p
 import PaletteTween from "../../helpers/color/PaletteTween";
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
+import hzToPitchInfo from "@/animations/helpers/audio/pitchInfo";
+import pitchClassToHue from "@/animations/helpers/audio/pitchClassToHue";
 import clamp from "@/utils/clamp";
 import type FractalAnimation from "../interfaces/FractalAnimation";
 import { defaultFlowerSpiralConfig, type FlowerSpiralConfig } from "../config/FlowerSpiralConfig";
@@ -18,6 +20,8 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.baseConfig = FlowerSpiral.deepCopyConfig(this.config);
 
         this.paletteTween = new PaletteTween(this.config.palette, this.config.flowerAmount);
+
+        this.currentPitchHueDeg = this.config.palette[0]?.hue ?? 0;
     }
 
     static disposalSeconds = 10;
@@ -48,6 +52,11 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     // Music beat impulse
     private beatKick01 = 0;
 
+    // Pitch hue (degrees) derived from pitch class
+    private currentPitchHueDeg = 0;
+    private lastPitchClass: number | null = null;
+    private pitchClassStableMs = 0;
+
     // Disposal logic
     private disposalDelay = 0;
     private disposalTimer = 0;
@@ -72,6 +81,9 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.uniformGroup = uniformGroup;
         this.paletteHsl = paletteHsl;
 
+        // Default zoom (no scaling)
+        (uniformGroup.uniforms as any).uZoom = 1.0;
+
         const filter = createFlowerSpiralFilter(uniformGroup);
         this.filter = filter;
         quad.filters = [filter];
@@ -80,6 +92,10 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
 
         this.visibleFlowerCount = 0;
         this.beatKick01 = 0;
+
+        this.lastPitchClass = null;
+        this.pitchClassStableMs = 0;
+        this.currentPitchHueDeg = this.config.palette[0]?.hue ?? 0;
 
         this.configDirty = true;
         this.paletteDirty = true;
@@ -92,6 +108,8 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         const paletteHsl = this.paletteHsl;
 
         if (!app || !quad || !uniformGroup || !paletteHsl) return;
+
+        const zoom = this.computeZoom(nowMs);
 
         if (this.autoDispose) {
             this.disposalTimer += deltaSeconds;
@@ -109,7 +127,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         const musicWeight01 = clamp(features?.musicWeight01 ?? 0, 0, 1);
         const beatEnv01 = clamp(features?.beatEnv01 ?? 0, 0, 1);
         const beatHit = !!features?.beatHit;
-        const pitchHue = features?.pitchColor?.hue ?? this.config.palette[0]?.hue ?? 0;
+        const pitchHue = this.computePitchHueDeg(deltaSeconds, features);
 
         // Beat kick (fast impulse)
         const KICK_DECAY_PER_SEC = 6;
@@ -142,8 +160,56 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             beatEnv01,
             beatKick01: this.beatKick01,
             pitchHue,
+            zoom,
             visibleFlowerCount: this.visibleFlowerCount,
         });
+    }
+
+    private computeZoom(nowMs: number): number {
+        // Enabled-by-default: treat missing/undefined as enabled.
+        if (this.config.zoomEnabled === false) return 1.0;
+
+        const z0 = Number.isFinite(this.config.zoomMin) ? this.config.zoomMin : 1.0;
+        const z1 = Number.isFinite(this.config.zoomMax) ? this.config.zoomMax : 1.0;
+        const speed = Number.isFinite(this.config.zoomSpeed) ? this.config.zoomSpeed : 0.0;
+
+        const TAU = Math.PI * 2;
+        const tSec = nowMs * 0.001;
+        const phase = tSec * speed * TAU;
+        const w = 0.5 + 0.5 * Math.sin(phase);
+
+        return z0 + (z1 - z0) * w;
+    }
+
+    private computePitchHueDeg(deltaSeconds: number, features: MusicFeaturesFrame): number {
+        // Hold-last by default to avoid hue pops during silence/jitter.
+        if (!features?.hasMusic) return this.currentPitchHueDeg;
+
+        let pitchClass: number | null = null;
+        const decision = features.pitchDecision?.result;
+
+        if (decision?.kind === "pitch" && Number.isFinite(decision.pitchClass)) {
+            pitchClass = decision.pitchClass;
+        } else if (Number.isFinite(features.pitchHz) && features.pitchHz > 0 && features.clarity01 > 0) {
+            pitchClass = hzToPitchInfo(features.pitchHz).pitchClass;
+        }
+
+        if (pitchClass == null) return this.currentPitchHueDeg;
+
+        const deltaMs = deltaSeconds * 1000;
+        if (this.lastPitchClass === pitchClass) {
+            this.pitchClassStableMs += deltaMs;
+        } else {
+            this.lastPitchClass = pitchClass;
+            this.pitchClassStableMs = 0;
+        }
+
+        const STABLE_THRESHOLD_MS = 120;
+        if (this.pitchClassStableMs >= STABLE_THRESHOLD_MS) {
+            this.currentPitchHueDeg = pitchClassToHue(pitchClass);
+        }
+
+        return this.currentPitchHueDeg;
     }
 
     updateConfig(patch: Partial<FlowerSpiralConfig>): void {
@@ -295,6 +361,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             beatEnv01: number;
             beatKick01: number;
             pitchHue: number;
+            zoom: number;
             visibleFlowerCount: number;
         },
     ): void {
@@ -307,6 +374,8 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
 
         u.uCenterPx[0] = this.centerX;
         u.uCenterPx[1] = this.centerY;
+
+        u.uZoom = args.zoom;
 
         u.uHasMusic = args.hasMusic ? 1 : 0;
         u.uMusicWeight01 = args.musicWeight01;

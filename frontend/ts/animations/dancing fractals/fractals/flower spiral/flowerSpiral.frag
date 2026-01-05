@@ -9,6 +9,8 @@ uniform float uTimeMs;
 uniform vec2 uResolution;
 uniform vec2 uCenterPx;
 
+uniform float uZoom;
+
 uniform int uFlowerAmount;
 uniform int uPetalsPerFlower;
 uniform float uFlowersAlpha;
@@ -39,6 +41,15 @@ uniform vec3 uFlowerPaletteHsl[FLOWER_MAX];
 
 const float PI = 3.14159265358979323846264;
 const float TAU = 6.28318530717958647692528;
+
+// Per-petal motion tuning
+const float wobbleSpeed = 0.0018;
+const float wobbleAmountRad = 0.50;
+const float lenFlutterAmount = 0.10;
+
+// Spiral tightening (helps keep high flower counts in-bounds)
+const float spiralTighten = 0.78;
+const float spiralExponent = 1.15;
 
 float saturate(float x) { return clamp(x, 0.0, 1.0); }
 
@@ -113,6 +124,9 @@ void main(void)
 
     float pxToUv = 1.0 / (uResolution.y * 0.5);
 
+    // Centered zoom (scale space only)
+    uv /= max(uZoom, 0.0001);
+
     float tMs = uTimeMs;
 
     // Idle width/radius (pixels)
@@ -166,7 +180,8 @@ void main(void)
         float rot = (tMs * 0.001) * uPetalRotationSpeed;
         float theta = baseAngle + rot;
 
-        float rSpiralPx = t01 * uSpiralIncrement * float(flowerCount);
+        float tSpiral = pow(t01, spiralExponent);
+        float rSpiralPx = tSpiral * uSpiralIncrement * float(max(flowerCount - 1, 1)) * spiralTighten;
         float spiralRadiusUv = (rSpiralPx * uScale) * pxToUv;
 
         vec2 center = vec2(cos(theta), sin(theta)) * spiralRadiusUv;
@@ -187,11 +202,14 @@ void main(void)
         {
             if (j >= petals) break;
 
-            float petAngle = theta + float(j) * petStep;
+            float phase = float(i) * 1.73 + float(j) * 2.41;
+            float wobble = sin(uTimeMs * wobbleSpeed + phase) * wobbleAmountRad;
+            float petAngle = theta + float(j) * petStep + wobble;
             vec2 dir = vec2(cos(petAngle), sin(petAngle));
 
             vec2 a = vec2(0.0);
-            vec2 b = dir * lenUv;
+            float lenFlutter = 1.0 + lenFlutterAmount * sin(uTimeMs * (wobbleSpeed * 1.7) + phase * 1.9);
+            vec2 b = dir * (lenUv * lenFlutter);
 
             float dist = distToSegment(local, a, b);
             float aPet = smoothstep(width, 0.0, dist);
@@ -206,7 +224,7 @@ void main(void)
         vec3 palette = uFlowerPaletteHsl[i];
 
         float flowerWeight01 = clamp(uMusicWeight01 * (1.0 - radiusProgress * 0.5), 0.0, 1.0);
-        float musicHue = wrapHueDeg(uPitchHue + float(i) * 12.0);
+        float musicHue = wrapHueDeg(uPitchHue + float(i) * 6.0);
 
         vec3 musicHsl = vec3(musicHue, palette.y, palette.z);
         vec3 finalHsl = lerpHsl(palette, musicHsl, flowerWeight01);

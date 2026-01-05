@@ -29,6 +29,11 @@ export interface FlowerSpiralConfig {
 
     recursionDepth: number;      // how many recursive child spirals
     scale: number;               // overall scale factor of the spiral
+
+    zoomEnabled: boolean;
+    zoomMin: number;
+    zoomMax: number;
+    zoomSpeed: number;           // cycles per second
 }
 
 export const defaultFlowerSpiralConfig: FlowerSpiralConfig = {
@@ -71,4 +76,9 @@ export const defaultFlowerSpiralConfig: FlowerSpiralConfig = {
 
     recursionDepth: 1,
     scale: 3,
+
+    zoomEnabled: true,
+    zoomMin: 0.6,
+    zoomMax: 3,
+    zoomSpeed: 0.12,
 };
