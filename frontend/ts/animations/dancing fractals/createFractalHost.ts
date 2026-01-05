@@ -11,6 +11,7 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     await app.init({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
+        preference: 'webgl',
     });
 
     const initialPathname = window.location.pathname;

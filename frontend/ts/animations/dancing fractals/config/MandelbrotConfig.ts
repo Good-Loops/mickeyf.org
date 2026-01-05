@@ -9,32 +9,21 @@ export type MandelbrotConfig = {
     // Higher values render more pixels internally and downscale for smoother edges.
     quality: number;
 
-        // Animation (camera motion). These affect the complex-plane mapping and require recompute.
-        animate: boolean;
-        // While animating, use this quality (can be < 1 to downsample for speed).
-        animationQuality: number;
+    // Animation (camera motion). These affect the complex-plane mapping and require recompute.
+    animate: boolean;
+    // While animating, use this quality (can be < 1 to downsample for speed).
+    animationQuality: number;
 
-        // Pan: circle in screen-pixel space around (centerX, centerY)
-        panRadiusPx: number;
-        // cycles per second (0 disables)
-        panSpeed: number;
+    // Zoom breathing: zoom * (1 + zoomOscillationAmplitude * sin(...))
+    // fraction, e.g. 0.03 = +/- 3%
+    zoomOscillationMaxFactor: number;
+    // cycles per second (0 disables)
+    zoomOscillationSpeed: number;
 
-        // Zoom breathing: zoom * (1 + zoomBreathAmount * sin(...))
-        // fraction, e.g. 0.03 = +/- 3%
-        zoomBreathAmount: number;
-        // cycles per second (0 disables)
-        zoomBreathSpeed: number;
-
-        // Optional rotation (radians).
-        rotation: number;
-        // radians per second (0 disables)
-        rotationSpeed: number;
-
-        // Throttle recomputes during animation.
-        animationMinUpdateIntervalSeconds: number;
-        animationMinPanPixels: number;
-        animationMinZoomRelative: number;
-        animationMinRotationRadians: number;
+    // Optional rotation (radians).
+    rotation: number;
+    // radians per second (0 disables)
+    rotationSpeed: number;
 
     // Viewport
     centerX: number;         // complex plane X
@@ -65,17 +54,10 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     animate: true,
     animationQuality: 2,
 
-    panRadiusPx: 0,
-    panSpeed: 0,
-    zoomBreathAmount: 0.22,
-    zoomBreathSpeed: 0.04,
+    zoomOscillationMaxFactor: 10000,
+    zoomOscillationSpeed: 0.04,
     rotation: 0,
     rotationSpeed: 0.25,
-
-    animationMinUpdateIntervalSeconds: 1 / 30,
-    animationMinPanPixels: 1,
-    animationMinZoomRelative: 0.001,
-    animationMinRotationRadians: 0.001,
 
     // Focus point (Seahorse Valley)
     centerX: -0.743643887037151,
