@@ -57,6 +57,13 @@ uniform float uSpecPower;
 uniform float uDeEpsilonPx;
 uniform float uDeScale;
 
+uniform float uDeEpsilonZoomStrength;
+uniform float uDeEpsilonMinPx;
+uniform float uDeEpsilonMaxPx;
+
+uniform float uToneMapExposure;
+uniform float uToneMapShoulder;
+
 uniform float uRimStrength;
 uniform float uRimPower;
 uniform float uAtmosStrength;
@@ -76,14 +83,14 @@ vec2 screenToComplexDelta(vec2 uv, float scale, float rot)
     return rotate2d(d, rot);
 }
 
-void complexDerivatives(out vec2 dcDx, out vec2 dcDy, float scale, float rot)
+void complexDerivatives(out vec2 dcDx, out vec2 dcDy, float scale, float rot, float epsPx)
 {
     float aspect = uResolution.x / uResolution.y;
     vec2 uvPerPixel = vec2(2.0 / uResolution.x, 2.0 / uResolution.y);
     uvPerPixel.x *= aspect;
 
-    vec2 duvDx = vec2(uDeEpsilonPx, 0.0) * uvPerPixel;
-    vec2 duvDy = vec2(0.0, uDeEpsilonPx) * uvPerPixel;
+    vec2 duvDx = vec2(epsPx, 0.0) * uvPerPixel;
+    vec2 duvDy = vec2(0.0, epsPx) * uvPerPixel;
 
     dcDx = screenToComplexDelta(duvDx, scale, rot);
     dcDy = screenToComplexDelta(duvDy, scale, rot);
@@ -244,7 +251,12 @@ void main(void)
         {
             vec2 dcDx;
             vec2 dcDy;
-            complexDerivatives(dcDx, dcDy, scale, uRotation);
+            float zoom = exp(uLogZoom);
+            float zoomFactor = pow(max(1.0, zoom), uDeEpsilonZoomStrength);
+            float epsEff = uDeEpsilonPx / zoomFactor;
+            epsEff = clamp(epsEff, uDeEpsilonMinPx, uDeEpsilonMaxPx);
+
+            complexDerivatives(dcDx, dcDy, scale, uRotation, epsEff);
 
             bool escX;
             bool escY;
@@ -287,6 +299,10 @@ void main(void)
             col = lit;
         }
     }
+
+    // Tone-map escaped shading only (inside-set glow returns early)
+    col *= uToneMapExposure;
+    col = col / (1.0 + uToneMapShoulder * col);
 
     finalColor = vec4(col, 1.0);
 }
@@ -436,6 +452,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uDeEpsilonPx: { value: this.config.deEpsilonPx, type: "f32" },
             uDeScale: { value: this.config.deScale, type: "f32" },
 
+            uDeEpsilonZoomStrength: { value: this.config.deEpsilonZoomStrength, type: "f32" },
+            uDeEpsilonMinPx: { value: this.config.deEpsilonMinPx, type: "f32" },
+            uDeEpsilonMaxPx: { value: this.config.deEpsilonMaxPx, type: "f32" },
+
+            uToneMapExposure: { value: this.config.toneMapExposure, type: "f32" },
+            uToneMapShoulder: { value: this.config.toneMapShoulder, type: "f32" },
+
             uRimStrength: { value: this.config.rimStrength, type: "f32" },
             uRimPower: { value: this.config.rimPower, type: "f32" },
             uAtmosStrength: { value: this.config.atmosStrength, type: "f32" },
@@ -530,12 +553,33 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uDeEpsilonPx: number;
             uDeScale: number;
 
+            uDeEpsilonZoomStrength: number;
+            uDeEpsilonMinPx: number;
+            uDeEpsilonMaxPx: number;
+
+            uToneMapExposure: number;
+            uToneMapShoulder: number;
+
             uRimStrength: number;
             uRimPower: number;
             uAtmosStrength: number;
             uAtmosFalloff: number;
             uNormalZ: number;
         };
+
+        if (this.config.lightOrbitEnabled) {
+            const a = this.runtime.elapsedAnimSeconds * this.config.lightOrbitSpeed;
+            const tilt = clamp(this.config.lightOrbitTilt, 0, 1);
+
+            const x = Math.cos(a);
+            const y = Math.sin(a);
+            const z = tilt;
+            const invLen = 1 / Math.max(1e-9, Math.sqrt(x * x + y * y + z * z));
+
+            this.lightDir[0] = x * invLen;
+            this.lightDir[1] = y * invLen;
+            this.lightDir[2] = z * invLen;
+        }
 
         if (this.config.paletteSpeed !== 0) {
             this.runtime.palettePhase = (this.runtime.palettePhase + this.config.paletteSpeed * deltaSeconds) % 1;
@@ -645,6 +689,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uDeEpsilonPx: number;
             uDeScale: number;
 
+            uDeEpsilonZoomStrength: number;
+            uDeEpsilonMinPx: number;
+            uDeEpsilonMaxPx: number;
+
+            uToneMapExposure: number;
+            uToneMapShoulder: number;
+
             uRimStrength: number;
             uRimPower: number;
             uAtmosStrength: number;
@@ -675,6 +726,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         uDeEpsilonPx: number;
         uDeScale: number;
 
+        uDeEpsilonZoomStrength: number;
+        uDeEpsilonMinPx: number;
+        uDeEpsilonMaxPx: number;
+
+        uToneMapExposure: number;
+        uToneMapShoulder: number;
+
         uRimStrength: number;
         uRimPower: number;
         uAtmosStrength: number;
@@ -692,6 +750,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         uniforms.uSpecPower = this.config.specPower;
         uniforms.uDeEpsilonPx = this.config.deEpsilonPx;
         uniforms.uDeScale = this.config.deScale;
+
+        uniforms.uDeEpsilonZoomStrength = this.config.deEpsilonZoomStrength;
+        uniforms.uDeEpsilonMinPx = this.config.deEpsilonMinPx;
+        uniforms.uDeEpsilonMaxPx = this.config.deEpsilonMaxPx;
+
+        uniforms.uToneMapExposure = this.config.toneMapExposure;
+        uniforms.uToneMapShoulder = this.config.toneMapShoulder;
 
         uniforms.uRimStrength = this.config.rimStrength;
         uniforms.uRimPower = this.config.rimPower;

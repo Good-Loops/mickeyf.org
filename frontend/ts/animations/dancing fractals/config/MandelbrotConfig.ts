@@ -58,6 +58,18 @@ export type MandelbrotConfig = {
     atmosStrength: number;
     atmosFalloff: number;
     normalZ: number;
+
+    // Stability / polish
+    deEpsilonZoomStrength: number;
+    deEpsilonMinPx: number;
+    deEpsilonMaxPx: number;
+
+    toneMapExposure: number;
+    toneMapShoulder: number;
+
+    lightOrbitEnabled: boolean;
+    lightOrbitSpeed: number;
+    lightOrbitTilt: number;
 };
 
 export const defaultMandelbrotConfig: MandelbrotConfig = {
@@ -110,4 +122,15 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     rimPower: 3.0,
     atmosStrength: 0.25,
     atmosFalloff: 9.0,
+
+    deEpsilonZoomStrength: 0.25,
+    deEpsilonMinPx: 0.75,
+    deEpsilonMaxPx: 2.5,
+
+    toneMapExposure: 1.65,
+    toneMapShoulder: 0.7,
+
+    lightOrbitEnabled: true,
+    lightOrbitSpeed: 0.05,
+    lightOrbitTilt: 0.25,
 };
