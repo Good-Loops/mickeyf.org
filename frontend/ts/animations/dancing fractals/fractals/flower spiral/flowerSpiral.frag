@@ -139,13 +139,14 @@ void main(void)
     float kick = clamp(uBeatKick01, 0.0, 1.0);
     float intensity = clamp(envShaped * 0.7 + kick * 0.9, 0.0, 1.5);
 
-    float thicknessPulse = clamp(1.0 + intensity * 2.0, 1.0, 4.0);
+    float thicknessPulse = clamp(1.0 + intensity * 2.0, 1.0, 2.5);
     float radiusPulse = clamp(1.0 + intensity * 0.9, 1.0, 2.5);
 
     float musicWidthPx = uPetalThicknessBase * thicknessPulse;
     float musicRadiusPx = uPetalLengthBase * radiusPulse;
 
     float widthPx = mix(idleWidthPx, musicWidthPx, clamp(uHasMusic, 0.0, 1.0));
+    widthPx = min(widthPx, 14.0);
     float radiusPx = mix(idleRadiusPx, musicRadiusPx, clamp(uHasMusic, 0.0, 1.0));
 
     float width = max(0.00001, widthPx * pxToUv);
@@ -212,7 +213,21 @@ void main(void)
             vec2 b = dir * (lenUv * lenFlutter);
 
             float dist = distToSegment(local, a, b);
-            float aPet = smoothstep(width, 0.0, dist);
+
+            // Pixel-correct edge AA (stable at any zoom).
+            float aa = max(fwidth(dist) * 0.6, 1e-6);
+            float edge = 1.0 - smoothstep(width - aa, width + aa, dist);
+
+            // Reduce center overlap without affecting stroke radius.
+            float tSeg = 0.0;
+            float bb = dot(b, b);
+            if (bb > 1e-10)
+            {
+                tSeg = clamp(dot(local, b) / bb, 0.0, 1.0);
+            }
+            float taper = smoothstep(0.08, 0.22, tSeg);
+
+            float aPet = edge * taper;
             aFlower = max(aFlower, aPet);
         }
 

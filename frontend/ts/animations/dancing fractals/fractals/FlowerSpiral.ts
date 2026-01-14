@@ -20,7 +20,6 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         initialConfig: Partial<FlowerSpiralConfig> = {},
     ) {
         this.config = { ...defaultFlowerSpiralConfig, ...initialConfig };
-        this.baseConfig = FlowerSpiral.deepCopyConfig(this.config);
 
         this.paletteTween = new PaletteTween(this.config.palette, this.config.flowerAmount);
 
@@ -28,10 +27,9 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     }
 
     static disposalSeconds = 10;
-    static backgroundColor: string = "hsla(184, 100%, 89%, 1.00)";
+    static backgroundColor: string = "rgb(199, 255, 229)";
 
     private config: FlowerSpiralConfig;
-    private readonly baseConfig: FlowerSpiralConfig;
 
     private app: Application | null = null;
 
@@ -391,12 +389,5 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         u.uPitchHue = args.pitchHue;
 
         u.uVisibleFlowerCount = args.visibleFlowerCount;
-    }
-
-    private static deepCopyConfig(cfg: FlowerSpiralConfig): FlowerSpiralConfig {
-        return {
-            ...cfg,
-            palette: cfg.palette.map(c => ({ ...c })),
-        };
     }
 }
