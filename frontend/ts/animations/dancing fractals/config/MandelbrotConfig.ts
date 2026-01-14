@@ -81,7 +81,7 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     animate: true,
     animationQuality: 2,
 
-    zoomOscillationMaxFactor: 60000,
+    zoomOscillationMaxFactor: 30000,
     zoomOscillationSpeed: 0.02,
     rotation: 0,
     rotationSpeed: 0.25,

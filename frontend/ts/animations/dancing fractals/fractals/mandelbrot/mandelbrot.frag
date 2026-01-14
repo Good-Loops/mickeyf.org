@@ -47,19 +47,6 @@ uniform float uTime;
 
 uniform float uFade;
 
-uniform float uMusicWeight;
-uniform float uBeatEnv;
-uniform float uBeatKick;
-uniform float uPitchHue01;
-uniform float uPitchHueWeight;
-
-vec3 hsv2rgb(vec3 c)
-{
-    vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
-    rgb = rgb * rgb * (3.0 - 2.0 * rgb);
-    return c.z * mix(vec3(1.0), rgb, c.y);
-}
-
 vec2 rotate2d(vec2 v, float a)
 {
     float c = cos(a);
@@ -295,14 +282,6 @@ void main(void)
         col *= uToneMapExposure;
         col = col / (1.0 + uToneMapShoulder * col);
     }
-
-        // --- Non-destructive music color modulation (post-color, no fractal math changes) ---
-        float w = clamp(uMusicWeight * uPitchHueWeight, 0.0, 1.0);
-        vec3 pitchCol = hsv2rgb(vec3(fract(uPitchHue01), 0.75, 1.0));
-        col = mix(col, pitchCol, w * 0.35);
-
-        float beat = clamp(uBeatEnv + 0.75 * uBeatKick, 0.0, 1.0);
-        col *= (1.0 + 0.10 * beat);
 
     col = clamp(col, 0.0, 1.0);
     col *= uFade;
