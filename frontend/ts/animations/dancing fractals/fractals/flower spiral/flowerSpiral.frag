@@ -224,7 +224,7 @@ void main(void)
         vec3 palette = uFlowerPaletteHsl[i];
 
         float flowerWeight01 = clamp(uMusicWeight01 * (1.0 - radiusProgress * 0.5), 0.0, 1.0);
-        float musicHue = wrapHueDeg(uPitchHue + float(i) * 6.0);
+        float musicHue = wrapHueDeg(uPitchHue + float(i) * 3.0);
 
         vec3 musicHsl = vec3(musicHue, palette.y, palette.z);
         vec3 finalHsl = lerpHsl(palette, musicHsl, flowerWeight01);
