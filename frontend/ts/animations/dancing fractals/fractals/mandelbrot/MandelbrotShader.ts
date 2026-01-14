@@ -42,13 +42,6 @@ export type MandelbrotUniforms = {
     uAtmosFalloff: number;
     uNormalZ: number;
 
-    uVignetteStrength: number;
-    uVignettePower: number;
-
-    uGrainStrength: number;
-    uGrainSpeed: number;
-    uGrainScale: number;
-
     uTime: number;
     uFade: number;
 };
@@ -100,13 +93,6 @@ export const createMandelbrotUniformGroup = (args: {
         uAtmosStrength: { value: cfg.atmosStrength, type: "f32" },
         uAtmosFalloff: { value: cfg.atmosFalloff, type: "f32" },
         uNormalZ: { value: cfg.normalZ, type: "f32" },
-
-        uVignetteStrength: { value: cfg.vignetteStrength, type: "f32" },
-        uVignettePower: { value: cfg.vignettePower, type: "f32" },
-
-        uGrainStrength: { value: cfg.grainStrength, type: "f32" },
-        uGrainSpeed: { value: cfg.grainSpeed, type: "f32" },
-        uGrainScale: { value: cfg.grainScale, type: "f32" },
 
         uTime: { value: 0, type: "f32" },
         uFade: { value: 1, type: "f32" },

@@ -43,13 +43,6 @@ uniform float uAtmosStrength;
 uniform float uAtmosFalloff;
 uniform float uNormalZ;
 
-uniform float uVignetteStrength;
-uniform float uVignettePower;
-
-uniform float uGrainStrength;
-uniform float uGrainSpeed;
-uniform float uGrainScale;
-
 uniform float uTime;
 
 uniform float uFade;
@@ -94,14 +87,6 @@ vec3 paletteAt(int idx)
 vec2 cmul(vec2 a, vec2 b)
 {
     return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
-}
-
-float hash12(vec2 p)
-{
-    // Simple, fast hash. Good enough for subtle grain/dither.
-    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
-    p3 += dot(p3, p3.yzx + 33.33);
-    return fract((p3.x + p3.y) * p3.z);
 }
 
 float computeDE(vec2 cIn, out bool escapedOut)
@@ -296,23 +281,6 @@ void main(void)
         // Tone-map escaped shading only
         col *= uToneMapExposure;
         col = col / (1.0 + uToneMapShoulder * col);
-    }
-
-    // Vignette (applies to both inside + escaped)
-    float r = length(uv);
-    float vig = pow(clamp(1.0 - r, 0.0, 1.0), uVignettePower);
-    float vigMul = mix(1.0 - uVignetteStrength, 1.0, vig);
-    col *= vigMul;
-
-    // Micro film grain / dither (applies to both inside + escaped)
-    // Guard so grainStrength=0 is a true hard-off.
-    if (uGrainStrength > 0.0)
-    {
-        vec2 pix = vUv * uResolution * uGrainScale;
-        float t = floor(uTime * uGrainSpeed * 60.0) / 60.0;
-        float gn = hash12(pix + t);
-        float grain = (gn - 0.5) * 2.0;
-        col += grain * uGrainStrength;
     }
 
     col = clamp(col, 0.0, 1.0);

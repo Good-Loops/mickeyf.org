@@ -235,13 +235,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uAtmosFalloff: number;
             uNormalZ: number;
 
-            uVignetteStrength: number;
-            uVignettePower: number;
-
-            uGrainStrength: number;
-            uGrainSpeed: number;
-            uGrainScale: number;
-
             uTime: number;
             uFade: number;
         };
@@ -399,13 +392,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             uAtmosFalloff: number;
             uNormalZ: number;
 
-            uVignetteStrength: number;
-            uVignettePower: number;
-
-            uGrainStrength: number;
-            uGrainSpeed: number;
-            uGrainScale: number;
-
             uTime: number;
             uFade: number;
         };
@@ -446,13 +432,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         uAtmosFalloff: number;
         uNormalZ: number;
 
-        uVignetteStrength: number;
-        uVignettePower: number;
-
-        uGrainStrength: number;
-        uGrainSpeed: number;
-        uGrainScale: number;
-
         uTime: number;
     }): void {
         uniforms.uLightingEnabled = this.config.lightingEnabled ? 1 : 0;
@@ -479,13 +458,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         uniforms.uAtmosStrength = this.config.atmosStrength;
         uniforms.uAtmosFalloff = this.config.atmosFalloff;
         uniforms.uNormalZ = this.config.normalZ;
-
-        uniforms.uVignetteStrength = this.config.vignetteStrength;
-        uniforms.uVignettePower = this.config.vignettePower;
-
-        uniforms.uGrainStrength = this.config.grainStrength;
-        uniforms.uGrainSpeed = this.config.grainSpeed;
-        uniforms.uGrainScale = this.config.grainScale;
     }
 
     private rebuildPaletteUniforms(): void {
