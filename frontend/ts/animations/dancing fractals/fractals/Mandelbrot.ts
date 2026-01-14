@@ -2,7 +2,10 @@ import { Application, Container, Filter, Sprite, Texture, UniformGroup } from "p
 
 import type FractalAnimation from "@/animations/dancing fractals/interfaces/FractalAnimation";
 import { defaultMandelbrotConfig, type MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
+import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
+import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
 import clamp from "@/utils/clamp";
+import smoothstep01 from "@/utils/smoothstep01";
 import lerp from "@/utils/lerp";
 import { hslToRgb } from "@/utils/hsl";
 
@@ -13,14 +16,12 @@ import {
     type MandelbrotUniforms,
 } from "./mandelbrot/MandelbrotShader";
 
+import MandelbrotTour from "./mandelbrot/MandelbrotTour";
+import PitchHueCommitter from "../helpers/PitchHueCommitter";
+
 type MandelbrotRuntime = {
     elapsedAnimSeconds: number;
     palettePhase: number;
-};
-
-const smoothstep01 = (x: number): number => {
-    const t = clamp(x, 0, 1);
-    return t * t * (3 - 2 * t);
 };
 
 export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
@@ -53,17 +54,52 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private disposalElapsed = 0;
     private isDisposing = false;
 
-    private startCenter = new Float32Array([-0.75, 0.0]);
-    private targetCenter = new Float32Array([0, 0]);
-    private viewCenter = new Float32Array([-0.75, 0.0]);
-
-    private centerTransitionSeconds = 3.0;
-    private centerTransitionElapsed = 0;
-    private centerTransitionDone = false;
-
-    private rotation = 0;
-
     private baseLogZoom = 0;
+
+    private tour: MandelbrotTour | null = null;
+
+    private readonly camera = {
+        baseCenter: new Float32Array([-0.75, 0.0]),
+        baseLogZoom: 0,
+        baseRotSpeed: 0,
+
+        center: new Float32Array([-0.75, 0.0]),
+        logZoom: 0,
+        angle: 0,
+
+        vCenter: new Float32Array([0, 0]),
+        vLogZoom: 0,
+        vRotSpeed: 0,
+    };
+
+    private readonly musicIntent = {
+        hasMusic: false,
+        musicWeight: 0,
+        beatEnv: 0,
+        beatKick: 0,
+        pitchHue01: 0,
+        pitchHueWeight: 0,
+    };
+
+    private readonly pitchHueCommitter = new PitchHueCommitter(0);
+
+    // Manual center override (e.g., UI changes). Composes with tour instead of fighting it.
+    private manualCenterOverrideSeconds = 0;
+    private readonly manualCenter = new Float32Array([-0.75, 0.0]);
+
+    // Avoid per-frame allocations.
+    private readonly tmpV2: [number, number] = [0, 0];
+
+    // Tuning constants
+    private readonly followStiffnessCenter = 3.0;
+    private readonly followStiffnessZoom = 3.0;
+    private readonly followStiffnessRotSpeed = 2.0;
+    private readonly dampingCenter = 6.0;
+    private readonly dampingZoom = 6.0;
+    private readonly dampingRotSpeed = 5.0;
+    private readonly beatKickZoomImpulse = 0.35;
+    private readonly beatKickDecayPerSec = 10.0;
+    private readonly paletteMusicBoost = 0.12;
 
     constructor(initialConfig?: MandelbrotConfig) {
         // Merge defaults so new config options are always present.
@@ -72,6 +108,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         // Runtime state should start from config defaults but never mutate config during step().
         this.runtime.palettePhase = this.config.palettePhase;
         this.runtime.elapsedAnimSeconds = 0;
+
+        this.pitchHueCommitter.reset(this.config.palette[0]?.hue ?? 0);
     }
 
     updateConfig(patch: Partial<MandelbrotConfig>): void {
@@ -90,18 +128,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         }
 
         if (patch.centerX != null || patch.centerY != null) {
-            this.startCenter[0] = this.viewCenter[0];
-            this.startCenter[1] = this.viewCenter[1];
-
-            this.targetCenter[0] = this.config.centerX;
-            this.targetCenter[1] = this.config.centerY;
-
-            this.centerTransitionElapsed = 0;
-            this.centerTransitionDone = false;
+            this.manualCenter[0] = this.config.centerX;
+            this.manualCenter[1] = this.config.centerY;
+            this.manualCenterOverrideSeconds = 3.0;
         }
 
         if (patch.rotation != null) {
-            this.rotation = this.config.rotation;
+            this.camera.angle = this.config.rotation;
         }
 
         this.syncUniforms();
@@ -124,17 +157,17 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         quad.height = this.screenH;
         root.addChild(quad);
 
-        this.startCenter[0] = -0.75;
-        this.startCenter[1] = 0.0;
-        this.viewCenter[0] = this.startCenter[0];
-        this.viewCenter[1] = this.startCenter[1];
-        this.targetCenter[0] = this.config.centerX;
-        this.targetCenter[1] = this.config.centerY;
+        // Initialize camera state.
+        this.camera.center[0] = -0.75;
+        this.camera.center[1] = 0.0;
+        this.camera.baseCenter[0] = this.camera.center[0];
+        this.camera.baseCenter[1] = this.camera.center[1];
+        this.camera.vCenter[0] = 0;
+        this.camera.vCenter[1] = 0;
 
-        this.centerTransitionElapsed = 0;
-        this.centerTransitionDone = false;
-
-        this.rotation = this.config.rotation;
+        this.camera.angle = this.config.rotation;
+        this.camera.vRotSpeed = 0;
+        this.camera.vLogZoom = 0;
 
         this.lightDir[0] = this.config.lightDir.x;
         this.lightDir[1] = this.config.lightDir.y;
@@ -143,8 +176,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const uniformGroup = createMandelbrotUniformGroup({
             screenW: this.screenW,
             screenH: this.screenH,
-            viewCenter: this.viewCenter,
-            rotation: this.rotation,
+            viewCenter: this.camera.center,
+            rotation: this.camera.angle,
             paletteRgb: this.paletteRgb,
             paletteSize: this.paletteSize,
             palettePhase: this.runtime.palettePhase,
@@ -171,11 +204,17 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         // scale = exp(-uLogZoom)
         this.baseLogZoom = -Math.log(scaleFit);
+        this.camera.logZoom = this.baseLogZoom;
+        this.camera.baseLogZoom = this.baseLogZoom;
+
+        // Create the travel rail after we know the fitted base zoom.
+        this.tour = new MandelbrotTour(this.camera.center[0], this.camera.center[1], this.baseLogZoom);
+
         const uniforms = uniformGroup.uniforms as unknown as MandelbrotUniforms;
-        uniforms.uLogZoom = this.baseLogZoom;
-        uniforms.uRotation = this.rotation;
-        uniforms.uCenter[0] = this.viewCenter[0];
-        uniforms.uCenter[1] = this.viewCenter[1];
+        uniforms.uLogZoom = this.camera.logZoom;
+        uniforms.uRotation = this.camera.angle;
+        uniforms.uCenter[0] = this.camera.center[0];
+        uniforms.uCenter[1] = this.camera.center[1];
 
         this.rebuildPaletteUniforms();
         uniforms.uPalettePhase = this.runtime.palettePhase;
@@ -183,7 +222,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.syncUniforms();
     }
 
-    step(deltaSeconds: number, _timeMS: number): void {
+    step(deltaSeconds: number, nowMs: number, audioState: AudioState, musicFeatures: MusicFeaturesFrame): void {
         if (!this.root) return;
 
         // Phase 2: static render only.
@@ -273,49 +312,155 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             this.lightDir[2] = z * invLen;
         }
 
-        if (this.config.paletteSpeed !== 0) {
-            this.runtime.palettePhase = (this.runtime.palettePhase + this.config.paletteSpeed * deltaSeconds) % 1;
+        // --- Music intent (CPU-owned meaning; shader just renders) ---
+        const hasMusic = !!musicFeatures?.hasMusic && !!audioState?.playing;
+        this.musicIntent.hasMusic = hasMusic;
+        this.musicIntent.musicWeight = clamp(musicFeatures?.musicWeight01 ?? 0, 0, 1);
+        this.musicIntent.beatEnv = clamp(musicFeatures?.beatEnv01 ?? 0, 0, 1);
+
+        // Beat kick impulse (decays smoothly, never snaps).
+        if (hasMusic && musicFeatures?.beatHit) {
+            this.musicIntent.beatKick = 1;
+        } else {
+            this.musicIntent.beatKick *= Math.exp(-deltaSeconds * this.beatKickDecayPerSec);
+        }
+
+        const pitch = this.pitchHueCommitter.step({
+            deltaSeconds,
+            features: musicFeatures,
+            stableThresholdMs: 120,
+            minMusicWeightForColor: 0.25,
+        });
+        this.musicIntent.pitchHue01 = pitch.pitchHue01;
+        this.musicIntent.pitchHueWeight = pitch.pitchHueWeight01;
+
+        // Palette phase: base speed + music boost.
+        const basePaletteSpeed = this.config.paletteSpeed;
+        const musicBoost = this.paletteMusicBoost * this.musicIntent.musicWeight * this.musicIntent.beatEnv;
+        if (basePaletteSpeed !== 0 || musicBoost !== 0) {
+            this.runtime.palettePhase = (this.runtime.palettePhase + (basePaletteSpeed + musicBoost) * deltaSeconds) % 1;
             if (this.runtime.palettePhase < 0) this.runtime.palettePhase += 1;
         }
         uniforms.uPalettePhase = this.runtime.palettePhase;
 
+        // If not animating, still upload music uniforms but keep camera static.
         if (!this.config.animate) {
-            uniforms.uLogZoom = this.baseLogZoom;
+            uniforms.uCenter[0] = this.camera.center[0];
+            uniforms.uCenter[1] = this.camera.center[1];
+            uniforms.uRotation = this.camera.angle;
+            uniforms.uLogZoom = this.camera.logZoom;
+            this.uploadMusicUniforms(uniforms);
             return;
         }
 
-        if (!this.centerTransitionDone) {
-            this.centerTransitionElapsed += deltaSeconds;
+        // --- Travel rail (tour) + manual override composition ---
+        const tour = this.tour;
+        const sample = tour ? tour.sample(this.runtime.elapsedAnimSeconds) : null;
 
-            const tRaw = this.centerTransitionElapsed / this.centerTransitionSeconds;
-            const t = clamp(tRaw, 0, 1);
-            const e = smoothstep01(t);
+        const baseCx = sample ? sample.centerX : this.camera.center[0];
+        const baseCy = sample ? sample.centerY : this.camera.center[1];
+        const baseLogZoom = sample ? sample.logZoom : this.baseLogZoom;
+        const baseRotSpeed = sample ? sample.rotSpeed : 0;
 
-            this.viewCenter[0] = lerp(this.startCenter[0], this.targetCenter[0], e);
-            this.viewCenter[1] = lerp(this.startCenter[1], this.targetCenter[1], e);
+        // Manual override: fades out over a short window.
+        if (this.manualCenterOverrideSeconds > 0) {
+            this.manualCenterOverrideSeconds = Math.max(0, this.manualCenterOverrideSeconds - deltaSeconds);
+        }
+        const manualW = this.manualCenterOverrideSeconds > 0
+            ? smoothstep01(this.manualCenterOverrideSeconds / 3.0)
+            : 0;
 
-            if (t >= 1) {
-                this.centerTransitionDone = true;
-            }
+        this.camera.baseCenter[0] = lerp(baseCx, this.manualCenter[0], manualW);
+        this.camera.baseCenter[1] = lerp(baseCy, this.manualCenter[1], manualW);
+        this.camera.baseLogZoom = baseLogZoom;
+        this.camera.baseRotSpeed = baseRotSpeed + this.config.rotationSpeed;
+
+        // --- Base-follow smoothing (spring-ish, stable) ---
+        this.followCamera(deltaSeconds);
+
+        // --- Music modulation on top (small, velocity-based) ---
+        this.camera.vLogZoom += this.musicIntent.beatKick * this.beatKickZoomImpulse;
+        this.camera.vRotSpeed += 0.35 * this.musicIntent.musicWeight * this.musicIntent.beatEnv * deltaSeconds;
+
+        // Integrate angle from angular velocity.
+        this.camera.angle += this.camera.vRotSpeed * deltaSeconds;
+        this.camera.angle = this.camera.angle % (Math.PI * 2);
+
+        // Clamp center velocity by zoom (scale-aware pan limiter).
+        const clamped = this.clampCenterVelocityByZoom(this.camera.vCenter[0], this.camera.vCenter[1], this.camera.logZoom);
+        this.camera.vCenter[0] = clamped[0];
+        this.camera.vCenter[1] = clamped[1];
+
+        // Integrate state.
+        this.camera.center[0] += this.camera.vCenter[0] * deltaSeconds;
+        this.camera.center[1] += this.camera.vCenter[1] * deltaSeconds;
+        this.camera.logZoom += this.camera.vLogZoom * deltaSeconds;
+
+        // Keep zoom in a safe range.
+        this.camera.logZoom = clamp(this.camera.logZoom, this.baseLogZoom - 0.75, 12.0);
+
+        // Upload camera → uniforms.
+        uniforms.uCenter[0] = this.camera.center[0];
+        uniforms.uCenter[1] = this.camera.center[1];
+        uniforms.uLogZoom = this.camera.logZoom;
+        uniforms.uRotation = this.camera.angle;
+
+        // Upload music uniforms every frame.
+        this.uploadMusicUniforms(uniforms);
+    }
+
+    private followCamera(deltaSeconds: number): void {
+        const dt = Math.max(0, deltaSeconds);
+
+        // Center
+        const ex = this.camera.baseCenter[0] - this.camera.center[0];
+        const ey = this.camera.baseCenter[1] - this.camera.center[1];
+        this.camera.vCenter[0] += ex * this.followStiffnessCenter * dt;
+        this.camera.vCenter[1] += ey * this.followStiffnessCenter * dt;
+        const centerDamp = Math.exp(-this.dampingCenter * dt);
+        this.camera.vCenter[0] *= centerDamp;
+        this.camera.vCenter[1] *= centerDamp;
+
+        // Log zoom
+        const ez = this.camera.baseLogZoom - this.camera.logZoom;
+        this.camera.vLogZoom += ez * this.followStiffnessZoom * dt;
+        const zoomDamp = Math.exp(-this.dampingZoom * dt);
+        this.camera.vLogZoom *= zoomDamp;
+
+        // Rot speed
+        const er = this.camera.baseRotSpeed - this.camera.vRotSpeed;
+        this.camera.vRotSpeed += er * this.followStiffnessRotSpeed * dt;
+        const rotDamp = Math.exp(-this.dampingRotSpeed * dt);
+        this.camera.vRotSpeed *= rotDamp;
+    }
+
+    private clampCenterVelocityByZoom(vx: number, vy: number, logZoom: number): [number, number] {
+        // scale = exp(-logZoom) is complex half-height.
+        // Deeper zoom (larger logZoom) => smaller allowed center velocity.
+        const scale = Math.exp(-logZoom);
+        const k = 1.25; // complex units/sec at scale=1 (tuned)
+        const maxSpeed = Math.max(1e-8, k * scale);
+
+        const len = Math.sqrt(vx * vx + vy * vy);
+        if (len <= maxSpeed) {
+            this.tmpV2[0] = vx;
+            this.tmpV2[1] = vy;
+            return this.tmpV2;
         }
 
-        uniforms.uCenter[0] = this.viewCenter[0];
-        uniforms.uCenter[1] = this.viewCenter[1];
+        const s = maxSpeed / Math.max(1e-9, len);
+        this.tmpV2[0] = vx * s;
+        this.tmpV2[1] = vy * s;
+        return this.tmpV2;
+    }
 
-        if (this.config.rotationSpeed !== 0) {
-            this.rotation += this.config.rotationSpeed * deltaSeconds;
-            this.rotation = this.rotation % (Math.PI * 2);
-        }
-
-        uniforms.uRotation = this.rotation;
-
-        const t = this.runtime.elapsedAnimSeconds;
-        const A = Math.log(this.config.zoomOscillationMaxFactor);
-        const omega = 2 * Math.PI * this.config.zoomOscillationSpeed;
-        const sRaw = 0.5 * (1 - Math.cos(omega * t));
-        const pauseStrength = 1.6;
-        const s = Math.pow(smoothstep01(sRaw), pauseStrength);
-        uniforms.uLogZoom = this.baseLogZoom + A * s;
+    private uploadMusicUniforms(uniforms: any): void {
+        // Keep these as floats in [0..1] (shader clamps again).
+        uniforms.uMusicWeight = this.musicIntent.musicWeight;
+        uniforms.uBeatEnv = this.musicIntent.beatEnv;
+        uniforms.uBeatKick = this.musicIntent.beatKick;
+        uniforms.uPitchHue01 = this.musicIntent.pitchHue01;
+        uniforms.uPitchHueWeight = this.musicIntent.pitchHueWeight;
     }
 
     scheduleDisposal(seconds: number): void {
@@ -398,8 +543,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         uniforms.uResolution[0] = this.screenW;
         uniforms.uResolution[1] = this.screenH;
-        uniforms.uCenter[0] = this.viewCenter[0];
-        uniforms.uCenter[1] = this.viewCenter[1];
+        uniforms.uCenter[0] = this.camera.center[0];
+        uniforms.uCenter[1] = this.camera.center[1];
         uniforms.uMaxIter = this.config.maxIterations | 0;
         uniforms.uBailout = this.config.bailoutRadius;
 

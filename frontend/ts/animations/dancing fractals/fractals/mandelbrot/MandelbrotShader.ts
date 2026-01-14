@@ -44,6 +44,13 @@ export type MandelbrotUniforms = {
 
     uTime: number;
     uFade: number;
+
+    // Music-driven, non-destructive color modulation
+    uMusicWeight: number;
+    uBeatEnv: number;
+    uBeatKick: number;
+    uPitchHue01: number;
+    uPitchHueWeight: number;
 };
 
 export const createMandelbrotUniformGroup = (args: {
@@ -96,6 +103,12 @@ export const createMandelbrotUniformGroup = (args: {
 
         uTime: { value: 0, type: "f32" },
         uFade: { value: 1, type: "f32" },
+
+        uMusicWeight: { value: 0, type: "f32" },
+        uBeatEnv: { value: 0, type: "f32" },
+        uBeatKick: { value: 0, type: "f32" },
+        uPitchHue01: { value: 0, type: "f32" },
+        uPitchHueWeight: { value: 0, type: "f32" },
     });
 };
 
