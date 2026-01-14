@@ -2,8 +2,11 @@ import { Application, Container, Filter, Sprite, Texture, UniformGroup } from "p
 
 import type FractalAnimation from "@/animations/dancing fractals/interfaces/FractalAnimation";
 import { defaultMandelbrotConfig, type MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
+import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
+import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
 import clamp from "@/utils/clamp";
 import lerp from "@/utils/lerp";
+import smoothstep01 from "@/utils/smoothstep01";
 import { hslToRgb } from "@/utils/hsl";
 
 import {
@@ -13,19 +16,16 @@ import {
     type MandelbrotUniforms,
 } from "./mandelbrot/MandelbrotShader";
 
+import PitchHueCommitter from "../helpers/PitchHueCommitter";
+
 type MandelbrotRuntime = {
     elapsedAnimSeconds: number;
     palettePhase: number;
 };
 
-const smoothstep01 = (x: number): number => {
-    const t = clamp(x, 0, 1);
-    return t * t * (3 - 2 * t);
-};
-
 export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
-    static backgroundColor = "#c8f7ff";
+    static backgroundColor = "hsl(189, 100%, 89%)";
 
     private app: Application | null = null;
     private root: Container | null = null;
@@ -65,6 +65,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
     private baseLogZoom = 0;
 
+    private readonly pitchHueCommitter = new PitchHueCommitter(0);
+
     constructor(initialConfig?: MandelbrotConfig) {
         // Merge defaults so new config options are always present.
         this.config = { ...defaultMandelbrotConfig, ...(initialConfig ?? {}) };
@@ -72,6 +74,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         // Runtime state should start from config defaults but never mutate config during step().
         this.runtime.palettePhase = this.config.palettePhase;
         this.runtime.elapsedAnimSeconds = 0;
+
+        this.pitchHueCommitter.reset(this.config.palette[0]?.hue ?? 0);
     }
 
     updateConfig(patch: Partial<MandelbrotConfig>): void {
@@ -183,100 +187,21 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.syncUniforms();
     }
 
-    step(deltaSeconds: number, _timeMS: number): void {
+    step(deltaSeconds: number, _nowMs: number, _audioState: AudioState, musicFeatures: MusicFeaturesFrame): void {
         if (!this.root) return;
 
-        // Phase 2: static render only.
-        // Keep disposal behavior (fade out) so host lifetime works.
-        if (this.disposalDelaySeconds > 0) {
-            this.disposalDelaySeconds = Math.max(0, this.disposalDelaySeconds - deltaSeconds);
-            if (this.disposalDelaySeconds === 0) {
-                this.startDisposal();
-            }
-        }
-
-        this.runtime.elapsedAnimSeconds += deltaSeconds;
+        this.updateDisposalDelay(deltaSeconds);
+        this.advanceTime(deltaSeconds);
 
         const uniformGroup = this.mandelbrotUniforms;
         if (!uniformGroup) return;
+        const uniforms = uniformGroup.uniforms as unknown as MandelbrotUniforms;
 
-        const uniforms = uniformGroup.uniforms as {
-            uResolution: Float32Array;
-            uCenter: Float32Array;
-            uLogZoom: number;
-            uRotation: number;
-            uMaxIter: number;
-            uBailout: number;
+        this.uploadFrameUniforms(uniforms);
+        if (this.updateDisposalFade(deltaSeconds, uniforms)) return;
 
-            uPaletteRgb: Float32Array;
-            uPaletteSize: number;
-            uPalettePhase: number;
-            uPaletteGamma: number;
-            uSmoothColoring: number;
-
-            uLightingEnabled: number;
-            uLightDir: Float32Array;
-            uLightStrength: number;
-            uSpecStrength: number;
-            uSpecPower: number;
-            uDeEpsilonPx: number;
-            uDeScale: number;
-
-            uDeEpsilonZoomStrength: number;
-            uDeEpsilonMinPx: number;
-            uDeEpsilonMaxPx: number;
-
-            uToneMapExposure: number;
-            uToneMapShoulder: number;
-
-            uRimStrength: number;
-            uRimPower: number;
-            uAtmosStrength: number;
-            uAtmosFalloff: number;
-            uNormalZ: number;
-
-            uTime: number;
-            uFade: number;
-        };
-
-        uniforms.uTime = this.runtime.elapsedAnimSeconds;
-        uniforms.uFade = 1;
-
-        if (this.isDisposing) {
-            this.disposalElapsed += deltaSeconds;
-
-            const t =
-              this.disposalSeconds <= 0
-                ? 1
-                : Math.min(1, this.disposalElapsed / this.disposalSeconds);
-
-            const e = smoothstep01(t);
-            uniforms.uFade = 1 - e;
-
-            if (t >= 1) {
-                this.dispose();
-                return;
-            }
-        }
-
-        if (this.config.lightOrbitEnabled) {
-            const a = this.runtime.elapsedAnimSeconds * this.config.lightOrbitSpeed;
-            const tilt = clamp(this.config.lightOrbitTilt, 0, 1);
-
-            const x = Math.cos(a);
-            const y = Math.sin(a);
-            const z = tilt;
-            const invLen = 1 / Math.max(1e-9, Math.sqrt(x * x + y * y + z * z));
-
-            this.lightDir[0] = x * invLen;
-            this.lightDir[1] = y * invLen;
-            this.lightDir[2] = z * invLen;
-        }
-
-        if (this.config.paletteSpeed !== 0) {
-            this.runtime.palettePhase = (this.runtime.palettePhase + this.config.paletteSpeed * deltaSeconds) % 1;
-            if (this.runtime.palettePhase < 0) this.runtime.palettePhase += 1;
-        }
+        this.updateLightOrbit();
+        this.updatePalettePhase(deltaSeconds, musicFeatures);
         uniforms.uPalettePhase = this.runtime.palettePhase;
 
         if (!this.config.animate) {
@@ -284,38 +209,128 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             return;
         }
 
-        if (!this.centerTransitionDone) {
-            this.centerTransitionElapsed += deltaSeconds;
-
-            const tRaw = this.centerTransitionElapsed / this.centerTransitionSeconds;
-            const t = clamp(tRaw, 0, 1);
-            const e = smoothstep01(t);
-
-            this.viewCenter[0] = lerp(this.startCenter[0], this.targetCenter[0], e);
-            this.viewCenter[1] = lerp(this.startCenter[1], this.targetCenter[1], e);
-
-            if (t >= 1) {
-                this.centerTransitionDone = true;
-            }
-        }
-
+        this.updateCenterTransition(deltaSeconds);
         uniforms.uCenter[0] = this.viewCenter[0];
         uniforms.uCenter[1] = this.viewCenter[1];
 
-        if (this.config.rotationSpeed !== 0) {
-            this.rotation += this.config.rotationSpeed * deltaSeconds;
-            this.rotation = this.rotation % (Math.PI * 2);
-        }
-
+        this.updateRotation(deltaSeconds);
         uniforms.uRotation = this.rotation;
 
+        uniforms.uLogZoom = this.computeLogZoom();
+    }
+
+    private updateDisposalDelay(deltaSeconds: number): void {
+        if (this.disposalDelaySeconds <= 0) return;
+
+        this.disposalDelaySeconds = Math.max(0, this.disposalDelaySeconds - deltaSeconds);
+        if (this.disposalDelaySeconds === 0) {
+            this.startDisposal();
+        }
+    }
+
+    private advanceTime(deltaSeconds: number): void {
+        this.runtime.elapsedAnimSeconds += deltaSeconds;
+    }
+
+    private uploadFrameUniforms(uniforms: MandelbrotUniforms): void {
+        uniforms.uTime = this.runtime.elapsedAnimSeconds;
+        uniforms.uFade = 1;
+    }
+
+    private updateDisposalFade(deltaSeconds: number, uniforms: MandelbrotUniforms): boolean {
+        if (!this.isDisposing) return false;
+
+        this.disposalElapsed += deltaSeconds;
+        const t = this.disposalSeconds <= 0 ? 1 : Math.min(1, this.disposalElapsed / this.disposalSeconds);
+        uniforms.uFade = 1 - smoothstep01(t);
+
+        if (t >= 1) {
+            this.dispose();
+            return true;
+        }
+
+        return false;
+    }
+
+    private updateLightOrbit(): void {
+        if (!this.config.lightOrbitEnabled) return;
+
+        const a = this.runtime.elapsedAnimSeconds * this.config.lightOrbitSpeed;
+        const tilt = clamp(this.config.lightOrbitTilt, 0, 1);
+
+        const x = Math.cos(a);
+        const y = Math.sin(a);
+        const z = tilt;
+        const invLen = 1 / Math.max(1e-9, Math.sqrt(x * x + y * y + z * z));
+
+        this.lightDir[0] = x * invLen;
+        this.lightDir[1] = y * invLen;
+        this.lightDir[2] = z * invLen;
+    }
+
+    private updatePalettePhase(deltaSeconds: number, musicFeatures: MusicFeaturesFrame): void {
+        const baseSpeed = this.config.paletteSpeed;
+        if (baseSpeed !== 0) {
+            this.runtime.palettePhase = (this.runtime.palettePhase + baseSpeed * deltaSeconds) % 1;
+            if (this.runtime.palettePhase < 0) this.runtime.palettePhase += 1;
+        }
+
+        // Optional music-driven palette bias (stable pitch hue, no snapping).
+        const pitch = this.pitchHueCommitter.step({
+            deltaSeconds,
+            features: musicFeatures,
+            stableThresholdMs: 120,
+            minMusicWeightForColor: 0.25,
+        });
+
+        const w = 0.20 * pitch.pitchHueWeight01;
+        if (w > 0) {
+            this.runtime.palettePhase = this.lerpPhase01(this.runtime.palettePhase, pitch.pitchHue01, w);
+        }
+    }
+
+    private lerpPhase01(a01: number, b01: number, w: number): number {
+        const a = ((a01 % 1) + 1) % 1;
+        const b = ((b01 % 1) + 1) % 1;
+        let d = b - a;
+        if (d > 0.5) d -= 1;
+        if (d < -0.5) d += 1;
+        const out = a + d * clamp(w, 0, 1);
+        return ((out % 1) + 1) % 1;
+    }
+
+    private updateCenterTransition(deltaSeconds: number): void {
+        if (this.centerTransitionDone) return;
+
+        this.centerTransitionElapsed += deltaSeconds;
+
+        const tRaw = this.centerTransitionElapsed / this.centerTransitionSeconds;
+        const t = clamp(tRaw, 0, 1);
+        const e = smoothstep01(t);
+
+        this.viewCenter[0] = lerp(this.startCenter[0], this.targetCenter[0], e);
+        this.viewCenter[1] = lerp(this.startCenter[1], this.targetCenter[1], e);
+
+        if (t >= 1) {
+            this.centerTransitionDone = true;
+        }
+    }
+
+    private updateRotation(deltaSeconds: number): void {
+        if (this.config.rotationSpeed === 0) return;
+
+        this.rotation += this.config.rotationSpeed * deltaSeconds;
+        this.rotation = this.rotation % (Math.PI * 2);
+    }
+
+    private computeLogZoom(): number {
         const t = this.runtime.elapsedAnimSeconds;
         const A = Math.log(this.config.zoomOscillationMaxFactor);
         const omega = 2 * Math.PI * this.config.zoomOscillationSpeed;
         const sRaw = 0.5 * (1 - Math.cos(omega * t));
         const pauseStrength = 1.6;
         const s = Math.pow(smoothstep01(sRaw), pauseStrength);
-        uniforms.uLogZoom = this.baseLogZoom + A * s;
+        return this.baseLogZoom + A * s;
     }
 
     scheduleDisposal(seconds: number): void {

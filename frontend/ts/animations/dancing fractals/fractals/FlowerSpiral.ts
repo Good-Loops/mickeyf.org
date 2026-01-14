@@ -3,12 +3,11 @@ import { Application, Filter, GlProgram, Sprite, Texture, UniformGroup } from "p
 import PaletteTween from "../../helpers/color/PaletteTween";
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
-import hzToPitchInfo from "@/animations/helpers/audio/pitchInfo";
-import pitchClassToHue from "@/animations/helpers/audio/pitchClassToHue";
 import clamp from "@/utils/clamp";
 import type FractalAnimation from "../interfaces/FractalAnimation";
 import { defaultFlowerSpiralConfig, type FlowerSpiralConfig } from "../config/FlowerSpiralConfig";
 import { FLOWER_MAX, clampFlowerAmount, createFlowerSpiralFilter, createFlowerSpiralUniformGroup } from "./flower spiral/FlowerSpiralShader";
+import PitchHueCommitter from "../helpers/PitchHueCommitter";
 
 const PITCH_STABLE_THRESHOLD_MS = 120;
 const MIN_MUSIC_WEIGHT_FOR_COLOR = 0.25;
@@ -23,7 +22,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
 
         this.paletteTween = new PaletteTween(this.config.palette, this.config.flowerAmount);
 
-        this.committedPitchHueDeg = this.config.palette[0]?.hue ?? 0;
+        this.pitchHueCommitter = new PitchHueCommitter(this.config.palette[0]?.hue ?? 0);
     }
 
     static disposalSeconds = 10;
@@ -54,9 +53,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     private beatKick01 = 0;
 
     // Pitch hue (degrees) derived from pitch class
-    private committedPitchHueDeg = 0;
-    private lastCandidatePitchClass: number | null = null;
-    private pitchClassStableMs = 0;
+    private pitchHueCommitter: PitchHueCommitter;
 
     // Disposal logic
     private disposalDelay = 0;
@@ -94,9 +91,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.visibleFlowerCount = 0;
         this.beatKick01 = 0;
 
-        this.lastCandidatePitchClass = null;
-        this.pitchClassStableMs = 0;
-        this.committedPitchHueDeg = this.config.palette[0]?.hue ?? 0;
+        this.pitchHueCommitter.reset(this.config.palette[0]?.hue ?? 0);
 
         this.configDirty = true;
         this.paletteDirty = true;
@@ -128,7 +123,12 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         const musicWeight01 = clamp(features?.musicWeight01 ?? 0, 0, 1);
         const beatEnv01 = clamp(features?.beatEnv01 ?? 0, 0, 1);
         const beatHit = !!features?.beatHit;
-        const pitchHue = this.computePitchHueDeg(deltaSeconds, features);
+        const pitchHue = this.pitchHueCommitter.step({
+            deltaSeconds,
+            features,
+            stableThresholdMs: PITCH_STABLE_THRESHOLD_MS,
+            minMusicWeightForColor: MIN_MUSIC_WEIGHT_FOR_COLOR,
+        }).pitchHueDeg;
 
         // Beat kick (fast impulse)
         const KICK_DECAY_PER_SEC = 6;
@@ -180,41 +180,6 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         const w = 0.5 + 0.5 * Math.sin(phase);
 
         return z0 + (z1 - z0) * w;
-    }
-
-    private computePitchHueDeg(deltaSeconds: number, features: MusicFeaturesFrame): number {
-        // Hold-last when not confident.
-        if (!features?.hasMusic) return this.committedPitchHueDeg;
-        if ((features.musicWeight01 ?? 0) < MIN_MUSIC_WEIGHT_FOR_COLOR) return this.committedPitchHueDeg;
-
-        let candidatePc: number | null = null;
-
-        // Prefer raw pitch Hz mapping (as requested).
-        if (Number.isFinite(features.pitchHz) && features.pitchHz > 0) {
-            candidatePc = hzToPitchInfo(features.pitchHz).pitchClass;
-        } else {
-            // Fallback: if a pitch policy already committed a pitch class, use it.
-            const decision = features.pitchDecision?.result;
-            if (decision?.kind === "pitch" && Number.isFinite(decision.pitchClass)) {
-                candidatePc = decision.pitchClass;
-            }
-        }
-
-        if (candidatePc == null) return this.committedPitchHueDeg;
-
-        const deltaMs = deltaSeconds * 1000;
-        if (this.lastCandidatePitchClass == null || candidatePc !== this.lastCandidatePitchClass) {
-            this.lastCandidatePitchClass = candidatePc;
-            this.pitchClassStableMs = 0;
-            return this.committedPitchHueDeg;
-        }
-
-        this.pitchClassStableMs += deltaMs;
-        if (this.pitchClassStableMs >= PITCH_STABLE_THRESHOLD_MS) {
-            this.committedPitchHueDeg = pitchClassToHue(candidatePc);
-        }
-
-        return this.committedPitchHueDeg;
     }
 
     updateConfig(patch: Partial<FlowerSpiralConfig>): void {
