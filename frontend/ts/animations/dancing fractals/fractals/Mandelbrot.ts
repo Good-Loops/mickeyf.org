@@ -69,9 +69,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
     private readonly pitchHueCommitter = new PitchHueCommitter(0);
 
-    constructor(initialConfig?: MandelbrotConfig) {
+    constructor(_centerX: number, _centerY: number, initialConfig: Partial<MandelbrotConfig> = {}) {
         // Merge defaults so new config options are always present.
-        this.config = { ...defaultMandelbrotConfig, ...(initialConfig ?? {}) };
+        this.config = { ...defaultMandelbrotConfig, ...initialConfig };
 
         // Runtime state should start from config defaults but never mutate config during step().
         this.runtime.palettePhase = this.config.palettePhase;
