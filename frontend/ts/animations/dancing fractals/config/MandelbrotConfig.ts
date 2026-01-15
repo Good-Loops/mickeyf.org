@@ -95,6 +95,10 @@ export type MandelbrotConfig = {
     tourZoomSecondsPerLogIn: number;
     tourZoomSecondsPerLogOut: number;
 
+    // ZoomIn easing: immediate visible motion without discontinuities
+    zoomInEaseOutPowK: number;
+    zoomInBiasExponent: number;
+
     // Bounded zoom timing (seconds)
     tourZoomInMaxSeconds: number;
     tourZoomOutMaxSeconds: number;
@@ -171,17 +175,20 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
 
     tourWideLogZoom: -0.4,
     tourHoldWideSeconds: 0.0,
-    tourZoomInSeconds: 10.0,
+    tourZoomInSeconds: 14.0,
     tourHoldCloseSeconds: 2.6,
     tourZoomOutSeconds: 4.0,
     tourTravelWideSeconds: 2.6,
 
     tourCloseZoomDeltaLog: 8,
 
-    tourZoomSecondsPerLogIn: 1.1,
+    tourZoomSecondsPerLogIn: 1.6,
     tourZoomSecondsPerLogOut: 0.35,
 
-    tourZoomInMaxSeconds: 22,
+    zoomInEaseOutPowK: 6,
+    zoomInBiasExponent: 0.95,
+
+    tourZoomInMaxSeconds: 30,
     tourZoomOutMaxSeconds: 12,
     tourRotationRad: 0,
 };

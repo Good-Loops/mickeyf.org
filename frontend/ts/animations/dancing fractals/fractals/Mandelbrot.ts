@@ -94,6 +94,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             patch.tourCloseZoomDeltaLog != null ||
             patch.tourZoomSecondsPerLogIn != null ||
             patch.tourZoomSecondsPerLogOut != null ||
+            patch.zoomInEaseOutPowK != null ||
+            patch.zoomInBiasExponent != null ||
             patch.tourZoomInMaxSeconds != null ||
             patch.tourZoomOutMaxSeconds != null ||
             patch.tourRotationRad != null ||
@@ -296,6 +298,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             closeZoomDeltaLog: config.tourCloseZoomDeltaLog,
             zoomSecondsPerLogIn: config.tourZoomSecondsPerLogIn,
             zoomSecondsPerLogOut: config.tourZoomSecondsPerLogOut,
+
+            zoomInEaseOutPowK: config.zoomInEaseOutPowK,
+            zoomInBiasExponent: config.zoomInBiasExponent,
 
             zoomInMinSeconds: config.tourZoomInSeconds,
             zoomInMaxSeconds: config.tourZoomInMaxSeconds,

@@ -5,6 +5,13 @@ type Vec2 = { x: number; y: number };
 
 const clamp01 = (x: number): number => clamp(x, 0, 1);
 
+const easeOutPow01 = (p: number, k: number): number => {
+    const t = clamp01(p);
+    const kk = Number.isFinite(k) ? k : 1;
+    const inv = 1 - t;
+    return 1 - Math.pow(inv, kk);
+};
+
 const resolveCloseZoomDeltaLog = (sight: TourSight, targets: TourZoomTargets): number => {
     const sightDelta = sight.closeZoomDeltaLog;
     const globalDelta = targets.closeZoomDeltaLog;
@@ -43,6 +50,11 @@ export type TourZoomTargets = {
     zoomSecondsPerLogIn: number;
     zoomSecondsPerLogOut: number;
 
+    // ZoomIn easing shape. See easeOutPow(p, k) = 1 - (1 - p)^k
+    zoomInEaseOutPowK: number;
+    // Optional continuous bias to slightly reduce perceived early stall.
+    zoomInBiasExponent: number;
+
     zoomInMinSeconds: number;
     zoomInMaxSeconds: number;
     zoomOutMinSeconds: number;
@@ -71,12 +83,6 @@ const lerpVec2 = (a: Vec2, b: Vec2, t: number): Vec2 => ({
     x: lerp(a.x, b.x, t),
     y: lerp(a.y, b.y, t),
 });
-
-const easeOutCubic01 = (p: number): number => {
-    const t = Math.max(0, Math.min(1, p));
-    const inv = 1 - t;
-    return 1 - inv * inv * inv;
-};
 
 const easeInCubic01 = (p: number): number => {
     const t = Math.max(0, Math.min(1, p));
@@ -111,13 +117,20 @@ export class MandelbrotTour {
             };
         }
 
-        const baselineLogZoomFrame = baselineLogZoom;
+        // Phase 1: advance (consume dt, carry across transitions, skip zero-duration holds)
+        this.advanceState(deltaSeconds);
 
+        // Phase 2: compute outputs from the post-advance state/time
+        const baselineLogZoomFrame = baselineLogZoom;
+        const state = this.normalizeState(this.state ?? { kind: "HoldWide", sightIndex: 0, t: 0 });
+        this.state = state;
+        return this.computeOutput(state, baselineLogZoomFrame);
+    }
+
+    private advanceState(deltaSeconds: number): void {
         let state: TourState = this.normalizeState(this.state ?? { kind: "HoldWide", sightIndex: 0, t: 0 });
         const dt0 = Number.isFinite(deltaSeconds) ? deltaSeconds : 0;
         let dtRemaining = Math.max(0, dt0);
-
-        let lastActiveState: TourState | null = null;
 
         let guard = 0;
         while (dtRemaining > 0 && guard++ < 8) {
@@ -134,25 +147,19 @@ export class MandelbrotTour {
             state = { ...state, t: state.t + stepDt };
             dtRemaining -= stepDt;
 
-            lastActiveState = state;
-
-            const p = clamp01(dur <= 0 ? 1 : state.t / dur);
+            const p = clamp01(state.t / dur);
             if (p >= 1) {
                 state = this.normalizeState(this.nextState(state));
             }
         }
 
         state = this.normalizeState(state);
+
+        // Regression safety: HoldWide=0 should never persist after advancing.
         if (this.durations.holdWideSeconds <= 0 && state.kind === "HoldWide") {
-            // Invariant: HoldWide=0 should never persist after transition handling.
             state = this.normalizeState(this.nextState(state));
         }
-
         this.state = state;
-
-        // Emit output from the last state that actually consumed time this frame.
-        // If deltaSeconds=0, fall back to the current normalized state.
-        return this.computeOutput(lastActiveState ?? state, baselineLogZoomFrame);
     }
 
     private getSight(index: number): TourSight {
@@ -176,6 +183,7 @@ export class MandelbrotTour {
             s = this.nextState(s);
         }
         return s;
+
     }
 
     private zoomInDurationSecondsForSight(idx: number): number {
@@ -237,8 +245,16 @@ export class MandelbrotTour {
                 const to = wrap(from + 1);
                 return { kind: "TravelWide", fromIndex: from, toIndex: to, t: 0 };
             }
-            case "TravelWide":
-                return { kind: "HoldWide", sightIndex: wrap(state.toIndex), t: 0 };
+            case "TravelWide": {
+                const nextSightIndex = wrap(state.toIndex);
+
+                // Hard rule: if HoldWide is configured as 0 seconds, never emit it.
+                if (this.durations.holdWideSeconds <= 0) {
+                    return { kind: "ZoomIn", sightIndex: nextSightIndex, t: 0 };
+                }
+
+                return { kind: "HoldWide", sightIndex: nextSightIndex, t: 0 };
+            }
         }
     }
 
@@ -315,9 +331,17 @@ export class MandelbrotTour {
                 const pRaw = d <= 0 ? 1 : state.t / d;
                 const p = clamp01(pRaw);
 
-                // Slow/cinematic overall but still perceptible early movement.
-                const pBiased = Math.pow(p, 0.7);
-                const pEased = easeOutCubic01(pBiased);
+                // Required ZoomIn curve:
+                // pBiased = pow(p, biasExp)
+                // pEased  = 1 - (1 - pBiased)^k
+                const biasExpRaw = this.zoomTargets.zoomInBiasExponent;
+                const biasExp = Number.isFinite(biasExpRaw) ? biasExpRaw : 1;
+                const pBiased = biasExp === 1 ? p : Math.pow(p, biasExp);
+
+                const kRaw = this.zoomTargets.zoomInEaseOutPowK;
+                const k = Number.isFinite(kRaw) ? kRaw : 6;
+                const pEased = easeOutPow01(pBiased, k);
+
                 return lerp(wide, close, pEased);
             }
             case "HoldClose": {
