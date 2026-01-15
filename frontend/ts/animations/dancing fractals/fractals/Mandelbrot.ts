@@ -92,6 +92,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const tourParamsChanged =
             patch.tourWideLogZoom != null ||
             patch.tourCloseZoomDeltaLog != null ||
+            patch.tourZoomSecondsPerLogIn != null ||
+            patch.tourZoomSecondsPerLogOut != null ||
             patch.tourRotationRad != null ||
             patch.tourHoldWideSeconds != null ||
             patch.tourZoomInSeconds != null ||
@@ -272,31 +274,28 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             {
                 id: "seahorse",
                 center: seahorseCenter,
+                closeZoomDeltaLog: 11.5,
             },
             {
                 id: "elephant",
                 center: elephantCenter,
+                closeZoomDeltaLog: 9.5,
             },
         ];
 
-        const baseZoomIn = config.tourZoomInSeconds;
-        const depth = config.tourCloseZoomDeltaLog;
-        const zoomInSeconds = Math.max(baseZoomIn, depth * 0.9);
-
-        const baseZoomOut = config.tourZoomOutSeconds;
-        const zoomOutSeconds = Math.max(baseZoomOut, depth * 0.35);
-
         const durations: TourDurations = {
             holdWideSeconds: config.tourHoldWideSeconds,
-            zoomInSeconds,
+            zoomInSeconds: config.tourZoomInSeconds,
             holdCloseSeconds: config.tourHoldCloseSeconds,
-            zoomOutSeconds,
+            zoomOutSeconds: config.tourZoomOutSeconds,
             travelWideSeconds: config.tourTravelWideSeconds,
         };
 
         const zoomTargets: TourZoomTargets = {
             wideLogZoom: config.tourWideLogZoom,
             closeZoomDeltaLog: config.tourCloseZoomDeltaLog,
+            zoomSecondsPerLogIn: config.tourZoomSecondsPerLogIn,
+            zoomSecondsPerLogOut: config.tourZoomSecondsPerLogOut,
         };
 
         const presentation: TourPresentation = {
