@@ -47,6 +47,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     // `config.palettePhase` is only an initial/externally-set seed; rendering uses `runtime.palettePhase`.
     private runtime: MandelbrotRuntime = { elapsedAnimSeconds: 0, palettePhase: 0 };
 
+    private beatKick01 = 0;
+
     // Disposal state
     private disposalDelaySeconds = 0;
     private disposalSeconds = Mandelbrot.disposalSeconds;
@@ -204,6 +206,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.updatePalettePhase(deltaSeconds, musicFeatures);
         uniforms.uPalettePhase = this.runtime.palettePhase;
 
+        this.updateBeatKick(deltaSeconds, musicFeatures);
+
         if (!this.config.animate) {
             uniforms.uLogZoom = this.baseLogZoom;
             return;
@@ -216,7 +220,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.updateRotation(deltaSeconds);
         uniforms.uRotation = this.rotation;
 
-        uniforms.uLogZoom = this.computeLogZoom();
+        const baselineLogZoom = this.computeLogZoom();
+        const kickDelta = this.computeBeatKickLogZoomDelta(musicFeatures);
+        uniforms.uLogZoom = baselineLogZoom + kickDelta;
     }
 
     private updateDisposalDelay(deltaSeconds: number): void {
@@ -287,6 +293,36 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         if (w > 0) {
             this.runtime.palettePhase = this.lerpPhase01(this.runtime.palettePhase, pitch.pitchHue01, w);
         }
+    }
+
+    private updateBeatKick(deltaSeconds: number, features: MusicFeaturesFrame): void {
+        const hasMusic = !!features?.hasMusic;
+        const beatHit = !!features?.beatHit;
+        const decayPerSec = Math.max(0, this.config.beatKickDecayPerSec);
+
+        if (hasMusic) {
+            if (beatHit) {
+                this.beatKick01 = 1;
+            } else {
+                this.beatKick01 = Math.max(0, this.beatKick01 - deltaSeconds * decayPerSec);
+            }
+        } else {
+            this.beatKick01 = 0;
+        }
+    }
+
+    private computeBeatKickLogZoomDelta(features: MusicFeaturesFrame): number {
+        if (!this.config.enableBeatKickZoom) return 0;
+
+        const musicWeight01 = clamp(features?.musicWeight01 ?? 0, 0, 1);
+        const env = clamp(this.beatKick01 * musicWeight01, 0, 1);
+
+        const beatKickZoomMaxFactor = Math.max(0, this.config.beatKickZoomMaxFactor);
+        const kickLogMax = Math.log1p(beatKickZoomMaxFactor);
+        let delta = env * kickLogMax;
+
+        delta = clamp(delta, 0, Math.log(1.08));
+        return delta;
     }
 
     private lerpPhase01(a01: number, b01: number, w: number): number {

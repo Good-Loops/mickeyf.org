@@ -20,6 +20,13 @@ export type MandelbrotConfig = {
     // cycles per second (0 disables)
     zoomOscillationSpeed: number;
 
+    // Optional beat-driven zoom kick (additive in log-zoom space).
+    enableBeatKickZoom: boolean;
+    // factor for (1 + beatKickZoomMaxFactor), e.g. 0.02 => +2% on beats
+    beatKickZoomMaxFactor: number;
+    // decay speed for the beat envelope when music is present
+    beatKickDecayPerSec: number;
+
     // Optional rotation (radians).
     rotation: number;
     // radians per second (0 disables)
@@ -83,6 +90,10 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
 
     zoomOscillationMaxFactor: 30000,
     zoomOscillationSpeed: 0.02,
+
+    enableBeatKickZoom: true,
+    beatKickZoomMaxFactor: 0.02,
+    beatKickDecayPerSec: 6,
     rotation: 0,
     rotationSpeed: 0.25,
 
