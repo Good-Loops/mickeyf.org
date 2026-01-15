@@ -297,31 +297,38 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
     private updateBeatKick(deltaSeconds: number, features: MusicFeaturesFrame): void {
         const hasMusic = !!features?.hasMusic;
-        const beatHit = !!features?.beatHit;
-        const decayPerSec = Math.max(0, this.config.beatKickDecayPerSec);
-
-        if (hasMusic) {
-            if (beatHit) {
-                this.beatKick01 = 1;
-            } else {
-                this.beatKick01 = Math.max(0, this.beatKick01 - deltaSeconds * decayPerSec);
-            }
-        } else {
+        if (!hasMusic) {
             this.beatKick01 = 0;
+            return;
         }
+
+        const beatHit = !!features?.beatHit;
+        const target = beatHit ? 1 : 0;
+
+        const attackPerSec = Math.max(0, this.config.beatKickAttackPerSec);
+        const releasePerSec = Math.max(0, this.config.beatKickReleasePerSec);
+        const rate = target > this.beatKick01 ? attackPerSec : releasePerSec;
+
+        const k = 1 - Math.exp(-rate * deltaSeconds);
+        this.beatKick01 = this.beatKick01 + (target - this.beatKick01) * k;
+        this.beatKick01 = clamp(this.beatKick01, 0, 1);
     }
 
     private computeBeatKickLogZoomDelta(features: MusicFeaturesFrame): number {
         if (!this.config.enableBeatKickZoom) return 0;
 
+        const hasMusic = !!features?.hasMusic;
         const musicWeight01 = clamp(features?.musicWeight01 ?? 0, 0, 1);
-        const env = clamp(this.beatKick01 * musicWeight01, 0, 1);
+        const w = hasMusic ? Math.max(0.6, musicWeight01) : 0;
+
+        const raw = clamp(this.beatKick01 * w, 0, 1);
+        const env = Math.sqrt(raw);
 
         const beatKickZoomMaxFactor = Math.max(0, this.config.beatKickZoomMaxFactor);
-        const kickLogMax = Math.log1p(beatKickZoomMaxFactor);
+        const kickLogMax = Math.log(1 + beatKickZoomMaxFactor);
         let delta = env * kickLogMax;
 
-        delta = clamp(delta, 0, Math.log(1.08));
+        delta = clamp(delta, 0, Math.log(1.25));
         return delta;
     }
 
