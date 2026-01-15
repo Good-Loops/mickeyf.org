@@ -16,6 +16,8 @@ import {
     type MandelbrotUniforms,
 } from "./mandelbrot/MandelbrotShader";
 
+import { MandelbrotTour, type TourDurations, type TourOutput, type TourPresentation, type TourSight, type TourZoomTargets } from "./mandelbrot/MandelbrotTour";
+
 import PitchHueCommitter from "../helpers/PitchHueCommitter";
 
 type MandelbrotRuntime = {
@@ -67,6 +69,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
     private baseLogZoom = 0;
 
+    private tour: MandelbrotTour | null = null;
+
     private readonly pitchHueCommitter = new PitchHueCommitter(0);
 
     constructor(_centerX: number, _centerY: number, initialConfig: Partial<MandelbrotConfig> = {}) {
@@ -78,10 +82,27 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.runtime.elapsedAnimSeconds = 0;
 
         this.pitchHueCommitter.reset(this.config.palette[0]?.hue ?? 0);
+
+        this.tour = this.createTourFromConfig(this.config);
     }
 
     updateConfig(patch: Partial<MandelbrotConfig>): void {
         this.config = { ...this.config, ...patch };
+
+        const tourParamsChanged =
+            patch.tourWideLogZoom != null ||
+            patch.tourCloseZoomDeltaLog != null ||
+            patch.tourRotationRad != null ||
+            patch.tourHoldWideSeconds != null ||
+            patch.tourZoomInSeconds != null ||
+            patch.tourHoldCloseSeconds != null ||
+            patch.tourZoomOutSeconds != null ||
+            patch.tourTravelWideSeconds != null ||
+            false;
+
+        if (tourParamsChanged) {
+            this.tour = this.createTourFromConfig(this.config);
+        }
 
         if (patch.palettePhase != null) {
             this.runtime.palettePhase = patch.palettePhase;
@@ -214,15 +235,77 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         }
 
         this.updateCenterTransition(deltaSeconds);
-        uniforms.uCenter[0] = this.viewCenter[0];
-        uniforms.uCenter[1] = this.viewCenter[1];
+        const baselineCenter = { x: this.viewCenter[0], y: this.viewCenter[1] };
 
         this.updateRotation(deltaSeconds);
-        uniforms.uRotation = this.rotation;
+        const baselineRotation = this.rotation;
 
         const baselineLogZoom = this.computeLogZoom();
+
+        const tourOut: TourOutput = this.tour?.step(deltaSeconds, baselineLogZoom) ?? {
+            isActive: false,
+            targetCenter: baselineCenter,
+            targetRotationRad: baselineRotation,
+            tourZoomDeltaLog: 0,
+        };
+
+        const finalTargetCenter = tourOut.isActive ? tourOut.targetCenter : baselineCenter;
+        const finalTargetRotation = tourOut.isActive ? tourOut.targetRotationRad : baselineRotation;
+
+        uniforms.uCenter[0] = finalTargetCenter.x;
+        uniforms.uCenter[1] = finalTargetCenter.y;
+        uniforms.uRotation = finalTargetRotation;
+
         const kickDelta = this.computeBeatKickLogZoomDelta(musicFeatures);
-        uniforms.uLogZoom = baselineLogZoom + kickDelta;
+        const tourDelta = tourOut.tourZoomDeltaLog ?? 0;
+        uniforms.uLogZoom = baselineLogZoom + tourDelta + kickDelta;
+    }
+
+    private createTourFromConfig(config: MandelbrotConfig): MandelbrotTour {
+        const seahorseCenter = { x: defaultMandelbrotConfig.centerX, y: defaultMandelbrotConfig.centerY };
+
+        // Commonly-referenced "Elephant Valley" neighborhood in the main cardioid.
+        // Kept local here to avoid coupling tour to baseline camera state.
+        const elephantCenter = { x: 0.286, y: 0.0115 };
+
+        const sights: TourSight[] = [
+            {
+                id: "seahorse",
+                center: seahorseCenter,
+            },
+            {
+                id: "elephant",
+                center: elephantCenter,
+            },
+        ];
+
+        const baseZoomIn = config.tourZoomInSeconds;
+        const depth = config.tourCloseZoomDeltaLog;
+        const zoomInSeconds = Math.max(baseZoomIn, depth * 0.9);
+
+        const baseZoomOut = config.tourZoomOutSeconds;
+        const zoomOutSeconds = Math.max(baseZoomOut, depth * 0.35);
+
+        const durations: TourDurations = {
+            holdWideSeconds: config.tourHoldWideSeconds,
+            zoomInSeconds,
+            holdCloseSeconds: config.tourHoldCloseSeconds,
+            zoomOutSeconds,
+            travelWideSeconds: config.tourTravelWideSeconds,
+        };
+
+        const zoomTargets: TourZoomTargets = {
+            wideLogZoom: config.tourWideLogZoom,
+            closeZoomDeltaLog: config.tourCloseZoomDeltaLog,
+        };
+
+        const presentation: TourPresentation = {
+            rotationRad: config.tourRotationRad,
+        };
+
+        const tour = new MandelbrotTour(sights, durations, zoomTargets, presentation);
+        tour.reset(0);
+        return tour;
     }
 
     private updateDisposalDelay(deltaSeconds: number): void {

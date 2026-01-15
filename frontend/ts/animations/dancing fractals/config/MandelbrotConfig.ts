@@ -80,6 +80,17 @@ export type MandelbrotConfig = {
     lightOrbitEnabled: boolean;
     lightOrbitSpeed: number;
     lightOrbitTilt: number;
+
+    // Deterministic tour layer (additive log-zoom + optional center/rotation override)
+    tourWideLogZoom: number;
+    tourHoldWideSeconds: number;
+    tourZoomInSeconds: number;
+    tourHoldCloseSeconds: number;
+    tourZoomOutSeconds: number;
+    tourTravelWideSeconds: number;
+
+    tourCloseZoomDeltaLog: number;
+    tourRotationRad: number;
 };
 
 export const defaultMandelbrotConfig: MandelbrotConfig = {
@@ -149,4 +160,14 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     lightOrbitEnabled: true,
     lightOrbitSpeed: 0.05,
     lightOrbitTilt: 0.25,
+
+    tourWideLogZoom: -0.4,
+    tourHoldWideSeconds: 0.0,
+    tourZoomInSeconds: 10.0,
+    tourHoldCloseSeconds: 2.6,
+    tourZoomOutSeconds: 4.0,
+    tourTravelWideSeconds: 2.6,
+
+    tourCloseZoomDeltaLog: 11.5,
+    tourRotationRad: 0,
 };
