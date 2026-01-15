@@ -1,7 +1,29 @@
 import lerp from "@/utils/lerp";
-import smoothstep01 from "@/utils/smoothstep01";
+import clamp from "@/utils/clamp";
 
 type Vec2 = { x: number; y: number };
+
+const clamp01 = (x: number): number => clamp(x, 0, 1);
+
+const resolveCloseZoomDeltaLog = (sight: TourSight, targets: TourZoomTargets): number => {
+    const sightDelta = sight.closeZoomDeltaLog;
+    const globalDelta = targets.closeZoomDeltaLog;
+
+    const candidate =
+        Number.isFinite(sightDelta as number) ? (sightDelta as number) : Number.isFinite(globalDelta) ? globalDelta : 8;
+
+    // Enforce a minimum so "0" can't wipe out depth.
+    return Math.max(candidate, 6);
+};
+
+export const getWideLogZoom = (_sight: TourSight, targets: TourZoomTargets): number => {
+    const wide = targets.wideLogZoom;
+    return Number.isFinite(wide) ? wide : 0;
+};
+
+export const getCloseLogZoom = (sight: TourSight, targets: TourZoomTargets): number => {
+    return getWideLogZoom(sight, targets) + resolveCloseZoomDeltaLog(sight, targets);
+};
 
 export type TourSight = {
     id: "seahorse" | "elephant";
@@ -11,9 +33,7 @@ export type TourSight = {
 
 export type TourDurations = {
     holdWideSeconds: number;
-    zoomInSeconds: number;
     holdCloseSeconds: number;
-    zoomOutSeconds: number;
     travelWideSeconds: number;
 };
 
@@ -22,6 +42,11 @@ export type TourZoomTargets = {
     closeZoomDeltaLog: number;
     zoomSecondsPerLogIn: number;
     zoomSecondsPerLogOut: number;
+
+    zoomInMinSeconds: number;
+    zoomInMaxSeconds: number;
+    zoomOutMinSeconds: number;
+    zoomOutMaxSeconds: number;
 };
 
 export type TourPresentation = {
@@ -86,42 +111,48 @@ export class MandelbrotTour {
             };
         }
 
+        const baselineLogZoomFrame = baselineLogZoom;
+
         let state: TourState = this.normalizeState(this.state ?? { kind: "HoldWide", sightIndex: 0, t: 0 });
         const dt0 = Number.isFinite(deltaSeconds) ? deltaSeconds : 0;
         let dtRemaining = Math.max(0, dt0);
 
-        // Carry remainder dt across transitions with no time drift.
-        // Guard against infinite loops if all durations are 0.
-        let transitionGuard = 0;
-        while (dtRemaining > 0) {
-            transitionGuard += 1;
-            if (transitionGuard > 1000) break;
+        let lastActiveState: TourState | null = null;
 
-            const duration = this.stateDuration(state);
-            if (duration <= 0) {
+        let guard = 0;
+        while (dtRemaining > 0 && guard++ < 8) {
+            state = this.normalizeState(state);
+
+            const dur = this.stateDuration(state);
+            if (dur <= 0) {
                 state = this.normalizeState(this.nextState(state));
                 continue;
             }
 
-            const timeToEnd = Math.max(0, duration - state.t);
-            if (timeToEnd <= 0) {
-                state = this.normalizeState(this.nextState(state));
-                continue;
-            }
-
-            const stepDt = Math.min(dtRemaining, timeToEnd);
+            const timeLeft = Math.max(0, dur - state.t);
+            const stepDt = Math.min(dtRemaining, timeLeft);
             state = { ...state, t: state.t + stepDt };
             dtRemaining -= stepDt;
 
-            if (state.t >= duration) {
+            lastActiveState = state;
+
+            const p = clamp01(dur <= 0 ? 1 : state.t / dur);
+            if (p >= 1) {
                 state = this.normalizeState(this.nextState(state));
             }
         }
 
         state = this.normalizeState(state);
+        if (this.durations.holdWideSeconds <= 0 && state.kind === "HoldWide") {
+            // Invariant: HoldWide=0 should never persist after transition handling.
+            state = this.normalizeState(this.nextState(state));
+        }
 
         this.state = state;
-        return this.computeOutput(state, baselineLogZoom);
+
+        // Emit output from the last state that actually consumed time this frame.
+        // If deltaSeconds=0, fall back to the current normalized state.
+        return this.computeOutput(lastActiveState ?? state, baselineLogZoomFrame);
     }
 
     private getSight(index: number): TourSight {
@@ -134,38 +165,43 @@ export class MandelbrotTour {
         let s = state;
         let guard = 0;
         while (guard++ < 16) {
+            if (s.kind === "HoldWide" && this.stateDuration(s) <= 0) {
+                s = this.nextState(s);
+                continue;
+            }
+
             const d = this.stateDuration(s);
-            const skippable = (s.kind === "HoldWide" || s.kind === "HoldClose") && d <= 0;
+            const skippable = s.kind === "HoldClose" && d <= 0;
             if (!skippable) break;
             s = this.nextState(s);
         }
         return s;
     }
 
-    private effectiveCloseDeltaForSight(idx: number): number {
+    private zoomInDurationSecondsForSight(idx: number): number {
         const A = this.getSight(idx);
+        const wide = getWideLogZoom(A, this.zoomTargets);
+        const close = getCloseLogZoom(A, this.zoomTargets);
 
-        const sightDelta = A.closeZoomDeltaLog;
-        const globalDelta = this.zoomTargets.closeZoomDeltaLog;
-
-        // Resolve candidate value
-        const candidate =
-            Number.isFinite(sightDelta as number) ? (sightDelta as number) : Number.isFinite(globalDelta) ? globalDelta : 8;
-
-        // Enforce a minimum so "0" can't wipe out depth
-        return Math.max(candidate, 6);
+        const logSpan = Math.abs(close - wide);
+        const scaled = logSpan * this.zoomTargets.zoomSecondsPerLogIn;
+        const minS = Math.max(0, this.zoomTargets.zoomInMinSeconds);
+        const maxS = Math.max(minS, this.zoomTargets.zoomInMaxSeconds);
+        const v = Number.isFinite(scaled) ? scaled : minS;
+        return clamp(v, minS, maxS);
     }
 
-    private zoomInDurationForDelta(closeDelta: number): number {
-        const base = Math.max(0, this.durations.zoomInSeconds);
-        const scaled = Math.max(0, closeDelta * this.zoomTargets.zoomSecondsPerLogIn);
-        return Math.max(base, scaled);
-    }
+    private zoomOutDurationSecondsForSight(idx: number): number {
+        const A = this.getSight(idx);
+        const wide = getWideLogZoom(A, this.zoomTargets);
+        const close = getCloseLogZoom(A, this.zoomTargets);
 
-    private zoomOutDurationForDelta(closeDelta: number): number {
-        const base = Math.max(0, this.durations.zoomOutSeconds);
-        const scaled = Math.max(0, closeDelta * this.zoomTargets.zoomSecondsPerLogOut);
-        return Math.max(base, scaled);
+        const logSpan = Math.abs(close - wide);
+        const scaled = logSpan * this.zoomTargets.zoomSecondsPerLogOut;
+        const minS = Math.max(0, this.zoomTargets.zoomOutMinSeconds);
+        const maxS = Math.max(minS, this.zoomTargets.zoomOutMaxSeconds);
+        const v = Number.isFinite(scaled) ? scaled : minS;
+        return clamp(v, minS, maxS);
     }
 
     private stateDuration(state: TourState): number {
@@ -173,14 +209,12 @@ export class MandelbrotTour {
             case "HoldWide":
                 return Math.max(0, this.durations.holdWideSeconds);
             case "ZoomIn": {
-                const closeDelta = this.effectiveCloseDeltaForSight(state.sightIndex);
-                return this.zoomInDurationForDelta(closeDelta);
+                return this.zoomInDurationSecondsForSight(state.sightIndex);
             }
             case "HoldClose":
                 return Math.max(0, this.durations.holdCloseSeconds);
             case "ZoomOut": {
-                const closeDelta = this.effectiveCloseDeltaForSight(state.sightIndex);
-                return this.zoomOutDurationForDelta(closeDelta);
+                return this.zoomOutDurationSecondsForSight(state.sightIndex);
             }
             case "TravelWide":
                 return Math.max(0, this.durations.travelWideSeconds);
@@ -208,7 +242,7 @@ export class MandelbrotTour {
         }
     }
 
-    private computeOutput(state: TourState, baselineLogZoom: number): TourOutput {
+    private computeOutput(state: TourState, baselineLogZoomFrame: number): TourOutput {
         const desiredLogZoom = this.computeDesiredLogZoom(state);
 
         const rotationRadRaw = this.presentation.rotationRad;
@@ -221,7 +255,7 @@ export class MandelbrotTour {
                     isActive: true,
                     targetCenter: A.center,
                     targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoom,
+                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
                 };
             }
             case "ZoomIn": {
@@ -230,7 +264,7 @@ export class MandelbrotTour {
                     isActive: true,
                     targetCenter: A.center,
                     targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoom,
+                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
                 };
             }
             case "HoldClose": {
@@ -239,7 +273,7 @@ export class MandelbrotTour {
                     isActive: true,
                     targetCenter: A.center,
                     targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoom,
+                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
                 };
             }
             case "ZoomOut": {
@@ -248,54 +282,64 @@ export class MandelbrotTour {
                     isActive: true,
                     targetCenter: A.center,
                     targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoom,
+                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
                 };
             }
             case "TravelWide": {
                 const A = this.getSight(state.fromIndex);
                 const B = this.getSight(state.toIndex);
                 const d = Math.max(0, this.durations.travelWideSeconds);
-                const p = d <= 0 ? 1 : smoothstep01(state.t / d);
+                const p = d <= 0 ? 1 : clamp(state.t / d, 0, 1);
                 return {
                     isActive: true,
                     targetCenter: lerpVec2(A.center, B.center, p),
                     targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoom,
+                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
                 };
             }
         }
     }
 
     private computeDesiredLogZoom(state: TourState): number {
-        const wideRaw = this.zoomTargets.wideLogZoom;
-        const wide = Number.isFinite(wideRaw) ? wideRaw : 0;
-
         switch (state.kind) {
-            case "HoldWide":
-                return wide;
+            case "HoldWide": {
+                const A = this.getSight(state.sightIndex);
+                return getWideLogZoom(A, this.zoomTargets);
+            }
             case "ZoomIn": {
-                const closeDelta = this.effectiveCloseDeltaForSight(state.sightIndex);
-                const close = wide + closeDelta;
-                const d = this.stateDuration(state);
-                const pRaw = d <= 0 ? 1 : easeOutCubic01(state.t / d);
+                const A = this.getSight(state.sightIndex);
+                const wide = getWideLogZoom(A, this.zoomTargets);
+                const close = getCloseLogZoom(A, this.zoomTargets);
 
-                // Deterministic kickstart: ensures the first visible frame actually zooms.
-                const p = Math.max(pRaw, 0.02);
-                return lerp(wide, close, p);
+                const d = this.stateDuration(state);
+                const pRaw = d <= 0 ? 1 : state.t / d;
+                const p = clamp01(pRaw);
+
+                // Slow/cinematic overall but still perceptible early movement.
+                const pBiased = Math.pow(p, 0.7);
+                const pEased = easeOutCubic01(pBiased);
+                return lerp(wide, close, pEased);
             }
             case "HoldClose": {
-                const closeDelta = this.effectiveCloseDeltaForSight(state.sightIndex);
-                return wide + closeDelta;
+                const A = this.getSight(state.sightIndex);
+                const close = getCloseLogZoom(A, this.zoomTargets);
+                return close;
             }
             case "ZoomOut": {
-                const closeDelta = this.effectiveCloseDeltaForSight(state.sightIndex);
-                const close = wide + closeDelta;
+                const A = this.getSight(state.sightIndex);
+                const wide = getWideLogZoom(A, this.zoomTargets);
+                const close = getCloseLogZoom(A, this.zoomTargets);
+
                 const d = this.stateDuration(state);
-                const p = d <= 0 ? 1 : easeInCubic01(state.t / d);
-                return lerp(close, wide, p);
+                const pRaw = d <= 0 ? 1 : state.t / d;
+                const p = clamp01(pRaw);
+                const pEased = easeInCubic01(p);
+                return lerp(close, wide, pEased);
             }
-            case "TravelWide":
-                return wide;
+            case "TravelWide": {
+                const B = this.getSight(state.toIndex);
+                return getWideLogZoom(B, this.zoomTargets);
+            }
         }
     }
 }

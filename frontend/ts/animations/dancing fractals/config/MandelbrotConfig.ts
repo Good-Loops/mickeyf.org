@@ -94,6 +94,10 @@ export type MandelbrotConfig = {
     // Optional zoom timing scalers (seconds per log-zoom delta)
     tourZoomSecondsPerLogIn: number;
     tourZoomSecondsPerLogOut: number;
+
+    // Bounded zoom timing (seconds)
+    tourZoomInMaxSeconds: number;
+    tourZoomOutMaxSeconds: number;
     tourRotationRad: number;
 };
 
@@ -174,7 +178,10 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
 
     tourCloseZoomDeltaLog: 8,
 
-    tourZoomSecondsPerLogIn: 0.9,
+    tourZoomSecondsPerLogIn: 1.1,
     tourZoomSecondsPerLogOut: 0.35,
+
+    tourZoomInMaxSeconds: 22,
+    tourZoomOutMaxSeconds: 12,
     tourRotationRad: 0,
 };
