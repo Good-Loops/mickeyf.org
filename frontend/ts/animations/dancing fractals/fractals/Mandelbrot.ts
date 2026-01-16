@@ -243,10 +243,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
     private createTourFromConfig(config: MandelbrotConfig): MandelbrotTour {
         const seahorseCenter = { x: defaultMandelbrotConfig.centerX, y: defaultMandelbrotConfig.centerY };
-
-        // Commonly-referenced "Elephant Valley" neighborhood in the main cardioid.
-        // Kept local here to avoid coupling tour to baseline camera state.
         const elephantCenter = { x: 0.286, y: 0.0123 };
+        const tripleSpiralCenter = { x: -0.0865, y: 0.6555 };
 
         const sights: TourSight[] = [
             {
@@ -257,7 +255,11 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             {
                 id: "elephant",
                 center: elephantCenter,
-                closeZoomDeltaLog: 9.5,
+                closeZoomDeltaLog: 8.5,
+            },
+            {
+                id: "tripleSpiral",
+                center: tripleSpiralCenter,
             },
         ];
 
