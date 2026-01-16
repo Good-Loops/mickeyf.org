@@ -35,7 +35,7 @@ export const getCloseLogZoom = (sight: TourSight, targets: TourZoomTargets): num
 };
 
 export type TourSight = {
-    id: "seahorse" | "elephant" | "tripleSpiral";
+    id: "seahorse" | "elephant" | "tripleSpiral" | "feigenbaum";
     center: Vec2;
     closeZoomDeltaLog?: number;
 };
