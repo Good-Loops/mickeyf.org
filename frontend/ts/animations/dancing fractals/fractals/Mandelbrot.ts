@@ -65,8 +65,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private centerTransitionElapsed = 0;
     private centerTransitionDone = false;
 
-    private rotation = 0;
-
     private baseLogZoom = 0;
 
     private tour: MandelbrotTour | null = null;
@@ -89,25 +87,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     updateConfig(patch: Partial<MandelbrotConfig>): void {
         this.config = { ...this.config, ...patch };
 
-        const tourParamsChanged =
-            patch.tourWideLogZoom != null ||
-            patch.tourCloseZoomDeltaLog != null ||
-            patch.tourZoomSecondsPerLogIn != null ||
-            patch.tourZoomSecondsPerLogOut != null ||
-            patch.zoomInEaseOutPowK != null ||
-            patch.zoomInBiasExponent != null ||
-            patch.tourZoomInMaxSeconds != null ||
-            patch.tourZoomOutMaxSeconds != null ||
-            patch.tourRotationRad != null ||
-            patch.tourHoldWideSeconds != null ||
-            patch.tourZoomInSeconds != null ||
-            patch.tourHoldCloseSeconds != null ||
-            patch.tourZoomOutSeconds != null ||
-            patch.tourTravelWideSeconds != null ||
-            false;
-
-        if (tourParamsChanged) {
+        if (!this.tour) {
             this.tour = this.createTourFromConfig(this.config);
+        } else {
+            this.tour.updateConfig(patch);
         }
 
         if (patch.palettePhase != null) {
@@ -131,10 +114,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
             this.centerTransitionElapsed = 0;
             this.centerTransitionDone = false;
-        }
-
-        if (patch.rotation != null) {
-            this.rotation = this.config.rotation;
         }
 
         this.syncUniforms();
@@ -167,8 +146,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.centerTransitionElapsed = 0;
         this.centerTransitionDone = false;
 
-        this.rotation = this.config.rotation;
-
         this.lightDir[0] = this.config.lightDir.x;
         this.lightDir[1] = this.config.lightDir.y;
         this.lightDir[2] = this.config.lightDir.z;
@@ -177,7 +154,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             screenW: this.screenW,
             screenH: this.screenH,
             viewCenter: this.viewCenter,
-            rotation: this.rotation,
+            rotation: 0,
             paletteRgb: this.paletteRgb,
             paletteSize: this.paletteSize,
             palettePhase: this.runtime.palettePhase,
@@ -206,7 +183,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.baseLogZoom = -Math.log(scaleFit);
         const uniforms = uniformGroup.uniforms as unknown as MandelbrotUniforms;
         uniforms.uLogZoom = this.baseLogZoom;
-        uniforms.uRotation = this.rotation;
+        uniforms.uRotation = 0;
         uniforms.uCenter[0] = this.viewCenter[0];
         uniforms.uCenter[1] = this.viewCenter[1];
 
@@ -243,20 +220,17 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.updateCenterTransition(deltaSeconds);
         const baselineCenter = { x: this.viewCenter[0], y: this.viewCenter[1] };
 
-        this.updateRotation(deltaSeconds);
-        const baselineRotation = this.rotation;
-
         const baselineLogZoom = this.computeLogZoom();
 
         const tourOut: TourOutput = this.tour?.step(deltaSeconds, baselineLogZoom) ?? {
             isActive: false,
             targetCenter: baselineCenter,
-            targetRotationRad: baselineRotation,
+            targetRotationRad: 0,
             tourZoomDeltaLog: 0,
         };
 
         const finalTargetCenter = tourOut.isActive ? tourOut.targetCenter : baselineCenter;
-        const finalTargetRotation = tourOut.isActive ? tourOut.targetRotationRad : baselineRotation;
+        const finalTargetRotation = tourOut.isActive ? tourOut.targetRotationRad : 0;
 
         uniforms.uCenter[0] = finalTargetCenter.x;
         uniforms.uCenter[1] = finalTargetCenter.y;
@@ -272,7 +246,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         // Commonly-referenced "Elephant Valley" neighborhood in the main cardioid.
         // Kept local here to avoid coupling tour to baseline camera state.
-        const elephantCenter = { x: 0.286, y: 0.0115 };
+        const elephantCenter = { x: 0.286, y: 0.0123 };
 
         const sights: TourSight[] = [
             {
@@ -288,10 +262,18 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         ];
 
         const durations: TourDurations = {
-            holdWideSeconds: config.tourHoldWideSeconds,
-            holdCloseSeconds: config.tourHoldCloseSeconds,
-            travelWideSeconds: config.tourTravelWideSeconds,
+            holdWideSeconds: Number.isFinite(config.tourHoldWideSeconds) ? config.tourHoldWideSeconds : 0,
+            holdCloseSeconds: Number.isFinite(config.tourHoldCloseSeconds) ? config.tourHoldCloseSeconds : 0,
+            travelWideSeconds: Number.isFinite(config.tourTravelWideSeconds) ? config.tourTravelWideSeconds : 0,
         };
+
+        if (import.meta.env.DEV && config.tourHoldWideSeconds > 0 && !(durations.holdWideSeconds > 0)) {
+            throw new Error(
+                `tourHoldWideSeconds is > 0 (${String(
+                    config.tourHoldWideSeconds,
+                )}) but durations.holdWideSeconds is non-positive (${String(durations.holdWideSeconds)})`,
+            );
+        }
 
         const zoomTargets: TourZoomTargets = {
             wideLogZoom: config.tourWideLogZoom,
@@ -310,6 +292,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
         const presentation: TourPresentation = {
             rotationRad: config.tourRotationRad,
+            rotationSpeedRadPerSec: config.tourRotationSpeedRadPerSec,
         };
 
         const tour = new MandelbrotTour(sights, durations, zoomTargets, presentation);
@@ -449,13 +432,6 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         if (t >= 1) {
             this.centerTransitionDone = true;
         }
-    }
-
-    private updateRotation(deltaSeconds: number): void {
-        if (this.config.rotationSpeed === 0) return;
-
-        this.rotation += this.config.rotationSpeed * deltaSeconds;
-        this.rotation = this.rotation % (Math.PI * 2);
     }
 
     private computeLogZoom(): number {

@@ -11,15 +11,15 @@ const MandelbrotControls: React.FC<Props> = ({ config, onChange }) => {
         <div className="dancing-fractals__ui--controls">
             <div className="dancing-fractals__ui--controls__group">
                 <label>
-                    Rotation speed: {config.rotationSpeed.toFixed(3)} rad/s
+                    Tour rotation speed: {config.tourRotationSpeedRadPerSec.toFixed(3)} rad/s
                     <input
                         type="range"
                         min={-1}
                         max={1}
                         step={0.01}
-                        value={config.rotationSpeed}
+                        value={config.tourRotationSpeedRadPerSec}
                         onChange={e =>
-                            onChange({ rotationSpeed: Number(e.target.value) })
+                            onChange({ tourRotationSpeedRadPerSec: Number(e.target.value) })
                         }
                         className="dancing-fractals__ui--slider"
                     />

@@ -30,11 +30,6 @@ export type MandelbrotConfig = {
     beatKickAttackPerSec: number;
     beatKickReleasePerSec: number;
 
-    // Optional rotation (radians).
-    rotation: number;
-    // radians per second (0 disables)
-    rotationSpeed: number;
-
     // Viewport
     centerX: number;         // complex plane X
     centerY: number;         // complex plane Y
@@ -103,6 +98,7 @@ export type MandelbrotConfig = {
     tourZoomInMaxSeconds: number;
     tourZoomOutMaxSeconds: number;
     tourRotationRad: number;
+    tourRotationSpeedRadPerSec: number;
 };
 
 export const defaultMandelbrotConfig: MandelbrotConfig = {
@@ -122,8 +118,6 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     beatKickDecayPerSec: 1.5,
     beatKickAttackPerSec: 20,
     beatKickReleasePerSec: 7,
-    rotation: 0,
-    rotationSpeed: 0.25,
 
     // Focus point (Seahorse Valley)
     centerX: -0.743643887037151,
@@ -174,7 +168,7 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     lightOrbitTilt: 0.25,
 
     tourWideLogZoom: -0.4,
-    tourHoldWideSeconds: 0.0,
+    tourHoldWideSeconds: 3.0,
     tourZoomInSeconds: 14.0,
     tourHoldCloseSeconds: 2.6,
     tourZoomOutSeconds: 4.0,
@@ -191,4 +185,5 @@ export const defaultMandelbrotConfig: MandelbrotConfig = {
     tourZoomInMaxSeconds: 30,
     tourZoomOutMaxSeconds: 12,
     tourRotationRad: 0,
+    tourRotationSpeedRadPerSec: 0.25,
 };
