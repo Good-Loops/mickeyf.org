@@ -16,7 +16,8 @@ import {
     type MandelbrotUniforms,
 } from "./mandelbrot/MandelbrotShader";
 
-import { MandelbrotTour, type TourDurations, type TourOutput, type TourPresentation, type TourSight, type TourZoomTargets } from "./mandelbrot/MandelbrotTour";
+import { createDefaultSightRegistry } from "./mandelbrot/MandelbrotSights";
+import { MandelbrotTour, type TourDurations, type TourOutput, type TourPresentation, type TourZoomTargets } from "./mandelbrot/MandelbrotTour";
 
 import PitchHueCommitter from "../helpers/PitchHueCommitter";
 
@@ -242,37 +243,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     }
 
     private createTourFromConfig(config: MandelbrotConfig): MandelbrotTour {
-        const seahorseCenter = { x: defaultMandelbrotConfig.centerX, y: defaultMandelbrotConfig.centerY };
-        const elephantCenter = { x: 0.286, y: 0.0123 };
-        const tripleSpiralCenter = { x: -0.0865, y: 0.6555 };
-        const feigenbaumCenter = { x: -1.40114, y: 0.0 };
-        const dendriteCenter = { x: -0.10109636384562, y: 0.95628651080914 };
-
-        const sights: TourSight[] = [
-            {
-                id: "seahorse",
-                center: seahorseCenter,
-                closeZoomDeltaLog: 11.5,
-            },
-            {
-                id: "elephant",
-                center: elephantCenter,
-                closeZoomDeltaLog: 8.5,
-            },
-            {
-                id: "tripleSpiral",
-                center: tripleSpiralCenter,
-            },
-            {
-                id: "feigenbaum",
-                center: feigenbaumCenter,
-                closeZoomDeltaLog: 6.0,
-            },
-            {
-                id: "dendrite",
-                center: dendriteCenter,
-            },
-        ];
+        const sightReg = createDefaultSightRegistry();
+        if (import.meta.env.DEV && sightReg.sights.length === 0) {
+            throw new Error("Expected default sight registry to be non-empty");
+        }
 
         const durations: TourDurations = {
             holdWideSeconds: Number.isFinite(config.tourHoldWideSeconds) ? config.tourHoldWideSeconds : 0,
@@ -308,7 +282,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
             rotationSpeedRadPerSec: config.tourRotationSpeedRadPerSec,
         };
 
-        const tour = new MandelbrotTour(sights, durations, zoomTargets, presentation);
+        const tour = new MandelbrotTour(durations, zoomTargets, presentation);
         tour.reset(0);
         return tour;
     }

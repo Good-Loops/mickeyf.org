@@ -2,6 +2,7 @@ import lerp from "@/utils/lerp";
 import clamp from "@/utils/clamp";
 
 import { advanceState, createInitialState, type TourState, type TourStateKind } from "./MandelbrotTourStateMachine";
+import { createDefaultSightRegistry } from "./MandelbrotSights";
 
 import type {
     Vec2,
@@ -65,6 +66,7 @@ const easeInCubic01 = (p: number): number => {
 };
 
 export class MandelbrotTour {
+    private readonly sightReg = createDefaultSightRegistry();
     private state: TourState = createInitialState();
     private sightIndex = 0;
     private travelFromIndex = 0;
@@ -73,7 +75,6 @@ export class MandelbrotTour {
     private rotationRadOutFrame = 0;
 
     constructor(
-        private readonly sights: TourSight[],
         private durations: TourDurations,
         private zoomTargets: TourZoomTargets,
         private presentation: TourPresentation,
@@ -82,7 +83,7 @@ export class MandelbrotTour {
     }
 
     reset(startSightIndex = 0): void {
-        const n = this.sights.length;
+        const n = this.sightReg.sights.length;
         const idx = n <= 0 ? 0 : ((startSightIndex % n) + n) % n;
         this.state = createInitialState();
         this.sightIndex = idx;
@@ -173,7 +174,7 @@ export class MandelbrotTour {
 
     step(deltaSeconds: number, baselineLogZoom: number): TourOutput {
         const input: TourInput = { deltaSeconds, baselineLogZoomFrame: baselineLogZoom };
-        if (this.sights.length === 0) {
+        if (this.sightReg.sights.length === 0) {
             return {
                 isActive: false,
                 targetCenter: { x: 0, y: 0 },
@@ -234,13 +235,13 @@ export class MandelbrotTour {
     }
 
     private getSight(index: number): TourSight {
-        const n = this.sights.length;
+        const n = this.sightReg.sights.length;
         const i = n <= 0 ? 0 : ((index % n) + n) % n;
-        return this.sights[i];
+        return this.sightReg.sights[i];
     }
 
     private wrapSightIndex(i: number): number {
-        const n = this.sights.length;
+        const n = this.sightReg.sights.length;
         if (n <= 0) return 0;
         return ((i % n) + n) % n;
     }
@@ -278,7 +279,8 @@ export class MandelbrotTour {
 
             // TravelWide completion advances the active sight index.
             if (kind === "TravelWide" && next === "HoldWide") {
-                this.sightIndex = this.wrapSightIndex(this.travelToIndex);
+                const n = this.sightReg.sights.length;
+                this.sightIndex = n > 0 ? (this.sightIndex + 1) % n : 0;
             }
 
             kind = next;
