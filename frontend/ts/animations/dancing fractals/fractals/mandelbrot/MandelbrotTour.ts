@@ -1,9 +1,27 @@
 import lerp from "@/utils/lerp";
 import clamp from "@/utils/clamp";
 
-import type { MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
+import type {
+    Vec2,
+    TourDurations,
+    TourOutput,
+    TourPresentation,
+    TourSight,
+    TourZoomTargets,
+    TourInput,
+    TourConfigPatch,
+} from "./MandelbrotTourTypes";
 
-type Vec2 = { x: number; y: number };
+export type {
+    Vec2,
+    TourDurations,
+    TourOutput,
+    TourPresentation,
+    TourSight,
+    TourZoomTargets,
+    TourInput,
+    TourConfigPatch,
+} from "./MandelbrotTourTypes";
 
 const clamp01 = (x: number): number => clamp(x, 0, 1);
 
@@ -32,47 +50,6 @@ export const getWideLogZoom = (_sight: TourSight, targets: TourZoomTargets): num
 
 export const getCloseLogZoom = (sight: TourSight, targets: TourZoomTargets): number => {
     return getWideLogZoom(sight, targets) + resolveCloseZoomDeltaLog(sight, targets);
-};
-
-export type TourSight = {
-    id: "seahorse" | "elephant" | "tripleSpiral" | "feigenbaum" | "dendrite";
-    center: Vec2;
-    closeZoomDeltaLog?: number;
-};
-
-export type TourDurations = {
-    holdWideSeconds: number;
-    holdCloseSeconds: number;
-    travelWideSeconds: number;
-};
-
-export type TourZoomTargets = {
-    wideLogZoom: number;
-    closeZoomDeltaLog: number;
-    zoomSecondsPerLogIn: number;
-    zoomSecondsPerLogOut: number;
-
-    // ZoomIn easing shape. See easeOutPow(p, k) = 1 - (1 - p)^k
-    zoomInEaseOutPowK: number;
-    // Optional continuous bias to slightly reduce perceived early stall.
-    zoomInBiasExponent: number;
-
-    zoomInMinSeconds: number;
-    zoomInMaxSeconds: number;
-    zoomOutMinSeconds: number;
-    zoomOutMaxSeconds: number;
-};
-
-export type TourPresentation = {
-    rotationRad: number;
-    rotationSpeedRadPerSec: number;
-};
-
-export type TourOutput = {
-    isActive: boolean;
-    targetCenter: Vec2;
-    targetRotationRad: number;
-    tourZoomDeltaLog: number;
 };
 
 type TourState =
@@ -114,7 +91,7 @@ export class MandelbrotTour {
         this.rotationRadOutFrame = 0;
     }
 
-    updateConfig(patch: Partial<MandelbrotConfig>): void {
+    updateConfig(patch: TourConfigPatch): void {
         // Durations (seconds)
         if (patch.tourHoldWideSeconds != null) {
             this.durations.holdWideSeconds = Number.isFinite(patch.tourHoldWideSeconds) ? patch.tourHoldWideSeconds : 0;
@@ -194,6 +171,7 @@ export class MandelbrotTour {
     }
 
     step(deltaSeconds: number, baselineLogZoom: number): TourOutput {
+        const input: TourInput = { deltaSeconds, baselineLogZoomFrame: baselineLogZoom };
         if (this.sights.length === 0) {
             return {
                 isActive: false,
@@ -204,13 +182,13 @@ export class MandelbrotTour {
         }
 
         // Phase 1: advance (consume dt, carry across transitions, skip zero-duration holds)
-        this.advanceState(deltaSeconds);
+        this.advanceState(input.deltaSeconds);
 
         // Update tour-owned rotation after state advance (unwrapped).
         const rotSpeedRaw = this.presentation.rotationSpeedRadPerSec;
         const rotSpeed = Number.isFinite(rotSpeedRaw) ? rotSpeedRaw : 0;
         if (rotSpeed !== 0) {
-            this.rotationRad += rotSpeed * deltaSeconds;
+            this.rotationRad += rotSpeed * input.deltaSeconds;
         }
 
         const rotOffsetRaw = this.presentation.rotationRad;
@@ -218,7 +196,7 @@ export class MandelbrotTour {
         this.rotationRadOutFrame = this.rotationRad + rotOffset;
 
         // Phase 2: compute outputs from the post-advance state/time
-        const baselineLogZoomFrame = baselineLogZoom;
+        const baselineLogZoomFrame = input.baselineLogZoomFrame;
         const state = this.normalizeState(this.state ?? { kind: "HoldWide", sightIndex: 0, t: 0 });
         this.state = state;
         return this.computeOutput(state, baselineLogZoomFrame);
