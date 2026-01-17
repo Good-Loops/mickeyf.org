@@ -245,7 +245,8 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const seahorseCenter = { x: defaultMandelbrotConfig.centerX, y: defaultMandelbrotConfig.centerY };
         const elephantCenter = { x: 0.286, y: 0.0123 };
         const tripleSpiralCenter = { x: -0.0865, y: 0.6555 };
-        const feigenbaumCenter = { x: -1.40114, y: 0.0, };
+        const feigenbaumCenter = { x: -1.40114, y: 0.0 };
+        const dendriteCenter = { x: -0.10109636384562, y: 0.95628651080914 };
 
         const sights: TourSight[] = [
             {
@@ -266,6 +267,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
                 id: "feigenbaum",
                 center: feigenbaumCenter,
                 closeZoomDeltaLog: 6.0,
+            },
+            {
+                id: "dendrite",
+                center: dendriteCenter,
             },
         ];
 
