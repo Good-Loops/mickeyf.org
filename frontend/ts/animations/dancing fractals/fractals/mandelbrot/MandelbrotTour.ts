@@ -65,8 +65,13 @@ const easeInCubic01 = (p: number): number => {
     return t * t * t;
 };
 
+type TourRebuildSignature = {
+    sightIds: string;
+};
+
 export class MandelbrotTour {
     private readonly sightReg = createDefaultSightRegistry();
+    private rebuildSig: TourRebuildSignature = this.computeRebuildSignature();
     private state: TourState = createInitialState();
     private sightIndex = 0;
     private travelFromIndex = 0;
@@ -91,6 +96,19 @@ export class MandelbrotTour {
         this.travelToIndex = n <= 0 ? 0 : ((idx + 1) % n + n) % n;
         this.rotationRad = 0;
         this.rotationRadOutFrame = 0;
+    }
+
+    private computeRebuildSignature(): TourRebuildSignature {
+        const sightIds = this.sightReg.sights.map((s) => s.id).join("|");
+        return { sightIds };
+    }
+
+    private shouldRebuildTour(prev: TourRebuildSignature, next: TourRebuildSignature): boolean {
+        return prev.sightIds !== next.sightIds;
+    }
+
+    private rebuildTourRuntime(): void {
+        this.reset(0);
     }
 
     updateConfig(patch: TourConfigPatch): void {
@@ -170,6 +188,13 @@ export class MandelbrotTour {
                 )}) but durations.holdWideSeconds is non-positive (${String(this.durations.holdWideSeconds)})`,
             );
         }
+
+        const prevSig = this.rebuildSig;
+        const nextSig = this.computeRebuildSignature();
+        if (this.shouldRebuildTour(prevSig, nextSig)) {
+            this.rebuildTourRuntime();
+        }
+        this.rebuildSig = nextSig;
     }
 
     step(deltaSeconds: number, baselineLogZoom: number): TourOutput {
