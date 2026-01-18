@@ -363,60 +363,37 @@ export class MandelbrotTour {
         }
     }
 
-    private computeOutput(state: TourState, baselineLogZoomFrame: number): TourOutput {
-        const desiredLogZoom = this.computeDesiredLogZoom(state);
-        const rotationRad = this.rotationRadOutFrame;
-
+    private computeTargetCenter(state: TourState): Vec2 {
         switch (state.kind) {
-            case "HoldWide": {
-                const A = this.getSight(this.sightIndex);
-                return {
-                    isActive: true,
-                    targetCenter: A.center,
-                    targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
-                };
-            }
-            case "ZoomIn": {
-                const A = this.getSight(this.sightIndex);
-                return {
-                    isActive: true,
-                    targetCenter: A.center,
-                    targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
-                };
-            }
-            case "HoldClose": {
-                const A = this.getSight(this.sightIndex);
-                return {
-                    isActive: true,
-                    targetCenter: A.center,
-                    targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
-                };
-            }
+            case "HoldWide":
+            case "ZoomIn":
+            case "HoldClose":
             case "ZoomOut": {
                 const A = this.getSight(this.sightIndex);
-                return {
-                    isActive: true,
-                    targetCenter: A.center,
-                    targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
-                };
+                return A.center;
             }
             case "TravelWide": {
                 const A = this.getSight(this.travelFromIndex);
                 const B = this.getSight(this.travelToIndex);
                 const d = Math.max(0, this.durations.travelWideSeconds);
                 const p = d <= 0 ? 1 : clamp(state.elapsedSec / d, 0, 1);
-                return {
-                    isActive: true,
-                    targetCenter: lerpVec2(A.center, B.center, p),
-                    targetRotationRad: rotationRad,
-                    tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
-                };
+                return lerpVec2(A.center, B.center, p);
             }
         }
+    }
+
+    private computeOutput(state: TourState, baselineLogZoomFrame: number): TourOutput {
+        const desiredLogZoom = this.computeDesiredLogZoom(state);
+        const rotationRad = this.rotationRadOutFrame;
+
+        const targetCenter = this.computeTargetCenter(state);
+
+        return {
+            isActive: true,
+            targetCenter,
+            targetRotationRad: rotationRad,
+            tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
+        };
     }
 
     private computeDesiredLogZoom(state: TourState): number {
