@@ -16,7 +16,8 @@ import {
     type MandelbrotUniforms,
 } from "./mandelbrot/MandelbrotShader";
 
-import { MandelbrotTour, type TourDurations, type TourOutput, type TourPresentation, type TourZoomTargets } from "./mandelbrot/MandelbrotTour";
+import { MandelbrotTour } from "./mandelbrot/MandelbrotTour";
+import type { TourDurations, TourOutput, TourPresentation, TourZoomTargets } from "./mandelbrot/MandelbrotTourTypes";
 
 import PitchHueCommitter from "../helpers/PitchHueCommitter";
 

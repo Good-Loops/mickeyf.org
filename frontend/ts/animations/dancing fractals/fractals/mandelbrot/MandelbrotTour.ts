@@ -21,23 +21,12 @@ import type {
     TourConfigPatch,
 } from "./MandelbrotTourTypes";
 
-export type {
-    Vec2,
-    TourDurations,
-    TourOutput,
-    TourPresentation,
-    TourSight,
-    TourZoomTargets,
-    TourInput,
-    TourConfigPatch,
-} from "./MandelbrotTourTypes";
-
 const clamp01 = (x: number): number => clamp(x, 0, 1);
 
-const easeOutPow01 = (p: number, k: number): number => {
-    const t = clamp01(p);
+const easeOutPow01 = (progress01: number, k: number): number => {
+    const clamped01 = clamp01(progress01);
     const kk = Number.isFinite(k) ? k : 1;
-    const inv = 1 - t;
+    const inv = 1 - clamped01;
     return 1 - Math.pow(inv, kk);
 };
 
@@ -61,14 +50,14 @@ export const getCloseLogZoom = (sight: TourSight, targets: TourZoomTargets): num
     return getWideLogZoom(sight, targets) + resolveCloseZoomDeltaLog(sight, targets);
 };
 
-const lerpVec2 = (a: Vec2, b: Vec2, t: number): Vec2 => ({
-    x: lerp(a.x, b.x, t),
-    y: lerp(a.y, b.y, t),
+const lerpVec2 = (a: Vec2, b: Vec2, progress01: number): Vec2 => ({
+    x: lerp(a.x, b.x, progress01),
+    y: lerp(a.y, b.y, progress01),
 });
 
-const easeInCubic01 = (p: number): number => {
-    const t = Math.max(0, Math.min(1, p));
-    return t * t * t;
+const easeInCubic01 = (progress01: number): number => {
+    const clamped01 = Math.max(0, Math.min(1, progress01));
+    return clamped01 * clamped01 * clamped01;
 };
 
 type TourRebuildSignature = {
@@ -125,15 +114,15 @@ export class MandelbrotTour {
     }
 
     private applyZoomInEasing(p01: number): number {
-        const p = this.clamp01(p01);
+        const progress01 = this.clamp01(p01);
 
         const biasExpRaw = this.zoomTargets.zoomInBiasExponent;
         const biasExp = Number.isFinite(biasExpRaw) ? biasExpRaw : 1;
-        const pBiased = biasExp === 1 ? p : Math.pow(p, biasExp);
+        const biased01 = biasExp === 1 ? progress01 : Math.pow(progress01, biasExp);
 
         const kRaw = this.zoomTargets.zoomInEaseOutPowK;
         const k = Number.isFinite(kRaw) ? kRaw : 6;
-        return easeOutPow01(pBiased, k);
+        return easeOutPow01(biased01, k);
     }
 
     constructor(
@@ -384,8 +373,8 @@ export class MandelbrotTour {
             case "TravelWide": {
                 const A = this.getSight(this.ctx.travelFromIndex);
                 const B = this.getSight(this.ctx.travelToIndex);
-                const p = this.travelProgress01(state.elapsedSec);
-                return lerpVec2(A.center, B.center, p);
+                const progress01 = this.travelProgress01(this.state.elapsedSec);
+                return lerpVec2(A.center, B.center, progress01);
             }
         }
     }
@@ -415,9 +404,9 @@ export class MandelbrotTour {
                 const wide = getWideLogZoom(A, this.zoomTargets);
                 const close = getCloseLogZoom(A, this.zoomTargets);
 
-                const p = this.zoomInProgress01(state.elapsedSec);
-                const pEased = this.applyZoomInEasing(p);
-                return lerp(wide, close, pEased);
+                const progress01 = this.zoomInProgress01(state.elapsedSec);
+                const eased01 = this.applyZoomInEasing(progress01);
+                return lerp(wide, close, eased01);
             }
             case "HoldClose": {
                 const A = this.getSight(this.ctx.sightIndex);
@@ -429,9 +418,9 @@ export class MandelbrotTour {
                 const wide = getWideLogZoom(A, this.zoomTargets);
                 const close = getCloseLogZoom(A, this.zoomTargets);
 
-                const p = this.zoomOutProgress01(state.elapsedSec);
-                const pEased = easeInCubic01(p);
-                return lerp(close, wide, pEased);
+                const progress01 = this.zoomOutProgress01(state.elapsedSec);
+                const eased01 = easeInCubic01(progress01);
+                return lerp(close, wide, eased01);
             }
             case "TravelWide": {
                 const B = this.getSight(this.ctx.travelToIndex);

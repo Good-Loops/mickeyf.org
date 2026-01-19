@@ -62,33 +62,33 @@ export function advanceState(
     const maxTransitions = params.maxTransitionsPerStep ?? 16;
 
     let state: TourState = { ...prev };
-    let dt = Math.max(0, params.deltaSeconds);
+    let remainingDtSec = Math.max(0, params.deltaSeconds);
     let transitions = 0;
-    let consumed = 0;
+    let consumedSec = 0;
 
-    while (dt > 0) {
+    while (remainingDtSec > 0) {
         if (transitions > maxTransitions) break;
 
-        const duration =
+        const durationSec =
             state.kind === "ZoomIn" || state.kind === "ZoomOut"
                 ? Math.max(0, params.getZoomDurationSec(state.kind))
                 : Math.max(0, getDurationSec(state.kind, params.durations));
 
         // If duration <= 0, skip this state immediately (matches "skip only when duration <= 0")
-        if (duration <= 0) {
+        if (durationSec <= 0) {
             state = { kind: nextKind(state.kind), elapsedSec: 0 };
             transitions++;
             continue;
         }
 
-        const remaining = Math.max(0, duration - state.elapsedSec);
-        const step = Math.min(dt, remaining);
+        const remainingSec = Math.max(0, durationSec - state.elapsedSec);
+        const consumeSec = Math.min(remainingDtSec, remainingSec);
 
-        state = { ...state, elapsedSec: state.elapsedSec + step };
-        dt -= step;
-        consumed += step;
+        state = { ...state, elapsedSec: state.elapsedSec + consumeSec };
+        remainingDtSec -= consumeSec;
+        consumedSec += consumeSec;
 
-        const finished = state.elapsedSec >= duration - 1e-12;
+        const finished = state.elapsedSec >= durationSec - 1e-12;
         if (finished) {
             state = { kind: nextKind(state.kind), elapsedSec: 0 };
             transitions++;
@@ -97,5 +97,5 @@ export function advanceState(
         }
     }
 
-    return { state, transitions, consumedSeconds: consumed };
+    return { state, transitions, consumedSeconds: consumedSec };
 }
