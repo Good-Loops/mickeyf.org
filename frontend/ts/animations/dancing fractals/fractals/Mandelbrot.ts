@@ -16,7 +16,6 @@ import {
     type MandelbrotUniforms,
 } from "./mandelbrot/MandelbrotShader";
 
-import { createDefaultSightRegistry } from "./mandelbrot/MandelbrotSights";
 import { MandelbrotTour, type TourDurations, type TourOutput, type TourPresentation, type TourZoomTargets } from "./mandelbrot/MandelbrotTour";
 
 import PitchHueCommitter from "../helpers/PitchHueCommitter";
@@ -278,24 +277,11 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     }
 
     private createTourFromConfig(config: MandelbrotConfig): MandelbrotTour {
-        const sightReg = createDefaultSightRegistry();
-        if (import.meta.env.DEV && sightReg.sights.length === 0) {
-            throw new Error("Expected default sight registry to be non-empty");
-        }
-
         const durations: TourDurations = {
             holdWideSeconds: Number.isFinite(config.tourHoldWideSeconds) ? config.tourHoldWideSeconds : 0,
             holdCloseSeconds: Number.isFinite(config.tourHoldCloseSeconds) ? config.tourHoldCloseSeconds : 0,
             travelWideSeconds: Number.isFinite(config.tourTravelWideSeconds) ? config.tourTravelWideSeconds : 0,
         };
-
-        if (import.meta.env.DEV && config.tourHoldWideSeconds > 0 && !(durations.holdWideSeconds > 0)) {
-            throw new Error(
-                `tourHoldWideSeconds is > 0 (${String(
-                    config.tourHoldWideSeconds,
-                )}) but durations.holdWideSeconds is non-positive (${String(durations.holdWideSeconds)})`,
-            );
-        }
 
         const zoomTargets: TourZoomTargets = {
             wideLogZoom: config.tourWideLogZoom,

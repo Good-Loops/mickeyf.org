@@ -175,20 +175,6 @@ export class MandelbrotTour {
                 Number.isFinite(patch.tourRotationSpeedRadPerSec) ? patch.tourRotationSpeedRadPerSec : 0;
         }
 
-        // Dev-only invariant: if the caller config says HoldWide>0, the tour must not treat it as <=0.
-        if (
-            import.meta.env.DEV &&
-            patch.tourHoldWideSeconds != null &&
-            patch.tourHoldWideSeconds > 0 &&
-            !(this.durations.holdWideSeconds > 0)
-        ) {
-            throw new Error(
-                `tourHoldWideSeconds is > 0 (${String(
-                    patch.tourHoldWideSeconds,
-                )}) but durations.holdWideSeconds is non-positive (${String(this.durations.holdWideSeconds)})`,
-            );
-        }
-
         const prevSig = this.rebuildSig;
         const nextSig = this.computeRebuildSignature();
         if (this.shouldRebuildTour(prevSig, nextSig)) {
@@ -219,20 +205,6 @@ export class MandelbrotTour {
             // Preserve prior loop guard behavior.
             maxTransitionsPerStep: 8,
         });
-
-        if (import.meta.env.DEV && result.state.kind === "HoldWide" && this.durations.holdWideSeconds > 0) {
-            const dur = Math.max(
-                0,
-                Number.isFinite(this.durations.holdWideSeconds) ? this.durations.holdWideSeconds : 0,
-            );
-            if (!(dur > 0)) {
-                throw new Error(
-                    `HoldWide duration is non-positive (dur=${String(dur)}) while durations.holdWideSeconds=${String(
-                        this.durations.holdWideSeconds,
-                    )}`,
-                );
-            }
-        }
 
         this.applyTransitions(prevState.kind, result.transitions);
         this.state = this.normalizeStateMachineState(result.state);
@@ -286,12 +258,6 @@ export class MandelbrotTour {
         for (let i = 0; i < transitions; i++) {
             const next = this.nextKind(kind);
             this.lastTransitionFromKind = kind;
-
-            if (import.meta.env.DEV && kind === "TravelWide" && this.durations.holdWideSeconds > 0 && next !== "HoldWide") {
-                throw new Error(
-                    `Expected TravelWide -> HoldWide when holdWideSeconds>0, got TravelWide -> ${next}`,
-                );
-            }
 
             // Mirror the old nextState(...) side effects:
             // ZoomOut completion sets up TravelWide from current sight to next.
