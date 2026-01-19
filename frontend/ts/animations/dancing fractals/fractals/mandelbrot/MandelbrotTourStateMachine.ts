@@ -11,7 +11,7 @@ export function createInitialState(): TourState {
     return { kind: "HoldWide", elapsedSec: 0 };
 }
 
-export function getDurationSec(kind: TourStateKind, durations: TourDurations): number {
+function getDurationSec(kind: TourStateKind, durations: TourDurations): number {
     switch (kind) {
         case "HoldWide":
             return Math.max(0, durations.holdWideSeconds);
@@ -46,20 +46,19 @@ export function nextKind(kind: TourStateKind): TourStateKind {
     }
 }
 
-export type AdvanceParams = {
-    deltaSeconds: number;
-    durations: TourDurations;
-    getZoomDurationSec: (kind: "ZoomIn" | "ZoomOut") => number;
-    maxTransitionsPerStep?: number;
-};
-
-export type AdvanceResult = {
+export function advanceState(
+    prev: TourState,
+    params: {
+        deltaSeconds: number;
+        durations: TourDurations;
+        getZoomDurationSec: (kind: "ZoomIn" | "ZoomOut") => number;
+        maxTransitionsPerStep?: number;
+    },
+): {
     state: TourState;
     transitions: number;
     consumedSeconds: number;
-};
-
-export function advanceState(prev: TourState, params: AdvanceParams): AdvanceResult {
+} {
     const maxTransitions = params.maxTransitionsPerStep ?? 16;
 
     let state: TourState = { ...prev };

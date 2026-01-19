@@ -372,30 +372,6 @@ export class MandelbrotTour {
         return this.zoomOutDurationSecondsForSight(this.ctx.sightIndex);
     }
 
-    private stateDurationSecondsForKind(kind: TourStateKind): number {
-        switch (kind) {
-            case "HoldWide":
-                return Math.max(
-                    0,
-                    Number.isFinite(this.durations.holdWideSeconds) ? this.durations.holdWideSeconds : 0,
-                );
-            case "ZoomIn":
-                return this.zoomInDurationSecondsForSight(this.ctx.sightIndex);
-            case "HoldClose":
-                return Math.max(
-                    0,
-                    Number.isFinite(this.durations.holdCloseSeconds) ? this.durations.holdCloseSeconds : 0,
-                );
-            case "ZoomOut":
-                return this.zoomOutDurationSecondsForSight(this.ctx.sightIndex);
-            case "TravelWide":
-                return Math.max(
-                    0,
-                    Number.isFinite(this.durations.travelWideSeconds) ? this.durations.travelWideSeconds : 0,
-                );
-        }
-    }
-
     private computeTargetCenter(state: TourState): Vec2 {
         switch (state.kind) {
             case "HoldWide":
