@@ -41,12 +41,12 @@ const resolveCloseZoomDeltaLog = (sight: TourSight, targets: TourZoomTargets): n
     return Math.max(candidate, 6);
 };
 
-export const getWideLogZoom = (_sight: TourSight, targets: TourZoomTargets): number => {
+const getWideLogZoom = (_sight: TourSight, targets: TourZoomTargets): number => {
     const wide = targets.wideLogZoom;
     return Number.isFinite(wide) ? wide : 0;
 };
 
-export const getCloseLogZoom = (sight: TourSight, targets: TourZoomTargets): number => {
+const getCloseLogZoom = (sight: TourSight, targets: TourZoomTargets): number => {
     return getWideLogZoom(sight, targets) + resolveCloseZoomDeltaLog(sight, targets);
 };
 
@@ -85,17 +85,22 @@ export class MandelbrotTour {
     private rotationRad = 0;
     private rotationRadOutFrame = 0;
 
+    private finiteOr(x: number, fallback: number): number {
+        return Number.isFinite(x) ? x : fallback;
+    }
+
     private clamp01(x: number): number {
-        if (!Number.isFinite(x)) return 0;
-        if (x <= 0) return 0;
-        if (x >= 1) return 1;
-        return x;
+        const v = this.finiteOr(x, 0);
+        if (v <= 0) return 0;
+        if (v >= 1) return 1;
+        return v;
     }
 
     private progress01(elapsedSec: number, durationSec: number): number {
-        if (!Number.isFinite(elapsedSec) || !Number.isFinite(durationSec)) return 0;
-        if (durationSec <= 0) return 1;
-        return this.clamp01(elapsedSec / durationSec);
+        const e = this.finiteOr(elapsedSec, 0);
+        const d = this.finiteOr(durationSec, 0);
+        if (d <= 0) return 1;
+        return this.clamp01(e / d);
     }
 
     private zoomInProgress01(stateElapsedSec: number): number {
@@ -137,9 +142,11 @@ export class MandelbrotTour {
         const n = this.sightReg.sights.length;
         const idx = n <= 0 ? 0 : ((startSightIndex % n) + n) % n;
         this.state = createInitialState();
-        this.ctx.sightIndex = idx;
-        this.ctx.travelFromIndex = idx;
-        this.ctx.travelToIndex = n <= 0 ? 0 : ((idx + 1) % n + n) % n;
+        this.ctx = {
+            sightIndex: idx,
+            travelFromIndex: idx,
+            travelToIndex: n <= 0 ? 0 : ((idx + 1) % n + n) % n,
+        };
         this.rotationRad = 0;
         this.rotationRadOutFrame = 0;
     }
@@ -229,8 +236,8 @@ export class MandelbrotTour {
         this.rebuildSig = nextSig;
     }
 
-    step(deltaSeconds: number, baselineLogZoom: number): TourOutput {
-        const input: TourInput = { deltaSeconds, baselineLogZoomFrame: baselineLogZoom };
+    step(deltaSeconds: number, baselineLogZoomFrame: number): TourOutput {
+        const input: TourInput = { deltaSeconds, baselineLogZoomFrame };
         if (this.sightReg.sights.length === 0) {
             return {
                 isActive: false,
@@ -267,19 +274,18 @@ export class MandelbrotTour {
         }
 
         // Update tour-owned rotation after state advance (unwrapped).
-        const rotSpeedRaw = this.presentation.rotationSpeedRadPerSec;
-        const rotSpeed = Number.isFinite(rotSpeedRaw) ? rotSpeedRaw : 0;
-        if (rotSpeed !== 0) {
-            this.rotationRad += rotSpeed * input.deltaSeconds;
+        const rotationSpeedRadPerSecRaw = this.presentation.rotationSpeedRadPerSec;
+        const rotationSpeedRadPerSec = Number.isFinite(rotationSpeedRadPerSecRaw) ? rotationSpeedRadPerSecRaw : 0;
+        if (rotationSpeedRadPerSec !== 0) {
+            this.rotationRad += rotationSpeedRadPerSec * input.deltaSeconds;
         }
 
-        const rotOffsetRaw = this.presentation.rotationRad;
-        const rotOffset = Number.isFinite(rotOffsetRaw) ? rotOffsetRaw : 0;
-        this.rotationRadOutFrame = this.rotationRad + rotOffset;
+        const rotationOffsetRadRaw = this.presentation.rotationRad;
+        const rotationOffsetRad = Number.isFinite(rotationOffsetRadRaw) ? rotationOffsetRadRaw : 0;
+        this.rotationRadOutFrame = this.rotationRad + rotationOffsetRad;
 
         // Phase 2: compute outputs from the post-advance state/time
-        const baselineLogZoomFrame = input.baselineLogZoomFrame;
-        return this.computeOutput(this.state, baselineLogZoomFrame);
+        return this.computeOutput(this.state, input.baselineLogZoomFrame);
     }
 
     private getSight(index: number): TourSight {
@@ -381,14 +387,14 @@ export class MandelbrotTour {
 
     private computeOutput(state: TourState, baselineLogZoomFrame: number): TourOutput {
         const desiredLogZoom = this.computeDesiredLogZoom(state);
-        const rotationRad = this.rotationRadOutFrame;
+        const targetRotationRad = this.rotationRadOutFrame;
 
         const targetCenter = this.computeTargetCenter(state);
 
         return {
             isActive: true,
             targetCenter,
-            targetRotationRad: rotationRad,
+            targetRotationRad,
             tourZoomDeltaLog: desiredLogZoom - baselineLogZoomFrame,
         };
     }

@@ -27,7 +27,7 @@ type MandelbrotRuntime = {
 };
 
 type ComposedView = {
-    center: { x: number; y: number };
+    targetCenter: { x: number; y: number };
     finalLogZoom: number;
     worldRotationRad: number;
 };
@@ -228,9 +228,9 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const baselineCenter = { x: this.viewCenter[0], y: this.viewCenter[1] };
         const baselineRotationRad = 0;
 
-        const baselineLogZoom = this.computeLogZoom();
+        const baselineLogZoomFrame = this.computeLogZoom();
 
-        const tourOut: TourOutput = this.tour?.step(deltaSeconds, baselineLogZoom) ?? {
+        const tourOutput: TourOutput = this.tour?.step(deltaSeconds, baselineLogZoomFrame) ?? {
             isActive: false,
             targetCenter: baselineCenter,
             targetRotationRad: 0,
@@ -240,26 +240,26 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         const beatKickDeltaLog = this.computeBeatKickLogZoomDelta(musicFeatures);
 
         const composed = this.composeView({
-            baselineLogZoom: baselineLogZoom,
+            baselineLogZoomFrame,
             beatKickDeltaLog,
-            tour: tourOut,
+            tourOutput,
             fallbackCenter: baselineCenter,
             fallbackRotationRad: baselineRotationRad,
         });
 
-        uniforms.uCenter[0] = composed.center.x;
-        uniforms.uCenter[1] = composed.center.y;
+        uniforms.uCenter[0] = composed.targetCenter.x;
+        uniforms.uCenter[1] = composed.targetCenter.y;
 
-        const rotationRad = composed.worldRotationRad;
-        uniforms.uRotation = rotationRad;
+        const worldRotationRad = composed.worldRotationRad;
+        uniforms.uRotation = worldRotationRad;
 
         uniforms.uLogZoom = composed.finalLogZoom;
     }
 
     private composeView(args: {
-        baselineLogZoom: number;
+        baselineLogZoomFrame: number;
         beatKickDeltaLog: number;
-        tour: {
+        tourOutput: {
             isActive: boolean;
             targetCenter: { x: number; y: number };
             targetRotationRad: number;
@@ -268,13 +268,13 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         fallbackCenter: { x: number; y: number };
         fallbackRotationRad: number;
     }): ComposedView {
-        const center = args.tour.isActive ? args.tour.targetCenter : args.fallbackCenter;
+        const targetCenter = args.tourOutput.isActive ? args.tourOutput.targetCenter : args.fallbackCenter;
 
-        const finalLogZoom = args.baselineLogZoom + args.tour.tourZoomDeltaLog + args.beatKickDeltaLog;
+        const finalLogZoom = args.baselineLogZoomFrame + args.tourOutput.tourZoomDeltaLog + args.beatKickDeltaLog;
 
-        const worldRotationRad = args.tour.isActive ? args.tour.targetRotationRad : args.fallbackRotationRad;
+        const worldRotationRad = args.tourOutput.isActive ? args.tourOutput.targetRotationRad : args.fallbackRotationRad;
 
-        return { center, finalLogZoom, worldRotationRad };
+        return { targetCenter, finalLogZoom, worldRotationRad };
     }
 
     private createTourFromConfig(config: MandelbrotConfig): MandelbrotTour {
