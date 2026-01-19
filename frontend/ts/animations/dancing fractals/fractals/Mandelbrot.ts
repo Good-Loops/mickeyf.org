@@ -1,36 +1,62 @@
-import { Application, Container, Sprite, Texture } from "pixi.js";
+import { Application, Container, Filter, Sprite, Texture, UniformGroup } from "pixi.js";
 
 import type FractalAnimation from "@/animations/dancing fractals/interfaces/FractalAnimation";
-import type { MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
+import { defaultMandelbrotConfig, type MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
+import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
+import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
 import clamp from "@/utils/clamp";
+import lerp from "@/utils/lerp";
+import smoothstep01 from "@/utils/smoothstep01";
+import { hslToRgb } from "@/utils/hsl";
+
+import {
+    createMandelbrotFilter,
+    createMandelbrotUniformGroup,
+    MAX_PALETTE,
+    type MandelbrotUniforms,
+} from "./mandelbrot/MandelbrotShader";
+
+import { MandelbrotTour } from "./mandelbrot/MandelbrotTour";
+import type { TourDurations, TourOutput, TourPresentation, TourZoomTargets } from "./mandelbrot/MandelbrotTourTypes";
+
+import PitchHueCommitter from "../helpers/PitchHueCommitter";
+
+type MandelbrotRuntime = {
+    elapsedAnimSeconds: number;
+    palettePhase: number;
+};
+
+type ComposedView = {
+    targetCenter: { x: number; y: number };
+    finalLogZoom: number;
+    worldRotationRad: number;
+};
 
 export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
-    static backgroundColor = "#c8f7ff";
-
-    private readonly canvasCenterX: number;
-    private readonly canvasCenterY: number;
+    static backgroundColor = "hsl(189, 100%, 89%)";
 
     private app: Application | null = null;
     private root: Container | null = null;
 
-    private sprite: Sprite | null = null;
-    private texture: Texture | null = null;
-
-    private width = 0;
-    private height = 0;
-    private surfaceCanvas: HTMLCanvasElement | null = null;
-    private surfaceCtx: CanvasRenderingContext2D | null = null;
-    private pixels: Uint8ClampedArray | null = null;
-    private imageData: ImageData | null = null;
+    private filter: Filter | null = null;
+    private mandelbrotUniforms: UniformGroup | null = null;
+    private quad: Sprite | null = null;
+    private screenW = 0;
+    private screenH = 0;
 
     private config: MandelbrotConfig;
 
-    // Progressive rendering state
-    private needsRender = true;
-    private nextRow = 0;
-    private renderScale = 1; // keep = 1 for now; later you can add a "quality" control
-    private readonly maxBudgetMsPerFrame = 6; // time budget to avoid freezing
+    private paletteRgb = new Float32Array(MAX_PALETTE * 3);
+    private paletteSize = 1;
+
+    private lightDir = new Float32Array([0, 0, 1]);
+
+    // Mutable runtime state that changes every frame; config is treated as immutable inputs during step().
+    // `config.palettePhase` is only an initial/externally-set seed; rendering uses `runtime.palettePhase`.
+    private runtime: MandelbrotRuntime = { elapsedAnimSeconds: 0, palettePhase: 0 };
+
+    private beatKick01 = 0;
 
     // Disposal state
     private disposalDelaySeconds = 0;
@@ -38,305 +64,569 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private disposalElapsed = 0;
     private isDisposing = false;
 
-    constructor(centerX: number, centerY: number, initialConfig?: MandelbrotConfig) {
-        this.canvasCenterX = centerX;
-        this.canvasCenterY = centerY;
+    private startCenter = new Float32Array([-0.75, 0.0]);
+    private targetCenter = new Float32Array([0, 0]);
+    private viewCenter = new Float32Array([-0.75, 0.0]);
 
-        this.config = initialConfig ?? {
-            maxIterations: 250,
-            bailoutRadius: 2,
-            centerX: -0.5,
-            centerY: 0,
-            zoom: 250,
-            smoothColoring: true,
-        };
+    private centerTransitionSeconds = 3.0;
+    private centerTransitionElapsed = 0;
+    private centerTransitionDone = false;
+
+    private baseLogZoom = 0;
+
+    private tour: MandelbrotTour | null = null;
+
+    private readonly pitchHueCommitter = new PitchHueCommitter(0);
+
+    constructor(_centerX: number, _centerY: number, initialConfig: Partial<MandelbrotConfig> = {}) {
+        // Merge defaults so new config options are always present.
+        this.config = { ...defaultMandelbrotConfig, ...initialConfig };
+
+        // Runtime state should start from config defaults but never mutate config during step().
+        this.runtime.palettePhase = this.config.palettePhase;
+        this.runtime.elapsedAnimSeconds = 0;
+
+        this.pitchHueCommitter.reset(this.config.palette[0]?.hue ?? 0);
+
+        this.tour = this.createTourFromConfig(this.config);
+    }
+
+    updateConfig(patch: Partial<MandelbrotConfig>): void {
+        this.config = { ...this.config, ...patch };
+
+        if (!this.tour) {
+            this.tour = this.createTourFromConfig(this.config);
+        } else {
+            this.tour.updateConfig(patch);
+        }
+
+        if (patch.palettePhase != null) {
+            this.runtime.palettePhase = patch.palettePhase;
+            const uniformGroup = this.mandelbrotUniforms;
+            if (uniformGroup) {
+                (uniformGroup.uniforms as any).uPalettePhase = this.runtime.palettePhase;
+            }
+        }
+
+        if (patch.palette != null || patch.paletteGamma != null || patch.smoothColoring != null) {
+            this.rebuildPaletteUniforms();
+        }
+
+        if (patch.centerX != null || patch.centerY != null) {
+            this.startCenter[0] = this.viewCenter[0];
+            this.startCenter[1] = this.viewCenter[1];
+
+            this.targetCenter[0] = this.config.centerX;
+            this.targetCenter[1] = this.config.centerY;
+
+            this.centerTransitionElapsed = 0;
+            this.centerTransitionDone = false;
+        }
+
+        this.syncUniforms();
     }
 
     init(app: Application): void {
         this.app = app;
 
+        this.screenW = app.screen.width;
+        this.screenH = app.screen.height;
+
         const root = new Container();
         this.root = root;
         app.stage.addChild(root);
 
-        this.allocateSurface();
-        this.resetRender();
+        const quad = Sprite.from(Texture.WHITE);
+        this.quad = quad;
+        quad.position.set(0, 0);
+        quad.width = this.screenW;
+        quad.height = this.screenH;
+        root.addChild(quad);
+
+        this.startCenter[0] = -0.75;
+        this.startCenter[1] = 0.0;
+        this.viewCenter[0] = this.startCenter[0];
+        this.viewCenter[1] = this.startCenter[1];
+        this.targetCenter[0] = this.config.centerX;
+        this.targetCenter[1] = this.config.centerY;
+
+        this.centerTransitionElapsed = 0;
+        this.centerTransitionDone = false;
+
+        this.lightDir[0] = this.config.lightDir.x;
+        this.lightDir[1] = this.config.lightDir.y;
+        this.lightDir[2] = this.config.lightDir.z;
+
+        const uniformGroup = createMandelbrotUniformGroup({
+            screenW: this.screenW,
+            screenH: this.screenH,
+            viewCenter: this.viewCenter,
+            rotation: 0,
+            paletteRgb: this.paletteRgb,
+            paletteSize: this.paletteSize,
+            palettePhase: this.runtime.palettePhase,
+            lightDir: this.lightDir,
+            config: this.config,
+        });
+
+        const filter = createMandelbrotFilter(uniformGroup);
+
+        quad.filters = [filter];
+        this.filter = filter;
+        this.mandelbrotUniforms = uniformGroup;
+
+        // Fit the canonical Mandelbrot set bounds in view.
+        // Bounds: x in [-2.5, +1.0] => width 3.5, y in [-1.5, +1.5] => height 3.0
+        const complexWidth = 3.5;
+        const complexHeight = 3.0;
+        const marginFactor = 0.95;
+
+        const aspect = this.screenW / this.screenH;
+        const scaleFitH = (complexHeight / 2) / marginFactor;
+        const scaleFitW = (complexWidth / (2 * aspect)) / marginFactor;
+        const scaleFit = Math.max(scaleFitH, scaleFitW);
+
+        // scale = exp(-uLogZoom)
+        this.baseLogZoom = -Math.log(scaleFit);
+        const uniforms = uniformGroup.uniforms as unknown as MandelbrotUniforms;
+        uniforms.uLogZoom = this.baseLogZoom;
+        uniforms.uRotation = 0;
+        uniforms.uCenter[0] = this.viewCenter[0];
+        uniforms.uCenter[1] = this.viewCenter[1];
+
+        this.rebuildPaletteUniforms();
+        uniforms.uPalettePhase = this.runtime.palettePhase;
+
+        this.syncUniforms();
     }
 
-    step(deltaSeconds: number): void {
+    step(deltaSeconds: number, _nowMs: number, _audioState: AudioState, musicFeatures: MusicFeaturesFrame): void {
         if (!this.root) return;
 
-        // Handle scheduled disposal delay
-        if (this.disposalDelaySeconds > 0) {
-            this.disposalDelaySeconds = Math.max(0, this.disposalDelaySeconds - deltaSeconds);
-            if (this.disposalDelaySeconds === 0) this.isDisposing = true;
+        this.updateDisposalDelay(deltaSeconds);
+        this.advanceTime(deltaSeconds);
+
+        const uniformGroup = this.mandelbrotUniforms;
+        if (!uniformGroup) return;
+        const uniforms = uniformGroup.uniforms as unknown as MandelbrotUniforms;
+
+        this.uploadFrameUniforms(uniforms);
+        if (this.updateDisposalFade(deltaSeconds, uniforms)) return;
+
+        this.updateLightOrbit();
+        this.updatePalettePhase(deltaSeconds, musicFeatures);
+        uniforms.uPalettePhase = this.runtime.palettePhase;
+
+        this.updateBeatKick(deltaSeconds, musicFeatures);
+
+        if (!this.config.animate) {
+            uniforms.uLogZoom = this.baseLogZoom;
+            return;
         }
 
-        // Progressive render work (only if not disposing)
-        if (!this.isDisposing) {
-            this.renderChunk();
-        }
+        this.updateCenterTransition(deltaSeconds);
+        const baselineCenter = { x: this.viewCenter[0], y: this.viewCenter[1] };
+        const baselineRotationRad = 0;
 
-        // Fade-out disposal
-        if (this.isDisposing) {
-            this.disposalElapsed += deltaSeconds;
-            const t =
-                this.disposalSeconds <= 0 ? 1 : Math.min(1, this.disposalElapsed / this.disposalSeconds);
+        const baselineLogZoomFrame = this.computeLogZoom();
 
-            this.root.alpha = 1 - t;
+        const tourOutput: TourOutput = this.tour?.step(deltaSeconds, baselineLogZoomFrame) ?? {
+            isActive: false,
+            targetCenter: baselineCenter,
+            targetRotationRad: 0,
+            tourZoomDeltaLog: 0,
+        };
 
-            if (t >= 1) this.dispose();
+        const beatKickDeltaLog = this.computeBeatKickLogZoomDelta(musicFeatures);
+
+        const composed = this.composeView({
+            baselineLogZoomFrame,
+            beatKickDeltaLog,
+            tourOutput,
+            fallbackCenter: baselineCenter,
+            fallbackRotationRad: baselineRotationRad,
+        });
+
+        uniforms.uCenter[0] = composed.targetCenter.x;
+        uniforms.uCenter[1] = composed.targetCenter.y;
+
+        const worldRotationRad = composed.worldRotationRad;
+        uniforms.uRotation = worldRotationRad;
+
+        uniforms.uLogZoom = composed.finalLogZoom;
+    }
+
+    private composeView(args: {
+        baselineLogZoomFrame: number;
+        beatKickDeltaLog: number;
+        tourOutput: {
+            isActive: boolean;
+            targetCenter: { x: number; y: number };
+            targetRotationRad: number;
+            tourZoomDeltaLog: number;
+        };
+        fallbackCenter: { x: number; y: number };
+        fallbackRotationRad: number;
+    }): ComposedView {
+        const targetCenter = args.tourOutput.isActive ? args.tourOutput.targetCenter : args.fallbackCenter;
+
+        const finalLogZoom = args.baselineLogZoomFrame + args.tourOutput.tourZoomDeltaLog + args.beatKickDeltaLog;
+
+        const worldRotationRad = args.tourOutput.isActive ? args.tourOutput.targetRotationRad : args.fallbackRotationRad;
+
+        return { targetCenter, finalLogZoom, worldRotationRad };
+    }
+
+    private createTourFromConfig(config: MandelbrotConfig): MandelbrotTour {
+        const durations: TourDurations = {
+            holdWideSeconds: Number.isFinite(config.tourHoldWideSeconds) ? config.tourHoldWideSeconds : 0,
+            holdCloseSeconds: Number.isFinite(config.tourHoldCloseSeconds) ? config.tourHoldCloseSeconds : 0,
+            travelWideSeconds: Number.isFinite(config.tourTravelWideSeconds) ? config.tourTravelWideSeconds : 0,
+        };
+
+        const zoomTargets: TourZoomTargets = {
+            wideLogZoom: config.tourWideLogZoom,
+            closeZoomDeltaLog: config.tourCloseZoomDeltaLog,
+            zoomSecondsPerLogIn: config.tourZoomSecondsPerLogIn,
+            zoomSecondsPerLogOut: config.tourZoomSecondsPerLogOut,
+
+            zoomInEaseOutPowK: config.zoomInEaseOutPowK,
+            zoomInBiasExponent: config.zoomInBiasExponent,
+
+            zoomInMinSeconds: config.tourZoomInSeconds,
+            zoomInMaxSeconds: config.tourZoomInMaxSeconds,
+            zoomOutMinSeconds: config.tourZoomOutSeconds,
+            zoomOutMaxSeconds: config.tourZoomOutMaxSeconds,
+        };
+
+        const presentation: TourPresentation = {
+            rotationRad: config.tourRotationRad,
+            rotationSpeedRadPerSec: config.tourRotationSpeedRadPerSec,
+        };
+
+        const tour = new MandelbrotTour(durations, zoomTargets, presentation);
+        tour.reset(0);
+        return tour;
+    }
+
+    private updateDisposalDelay(deltaSeconds: number): void {
+        if (this.disposalDelaySeconds <= 0) return;
+
+        this.disposalDelaySeconds = Math.max(0, this.disposalDelaySeconds - deltaSeconds);
+        if (this.disposalDelaySeconds === 0) {
+            this.startDisposal();
         }
     }
 
-    updateConfig(patch: Partial<MandelbrotConfig>): void {
-        this.config = { ...this.config, ...patch };
-        this.resetRender();
+    private advanceTime(deltaSeconds: number): void {
+        this.runtime.elapsedAnimSeconds += deltaSeconds;
+    }
+
+    private uploadFrameUniforms(uniforms: MandelbrotUniforms): void {
+        uniforms.uTime = this.runtime.elapsedAnimSeconds;
+        uniforms.uFade = 1;
+    }
+
+    private updateDisposalFade(deltaSeconds: number, uniforms: MandelbrotUniforms): boolean {
+        if (!this.isDisposing) return false;
+
+        this.disposalElapsed += deltaSeconds;
+        const t = this.disposalSeconds <= 0 ? 1 : Math.min(1, this.disposalElapsed / this.disposalSeconds);
+        uniforms.uFade = 1 - smoothstep01(t);
+
+        if (t >= 1) {
+            this.dispose();
+            return true;
+        }
+
+        return false;
+    }
+
+    private updateLightOrbit(): void {
+        if (!this.config.lightOrbitEnabled) return;
+
+        const a = this.runtime.elapsedAnimSeconds * this.config.lightOrbitSpeed;
+        const tilt = clamp(this.config.lightOrbitTilt, 0, 1);
+
+        const x = Math.cos(a);
+        const y = Math.sin(a);
+        const z = tilt;
+        const invLen = 1 / Math.max(1e-9, Math.sqrt(x * x + y * y + z * z));
+
+        this.lightDir[0] = x * invLen;
+        this.lightDir[1] = y * invLen;
+        this.lightDir[2] = z * invLen;
+    }
+
+    private updatePalettePhase(deltaSeconds: number, musicFeatures: MusicFeaturesFrame): void {
+        const baseSpeed = this.config.paletteSpeed;
+        if (baseSpeed !== 0) {
+            this.runtime.palettePhase = (this.runtime.palettePhase + baseSpeed * deltaSeconds) % 1;
+            if (this.runtime.palettePhase < 0) this.runtime.palettePhase += 1;
+        }
+
+        // Optional music-driven palette bias (stable pitch hue, no snapping).
+        const pitch = this.pitchHueCommitter.step({
+            deltaSeconds,
+            features: musicFeatures,
+            stableThresholdMs: 120,
+            minMusicWeightForColor: 0.25,
+        });
+
+        const w = 0.20 * pitch.pitchHueWeight01;
+        if (w > 0) {
+            this.runtime.palettePhase = this.lerpPhase01(this.runtime.palettePhase, pitch.pitchHue01, w);
+        }
+    }
+
+    private updateBeatKick(deltaSeconds: number, features: MusicFeaturesFrame): void {
+        const hasMusic = !!features?.hasMusic;
+        if (!hasMusic) {
+            this.beatKick01 = 0;
+            return;
+        }
+
+        const beatHit = !!features?.beatHit;
+        const target = beatHit ? 1 : 0;
+
+        const attackPerSec = Math.max(0, this.config.beatKickAttackPerSec);
+        const releasePerSec = Math.max(0, this.config.beatKickReleasePerSec);
+        const rate = target > this.beatKick01 ? attackPerSec : releasePerSec;
+
+        const k = 1 - Math.exp(-rate * deltaSeconds);
+        this.beatKick01 = this.beatKick01 + (target - this.beatKick01) * k;
+        this.beatKick01 = clamp(this.beatKick01, 0, 1);
+    }
+
+    private computeBeatKickLogZoomDelta(features: MusicFeaturesFrame): number {
+        if (!this.config.enableBeatKickZoom) return 0;
+
+        const hasMusic = !!features?.hasMusic;
+        const musicWeight01 = clamp(features?.musicWeight01 ?? 0, 0, 1);
+        const w = hasMusic ? Math.max(0.6, musicWeight01) : 0;
+
+        const raw = clamp(this.beatKick01 * w, 0, 1);
+        const env = Math.sqrt(raw);
+
+        const beatKickZoomMaxFactor = Math.max(0, this.config.beatKickZoomMaxFactor);
+        const kickLogMax = Math.log(1 + beatKickZoomMaxFactor);
+        let delta = env * kickLogMax;
+
+        delta = clamp(delta, 0, Math.log(1.25));
+        return delta;
+    }
+
+    private lerpPhase01(a01: number, b01: number, w: number): number {
+        const a = ((a01 % 1) + 1) % 1;
+        const b = ((b01 % 1) + 1) % 1;
+        let d = b - a;
+        if (d > 0.5) d -= 1;
+        if (d < -0.5) d += 1;
+        const out = a + d * clamp(w, 0, 1);
+        return ((out % 1) + 1) % 1;
+    }
+
+    private updateCenterTransition(deltaSeconds: number): void {
+        if (this.centerTransitionDone) return;
+
+        this.centerTransitionElapsed += deltaSeconds;
+
+        const tRaw = this.centerTransitionElapsed / this.centerTransitionSeconds;
+        const t = clamp(tRaw, 0, 1);
+        const e = smoothstep01(t);
+
+        this.viewCenter[0] = lerp(this.startCenter[0], this.targetCenter[0], e);
+        this.viewCenter[1] = lerp(this.startCenter[1], this.targetCenter[1], e);
+
+        if (t >= 1) {
+            this.centerTransitionDone = true;
+        }
+    }
+
+    private computeLogZoom(): number {
+        const t = this.runtime.elapsedAnimSeconds;
+        const A = Math.log(this.config.zoomOscillationMaxFactor);
+        const omega = 2 * Math.PI * this.config.zoomOscillationSpeed;
+        const sRaw = 0.5 * (1 - Math.cos(omega * t));
+        const pauseStrength = 1.6;
+        const s = Math.pow(smoothstep01(sRaw), pauseStrength);
+        return this.baseLogZoom + A * s;
     }
 
     scheduleDisposal(seconds: number): void {
         this.disposalDelaySeconds = Math.max(0, seconds);
         this.isDisposing = false;
         this.disposalElapsed = 0;
-        if (this.root) this.root.alpha = 1;
     }
 
     startDisposal(): void {
         this.disposalDelaySeconds = 0;
         this.isDisposing = true;
         this.disposalElapsed = 0;
-        if (this.root) this.root.alpha = 1;
     }
 
     dispose(): void {
         if (!this.app || !this.root) return;
 
+        if (this.quad) {
+            this.quad.removeFromParent();
+            this.quad.destroy({ children: true, texture: false, textureSource: false });
+            this.quad = null;
+        }
+
+        if (this.filter) {
+            this.filter.destroy();
+            this.filter = null;
+        }
+
+        this.mandelbrotUniforms = null;
+
         this.root.removeFromParent();
-
-        this.sprite?.destroy();
-        this.texture?.destroy(true);
-
-        this.sprite = null;
-        this.texture = null;
-        this.imageData = null;
-        this.pixels = null;
-        this.surfaceCanvas = null;
-        this.surfaceCtx = null;
-
         this.root.destroy({ children: true });
 
         this.root = null;
         this.app = null;
     }
 
-    private allocateSurface(): void {
-        if (!this.app || !this.root) return;
+    private syncUniforms(): void {
+        const uniformGroup = this.mandelbrotUniforms;
+        if (!uniformGroup) return;
 
-        const w = Math.max(1, Math.floor(this.app.screen.width / this.renderScale));
-        const h = Math.max(1, Math.floor(this.app.screen.height / this.renderScale));
+        const uniforms = uniformGroup.uniforms as {
+            uResolution: Float32Array;
+            uCenter: Float32Array;
+            uLogZoom: number;
+            uRotation: number;
+            uMaxIter: number;
+            uBailout: number;
 
-        this.width = w;
-        this.height = h;
+            uPaletteRgb: Float32Array;
+            uPaletteSize: number;
+            uPalettePhase: number;
+            uPaletteGamma: number;
+            uSmoothColoring: number;
 
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
+            uLightingEnabled: number;
+            uLightDir: Float32Array;
+            uLightStrength: number;
+            uSpecStrength: number;
+            uSpecPower: number;
+            uDeEpsilonPx: number;
+            uDeScale: number;
 
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) throw new Error("Could not create 2D context for Mandelbrot surface");
+            uDeEpsilonZoomStrength: number;
+            uDeEpsilonMinPx: number;
+            uDeEpsilonMaxPx: number;
 
-        this.surfaceCanvas = canvas;
-        this.surfaceCtx = ctx;
+            uToneMapExposure: number;
+            uToneMapShoulder: number;
 
-        // RGBA buffer
-        this.imageData = ctx.createImageData(w, h);
-        this.pixels = this.imageData.data;
+            uRimStrength: number;
+            uRimPower: number;
+            uAtmosStrength: number;
+            uAtmosFalloff: number;
+            uNormalZ: number;
 
-        // Create texture from pixel buffer
-        this.texture?.destroy(true);
-        this.texture = Texture.from(canvas);
-
-        this.sprite?.destroy();
-        this.sprite = new Sprite(this.texture);
-        this.sprite.x = 0;
-        this.sprite.y = 0;
-
-        // If renderScale != 1, upscale to fill the screen
-        this.sprite.scale.set(this.renderScale, this.renderScale);
-
-        this.root.addChild(this.sprite);
-    }
-
-    private resetRender(): void {
-        if (!this.pixels) return;
-
-        this.needsRender = true;
-        this.nextRow = 0;
-
-        // Optional: clear to background-ish while recomputing
-        this.clearPixels(210, 250, 255, 255);
-        this.flushTexture();
-    }
-
-    private renderChunk(): void {
-        if (!this.needsRender || !this.pixels || !this.texture) return;
-
-        const start = performance.now();
-        const w = this.width;
-        const h = this.height;
-
-        const cfg = this.config;
-        const maxIter = Math.max(1, Math.floor(cfg.maxIterations));
-        const bailout = Math.max(0.0001, cfg.bailoutRadius);
-        const bailoutSq = bailout * bailout;
-
-        const zoom = Math.max(1, cfg.zoom) / this.renderScale;
-
-        // Map pixel -> complex plane
-        // Using canvas center as origin for the screen, and cfg.centerX/Y as complex center.
-        // pixel dx/dy in complex units:
-        const invZoom = 1 / zoom;
-
-        // Progressively compute rows until budget is used
-        while (this.nextRow < h && (performance.now() - start) < this.maxBudgetMsPerFrame) {
-            const y = this.nextRow;
-
-            // Convert y to complex plane: positive up
-            const cy = cfg.centerY + (this.canvasCenterY / this.renderScale - y) * invZoom;
-
-            for (let x = 0; x < w; x += 1) {
-                const cx = cfg.centerX + (x - this.canvasCenterX / this.renderScale) * invZoom;
-
-                const t = this.escapeTimeNormalized(cx, cy, maxIter, bailoutSq, cfg.smoothColoring);
-                this.writePixel(x, y, this.colorFromT(t));
-            }
-
-            this.nextRow += 1;
-        }
-
-        this.flushTexture();
-
-        if (this.nextRow >= h) {
-            this.needsRender = false;
-        }
-    }
-
-    private escapeTimeNormalized(
-        cx: number,
-        cy: number,
-        maxIter: number,
-        bailoutSq: number,
-        smooth: boolean
-    ): number {
-        // Mandelbrot: z0 = 0
-        let x = 0;
-        let y = 0;
-        let xx = 0;
-        let yy = 0;
-
-        let i = 0;
-
-        while (i < maxIter && (xx + yy) <= bailoutSq) {
-            // z^2 + c
-            y = 2 * x * y + cy;
-            x = xx - yy + cx;
-
-            xx = x * x;
-            yy = y * y;
-            i += 1;
-        }
-
-        // Inside set -> black
-        if (i >= maxIter) return 0;
-
-        if (!smooth) {
-            return i / maxIter;
-        }
-
-        // Smooth coloring (classic)
-        // mu = i + 1 - log(log(|z|)) / log(2)
-        const mag = Math.sqrt(xx + yy);
-        const mu = i + 1 - Math.log(Math.log(mag)) / Math.log(2);
-
-        return clamp(mu / maxIter, 0, 1);
-    }
-
-    private writePixel(x: number, y: number, rgba: [number, number, number, number]): void {
-        if (!this.pixels) return;
-
-        const idx = (y * this.width + x) * 4;
-        this.pixels[idx + 0] = rgba[0];
-        this.pixels[idx + 1] = rgba[1];
-        this.pixels[idx + 2] = rgba[2];
-        this.pixels[idx + 3] = rgba[3];
-    }
-
-    private clearPixels(r: number, g: number, b: number, a: number): void {
-        if (!this.pixels) return;
-        for (let i = 0; i < this.pixels.length; i += 4) {
-            this.pixels[i + 0] = r;
-            this.pixels[i + 1] = g;
-            this.pixels[i + 2] = b;
-            this.pixels[i + 3] = a;
-        }
-    }
-
-    private flushTexture(): void {
-        if (!this.surfaceCtx || !this.surfaceCanvas || !this.imageData || !this.texture) return;
-
-        // Push the current pixel buffer into the canvas
-        this.surfaceCtx.putImageData(this.imageData, 0, 0);
-
-        // Tell Pixi the canvas changed
-        const source: any = this.texture.source;
-        source?.update?.();
-    }
-
-    // -----------------------
-    // Color
-    // -----------------------
-
-    private colorFromT(t: number): [number, number, number, number] {
-        // t in [0..1], where 0 = inside set
-        if (t <= 0) return [0, 0, 0, 255];
-
-        // Simple vivid palette: hue rotates with t
-        const hue = (360 * t) % 360;
-        const sat = 0.9;
-        const light = 0.55;
-
-        const [r, g, b] = this.hslToRgb(hue / 360, sat, light);
-        return [r, g, b, 255];
-    }
-
-    private hslToRgb(h: number, s: number, l: number): [number, number, number] {
-        // h,s,l in [0..1]
-        const hue2rgb = (p: number, q: number, tt: number) => {
-            let t = tt;
-            if (t < 0) t += 1;
-            if (t > 1) t -= 1;
-            if (t < 1 / 6) return p + (q - p) * 6 * t;
-            if (t < 1 / 2) return q;
-            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-            return p;
+            uTime: number;
+            uFade: number;
         };
 
-        let r: number, g: number, b: number;
+        uniforms.uResolution[0] = this.screenW;
+        uniforms.uResolution[1] = this.screenH;
+        uniforms.uCenter[0] = this.viewCenter[0];
+        uniforms.uCenter[1] = this.viewCenter[1];
+        uniforms.uMaxIter = this.config.maxIterations | 0;
+        uniforms.uBailout = this.config.bailoutRadius;
 
-        if (s === 0) {
-            r = g = b = l;
-        } else {
-            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-            const p = 2 * l - q;
-            r = hue2rgb(p, q, h + 1 / 3);
-            g = hue2rgb(p, q, h);
-            b = hue2rgb(p, q, h - 1 / 3);
+        // Safe to sync (but do not override uPalettePhase here)
+        uniforms.uPaletteGamma = this.config.paletteGamma;
+        uniforms.uSmoothColoring = this.config.smoothColoring ? 1 : 0;
+
+        this.syncLightingUniforms(uniforms);
+    }
+
+    private syncLightingUniforms(uniforms: {
+        uLightingEnabled: number;
+        uLightDir: Float32Array;
+        uLightStrength: number;
+        uSpecStrength: number;
+        uSpecPower: number;
+        uDeEpsilonPx: number;
+        uDeScale: number;
+
+        uDeEpsilonZoomStrength: number;
+        uDeEpsilonMinPx: number;
+        uDeEpsilonMaxPx: number;
+
+        uToneMapExposure: number;
+        uToneMapShoulder: number;
+
+        uRimStrength: number;
+        uRimPower: number;
+        uAtmosStrength: number;
+        uAtmosFalloff: number;
+        uNormalZ: number;
+
+        uTime: number;
+    }): void {
+        uniforms.uLightingEnabled = this.config.lightingEnabled ? 1 : 0;
+
+        uniforms.uLightDir[0] = this.config.lightDir.x;
+        uniforms.uLightDir[1] = this.config.lightDir.y;
+        uniforms.uLightDir[2] = this.config.lightDir.z;
+
+        uniforms.uLightStrength = this.config.lightStrength;
+        uniforms.uSpecStrength = this.config.specStrength;
+        uniforms.uSpecPower = this.config.specPower;
+        uniforms.uDeEpsilonPx = this.config.deEpsilonPx;
+        uniforms.uDeScale = this.config.deScale;
+
+        uniforms.uDeEpsilonZoomStrength = this.config.deEpsilonZoomStrength;
+        uniforms.uDeEpsilonMinPx = this.config.deEpsilonMinPx;
+        uniforms.uDeEpsilonMaxPx = this.config.deEpsilonMaxPx;
+
+        uniforms.uToneMapExposure = this.config.toneMapExposure;
+        uniforms.uToneMapShoulder = this.config.toneMapShoulder;
+
+        uniforms.uRimStrength = this.config.rimStrength;
+        uniforms.uRimPower = this.config.rimPower;
+        uniforms.uAtmosStrength = this.config.atmosStrength;
+        uniforms.uAtmosFalloff = this.config.atmosFalloff;
+        uniforms.uNormalZ = this.config.normalZ;
+    }
+
+    private rebuildPaletteUniforms(): void {
+        const palette = this.config.palette;
+        const count = clamp(palette.length, 1, MAX_PALETTE);
+
+        this.paletteSize = count;
+
+        for (let i = 0; i < MAX_PALETTE; i++) {
+            const base = i * 3;
+            if (i < count) {
+                const [r8, g8, b8] = hslToRgb(palette[i]);
+                this.paletteRgb[base + 0] = r8 / 255;
+                this.paletteRgb[base + 1] = g8 / 255;
+                this.paletteRgb[base + 2] = b8 / 255;
+            } else {
+                this.paletteRgb[base + 0] = 0;
+                this.paletteRgb[base + 1] = 0;
+                this.paletteRgb[base + 2] = 0;
+            }
         }
 
-        return [
-            Math.round(r * 255),
-            Math.round(g * 255),
-            Math.round(b * 255),
-        ];
+        const uniformGroup = this.mandelbrotUniforms;
+        if (!uniformGroup) return;
+
+        const uniforms = uniformGroup.uniforms as {
+            uPaletteRgb: Float32Array;
+            uPaletteSize: number;
+            uPaletteGamma: number;
+            uSmoothColoring: number;
+        };
+
+        uniforms.uPaletteSize = this.paletteSize;
+        uniforms.uPaletteGamma = this.config.paletteGamma;
+        uniforms.uSmoothColoring = this.config.smoothColoring ? 1 : 0;
     }
 }

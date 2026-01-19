@@ -5,9 +5,9 @@ import clamp from "@/utils/clamp";
 import Circle from "./classes/Circle";
 import CircleBounds from "./classes/CircleBounds";
 
-import PitchColorPhaseController from "@/animations/helpers/PitchColorPhaseController";
-import BeatEnvelope from "@/animations/helpers/BeatEnvelope";
-import groupByParity from "@/animations/helpers/groupByParity";
+import PitchColorPhaseController from "@/animations/helpers/audio/PitchColorPhaseController";
+import BeatEnvelope from "@/animations/helpers/audio/BeatEnvelope";
+import groupByParity from "@/utils/groupByParity";
 
 import { DancingCirclesTuning } from "./tuning";
 import { TimeState } from "./timeState";

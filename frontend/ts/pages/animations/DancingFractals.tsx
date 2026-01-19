@@ -16,7 +16,7 @@ import { FractalHost } from '@/animations/dancing fractals/interfaces/FractalHos
 import { createFractalHost } from '@/animations/dancing fractals/createFractalHost';
 import type { FractalAnimationConstructor } from '@/animations/dancing fractals/interfaces/FractalAnimation';
 
-import audioEngine from '@/animations/helpers/AudioEngine';
+import audioEngine from '@/animations/helpers/audio/AudioEngine';
 import useAudioEngineState from '@/hooks/useAudioEngineState';
 import notAllowedCursor from '@/assets/cursors/notallowed.cur';
 import Dropdown from '@/components/Dropdown';
@@ -45,10 +45,17 @@ const DancingFractals: React.FC = () => {
 
     const [fps, setFps] = useState<number | null>(null);
 
+
     // Separate config state for each fractal type
     const [treeConfig, setTreeConfig] = useState<TreeConfig>(defaultTreeConfig);
     const [flowerSpiralConfig, setFlowerSpiralConfig] = useState<FlowerSpiralConfig>(defaultFlowerSpiralConfig);
     const [mandelbrotConfig, setMandelbrotConfig] = useState<MandelbrotConfig>(defaultMandelbrotConfig);
+
+    const cloneConfig = <T,>(cfg: T): T => {
+        // structuredClone is available in modern browsers; fall back to JSON clone.
+        const sc = (globalThis as any).structuredClone as ((v: T) => T) | undefined;
+        return sc ? sc(cfg) : JSON.parse(JSON.stringify(cfg));
+    };
 
     const FRACTALS = useMemo(() => ({
         tree: { ctor: Tree, getConfig: () => treeConfig },
@@ -142,6 +149,30 @@ const DancingFractals: React.FC = () => {
 
     const handleRestart = () => { hostRef.current?.restart(); };
 
+    const handleResetDefaults = () => {
+        if (audio.playing) return;
+        const host = hostRef.current;
+        if (!host) return;
+
+        if (fractalKind === 'tree') {
+            const cfg = cloneConfig(defaultTreeConfig);
+            setTreeConfig(cfg);
+            host.setFractal(Tree as any, cfg);
+            return;
+        }
+
+        if (fractalKind === 'flower') {
+            const cfg = cloneConfig(defaultFlowerSpiralConfig);
+            setFlowerSpiralConfig(cfg);
+            host.setFractal(FlowerSpiral as any, cfg);
+            return;
+        }
+
+        const cfg = cloneConfig(defaultMandelbrotConfig);
+        setMandelbrotConfig(cfg);
+        host.setFractal(Mandelbrot as any, cfg);
+    };
+
     const handleTreeConfigChange = (patch: Partial<TreeConfig>) => {
         setTreeConfig(prev => {
             const next = { ...prev, ...patch };
@@ -180,16 +211,7 @@ const DancingFractals: React.FC = () => {
 
     return (
         <section className='dancing-fractals'>
-            <h1 className='dancing-fractals__title canvas-title'>Dancing Fractals</h1>
-
-            <div className="dancing-fractals__canvas-wrapper" ref={containerRef}>
-                <FullscreenButton 
-                    targetRef={containerRef} 
-                    className='dancing-fractals__fullscreen-btn'
-                />
-            </div>
-
-            <div className={uiClassName} style={uiStyle}>
+            <aside className={uiClassName} style={uiStyle}>
                 {audio.playing && (
                     <div className="dancing-fractals__ui--overlay" />
                 )}
@@ -217,6 +239,14 @@ const DancingFractals: React.FC = () => {
                     disabled={audio.playing}
                 >
                     Restart
+                </button>
+
+                <button className="dancing-fractals__ui--restart-btn"
+                    type="button"
+                    onClick={handleResetDefaults}
+                    disabled={audio.playing}
+                >
+                    Reset defaults
                 </button>
 
                 <div className="dancing-fractals__ui--lifetime">
@@ -294,36 +324,48 @@ const DancingFractals: React.FC = () => {
                         )}
                     </div>
                 )}
-            </div>
-            
-            <div className="dancing-fractals__transport">
-                <div className="dancing-fractals__transport-left">
-                    <MusicControls
-                        hasAudio={audio.hasAudio}
-                        isPlaying={audio.playing}
-                        onPlay={handlePlay}
-                        onPause={handlePause}
-                        onStop={handleStop}
+            </aside>
+
+            <div className="dancing-fractals__stage">
+
+                <div className="dancing-fractals__canvas-wrapper" ref={containerRef}>
+                    <h1 className='dancing-fractals__title canvas-title'>Dancing Fractals</h1>
+                    <FullscreenButton 
+                        targetRef={containerRef} 
+                        className='dancing-fractals__fullscreen-btn'
                     />
                 </div>
 
-                <div className="dancing-fractals__upload floating">
-                    <label
-                        className="dancing-fractals__upload-btn"
-                        htmlFor="fractal-music-upload"
-                    >
-                        Upload Music
-                    </label>
+                <div className="dancing-fractals__transport">
+                    <div className="dancing-fractals__transport-left">
+                        <MusicControls
+                            hasAudio={audio.hasAudio}
+                            isPlaying={audio.playing}
+                            onPlay={handlePlay}
+                            onPause={handlePause}
+                            onStop={handleStop}
+                        />
+                    </div>
 
-                    <input
-                        id="fractal-music-upload"
-                        type="file"
-                        accept="audio/*"
-                        className="dancing-fractals__input"
-                        ref={fileInputRef}
-                    />
+                    <div className="dancing-fractals__upload floating">
+                        <label
+                            className="dancing-fractals__upload-btn"
+                            htmlFor="fractal-music-upload"
+                        >
+                            Upload Music
+                        </label>
+
+                        <input
+                            id="fractal-music-upload"
+                            type="file"
+                            accept="audio/*"
+                            className="dancing-fractals__input"
+                            ref={fileInputRef}
+                        />
+                    </div>
                 </div>
             </div>
+            <div className="dancing-fractals__ghost" aria-hidden="true" />
         </section>   
     );
 }

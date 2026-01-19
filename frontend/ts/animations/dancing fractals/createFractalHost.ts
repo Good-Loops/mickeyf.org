@@ -3,6 +3,8 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 import type { FractalAnimationConstructor } from "./interfaces/FractalAnimation";
 import type FractalAnimation from "./interfaces/FractalAnimation";
 import type { FractalHost } from "./interfaces/FractalHost";
+import audioEngine from "@/animations/helpers/audio/AudioEngine";
+import createMusicFeatureExtractor from "@/animations/helpers/music/createMusicFeatureExtractor";
 
 export const createFractalHost = async (container: HTMLElement): Promise<FractalHost> => {
     const app = new Application();
@@ -11,6 +13,7 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     await app.init({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
+        preference: 'webgl',
     });
 
     const initialPathname = window.location.pathname;
@@ -32,6 +35,8 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     let fps = 0;
     const fpsSmoothing = .01;
 
+    const musicFeatureExtractor = createMusicFeatureExtractor();
+
     // Single ticker that always calls into the current fractal, if any
     const onTick = (time: Ticker): void => {
         if (destroyed) return;
@@ -43,7 +48,9 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
             return;
         }
 
-        const deltaSeconds = time.deltaMS / 1000;
+        const deltaMs = time.deltaMS;
+        const deltaSeconds = deltaMs / 1000;
+        const nowMs = time.lastTime;
 
         // Update FPS estimate
         if (deltaSeconds > 0) {
@@ -62,7 +69,15 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         }
 
         if (!currentFractal) return;
-        currentFractal.step(deltaSeconds, time.lastTime);
+
+        const audioState = audioEngine.state;
+        const musicFeatures = musicFeatureExtractor.step({
+            deltaSeconds,
+            nowMs,
+            audioState,
+        });
+
+        currentFractal.step(deltaSeconds, nowMs, audioState, musicFeatures);
     };
     app.ticker.add(onTick);
 
@@ -89,6 +104,8 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
         currentCtor = Fractal as FractalAnimationConstructor<any>;
         currentConfig = config;
+
+        musicFeatureExtractor.reset();
 
         // Update background for the new fractal
         (app.renderer as any).background.color = Fractal.backgroundColor;
@@ -117,6 +134,8 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         }
 
         const Fractal = currentCtor;
+
+        musicFeatureExtractor.reset();
 
         // Recreate fractal with last known config
         const fractal = new Fractal(centerX, centerY, currentConfig);

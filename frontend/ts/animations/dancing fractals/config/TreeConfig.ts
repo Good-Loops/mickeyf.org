@@ -26,16 +26,19 @@ export interface TreeConfig {
 }
 
 export const defaultTreeConfig: TreeConfig = {
-    maxDepth: 1,
+    maxDepth: 3,
 
     palette: [
-        { hue: 120, saturation: 100, lightness: 35 },
-        { hue: 120, saturation: 100, lightness: 20 },
-        { hue: 120, saturation: 100, lightness: 30 },
-        { hue: 120, saturation: 100, lightness: 40 },
-        { hue: 120, saturation: 100, lightness: 50 },
-        { hue: 120, saturation: 100, lightness: 60 },
-        { hue: 120, saturation: 100, lightness: 70 },
+        { hue: 164, saturation: 52, lightness: 20 },
+        { hue: 158, saturation: 57, lightness: 26 },
+        { hue: 155, saturation: 61, lightness: 31 },
+        { hue: 146, saturation: 43, lightness: 41 },
+        { hue: 140, saturation: 37, lightness: 45 },
+        { hue: 135, saturation: 32, lightness: 50 },
+        { hue: 126, saturation: 29, lightness: 54 },
+        { hue: 115, saturation: 28, lightness: 56 },
+        { hue: 121, saturation: 22, lightness: 51 },
+        { hue: 127, saturation: 22, lightness: 45 },
     ],
 
     baseLength: 230,

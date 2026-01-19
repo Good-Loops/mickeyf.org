@@ -29,19 +29,28 @@ export interface FlowerSpiralConfig {
 
     recursionDepth: number;      // how many recursive child spirals
     scale: number;               // overall scale factor of the spiral
+
+    zoomEnabled: boolean;
+    zoomMin: number;
+    zoomMax: number;
+    zoomSpeed: number;           // cycles per second
 }
 
 export const defaultFlowerSpiralConfig: FlowerSpiralConfig = {
     palette: [
-        { hue: 198, saturation: 58, lightness: 80 },
-        { hue: 209, saturation: 42, lightness: 70 },
-        { hue: 225, saturation: 30, lightness: 49 },
-        { hue: 225, saturation: 41, lightness: 33 },
-        { hue: 19,  saturation: 89, lightness: 67 },
-        { hue: 5,   saturation: 91, lightness: 67 }
+        { hue: 328, saturation: 79, lightness: 57 },
+        { hue: 328, saturation: 100, lightness: 62 },
+        { hue: 328, saturation: 100, lightness: 54 },
+        { hue: 322, saturation: 81, lightness: 43 },
+        { hue: 329,  saturation: 61, lightness: 54 },
+        { hue: 318,   saturation: 60, lightness: 60 },
+        { hue: 302,   saturation: 59, lightness: 65 },
+        { hue: 288,   saturation: 59, lightness: 58 },
+        { hue: 284,   saturation: 60, lightness: 54 },
+        { hue: 280,   saturation: 61, lightness: 50 },
     ],
 
-    flowerAmount: 10,
+    flowerAmount: 30,
     petalsPerFlower: 4,
 
     flowersPerSecond: 10,
@@ -67,4 +76,9 @@ export const defaultFlowerSpiralConfig: FlowerSpiralConfig = {
 
     recursionDepth: 1,
     scale: 3,
+
+    zoomEnabled: true,
+    zoomMin: 0.6,
+    zoomMax: 3,
+    zoomSpeed: 0.12,
 };
