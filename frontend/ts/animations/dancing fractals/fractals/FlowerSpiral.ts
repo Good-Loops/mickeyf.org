@@ -7,7 +7,7 @@ import clamp from "@/utils/clamp";
 import type FractalAnimation from "../interfaces/FractalAnimation";
 import { defaultFlowerSpiralConfig, type FlowerSpiralConfig } from "../config/FlowerSpiralConfig";
 import { FLOWER_MAX, clampFlowerAmount, createFlowerSpiralFilter, createFlowerSpiralUniformGroup } from "./flower spiral/FlowerSpiralShader";
-import PitchHueCommitter from "../helpers/PitchHueCommitter";
+import PitchHueCommitter from "../../helpers/color/PitchHueCommitter";
 
 const PITCH_STABLE_THRESHOLD_MS = 120;
 const MIN_MUSIC_WEIGHT_FOR_COLOR = 0.25;

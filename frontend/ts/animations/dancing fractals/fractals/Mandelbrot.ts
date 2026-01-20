@@ -19,7 +19,7 @@ import {
 import { MandelbrotTour } from "./mandelbrot/MandelbrotTour";
 import type { TourDurations, TourOutput, TourPresentation, TourZoomTargets } from "./mandelbrot/MandelbrotTourTypes";
 
-import PitchHueCommitter from "../helpers/PitchHueCommitter";
+import PitchHueCommitter from "../../helpers/color/PitchHueCommitter";
 
 type MandelbrotRuntime = {
     elapsedAnimSeconds: number;
