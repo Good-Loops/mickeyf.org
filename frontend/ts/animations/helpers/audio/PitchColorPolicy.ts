@@ -94,6 +94,10 @@ export type ColorDecision = {
 export default class PitchColorPolicy {
     private lastGood: HslColor;
 
+    /**
+     * @param deps - Policy dependencies and tuning. The provided {@link PitchHysteresis} instance
+     * is treated as owned-by-caller and is not disposed by this class.
+     */
     constructor(private deps: PitchColorPolicyDeps) {
         this.lastGood = deps.initialColor ?? { hue: 0, saturation: 50, lightness: 50 };
     }
