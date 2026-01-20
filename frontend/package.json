@@ -1,6 +1,6 @@
 {
     "name": "frontend",
-    "version": "0.4.2",
+    "version": "0.5.0",
     "scripts": {
         "dev": "vite",
         "test": "tsc -p tsconfig.json --noEmit",

@@ -1,6 +1,6 @@
 {
     "name": "backend",
-    "version": "0.4.2",
+    "version": "0.5.0",
     "scripts": {
         "test": "tsc -p tsconfig.json --noEmit",
         "watch": "webpack --mode development --watch",
