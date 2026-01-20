@@ -1,3 +1,16 @@
+/**
+ * Procedural branching “Tree” animation.
+ *
+ * High-level dataflow:
+ * - Inputs: per-frame timing (`deltaSeconds`, `nowMs`), config patches via {@link Tree.updateConfig},
+ *   and music features (beat envelope/hits + pitch hue) for motion/color modulation.
+ * - Outputs: draws line segments into PIXI {@link Graphics} layers (one per depth).
+ *
+ * Ownership boundaries:
+ * - This module owns the Tree animation lifecycle and scene orchestration.
+ * - Palette retargeting is delegated to {@link PaletteTween}.
+ * - Smoothing/clamping and HSL utilities are delegated to `expSmoothing`, `clamp`, and `hsl` helpers.
+ */
 import { Application, Graphics } from "pixi.js";
 import FractalAnimation from "../interfaces/FractalAnimation";
 import PaletteTween from "../../helpers/color/PaletteTween";
@@ -19,6 +32,22 @@ const DEPTH_SPIN_RANGE: readonly [number, number] = [0, 6];
 
 const DEPTH_HUE_STEP_DEG = 26;
 
+/**
+ * CPU-rendered tree/roots animation with music-reactive motion and color.
+ *
+ * Lifecycle contract:
+ * - {@link Tree.init} allocates and attaches PIXI resources.
+ * - {@link Tree.step} updates animation state and redraws all depth layers.
+ * - {@link Tree.updateConfig} applies shallow config patches and (if needed) rebuilds depth layers.
+ * - {@link Tree.scheduleDisposal}/{@link Tree.startDisposal}/{@link Tree.dispose} manage teardown.
+ *
+ * Ownership:
+ * - Owns one {@link Graphics} per depth (`depthGraphics`). These are added to `app.stage` and destroyed on dispose.
+ *
+ * Invariants:
+ * - When initialized, `depthGraphics.length === config.maxDepth + 1`.
+ * - `baseConfig` captures the post-construction baseline used for music-driven motion targets.
+ */
 export default class Tree implements FractalAnimation<TreeConfig> {
 	constructor(
 		private readonly centerX: number,
@@ -71,7 +100,11 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 
 	private colorChangeCounter: number = 0;
 
-	// Initialize the tree within the given PIXI application.
+	/**
+	 * Initializes the tree within the given PIXI application.
+	 *
+	 * Allocates `Graphics` layers based on the current `config.maxDepth` and attaches them to `app.stage`.
+	 */
 	init = (app: Application): void => {
 		this.app = app;
 
@@ -83,10 +116,18 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		}
 	};
 
+	/**
+	 * Advances the animation by one frame.
+	 *
+	 * @param deltaSeconds - Elapsed time since the previous frame, in **seconds**.
+	 * @param nowMs - Absolute time in **milliseconds**.
+	 * @param audioState - Raw audio engine state; used only to synthesize a fallback feature frame.
+	 * @param musicFeatures - Beat/pitch features driving color and motion when available.
+	 */
 	step = (deltaSeconds: number, nowMs: number, audioState: AudioState, musicFeatures: MusicFeaturesFrame): void => {
 		if (!this.app || this.depthGraphics.length === 0) return;
 
-		// Handle scheduled auto-disposal
+		// Auto-disposal is time-based in seconds.
 		if (this.autoDispose) {
 			this.disposalTimer += deltaSeconds;
 			if (this.disposalTimer >= this.disposalDelay) {
@@ -94,9 +135,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 			}
 		}
 
-		// Grow or shrink the tree
 		if (!this.isDisposing) {
-			// GROW
 			if (this.visibleFactor < 1) {
 				this.visibleFactor = Math.min(
 					1,
@@ -104,14 +143,12 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 				);
 			}
 		} else {
-			// SHRINK
 			if (this.visibleFactor > 0) {
 				this.visibleFactor = Math.max(
 					0,
 					this.visibleFactor - this.config.shrinkSpeed * deltaSeconds
 				);
 			} else {
-				// Fully gone
 				this.dispose();
 				return;
 			}
@@ -121,10 +158,14 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 			musicFeatures = this.createFallbackMusicFeatures(deltaSeconds, nowMs, audioState);
 		}
 
-		// Update colors over time (palette tween always runs; retarget behavior changes with music)
+		// PaletteTween always advances; retargeting cadence depends on music/beat presence.
 		this.updateColors(deltaSeconds, musicFeatures.hasMusic, musicFeatures.beatHit);
 
-		// Motion sync (beat envelope → config targets)
+		/**
+		 * Audio-reactive motion:
+		 * - Uses `beatEnv01` (expected $[0,1]$) to bias rotation/wiggle/spin targets.
+		 * - Uses exponential smoothing in milliseconds to avoid snapping.
+		 */
 		{
 			const deltaMs = deltaSeconds * 1000;
 			const alpha = expSmoothing(deltaMs, MUSIC_MOTION_RESPONSIVENESS);
@@ -147,18 +188,20 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 			this.config.depthSpinFactor = clamp(this.config.depthSpinFactor, ...DEPTH_SPIN_RANGE);
 		}
 
-		// Clear all depth layers
 		for (const graphic of this.depthGraphics) {
 			graphic.clear();
 		}
 
-		// New: accumulate a smooth spin
+		// Angle values in this module are radians; `rotationSpeed` is radians per second.
 		this.rotationAngle += deltaSeconds * this.config.rotationSpeed;
 
 		const spin = this.rotationAngle;
 		const timePhase = nowMs * 0.003;
 
-		// Draw trunk + branches (upwards)
+		// Tree model parameters (config → runtime), central reference:
+		// - Angles are in radians; time is in seconds (`deltaSeconds`) and milliseconds (`nowMs`).
+		// - Lengths/widths are in PIXI world units (screen pixels for the default setup).
+		// - Complexity is primarily driven by `maxDepth` (binary branching) and `branchScale` (how quickly length decays).
 		this.drawBranch(
 			this.centerX,
 			this.centerY,
@@ -171,7 +214,6 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 
 		const rootLength = this.config.baseLength * this.config.rootScale * this.visibleFactor;
 
-		// Draw roots (downwards, shorter and maybe opposite sway)
 		this.drawBranch(
 			this.centerX,
 			this.centerY,
@@ -182,13 +224,10 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 			timePhase
 		);
 
-		// Approximate "middle" of the trunk: a bit above the center
 		const midY = this.centerY - this.config.baseLength * 0.3 * this.visibleFactor;
 
-		// Base length for side branches: similar to roots, a bit smaller
 		const sideLength = this.config.baseLength * this.config.sideScale * this.visibleFactor;
 
-		// Left side branch (pointing to the left)
 		this.drawBranch(
 			this.centerX,
 			midY,
@@ -199,7 +238,6 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 			timePhase
 		);
 
-		// Right side branch (pointing to the right)
 		this.drawBranch(
 			this.centerX,
 			midY,
@@ -210,7 +248,6 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 			timePhase
 		);
 
-		// Stroke each depth with its own color + thickness
 		const maxDepthSafe = Math.max(1, this.config.maxDepth);
 
 		for (let depth = 0; depth <= this.config.maxDepth; depth++) {
@@ -294,7 +331,8 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		return { hue: musicHue, saturation: musicSat, lightness: musicLight };
 	}
 
-	// Recursive branch drawing
+	// Performance note: this is a binary recursion; node count grows ~ $2^{\text{depth}}$.
+	// Guards on `maxDepth` and minimum segment length keep the worst-case bounded.
 	private drawBranch = (
 		x: number,
 		y: number,
@@ -359,7 +397,6 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		this.drawBranch(x2, y2, angle + spread, nextLength, depth + 1, spin, timePhase);
 	};
 
-	// Update colors over time
 	private updateColors = (deltaSeconds: number, hasMusic: boolean, beatHit: boolean): void => {
 		this.colorChangeCounter += deltaSeconds;
 
@@ -377,7 +414,15 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		this.paletteTween.step(colorTween01);
 	};
 
-	// Allow external code to update some/all config fields.
+	/**
+	 * Applies a shallow config patch.
+	 *
+	 * Merge semantics: `this.config` is replaced via `{ ...this.config, ...patch }`.
+	 *
+	 * Note: `baseConfig` is not modified by patches; it remains the baseline for music-driven motion targets.
+	 *
+	 * If `maxDepth` changes while initialized, depth graphics and the palette tween are rebuilt.
+	 */
 	updateConfig = (patch: Partial<TreeConfig>): void => {
 		const oldMaxDepth = this.config.maxDepth;
 		this.config = { ...this.config, ...patch };
@@ -405,7 +450,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		}
 	};
 
-	// Schedule an animated disposal to begin after a delay.
+	/** Schedules an animated disposal to begin after `seconds` (in **seconds**) of runtime. */
 	scheduleDisposal = (seconds: number): void => {
 		this.disposalDelay = seconds;
 		this.disposalTimer = 0;
@@ -413,7 +458,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		this.isDisposing = false;
 	};
 
-	// Begin the disposal process immediately.
+	/** Begins the disposal process immediately (tree shrinks until invisible, then disposes). */
 	startDisposal = (): void => {
 		if (this.isDisposing) return;
 
@@ -421,7 +466,7 @@ export default class Tree implements FractalAnimation<TreeConfig> {
 		this.autoDispose = false;
 	};
 
-	// Immediately dispose of the tree and its resources.
+	/** Immediately disposes of the tree and its PIXI resources. */
 	dispose = (): void => {
 		this.autoDispose = false;
 		this.isDisposing = false;
