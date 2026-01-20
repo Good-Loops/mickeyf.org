@@ -1,3 +1,19 @@
+/**
+ * Pitch-color phase controller.
+ *
+ * Maintains a smooth, continuous hue/color state over time, so visuals can react to musical events
+ * (pitch commits, silence) without abrupt jumps.
+ *
+ * Relationship to {@link PitchColorPolicy}:
+ * - The policy produces discrete decisions/targets (including pitch-class commits).
+ * - This controller integrates those targets over time (smoothing + drift) and outputs a stable
+ *   color each frame.
+ *
+ * Units/conventions:
+ * - Time inputs are in **milliseconds** (`nowMs`, `deltaMs`). Internal oscillators convert to seconds.
+ * - Hue is in **degrees** and wrapped into $[0, 360)$ using {@link wrapHue}.
+ * - Internal LFO “phase” values are in **radians**.
+ */
 import PitchColorPolicy, { type ColorDecision } from "@/animations/helpers/audio/PitchColorPolicy";
 import clamp from "@/utils/clamp";
 import expSmoothing from "@/utils/expSmoothing";
@@ -49,17 +65,38 @@ type PitchColorPhaseTuning = {
 };
 
 export type PitchColorPhaseStepInput = {
+    /** Raw detected pitch in **Hz**. */
     pitchHz: number;
+
+    /** Pitch confidence in $[0, 1]$. */
     clarity: number;
+
+    /** Absolute time, in **milliseconds** (monotonic clock). */
     nowMs: number;
+
+    /** Elapsed time since the previous `step`, in **milliseconds**. */
     deltaMs: number;
 };
 
 export type PitchColorPhaseStepResult = {
+    /** Render-ready HSL color (degrees + percents), after smoothing/drift is applied. */
     color: HslColor;
+
+    /**
+     * Optional policy decision that was sampled this step.
+     *
+     * When omitted, the controller is reusing the previous decision/target and only evolving
+     * internal phase/smoothing.
+     */
     decision?: ColorDecision;
 };
 
+/**
+ * Evolves pitch-driven color over time.
+ *
+ * State held by this controller includes commit timing, silence timers, smoothing accumulators,
+ * and LFO phases used for “breathing” drift.
+ */
 export default class PitchColorPhaseController {
     private state: PitchColorPhaseState;
 
@@ -91,6 +128,7 @@ export default class PitchColorPhaseController {
         };
     }
 
+    /** Resets internal phase/state to the policy’s current `lastGoodColor`. */
     reset(): void {
         const initialColor = this.deps.policy.lastGoodColor;
 
@@ -114,6 +152,20 @@ export default class PitchColorPhaseController {
         };
     }
 
+    /**
+     * Advances the controller by one frame.
+     *
+     * Call frequency: typically once per render tick.
+     *
+     * Wrapping guarantees:
+     * - Returned hue is wrapped into $[0, 360)$.
+     * - Saturation/lightness are clamped to $[0, 100]$ where drift is applied.
+     *
+     * Determinism: given the same input stream and policy behavior, output is deterministic.
+     *
+     * @param input.deltaMs - Frame delta in **milliseconds**.
+     * @param input.nowMs - Absolute time in **milliseconds**.
+     */
     step(input: PitchColorPhaseStepInput): PitchColorPhaseStepResult {
         this.state.colorElapsedMs += input.deltaMs;
 
@@ -256,10 +308,9 @@ export default class PitchColorPhaseController {
     private applyStableDrift(base: HslColor, input: PitchColorPhaseStepInput): HslColor {
         const t = this.deps.tuning.stableDrift;
 
-        // ramp from 0..1 based on time since commit
         const sinceCommitMs = input.nowMs - this.state.committedAtMs;
         const rampLinear = t.rampMs <= 0 ? 1 : clamp(sinceCommitMs / t.rampMs, 0, 1);
-        const ramp = rampLinear * rampLinear * (3 - 2 * rampLinear); // smoothstep easing
+        const ramp = rampLinear * rampLinear * (3 - 2 * rampLinear);
 
         const dtSec = input.deltaMs / 1000;
         this.state.stableLfoPhase += dtSec * (t.hz * Math.PI * 2);
