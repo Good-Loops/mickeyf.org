@@ -1,31 +1,72 @@
+/**
+ * Host/runner contract for “dancing fractals”.
+ *
+ * A {@link FractalHost} orchestrates a single active `FractalAnimation` instance at a time:
+ * it wires a PIXI `Application` + canvas into a container, integrates with the ticker, and manages
+ * high-level lifecycle (swap/restart/config patches/disposal).
+ *
+ * Ownership: the host owns creation and disposal of the PIXI `Application` and its canvas.
+ *
+ * The host is **not** responsible for animation-specific visuals, fractal math, or per-animation
+ * policy decisions; those live inside each `FractalAnimation` implementation.
+ *
+ * Lifecycle (typical): create host → setFractal (init) → per-frame stepping → updateConfig → dispose.
+ */
 import type { FractalAnimationConstructor } from "./FractalAnimation";
 
+/**
+ * Drives `FractalAnimation` instances while keeping them SRP-focused.
+ *
+ * Invariants callers can rely on:
+ * - At most one animation instance is active at a time.
+ * - Configuration patching and lifecycle calls are issued by the host; the animation owns visuals/state.
+ *
+ * Thread model: methods are expected to be called from the main JS/UI thread.
+ */
 export interface FractalHost {
     /**
-     * Replace the current fractal with a new one of the given class & config.
-     * Reuses the same PIXI Application + canvas.
+     * Replaces the active animation with a new instance.
+     *
+        * The host reuses the same PIXI `Application` + canvas, disposing the previous animation's
+     * resources first (via the animation's disposal flow).
+     *
+     * @param Fractal - Animation class/constructor to instantiate.
+     * @param config - Full initial configuration for the new instance.
      */
     setFractal<C>(Fractal: FractalAnimationConstructor<C>, config: C): void;
 
     /**
-     * Update the current fractal's config (and store it internally).
+     * Applies a configuration patch to the active animation.
+     *
+     * The host stores the merged config internally (for later restarts) and forwards the patch to the
+     * active animation.
+     *
+     * If no animation is active, this is a no-op.
      */
     updateConfig(patch: any): void;
 
     /**
-     * Restart the current fractal with the last known config.
+     * Restarts the active animation using the last stored configuration.
+     *
+     * If no animation is active (or no config has been stored yet), this is a no-op.
      */
     restart(): void;
 
     /**
-     * Set auto-disposal time in seconds.
-     * - seconds > 0 → auto-dispose after that many seconds
-     * - null       → disable auto-disposal
+     * Configures automatic disposal timing.
+     *
+        * When an animation is active, setting a lifetime re-arms its disposal countdown.
+        *
+        * @param seconds - Lifetime in **seconds**. Use `null` to disable auto-disposal.
      */
     setLifetime(seconds: number | null): void;
 
     /**
-     * Get simple runtime stats (currently FPS).
+     * Returns lightweight runtime stats.
+     *
+     * - `fps` is a smoothed estimate of frames per second.
+     * - `remainingLifetime` is remaining time until disposal begins, in **seconds**, or `null` when
+     *   auto-disposal is disabled.
      */
     getStats(): { 
         fps: number;
@@ -33,7 +74,12 @@ export interface FractalHost {
     };
 
     /**
-     * Dispose everything: current fractal + host Application + canvas.
+     * Disposes the host and all owned resources.
+     *
+     * This removes the canvas from the DOM, stops ticker integration, and disposes the active
+     * animation (if any) along with the underlying PIXI `Application`.
+     *
+     * Calling this multiple times is safe; after disposal, the host must not be used again.
      */
     dispose(): void;
 }
