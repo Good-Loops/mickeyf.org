@@ -1,0 +1,9 @@
+{
+  "name": "mickeyf-root",
+  "private": true,
+  "scripts": {
+    "docs:frontend": "npm --prefix frontend run docs",
+    "docs:backend": "npm --prefix backend run docs",
+    "docs": "npm run docs:frontend && npm run docs:backend"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "tsconfig": "./tsconfig.typedoc.json",
-  "entryPoints": ["ts"],
+  "entryPoints": ["./"],
   "entryPointStrategy": "expand",
   "out": "docs",
   "excludePrivate": true,
