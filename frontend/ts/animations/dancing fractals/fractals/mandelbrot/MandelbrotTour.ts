@@ -1,3 +1,23 @@
+/**
+ * Mandelbrot tour composition layer.
+ *
+ * Coordinates a high-level “tour” through curated Mandelbrot sights by wiring together:
+ * - sight data ({@link createDefaultSightRegistry})
+ * - phase progression rules ({@link advanceState} from `MandelbrotTourStateMachine`)
+ * - view/camera targets expressed as a {@link TourOutput}
+ *
+ * At this layer, “tour” means: select a sight, hold a wide view, zoom in, hold close, zoom out,
+ * travel wide to the next sight, and repeat.
+ *
+ * Ownership boundaries:
+ * - This module owns tour coordination and bridging between config/tuning and the state machine.
+ * - It does not own rendering, shader/palette work, or low-level fractal math.
+ *
+ * Inputs/outputs:
+ * - Inputs are per-frame time (`deltaSeconds`) and the current baseline log zoom.
+ * - Output is a {@link TourOutput} describing the desired center/rotation and an additive log-zoom
+ *   delta to be composed by the hosting view system.
+ */
 import lerp from "@/utils/lerp";
 import clamp from "@/utils/clamp";
 
@@ -37,7 +57,7 @@ const resolveCloseZoomDeltaLog = (sight: TourSight, targets: TourZoomTargets): n
     const candidate =
         Number.isFinite(sightDelta as number) ? (sightDelta as number) : Number.isFinite(globalDelta) ? globalDelta : 8;
 
-    // Enforce a minimum so "0" can't wipe out depth.
+    // Enforce a minimum so a value like 0 can't wipe out depth.
     return Math.max(candidate, 6);
 };
 
@@ -65,14 +85,25 @@ type TourRebuildSignature = {
 };
 
 type TourContext = {
-    // Current “active” sight (used for HoldWide/ZoomIn/HoldClose/ZoomOut)
+    /** Current “active” sight index (used for HoldWide/ZoomIn/HoldClose/ZoomOut). */
     sightIndex: number;
 
-    // Only meaningful during TravelWide
+    /** Only meaningful during `TravelWide`: travel start sight index. */
     travelFromIndex: number;
+    /** Only meaningful during `TravelWide`: travel destination sight index. */
     travelToIndex: number;
 };
 
+/**
+ * Drives a deterministic sight tour and emits per-frame view targets.
+ *
+ * Lifecycle: typically constructed once per Mandelbrot instance and stepped from the main render
+ * loop. Call {@link reset} to restart the tour.
+ *
+ * Ownership:
+ * - Owns its internal state machine state, sight registry instance, and internal timers.
+ * - Does not own rendering; consumers decide how to apply {@link TourOutput}.
+ */
 export class MandelbrotTour {
     private readonly sightReg = createDefaultSightRegistry();
     private rebuildSig: TourRebuildSignature = this.computeRebuildSignature();
@@ -138,6 +169,11 @@ export class MandelbrotTour {
         this.reset(0);
     }
 
+    /**
+     * Resets the tour runtime state.
+     *
+     * @param startSightIndex - Initial sight index into the curated sight list (wrapped). Defaults to 0.
+     */
     reset(startSightIndex = 0): void {
         const n = this.sightReg.sights.length;
         const idx = n <= 0 ? 0 : ((startSightIndex % n) + n) % n;
@@ -164,8 +200,19 @@ export class MandelbrotTour {
         this.reset(0);
     }
 
+    /**
+     * Applies a typed config patch to tour tuning.
+     *
+     * This bridges higher-level config values (e.g. UI sliders) into the tour’s internal tuning
+     * objects without changing the tour’s public surface.
+     *
+     * Units (see {@link TourConfigPatch} / `MandelbrotConfig`):
+     * - `tourHold*Seconds`, `tourTravelWideSeconds`, `tourZoom*Seconds*` are in **seconds**.
+     * - `tourWideLogZoom`, `tourCloseZoomDeltaLog` are in **log-space zoom units** used by the
+     *   Mandelbrot view system.
+     * - `tourRotationRad` is in **radians**, `tourRotationSpeedRadPerSec` in **radians per second**.
+     */
     updateConfig(patch: TourConfigPatch): void {
-        // Durations (seconds)
         if (patch.tourHoldWideSeconds != null) {
             this.durations.holdWideSeconds = Number.isFinite(patch.tourHoldWideSeconds) ? patch.tourHoldWideSeconds : 0;
         }
@@ -178,7 +225,6 @@ export class MandelbrotTour {
                 Number.isFinite(patch.tourTravelWideSeconds) ? patch.tourTravelWideSeconds : 0;
         }
 
-        // Zoom targets
         if (patch.tourWideLogZoom != null) {
             this.zoomTargets.wideLogZoom = Number.isFinite(patch.tourWideLogZoom) ? patch.tourWideLogZoom : 0;
         }
@@ -219,7 +265,6 @@ export class MandelbrotTour {
                 Number.isFinite(patch.tourZoomOutMaxSeconds) ? patch.tourZoomOutMaxSeconds : 0;
         }
 
-        // Rotation params (tour-owned)
         if (patch.tourRotationRad != null) {
             this.presentation.rotationRad = Number.isFinite(patch.tourRotationRad) ? patch.tourRotationRad : 0;
         }
@@ -236,6 +281,17 @@ export class MandelbrotTour {
         this.rebuildSig = nextSig;
     }
 
+    /**
+     * Steps tour progression and computes the current desired view target.
+     *
+     * Called once per frame by the host.
+     *
+     * @param deltaSeconds - Elapsed time since the previous step, in **seconds**. Negative values
+     * are treated as zero by the state machine.
+     * @param baselineLogZoomFrame - Baseline log zoom for the current frame, in the **log-space zoom
+     * units** used by the Mandelbrot view system. The returned {@link TourOutput.tourZoomDeltaLog}
+     * is computed relative to this baseline.
+     */
     step(deltaSeconds: number, baselineLogZoomFrame: number): TourOutput {
         const input: TourInput = { deltaSeconds, baselineLogZoomFrame };
         if (this.sightReg.sights.length === 0) {
@@ -247,7 +303,6 @@ export class MandelbrotTour {
             };
         }
 
-        // Phase 1: advance (consume dt, carry across transitions, skip zero-duration holds)
         const prevState = this.normalizeStateMachineState(this.state);
         this.state = prevState;
 
@@ -257,7 +312,6 @@ export class MandelbrotTour {
             deltaSeconds: input.deltaSeconds,
             durations: this.durations,
             getZoomDurationSec: (k) => this.getZoomDurationSec(k),
-            // Preserve prior loop guard behavior.
             maxTransitionsPerStep: 8,
         });
 
@@ -267,13 +321,12 @@ export class MandelbrotTour {
             this.applyTransitionSideEffects(prevKind, result.transitions);
         }
 
-        // Preserve the existing hard rule that when HoldWide is configured as 0 seconds,
-        // TravelWide completion must jump directly to ZoomIn (even if dt ends exactly on the boundary).
+        // Special-case: if HoldWide is configured as 0 seconds, ensure TravelWide completion jumps
+        // directly into ZoomIn even when dt lands exactly on the boundary.
         if (this.durations.holdWideSeconds <= 0 && result.transitions > 0 && this.state.kind === "HoldWide") {
             this.state = { kind: "ZoomIn", elapsedSec: 0 };
         }
 
-        // Update tour-owned rotation after state advance (unwrapped).
         const rotationSpeedRadPerSecRaw = this.presentation.rotationSpeedRadPerSec;
         const rotationSpeedRadPerSec = Number.isFinite(rotationSpeedRadPerSecRaw) ? rotationSpeedRadPerSecRaw : 0;
         if (rotationSpeedRadPerSec !== 0) {
@@ -284,7 +337,6 @@ export class MandelbrotTour {
         const rotationOffsetRad = Number.isFinite(rotationOffsetRadRaw) ? rotationOffsetRadRaw : 0;
         this.rotationRadOutFrame = this.rotationRad + rotationOffsetRad;
 
-        // Phase 2: compute outputs from the post-advance state/time
         return this.computeOutput(this.state, input.baselineLogZoomFrame);
     }
 
@@ -317,8 +369,7 @@ export class MandelbrotTour {
             this.ctx.travelToIndex = to;
         }
 
-        // Commit the next active sight at the same boundary as before:
-        // after TravelWide completes, when we re-enter HoldWide.
+        // Commit the next active sight after TravelWide completes (on re-entering HoldWide).
         if (kind === "HoldWide") {
             this.ctx.sightIndex = this.ctx.travelToIndex;
         }
