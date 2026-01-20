@@ -1,24 +1,54 @@
+/**
+ * Beat/energy envelope shaping for visuals.
+ *
+ * Converts raw beat cues (boolean trigger + strength) into a stable envelope value suitable for
+ * driving animation. The envelope adds:
+ * - visibility shaping for weak beats
+ * - a cooldown gate to prevent rapid re-triggers
+ * - attack/decay smoothing to avoid flicker and provide a readable pulse
+ *
+ * High-level mapping: raw beat/strength → gated trigger → smoothed envelope ($[0, 1]$) + `didTrigger`.
+ */
 import clamp from "@/utils/clamp";
 import expSmoothing from "@/utils/expSmoothing";
 
+/**
+ * Tuning parameters for {@link BeatEnvelope}.
+ */
 export type BeatEnvelopeTuning = {
-    // Trigger shaping
+	/** Minimum time between accepted triggers, in **milliseconds**. */
     gateCooldownMs: number;
-    strengthPower: number;      // e.g. 0.35
-    strengthScale: number;      // e.g. 1.25
+	/** Exponent applied to raw strength to make weak beats more visible (dimensionless). */
+    strengthPower: number;
+	/** Scalar applied after the exponent to boost strength (dimensionless). */
+    strengthScale: number;
 
-    // Envelope smoothing (per-second responsiveness)
-    attack: number;             // higher = snappier
-    decay: number;              // higher = faster fade
+	/** Attack responsiveness in **1/second** (larger = snappier rise). */
+    attack: number;
+	/** Decay responsiveness in **1/second** (larger = faster fade). */
+    decay: number;
 };
 
+/**
+ * Input for a single {@link BeatEnvelope.step} update.
+ */
 export type BeatEnvelopeInput = {
+	/** Time since last update, in **milliseconds**. */
     dtMs: number;
+	/** Absolute time, in **milliseconds** (same clock as the host/render loop). */
     nowMs: number;
+	/** Raw beat cue for this frame (level signal from upstream detection). */
     isBeat: boolean;
-    strength: number;           // 0..1
+	/** Raw beat strength in $[0, 1]$ (will be clamped). */
+    strength: number;
 };
 
+/**
+ * Stateful beat envelope generator.
+ *
+ * Maintains a smoothed envelope value and a toggle (`moveGroup`) that flips on each accepted
+ * trigger. Call {@link step} once per render/audio frame.
+ */
 export default class BeatEnvelope {
     private envelope = 0;
     private lastBeatAtMs = -Infinity;
@@ -26,10 +56,16 @@ export default class BeatEnvelope {
 
     constructor(private readonly tuning: BeatEnvelopeTuning) {}
 
+    /**
+     * Advances the envelope by one frame.
+     *
+     * The returned `didTrigger` is an event-like signal: it is `true` only on frames where the raw
+     * beat cue passes the cooldown gate (and the shaped strength is non-zero). Consumers typically
+     * treat it as a “beat hit” pulse.
+     */
     step({ dtMs, nowMs, isBeat, strength }: BeatEnvelopeInput) {
         const raw = isBeat ? clamp(strength, 0, 1) : 0;
 
-        // Shaping to make weak beats more visible
         const shaped = clamp((Math.pow(raw, this.tuning.strengthPower) * this.tuning.strengthScale), 0, 1);
 
         const gated =
@@ -42,7 +78,7 @@ export default class BeatEnvelope {
             this.moveGroup = this.moveGroup === 0 ? 1 : 0;
         }
 
-        const target = gated; // 0..1
+        const target = gated;
         const responsiveness = target > this.envelope ? this.tuning.attack : this.tuning.decay;
         const alpha = expSmoothing(dtMs, responsiveness);
 
@@ -55,7 +91,12 @@ export default class BeatEnvelope {
         };
     }
 
+    /** Returns the latest envelope value (typically in $[0, 1]$). */
     getEnvelope() { return this.envelope; }
+
+    /** Returns the current move-group toggle (flips on each accepted trigger). */
     getMoveGroup() { return this.moveGroup; }
+
+    /** Resets the envelope value to `0` (does not reset cooldown or toggle state). */
     reset() { this.envelope = 0; }
 }
