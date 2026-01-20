@@ -2,7 +2,7 @@
  * P4-Vega: Water entity.
  *
  * Represents a collectible/interactive object that triggers an effect on collision with the player.
- * Participates in the game loop via {@link Water.update} and is rendered via a PIXI {@link PIXI.AnimatedSprite}.
+ * Participates in the game loop via {@link Water.update} and is rendered via a PIXI {@link AnimatedSprite}.
  *
  * Ownership boundaries:
  * - Owns water-specific state/behavior (sprite placement, note triggering, interaction handling).
@@ -18,7 +18,7 @@ import Entity from '@/games/helpers/Entity';
 import BlackHole from './BlackHole';
 import P4 from './P4';
 
-import * as PIXI from 'pixi.js';
+import { Container, ContainerChild, AnimatedSprite } from 'pixi.js';
 
 /**
  * Water entity for P4-Vega.
@@ -30,7 +30,7 @@ import * as PIXI from 'pixi.js';
  * - Owns the `waterAnim` sprite reference and a private {@link NoteSelector} instance.
  * - Sprite is added to the provided stage in the constructor and destroyed in {@link destroy}.
  */
-export default class Water extends Entity<PIXI.AnimatedSprite> {
+export default class Water extends Entity<AnimatedSprite> {
     private startX = CANVAS_WIDTH - Entity.gap;
     private startY = CANVAS_HEIGHT * .5;
 
@@ -41,8 +41,8 @@ export default class Water extends Entity<PIXI.AnimatedSprite> {
      * @param waterAnim - Water sprite owned and mutated by this entity.
      */
     constructor(
-        stage: PIXI.Container<PIXI.ContainerChild>,
-        public waterAnim: PIXI.AnimatedSprite
+        stage: Container<ContainerChild>,
+        public waterAnim: AnimatedSprite
     ) {
         super(waterAnim);
         stage.addChild(waterAnim);
@@ -62,10 +62,10 @@ export default class Water extends Entity<PIXI.AnimatedSprite> {
      *   - increment `p4.totalWater`.
      */
     update(
-        waterAnim: PIXI.AnimatedSprite,
+        waterAnim: AnimatedSprite,
         p4: P4,
         notesPlaying: boolean,
-        stage: PIXI.Container<PIXI.ContainerChild>
+        stage: Container<ContainerChild>
     ) {
         if (isColliding(p4.p4Anim, waterAnim)) {
             if (notesPlaying) this.noteSelector.playNote();

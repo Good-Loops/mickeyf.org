@@ -8,9 +8,9 @@
  * - Owns the player sprite instance passed in (`p4Anim`) and manages its position updates.
  * - Game orchestration (spawning, input wiring, win/lose rules) lives outside this class (e.g. the game runner).
  */
+import { AnimatedSprite, Container, ContainerChild } from 'pixi.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import Entity from '@/games/helpers/Entity';
-import * as PIXI from 'pixi.js';
 
 /**
  * Controllable player entity for P4-Vega.
@@ -27,7 +27,7 @@ import * as PIXI from 'pixi.js';
  * Invariants:
  * - Enforces on-canvas bounds: keeps the sprite fully within `[0, CANVAS_WIDTH] x [0, CANVAS_HEIGHT]`.
  */
-export default class P4 extends Entity<PIXI.AnimatedSprite> {
+export default class P4 extends Entity<AnimatedSprite> {
     private startX = Entity.gap;
     private startY = CANVAS_HEIGHT * 0.5;
 
@@ -47,8 +47,8 @@ export default class P4 extends Entity<PIXI.AnimatedSprite> {
      * @param p4Anim - Player sprite owned and mutated by this entity.
      */
     constructor(
-        stage: PIXI.Container<PIXI.ContainerChild>,
-        public p4Anim: PIXI.AnimatedSprite
+        stage: Container<ContainerChild>,
+        public p4Anim: AnimatedSprite
     ) {
         super(p4Anim);
         stage.addChild(p4Anim);
@@ -64,7 +64,7 @@ export default class P4 extends Entity<PIXI.AnimatedSprite> {
      * - Mutates `p4Anim.x/y` based on movement flags.
      * - Applies a clamp-like correction to keep the sprite on-screen.
      */
-    update(p4Anim: PIXI.AnimatedSprite) {
+    update(p4Anim: AnimatedSprite) {
         if (this.isMovingRight) {
             p4Anim.x += this.speed;
         }
