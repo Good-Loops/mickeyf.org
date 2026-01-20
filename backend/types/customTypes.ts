@@ -1,7 +1,21 @@
 /**
- * Represents a user in the system.
+ * Shared/custom backend type definitions.
+ *
+ * Purpose:
+ * - Defines compile-time contracts used across backend layers (controllers/routers/app) for consistent data shapes.
+ *
+ * Scope:
+ * - Types only; this module has no runtime behavior.
  */
-export interface IUser {
+
+/**
+ * User record shape used within the backend.
+ *
+ * Contract notes:
+ * - Field names use snake_case to align with persisted/API representations used in this codebase.
+ * - `p4_score` may be `null` when a user has not recorded a score.
+ */
+export interface User {
     user_id: number;
     user_name: string;
     email: string;

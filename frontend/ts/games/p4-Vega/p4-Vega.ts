@@ -1,3 +1,18 @@
+/**
+ * Composition root / game runner for the P4-Vega PIXI scene.
+ *
+ * Responsibilities:
+ * - Bootstraps the PIXI renderer + root stage container and attaches the canvas to the provided DOM container.
+ * - Creates and owns the lifetime of major game entities (e.g. `Sky`, `P4`, `Water`, `BlackHole`) and their PIXI resources.
+ * - Wires the per-frame loop (update orchestration + render) and controls start/stop ordering.
+ * - Orchestrates game-over handling and reset flow, delegating end-state UI to shared helpers (e.g. `gameOver`).
+ *
+ * Ownership boundaries:
+ * - Entities encapsulate their internal state and per-entity PIXI objects; this module owns their creation, update order,
+ *   and teardown/recreation during restart.
+ * - Shared helpers (e.g. `../utils/gameOver`) encapsulate specific end-state behavior (texts/UI composition), while this
+ *   module decides when to invoke them and owns adding/removing the returned display objects.
+ */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import { getRandomInt } from '@/utils/random';
 import gameOver from '../utils/gameOver';
@@ -24,8 +39,16 @@ import bhYellowPngURL from '@/assets/sprites/p4Vega/bhYellow.png';
 import bgMusicURL from '@/assets/audio/bg-sound-p4.mp3';
 
 import Swal from 'sweetalert2';
-import * as Tone from 'tone';
-import * as PIXI from 'pixi.js';
+import { Player } from 'tone';
+import { 
+    autoDetectRenderer, 
+    Container, 
+    ContainerChild, 
+    Assets, 
+    AnimatedSprite, 
+    Spritesheet,
+    Ticker 
+} from 'pixi.js';
 
 type P4VegaAuth = {
   isAuthenticated?: boolean;
@@ -33,10 +56,24 @@ type P4VegaAuth = {
 };
 
 /**
- * Main function to initialize and run the p4-Vega game.
+ * Starts a P4-Vega game session.
+ *
+ * Intended call site: route enter / game start, where a DOM container is available for the PIXI canvas.
+ *
+ * Inputs:
+ * - `container`: Optional DOM element that receives the renderer's canvas.
+ * - `auth`: Optional auth context used to decide whether to submit scores on game-over.
+ *
+ * Output:
+ * - Resolves to a disposer function that stops the frame loop, unregisters event listeners, removes the canvas from the
+ *   DOM, and destroys owned PIXI/audio resources.
+ *
+ * Lifecycle notes:
+ * - Renderer/stage and event listeners are created immediately.
+ * - Asset loading and entity construction happen inside `load()` (invoked once on start and again on restart).
  */
 export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth): Promise<() => void> {
-    const renderer = await PIXI.autoDetectRenderer({
+    const renderer = await autoDetectRenderer({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
         backgroundColor: 0x0d0033,
@@ -47,19 +84,17 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     canvas.id = 'p4-canvas';
     container?.appendChild(canvas);
 
-    const stage = new PIXI.Container();
+    const stage = new Container();
 
     const bgMusicCheckbox = document.querySelector(
         '[data-bg-music-playing]'
     ) as HTMLInputElement;
-    const p4MusicPlayer = new Tone.Player({
+    const p4MusicPlayer = new Player({
         url: bgMusicURL,
         loop: true,
     }).toDestination();
 
-    /**
-     * Toggles background music on or off.
-     */
+    /** Toggles background music on/off based on the UI checkbox state. */
     const toggleBackgroundMusic = (): void => {
         if (bgMusicCheckbox.checked) {
             p4MusicPlayer.start();
@@ -73,21 +108,22 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     ) as HTMLInputElement;
     let notesPlaying = false;
 
-    /**
-     * Toggles the playing of musical notes on or off.
-     */
+    /** Toggles whether gameplay may emit musical notes (read by `Water.update(...)`). */
     const toggleNotesPlaying = (): void => {
         notesPlaying = notesPlayingCheckbox.checked;
     };
 
     let gameLive: boolean,
-        gameOverTexts: PIXI.ContainerChild[] = [],
+        gameOverTexts: ContainerChild[] = [],
         sky: Sky,
         p4: P4,
         water: Water;
 
     /**
-     * Loads game assets and initializes game objects.
+     * (Re)loads assets and constructs a fresh set of entities for a new run.
+     *
+     * Ownership: this runner owns the created entities and is responsible for destroying their PIXI resources on
+     * restart/cleanup.
      */
     const load = async (): Promise<void> => {
         toggleBackgroundMusic();
@@ -103,18 +139,18 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
             bhRedBase,
             bhYellowBase,
         ] = await Promise.all([
-            PIXI.Assets.load(p4PngURL),
-            PIXI.Assets.load(waterPngURL),
-            PIXI.Assets.load(bhBluePngURL),
-            PIXI.Assets.load(bhRedPngURL),
-            PIXI.Assets.load(bhYellowPngURL),
+            Assets.load(p4PngURL),
+            Assets.load(waterPngURL),
+            Assets.load(bhBluePngURL),
+            Assets.load(bhRedPngURL),
+            Assets.load(bhYellowPngURL),
         ]);
 
-        const p4Spritesheet = new PIXI.Spritesheet(p4Base, p4Data);
-        const waterSpritesheet = new PIXI.Spritesheet(waterBase, waterData);
-        const bhBlueSpritesheet = new PIXI.Spritesheet(bhBlueBase, bhBlueData);
-        const bhRedSpritesheet = new PIXI.Spritesheet(bhRedBase, bhRedData);
-        const bhYellowSpritesheet = new PIXI.Spritesheet(bhYellowBase, bhYellowData);
+        const p4Spritesheet = new Spritesheet(p4Base, p4Data);
+        const waterSpritesheet = new Spritesheet(waterBase, waterData);
+        const bhBlueSpritesheet = new Spritesheet(bhBlueBase, bhBlueData);
+        const bhRedSpritesheet = new Spritesheet(bhRedBase, bhRedData);
+        const bhYellowSpritesheet = new Spritesheet(bhYellowBase, bhYellowData);
 
         await Promise.all([
             p4Spritesheet.parse(),
@@ -125,26 +161,27 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
         ]);
 
 
-        const p4Anim = new PIXI.AnimatedSprite(p4Spritesheet.animations.p4);
-        const waterAnim = new PIXI.AnimatedSprite(
+        const p4Anim = new AnimatedSprite(p4Spritesheet.animations.p4);
+        const waterAnim = new AnimatedSprite(
             waterSpritesheet.animations.water
         );
 
+        // Pre-create a pool of animated sprites for `BlackHole` instances to draw from.
         for (let blackHoleIndex = 0; blackHoleIndex < 100; blackHoleIndex++) {
-            let bhAnim: PIXI.AnimatedSprite;
+            let bhAnim: AnimatedSprite;
             switch (getRandomInt(0, 2)) {
                 case 0:
-                    bhAnim = new PIXI.AnimatedSprite(
+                    bhAnim = new AnimatedSprite(
                         bhBlueSpritesheet.animations.bhBlue
                     );
                     break;
                 case 1:
-                    bhAnim = new PIXI.AnimatedSprite(
+                    bhAnim = new AnimatedSprite(
                         bhRedSpritesheet.animations.bhRed
                     );
                     break;
                 case 2:
-                    bhAnim = new PIXI.AnimatedSprite(
+                    bhAnim = new AnimatedSprite(
                         bhYellowSpritesheet.animations.bhYellow
                     );
                     break;
@@ -158,7 +195,16 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     };
 
     /**
-     * Updates the game state.
+     * Per-frame orchestration step.
+     *
+     * Called once per tick by Pixi's `Ticker`.
+     *
+     * Time units: this runner does not pass a delta value to entities (the `Ticker` delta is ignored here), so entity
+     * movement/timing is governed by their internal per-update logic.
+     *
+     * Ordering is explicit:
+     * - Background first (`sky`), then player (`p4`), then interactions/collection (`water`), then hazards (`BlackHole`).
+     * - When the run ends (`gameLive === false`), the ticker is stopped and game-over UI is produced via `gameOver(...)`.
      */
     const update = async (): Promise<void> => {
         sky.update();
@@ -182,13 +228,21 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     };
 
     /**
-     * Renders the game stage.
+     * Per-frame render step.
+     *
+     * Called once per tick by Pixi's `Ticker`, after `update()` in this runner.
      */
     const render = async (): Promise<void> => {
         renderer.render(stage);
     };
 
-    const ticker = new PIXI.Ticker();
+    const ticker = new Ticker();
+    /**
+     * Frame loop registration.
+     *
+     * Pixi calls each registered callback once per frame; this runner keeps update and render as separate callbacks to
+     * make ordering explicit.
+     */
     ticker.add(update);
     ticker.add(render);
 
@@ -196,7 +250,9 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     ticker.start();
 
     /**
-     * Restarts the game.
+     * Restarts the current session by tearing down the current entities and rebuilding a fresh run.
+     *
+     * Entities are not reused across restarts; this ensures state does not leak between runs.
      */
     const restart = async (): Promise<void> => {
         gameLive = true;
@@ -215,7 +271,9 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     };
 
     /**
-     * Submits the player's score to the server.
+     * Submits the player's score.
+     *
+     * Called only on game-over, and only when an authenticated session is indicated by `auth`.
      */
     const submitScore = async () => {
         const p4_score = p4.totalWater;
@@ -253,8 +311,12 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     };
 
     /**
-     * Handles keydown events for player movement and game restart.
-     * @param key - The keyboard event.
+     * Keyboard input wiring.
+     *
+     * - Arrow keys toggle movement flags on the `P4` entity.
+     * - Space triggers restart when the run is over.
+     *
+     * Cleanup invariant: listeners registered here must be removed by the disposer.
      */
     const handleKeydown = (key: Event): void => {
         key.preventDefault();
@@ -279,10 +341,7 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
         }
     };
 
-    /**
-     * Handles keyup events for stopping player movement.
-     * @param key - The keyboard event.
-     */
+    /** Complements `handleKeydown` by clearing movement flags on key release. */
     const handleKeyup = (key: Event): void => {
         key.preventDefault();
         switch ((<KeyboardEvent>key).code) {
@@ -338,26 +397,30 @@ export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth)
     });
 
     return () => {
-        // stop ticker and destroy it
+        /**
+         * Disposes the game session.
+         *
+         * Guarantees:
+         * - Stops the frame loop.
+         * - Stops background audio.
+         * - Destroys owned PIXI resources and removes the canvas from the DOM.
+         * - Unregisters all event listeners registered by this runner.
+         */
         ticker.stop();
         ticker.destroy();
 
-        // stop music
         if (p4MusicPlayer) {
             p4MusicPlayer.stop();
         }
 
-        // remove PIXI stuff
         p4?.destroy();
         water?.destroy();
         BlackHole.destroy();
         stage.removeChildren();
         renderer.destroy(true);
 
-        // remove canvas from DOM
         canvas.remove();
 
-        // remove event listeners
         registeredListeners.forEach(({ element, event, handler }) => {
             element.removeEventListener(event, handler);
         });

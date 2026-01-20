@@ -1,10 +1,14 @@
+/**
+ * Leaderboard page ("/leaderboard").
+ * Fetches and renders the current leaderboard from the backend.
+ */
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { API_BASE } from '@/config/apiConfig';
 
 interface LeaderboardEntry {
-  user_name: string;
-  p4_score: number;
+  	user_name: string;
+	p4_score: number;
 }
 
 const Leaderboard: React.FC = () => {
@@ -64,17 +68,17 @@ const Leaderboard: React.FC = () => {
 
   return (
     <section className="leaderboard">
-      <h1 className="leaderboard__title">Leaderboard</h1>
-      	<ul className="leaderboard__list">
-			{leaderboard.map((entry) => (
-				<li key={entry.user_name} className="leaderboard__list-item">
-					<div className="leaderboard__item-container">
-					<span className="leaderboard__user-name">{entry.user_name}</span>
-					<span className="leaderboard__score">{entry.p4_score}</span>
-					</div>
-				</li>
-			))}
-    	</ul>
+		<h1 className="leaderboard__title">Leaderboard</h1>
+			<ul className="leaderboard__list">
+				{leaderboard.map((entry) => (
+					<li key={entry.user_name} className="leaderboard__list-item">
+						<div className="leaderboard__item-container">
+							<span className="leaderboard__user-name">{entry.user_name}</span>
+							<span className="leaderboard__score">{entry.p4_score}</span>
+						</div>
+					</li>
+				))}
+    		</ul>
     </section>
   );
 };

@@ -1,12 +1,24 @@
+/**
+ * Dancing Circles runner/composition root.
+ *
+ * Purpose:
+ * - Boots the Dancing Circles subsystem and wires it into the app frame loop.
+ * - Orchestrates controller, renderer, time state, and audio-derived feature plumbing.
+ *
+ * Ownership boundaries:
+ * - This module coordinates setup and teardown of the PIXI {@link Application} and the per-frame ticker callback.
+ * - It does not own the underlying circle dynamics, rendering details, or tuning logic; those live in the
+ *   controller/renderer/tuning modules.
+ */
 import { Application, Graphics } from "pixi.js";
 
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 
-import audioEngine from "@/animations/helpers/AudioEngine";
-import PitchHysteresis from "@/animations/helpers/PitchHysteresis";
-import PitchColorPolicy from "@/animations/helpers/PitchColorPolicy";
-import PitchColorPhaseController from "@/animations/helpers/PitchColorPhaseController";
-import BeatEnvelope from "@/animations/helpers/BeatEnvelope";
+import audioEngine from "@/animations/helpers/audio/AudioEngine";
+import PitchHysteresis from "@/animations/helpers/audio/PitchHysteresis";
+import PitchColorPolicy from "@/animations/helpers/audio/PitchColorPolicy";
+import PitchColorPhaseController from "@/animations/helpers/audio/PitchColorPhaseController";
+import BeatEnvelope from "@/animations/helpers/audio/BeatEnvelope";
 
 import { TUNING } from "./tuning";
 import { createTimeState, resetControlElapsed, resetIdleElapsed } from "./timeState";
@@ -21,6 +33,18 @@ type DancingCirclesDeps = {
     container: HTMLElement;
 };
 
+/**
+ * Starts the Dancing Circles animation inside the provided DOM container.
+ *
+ * Called by an app-level entry point (e.g. page/route activation). This function initializes PIXI,
+ * creates controller + renderer instances, and registers a per-frame tick handler.
+ *
+ * Ownership & lifetime:
+ * - Retains the created PIXI {@link Application} and ticker callback until the returned disposer is called.
+ * - The `container` element is used to attach the PIXI canvas; the canvas is removed during cleanup.
+ *
+ * @returns A disposer function that unregisters the frame callback and destroys PIXI resources.
+ */
 export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
     const app = new Application();
 
@@ -126,10 +150,7 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
         };
     };
 
-    /**
-     * Loads the initial state of the circles.
-     * Sorts circles by their current radius in descending order.
-     */
+    // Initial ordering is part of composition (affects draw order).
     const load = (): void => {
         circles.sort(
             (circleA, circleB) => circleB.currentRadius - circleA.currentRadius
@@ -147,6 +168,15 @@ export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
 
     let wasPlaying = false;
 
+    /**
+     * Frame loop integration: called once per ticker frame.
+     *
+     * Ordering (high-level):
+     * - Advance time state
+     * - Read audio parameters and derive beat envelope
+     * - Step controller targets on configured intervals
+     * - Render the current circle state
+     */
     const onTick = () => {
         tickTime(getNowMs(), app.ticker.deltaMS);
 

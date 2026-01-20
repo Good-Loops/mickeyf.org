@@ -1,8 +1,13 @@
+/**
+ * Dancing Circles page ("/animations/dancing-circles").
+ * Wires the PIXI animation runner and audio engine controls into a page-scoped UI.
+ * Mount/unmount starts/stops the imperative animation and audio resources.
+ */
 import React, { useEffect, useRef } from "react";
 import { runDancingCircles } from "@/animations/dancing circles/runDancingCircles"; 
 import FullscreenButton from "@/components/FullscreenButton";
 import MusicControls from "@/components/MusicControls";
-import audioEngine from "@/animations/helpers/AudioEngine";
+import audioEngine from "@/animations/helpers/audio/AudioEngine";
 import useAudioEngineState from "@/hooks/useAudioEngineState";
 import { CANVAS_WIDTH } from "@/utils/constants";
 
@@ -23,6 +28,7 @@ const DancingCircles: React.FC = () => {
 		})();
 
 		return () => {
+            // Must dispose on unmount to prevent duplicate loops.
 			dispose?.();
 		};
 	}, []);

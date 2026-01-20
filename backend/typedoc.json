@@ -1,0 +1,10 @@
+{
+    "tsconfig": "./tsconfig.typedoc.json",
+    "entryPoints": ["./"],
+    "entryPointStrategy": "expand",
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeExternals": true,
+    "readme": "none",
+    "json": "../.typedoc-tmp/backend.json"
+}

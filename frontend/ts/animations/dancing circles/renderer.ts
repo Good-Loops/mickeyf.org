@@ -1,3 +1,20 @@
+/**
+ * Dancing Circles renderer.
+ *
+ * Purpose:
+ * - Rendering-only layer that turns the current simulation state into PIXI draw calls.
+ *
+ * Inputs:
+ * - Circle simulation state (positions/radii/colors updated by `DancingCirclesController`).
+ * - Per-frame interpolation parameters derived from tuning/time/audio.
+ *
+ * Outputs:
+ * - Draws filled circles into a provided PIXI {@link Graphics} instance.
+ *
+ * Ownership boundaries:
+ * - This module does not decide simulation rules; the controller owns motion/retarget policies.
+ * - PIXI resources are provided by the caller; this renderer mutates them but does not dispose them.
+ */
 import { Graphics } from "pixi.js";
 
 import expSmoothing from "@/utils/expSmoothing";
@@ -13,6 +30,20 @@ export const createRenderer = (
     bounds: CircleBounds,
     tuning: DancingCirclesTuning
 ) => {
+    /**
+     * Per-frame render entry point (returned closure).
+     *
+     * Coordinate space & units:
+     * - Circle positions (`circle.x`, `circle.y`) are treated as PIXI canvas coordinates in **pixels**.
+     * - Radii (`circle.currentRadius`) are treated as **pixels**.
+     * - The coordinate system follows screen conventions (origin at top-left; Y increases downward).
+     *
+     * Call frequency: typically once per animation frame.
+     *
+     * Performance invariant:
+     * - Uses a clear + redraw strategy on a persistent {@link Graphics} object (no per-frame allocation of the
+     *   graphics container). Any per-circle updates are delegated to {@link Circle.step}.
+     */
     return (
         circles: Circle[],
         clarity: number,

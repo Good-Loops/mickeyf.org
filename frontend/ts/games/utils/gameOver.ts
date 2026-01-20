@@ -1,4 +1,19 @@
-import * as PIXI from 'pixi.js';
+/**
+ * Game-over UI composition helper.
+ *
+ * Purpose:
+ * - Encapsulates creation of end-state PIXI display objects (overlay text + background) for game runners.
+ *
+ * What this module provides:
+ * - A helper that triggers a font load (via `webfontloader`) and resolves with display objects the caller may add to a
+ *   PIXI stage/container.
+ *
+ * Ownership boundaries:
+ * - This module allocates PIXI objects but does not attach them to a stage and does not retain references.
+ * - The game runner owns overall lifecycle (stop/update loop, reset/restart) and decides when to call this helper and
+ *   when/how to remove and destroy any returned display objects.
+ */
+import { Text, Graphics, ContainerChild } from 'pixi.js';
 
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 
@@ -6,16 +21,9 @@ import P4 from '../p4-Vega/classes/P4'
 
 import WebFont from 'webfontloader';
 
-/**
- * Creates a centered PIXI.Text object with the Space Grotesk font.
- * @param text - The text to display.
- * @param fontSize - The font size of the text.
- * @param fill - The color of the text.
- * @param yPositionOffset - The vertical offset for the text position.
- * @returns A PIXI.Text object.
- */
-const centeredSpaceGrotesk = (text: string, fontSize: number, fill: number, yPositionOffset: number): PIXI.Text => {
-    const newText = new PIXI.Text({
+/** Creates a centered `Text` in canvas pixel space using the Space Grotesk font. */
+const centeredSpaceGrotesk = (text: string, fontSize: number, fill: number, yPositionOffset: number): Text => {
+    const newText = new Text({
         text: text,
         style: {
             fontFamily: 'Space Grotesk',
@@ -29,22 +37,18 @@ const centeredSpaceGrotesk = (text: string, fontSize: number, fill: number, yPos
 }
 
 /**
- * Creates a background for the given texts with specified padding, color, alpha, and border radius.
- * @param texts - An array of PIXI.Text objects.
- * @param padding - The padding around the texts.
- * @param color - The color of the background.
- * @param alpha - The alpha transparency of the background.
- * @param borderRadius - The border radius of the background.
- * @returns A PIXI.Graphics object representing the background.
+ * Creates a rounded-rect background sized to enclose a set of text objects.
+ *
+ * All values are in canvas pixels; the returned `Graphics` is not added to a container here.
  */
-const createBackgroundForText = (texts: PIXI.Text[], padding: number, color: number, alpha: number, borderRadius: number): PIXI.Graphics => {
+const createBackgroundForText = (texts: Text[], padding: number, color: number, alpha: number, borderRadius: number): Graphics => {
     const minY = Math.min(...texts.map(text => text.y - padding));
     const maxY = Math.max(...texts.map(text => text.y + text.height + padding));
     const height = maxY - minY;
     const width = Math.max(...texts.map(text => text.width)) + 2 * padding;
     const x = CANVAS_WIDTH * .5 - width / 2;
 
-    const background = new PIXI.Graphics();
+    const background = new Graphics();
     background.fill({ color, alpha });
     background.roundRect(x, minY, width, height, borderRadius);
     background.fill();
@@ -52,12 +56,28 @@ const createBackgroundForText = (texts: PIXI.Text[], padding: number, color: num
 }
 
 /**
- * Displays the game over screen with the total water collected and a retry message.
- * @param gameLive - A boolean indicating if the game is still live.
- * @param p4 - An instance of the P4 class.
- * @returns A promise that resolves with an array of PIXI.ContainerChild objects.
+ * Produces display objects for an end-state overlay.
+ *
+ * Intended call site: a game runner that has detected a run-ending condition.
+ *
+ * Parameters:
+ * - `gameLive`: Runner-owned flag indicating whether the run is active. As implemented, this helper only resolves when
+ *   `gameLive === false`.
+ * - `p4`: Score source for display (`p4.totalWater`). This function reads from the instance but does not mutate it.
+ *
+ * Side effects:
+ * - Initiates a font load via `WebFont.load(...)` and resolves only after the font becomes active.
+ * - Allocates `Text` and `Graphics` objects but does not add them to a stage.
+ *
+ * Cleanup:
+ * - This module does not register event listeners or timers.
+ * - The caller owns removing/destroying any returned display objects when appropriate.
+ *
+ * Return value:
+ * - A promise resolving to display objects (background first) for the caller to add to the stage.
+ * - Note: if called with `gameLive === true`, the promise does not resolve (by construction).
  */
-export default function gameOver(gameLive: boolean, p4: P4): Promise<PIXI.ContainerChild[]> {
+export default function gameOver(gameLive: boolean, p4: P4): Promise<ContainerChild[]> {
     return new Promise((resolve) => {
         if (!gameLive) {
             WebFont.load({

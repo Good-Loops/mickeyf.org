@@ -1,31 +1,45 @@
+/**
+ * Small random helpers used across the project (gameplay and visual variation).
+ *
+ * Determinism: these functions rely on `Math.random()` (non-seeded, non-deterministic across runs).
+ * Security: do not use these helpers for anything security-sensitive.
+ */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 
 /**
- * Generates a random boolean value.
+ * Returns a pseudo-random boolean.
  *
- * @returns {boolean} A random boolean value, either `true` or `false`.
+ * @returns `true` with probability ~0.5, otherwise `false`.
  */
 export const getRandomBoolean = (): boolean  => {
     return Math.random() >= 0.5;
 }
 
 /**
- * Generates a random integer between the specified minimum and maximum values, inclusive.
+ * Returns a pseudo-random integer in the inclusive range `[min, max]`.
  *
- * @param min - The minimum value of the random integer.
- * @param max - The maximum value of the random integer.
- * @returns A random integer between `min` and `max`, inclusive.
+ * Distribution: approximately uniform across the integer range.
+ *
+ * @param min - Lower bound (inclusive).
+ * @param max - Upper bound (inclusive).
+ * @returns A random integer between `min` and `max` (inclusive).
+ *
+ * Edge cases (by implementation):
+ * - If `min > max`, the result is not meaningful for an inclusive range because the computed width
+ *   `(max - min + 1)` is non-positive.
+ * - If any input is `NaN`, the result is `NaN`.
  */
 export const getRandomInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 /**
- * Generates a random x-coordinate within the canvas width, ensuring it does not overlap with a specified width and gap.
+ * Returns a pseudo-random X coordinate for placing an element within the canvas.
  *
- * @param width - The width of the element to be placed.
- * @param gap - The optional gap to be maintained from the edges. Defaults to 0.
- * @returns A random x-coordinate within the allowed range.
+ * Units: pixels.
+ *
+ * @param width - Element width in pixels.
+ * @param gap - Optional edge gap in pixels.
  */
 export const getRandomX = (width: number, gap: number = 0): number => {
     let x = (Math.random() * (CANVAS_WIDTH - width + gap));
@@ -36,11 +50,12 @@ export const getRandomX = (width: number, gap: number = 0): number => {
 }
 
 /**
- * Generates a random Y-coordinate within the canvas height, adjusted by the given width and gap.
+ * Returns a pseudo-random Y coordinate for placing an element within the canvas.
  *
- * @param width - The width to consider for the random Y-coordinate.
- * @param gap - The optional gap to adjust the Y-coordinate. Defaults to 0.
- * @returns A random Y-coordinate within the canvas height, adjusted by the width and gap.
+ * Units: pixels.
+ *
+ * @param width - Element size in pixels (used as the placement constraint).
+ * @param gap - Optional edge gap in pixels.
  */
 export const getRandomY = (width: number, gap: number = 0): number => {
     let y = (Math.random() * (CANVAS_HEIGHT - width + gap));
@@ -51,15 +66,14 @@ export const getRandomY = (width: number, gap: number = 0): number => {
 }
 
 /**
- * Generates an array of random indices with a specified length.
- * Ensures that no index appears more than twice in the array.
+ * Returns a shuffled index array `[0, 1, ..., arrayLength - 1]`.
  *
- * @param {number} arrayLength - The length of the array to generate.
- * @returns {number[]} An array of random indices.
+ * Distribution: Fisher–Yates shuffle (uniform over permutations given a uniform RNG).
+ *
+ * @param arrayLength - Number of indices to generate.
+ * @returns An array of length `arrayLength` containing each index exactly once.
  */
 export const getRandomIndexArray = (arrayLength: number): number[] => {
-    // Return a random permutation of [0..arrayLength-1].
-    // This avoids the previous unbounded retry loop which could occasionally stall the main thread.
     const indices = Array.from({ length: arrayLength }, (_, i) => i);
 
     for (let i = indices.length - 1; i > 0; i--) {

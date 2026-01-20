@@ -1,24 +1,39 @@
-import React, { useEffect, useRef, useState } from 'react';
-import Dropdown from '@/components/Dropdown';
+/**
+ * Dancing Fractals page ("/animations/dancing-fractals").
+ * Hosts a PIXI fractal canvas and composes the configuration + music controls UI.
+ * Owns mount/unmount of the imperative fractal host and related monitoring loops.
+ */
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import TreeControls from '@/animations/dancing fractals/components/TreeControls';
-import FlowerSpiralControls from '@/animations/dancing fractals/components/FlowerSpiralControls';
-
-import Tree from '@/animations/dancing fractals/fractals/Tree';
 import { type TreeConfig, defaultTreeConfig } from '@/animations/dancing fractals/config/TreeConfig'; 
+import TreeControls from '@/animations/dancing fractals/components/TreeControls';
+import Tree from '@/animations/dancing fractals/fractals/Tree';
 
-import FlowerSpiral from '@/animations/dancing fractals/fractals/FlowerSpiral';
 import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '@/animations/dancing fractals/config/FlowerSpiralConfig';
+import FlowerSpiralControls from '@/animations/dancing fractals/components/FlowerSpiralControls';
+import FlowerSpiral from '@/animations/dancing fractals/fractals/FlowerSpiral';
+
+import { type MandelbrotConfig, defaultMandelbrotConfig } from '@/animations/dancing fractals/config/MandelbrotConfig';
+import MandelbrotControls from '@/animations/dancing fractals/components/MandelbrotControls';
+import Mandelbrot from '@/animations/dancing fractals/fractals/Mandelbrot';
+
 import { FractalHost } from '@/animations/dancing fractals/interfaces/FractalHost';
 import { createFractalHost } from '@/animations/dancing fractals/createFractalHost';
+import type { FractalAnimationConstructor } from '@/animations/dancing fractals/interfaces/FractalAnimation';
 
-import audioEngine from '@/animations/helpers/AudioEngine';
-import MusicControls from '@/components/MusicControls';
-import notAllowedCursor from '@/assets/cursors/notallowed.cur';
-import FullscreenButton from '@/components/FullscreenButton';
+import audioEngine from '@/animations/helpers/audio/AudioEngine';
 import useAudioEngineState from '@/hooks/useAudioEngineState';
+import notAllowedCursor from '@/assets/cursors/notallowed.cur';
+import Dropdown from '@/components/Dropdown';
+import FullscreenButton from '@/components/FullscreenButton';
+import MusicControls from '@/components/MusicControls';
 
-type FractalKind = 'tree' | 'flower';
+type FractalKind = 'tree' | 'flower' | 'mandelbrot';
+
+type FractalEntry<C> = {
+    ctor: FractalAnimationConstructor<C>;
+    getConfig: () => C;
+};
 
 const DancingFractals: React.FC = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -35,9 +50,23 @@ const DancingFractals: React.FC = () => {
 
     const [fps, setFps] = useState<number | null>(null);
 
+
     // Separate config state for each fractal type
     const [treeConfig, setTreeConfig] = useState<TreeConfig>(defaultTreeConfig);
     const [flowerSpiralConfig, setFlowerSpiralConfig] = useState<FlowerSpiralConfig>(defaultFlowerSpiralConfig);
+    const [mandelbrotConfig, setMandelbrotConfig] = useState<MandelbrotConfig>(defaultMandelbrotConfig);
+
+    const cloneConfig = <T,>(cfg: T): T => {
+        // structuredClone is available in modern browsers; fall back to JSON clone.
+        const sc = (globalThis as any).structuredClone as ((v: T) => T) | undefined;
+        return sc ? sc(cfg) : JSON.parse(JSON.stringify(cfg));
+    };
+
+    const FRACTALS = useMemo(() => ({
+        tree: { ctor: Tree, getConfig: () => treeConfig },
+        flower: { ctor: FlowerSpiral, getConfig: () => flowerSpiralConfig },
+        mandelbrot: { ctor: Mandelbrot, getConfig: () => mandelbrotConfig },
+    }) satisfies Record<FractalKind, FractalEntry<any>>, [treeConfig, flowerSpiralConfig, mandelbrotConfig]);
 
     // Create the host (PIXI app + canvas) once
     useEffect(() => {
@@ -55,17 +84,14 @@ const DancingFractals: React.FC = () => {
 
             hostRef.current = host;
 
-            // Mount initial fractal based on current kind
-            if (fractalKind === 'tree') {
-                host.setFractal(Tree, treeConfig);
-            } else {
-                host.setFractal(FlowerSpiral, flowerSpiralConfig);
-            }
+            const entry = FRACTALS[fractalKind];
+            host.setFractal(entry.ctor as any, entry.getConfig());
 
             host.setLifetime(autoDisposeEnabled ? lifetime : null);
         })();
 
         return () => {
+            // Must dispose on unmount to prevent leaks/duplicate loops.
             cancelled = true;
             hostRef.current?.dispose();
             hostRef.current = null;
@@ -77,11 +103,8 @@ const DancingFractals: React.FC = () => {
         const host = hostRef.current;
         if (!host) return;
 
-        if (fractalKind === 'tree') {
-            host.setFractal(Tree, treeConfig);
-        } else {
-            host.setFractal(FlowerSpiral, flowerSpiralConfig);
-        }
+        const entry = FRACTALS[fractalKind];
+        host.setFractal(entry.ctor as any, entry.getConfig());
     }, [fractalKind]);
 
     // Hook upload button to audio engine
@@ -132,19 +155,48 @@ const DancingFractals: React.FC = () => {
 
     const handleRestart = () => { hostRef.current?.restart(); };
 
-    // Handle tree config changes: update React state + push patch into fractal
+    const handleResetDefaults = () => {
+        if (audio.playing) return;
+        const host = hostRef.current;
+        if (!host) return;
+
+        if (fractalKind === 'tree') {
+            const cfg = cloneConfig(defaultTreeConfig);
+            setTreeConfig(cfg);
+            host.setFractal(Tree as any, cfg);
+            return;
+        }
+
+        if (fractalKind === 'flower') {
+            const cfg = cloneConfig(defaultFlowerSpiralConfig);
+            setFlowerSpiralConfig(cfg);
+            host.setFractal(FlowerSpiral as any, cfg);
+            return;
+        }
+
+        const cfg = cloneConfig(defaultMandelbrotConfig);
+        setMandelbrotConfig(cfg);
+        host.setFractal(Mandelbrot as any, cfg);
+    };
+
     const handleTreeConfigChange = (patch: Partial<TreeConfig>) => {
         setTreeConfig(prev => {
             const next = { ...prev, ...patch };
-            // Send only the patch down to the fractal
             hostRef.current?.updateConfig(patch);
             return next;
         });
     };
 
-    // Handle flower spiral config changes: update React state + push patch into fractal
     const handleFlowerConfigChange = (patch: Partial<FlowerSpiralConfig>) => {
         setFlowerSpiralConfig(prev => {
+            const next = { ...prev, ...patch };
+            hostRef.current?.updateConfig(patch);
+            return next;
+        });
+    };
+
+    const handleMandelbrotConfigChange = (patch: Partial<MandelbrotConfig>) => {
+        setMandelbrotConfig(prev => {
             const next = { ...prev, ...patch };
             hostRef.current?.updateConfig(patch);
             return next;
@@ -165,16 +217,7 @@ const DancingFractals: React.FC = () => {
 
     return (
         <section className='dancing-fractals'>
-            <h1 className='dancing-fractals__title canvas-title'>Dancing Fractals</h1>
-
-            <div className="dancing-fractals__canvas-wrapper" ref={containerRef}>
-                <FullscreenButton 
-                    targetRef={containerRef} 
-                    className='dancing-fractals__fullscreen-btn'
-                />
-            </div>
-
-            <div className={uiClassName} style={uiStyle}>
+            <aside className={uiClassName} style={uiStyle}>
                 {audio.playing && (
                     <div className="dancing-fractals__ui--overlay" />
                 )}
@@ -183,6 +226,7 @@ const DancingFractals: React.FC = () => {
                     options={[
                         { value: 'tree', label: 'Tree' },
                         { value: 'flower', label: 'Flower Spiral' },
+                        { value: 'mandelbrot', label: 'Mandelbrot' },
                     ]}
                     value={fractalKind}
                     onChange={(val) => setFractalKind(val as FractalKind)}
@@ -201,6 +245,14 @@ const DancingFractals: React.FC = () => {
                     disabled={audio.playing}
                 >
                     Restart
+                </button>
+
+                <button className="dancing-fractals__ui--restart-btn"
+                    type="button"
+                    onClick={handleResetDefaults}
+                    disabled={audio.playing}
+                >
+                    Reset defaults
                 </button>
 
                 <div className="dancing-fractals__ui--lifetime">
@@ -253,6 +305,16 @@ const DancingFractals: React.FC = () => {
                             }}
                         />
                     )}
+
+                    {fractalKind === 'mandelbrot' && (
+                        <MandelbrotControls
+                            config={mandelbrotConfig}
+                            onChange={patch => {
+                                if (audio.playing) return;
+                                handleMandelbrotConfigChange(patch);
+                            }}
+                        />
+                    )}
                 </div>
 
                 {fps !== null && (
@@ -268,36 +330,48 @@ const DancingFractals: React.FC = () => {
                         )}
                     </div>
                 )}
-            </div>
-            
-            <div className="dancing-fractals__transport">
-                <div className="dancing-fractals__transport-left">
-                    <MusicControls
-                        hasAudio={audio.hasAudio}
-                        isPlaying={audio.playing}
-                        onPlay={handlePlay}
-                        onPause={handlePause}
-                        onStop={handleStop}
+            </aside>
+
+            <div className="dancing-fractals__stage">
+
+                <div className="dancing-fractals__canvas-wrapper" ref={containerRef}>
+                    <h1 className='dancing-fractals__title canvas-title'>Dancing Fractals</h1>
+                    <FullscreenButton 
+                        targetRef={containerRef} 
+                        className='dancing-fractals__fullscreen-btn'
                     />
                 </div>
 
-                <div className="dancing-fractals__upload floating">
-                    <label
-                        className="dancing-fractals__upload-btn"
-                        htmlFor="fractal-music-upload"
-                    >
-                        Upload Music
-                    </label>
+                <div className="dancing-fractals__transport">
+                    <div className="dancing-fractals__transport-left">
+                        <MusicControls
+                            hasAudio={audio.hasAudio}
+                            isPlaying={audio.playing}
+                            onPlay={handlePlay}
+                            onPause={handlePause}
+                            onStop={handleStop}
+                        />
+                    </div>
 
-                    <input
-                        id="fractal-music-upload"
-                        type="file"
-                        accept="audio/*"
-                        className="dancing-fractals__input"
-                        ref={fileInputRef}
-                    />
+                    <div className="dancing-fractals__upload floating">
+                        <label
+                            className="dancing-fractals__upload-btn"
+                            htmlFor="fractal-music-upload"
+                        >
+                            Upload Music
+                        </label>
+
+                        <input
+                            id="fractal-music-upload"
+                            type="file"
+                            accept="audio/*"
+                            className="dancing-fractals__input"
+                            ref={fileInputRef}
+                        />
+                    </div>
                 </div>
             </div>
+            <div className="dancing-fractals__ghost" aria-hidden="true" />
         </section>   
     );
 }

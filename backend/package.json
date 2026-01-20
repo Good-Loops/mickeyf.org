@@ -1,10 +1,12 @@
 {
     "name": "backend",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "scripts": {
+        "test": "tsc -p tsconfig.json --noEmit",
         "watch": "webpack --mode development --watch",
         "prod": "webpack --mode production",
-        "dev": "fuser -k 8080/tcp 2>/dev/null || true && nodemon dist/server.min.js"
+        "dev": "fuser -k 8080/tcp 2>/dev/null || true && nodemon dist/server.min.js",
+        "docs:json": "typedoc --options typedoc.json"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
@@ -33,7 +35,7 @@
         "nodemon": "^3.1.0",
         "ts-loader": "^9.4.2",
         "ts-node": "^10.9.1",
-        "typescript": "^5.0.4",
+        "typescript": "^5.9.3",
         "webpack": "^5.104.1",
         "webpack-cli": "^5.0.2",
         "webpack-node-externals": "^3.0.0"

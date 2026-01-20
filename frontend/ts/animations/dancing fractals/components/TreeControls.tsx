@@ -14,7 +14,7 @@ const TreeControls: React.FC<TreeControlsProps> = ({ config, onChange }) => {
                     Max depth: {config.maxDepth}
                     <input
                         type="range"
-                        min={1}
+                        min={3}
                         max={9}
                         value={config.maxDepth}
                         onChange={e =>
