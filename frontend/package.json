@@ -6,8 +6,7 @@
         "test": "tsc -p tsconfig.json --noEmit",
         "build": "vite build",
         "preview": "vite preview",
-        "docs:clean": "rimraf docs",
-        "docs": "npm run docs:clean && typedoc"
+        "docs:json": "typedoc --options typedoc.json"
     },
     "type": "module",
     "dependencies": {
@@ -34,7 +33,6 @@
         "@types/react-dom": "^19.2.2",
         "@types/webfontloader": "^1.6.38",
         "@vitejs/plugin-react": "^5.1.0",
-        "rimraf": "^6.1.2",
         "sass": "^1.49.8",
         "typedoc": "^0.28.16",
         "typescript": "^5.9.3",

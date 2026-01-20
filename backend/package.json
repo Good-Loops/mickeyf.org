@@ -6,8 +6,7 @@
         "watch": "webpack --mode development --watch",
         "prod": "webpack --mode production",
         "dev": "fuser -k 8080/tcp 2>/dev/null || true && nodemon dist/server.min.js",
-        "docs:clean": "rimraf docs",
-        "docs": "npm run docs:clean && typedoc"
+        "docs:json": "typedoc --options typedoc.json"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
@@ -34,7 +33,6 @@
         "@types/node": "^20.12.5",
         "node-loader": "^2.0.0",
         "nodemon": "^3.1.0",
-        "rimraf": "^6.1.2",
         "ts-loader": "^9.4.2",
         "ts-node": "^10.9.1",
         "typedoc": "^0.28.16",

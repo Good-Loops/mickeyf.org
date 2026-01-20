@@ -1,9 +1,13 @@
 {
-  "name": "mickeyf-root",
-  "private": true,
-  "scripts": {
-    "docs:frontend": "npm --prefix frontend run docs",
-    "docs:backend": "npm --prefix backend run docs",
-    "docs": "npm run docs:frontend && npm run docs:backend"
-  }
+	"name": "mickeyf-root",
+	"private": true,
+	"scripts": {
+		"docs:clean": "rm -rf .typedoc-tmp docs",
+		"docs:json:frontend": "npm --prefix frontend run docs:json",
+		"docs:json:backend": "npm --prefix backend run docs:json",
+		"docs:json": "npm run docs:json:frontend && npm run docs:json:backend",
+		"docs:build": "npx typedoc --options typedoc.merge.json --merge .typedoc-tmp/frontend.json .typedoc-tmp/backend.json",
+		"docs": "npm run docs:clean && npm run docs:json && npm run docs:build"
+	}
 }
+

@@ -1,11 +1,10 @@
 {
-  "tsconfig": "./tsconfig.typedoc.json",
-  "entryPoints": ["ts"],
-  "entryPointStrategy": "expand",
-  "out": "docs",
-  "excludePrivate": true,
-  "excludeProtected": true,
-  "excludeExternals": true,
-  "readme": "none",
-  "cleanOutputDir": true
+    "tsconfig": "./tsconfig.typedoc.json",
+    "entryPoints": ["ts"],
+    "entryPointStrategy": "expand",
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeExternals": true,
+    "readme": "none",
+    "json": "../.typedoc-tmp/frontend.json"
 }
