@@ -1,10 +1,11 @@
 {
-    "tsconfig": "./tsconfig.typedoc.json",
-    "entryPoints": ["ts"],
-    "entryPointStrategy": "expand",
-    "excludePrivate": true,
-    "excludeProtected": true,
-    "excludeExternals": true,
-    "readme": "none",
-    "json": "../.typedoc-tmp/frontend.json"
+  "tsconfig": "./tsconfig.typedoc.json",
+  "entryPoints": ["ts"],
+  "entryPointStrategy": "expand",
+  "exclude": ["**/App.tsx", "**/main.tsx", "**/Header.tsx", "**/components/**", "**/pages/**"],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "readme": "none",
+  "json": "../.typedoc-tmp/frontend.json"
 }
