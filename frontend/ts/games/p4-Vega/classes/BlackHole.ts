@@ -1,3 +1,14 @@
+/**
+ * P4-Vega: BlackHole entity.
+ *
+ * Represents a moving hazard that is spawned into the scene, bounces within the canvas bounds, and can end
+ * the run on collision with the player.
+ *
+ * Ownership boundaries:
+ * - Owns black-hole-specific behavior (placement away from the player, movement direction, bounds bouncing).
+ * - Overall game orchestration (spawning cadence, game-over handling) lives in the main game loop; this class
+ *   only returns a `gameLive` flag based on collision.
+ */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import {
     getRandomBoolean,
@@ -11,32 +22,39 @@ import Entity from '@/games/helpers/Entity';
 
 import P4 from './P4';
 
-import * as PIXI from 'pixi.js';
+import { Container, ContainerChild, AnimatedSprite } from 'pixi.js';
 
 const MIN_DISTANCE = 250;
 const VELOCITY_MIN = 1.5;
 const VELOCITY_MAX = 4.5;
 
 /**
- * Class representing a black hole entity in the game.
+ * Moving black hole hazard for P4-Vega.
+ *
+ * Coordinate space & units:
+ * - Uses PIXI/canvas coordinates in **pixels**.
+ * - Velocity components (`vX`, `vY`) are in pixels per update call.
+ *
+ * Invariants:
+ * - Placement attempts to keep the black hole at least `MIN_DISTANCE` pixels away from the player's sprite.
+ * - Movement is axis-aligned in the current implementation (only one of `vX`/`vY` is non-zero).
  */
-export default class BlackHole extends Entity<PIXI.AnimatedSprite> {
+export default class BlackHole extends Entity<AnimatedSprite> {
     private vX = 0;
     private vY = 0;
 
     private static addedIndexes: number[] = [];
 
-    static bHAnimArray: PIXI.AnimatedSprite[] = [];
+    static bHAnimArray: AnimatedSprite[] = [];
     static bHArray: BlackHole[] = [];
 
     /**
-     * Creates an instance of BlackHole.
-     * @param stage - The PIXI.Container to add the black hole animation to.
-     * @param p4Anim - The PIXI.AnimatedSprite representing the player animation.
+     * @param stage - Container that will own the black hole sprite in the scene graph.
+     * @param p4Anim - Player sprite used only to choose an initial placement that is not too close.
      */
     constructor(
-        stage: PIXI.Container<PIXI.ContainerChild>,
-        p4Anim: PIXI.AnimatedSprite
+        stage: Container<ContainerChild>,
+        p4Anim: AnimatedSprite
     ) {
         let index: number;
         do {
@@ -60,9 +78,7 @@ export default class BlackHole extends Entity<PIXI.AnimatedSprite> {
         BlackHole.bHArray.push(this);
     }
 
-    /**
-     * Determines the direction of movement for the black hole.
-     */
+    /** Chooses an initial axis-aligned movement direction and speed (pixels per update call). */
     private determineDirection() {
         if (getRandomBoolean()) {
             this.vX = getRandomInt(VELOCITY_MIN, VELOCITY_MAX);
@@ -72,10 +88,11 @@ export default class BlackHole extends Entity<PIXI.AnimatedSprite> {
     }
 
     /**
-     * Sets the position of the black hole, ensuring it is not too close to the player.
-     * @param p4Anim - The PIXI.AnimatedSprite representing the player animation.
+     * Chooses a random position and retries until the black hole is sufficiently far from the player.
+     *
+     * Note: this is a recursive retry; callers rely on the canvas being large enough for `MIN_DISTANCE`.
      */
-    private setPosition(p4Anim: PIXI.AnimatedSprite) {
+    private setPosition(p4Anim: AnimatedSprite) {
         this.anim.x = getRandomX(this.anim.width);
         this.anim.y = getRandomY(this.anim.height);
 
@@ -88,10 +105,13 @@ export default class BlackHole extends Entity<PIXI.AnimatedSprite> {
     }
 
     /**
-     * Updates the black hole's position and checks for collisions with the player.
-     * @param p4 - The player character.
-     * @param gameLive - A boolean indicating if the game is still live.
-     * @returns A boolean indicating if the game is still live.
+     * Per-frame update.
+     *
+     * Side effects:
+     * - Checks collision with the player and flips `gameLive` to `false` when colliding.
+     * - Advances position by the current velocity and bounces when the sprite bounds hit canvas edges.
+     *
+     * @returns The updated `gameLive` flag.
      */
     update(p4: P4, gameLive: boolean): boolean {
         if (isColliding(p4.p4Anim, this.anim)) {
@@ -117,7 +137,9 @@ export default class BlackHole extends Entity<PIXI.AnimatedSprite> {
     }
 
     /**
-     * Destroys all black hole animations and clears the arrays.
+     * Destroys the shared animation sprites and clears global registries.
+     *
+     * Ownership note: `bHAnimArray` entries are treated as globally owned resources.
      */
     static destroy(): void {
         for (let i = 0; i < BlackHole.bHAnimArray.length; i++) {
