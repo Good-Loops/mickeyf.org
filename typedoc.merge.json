@@ -1,6 +1,10 @@
 {
+  "name": "mickeyf-docs",
   "entryPointStrategy": "merge",
-  "entryPoints": [".typedoc-tmp/frontend.json", ".typedoc-tmp/backend.json"],
+  "entryPoints": [
+    ".typedoc-tmp/frontend.json",
+    ".typedoc-tmp/backend.json"
+  ],
   "out": "docs",
   "readme": "none",
   "cleanOutputDir": true,
