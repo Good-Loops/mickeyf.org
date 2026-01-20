@@ -30,7 +30,7 @@ const useAudioEngineState = (): AudioState => {
          * - Unsubscribes on unmount to avoid leaks/duplicate listeners.
          */
         return audioEngine.subscribe(setState);
-    }, []);
+}, []);
 
     return state;
 }
