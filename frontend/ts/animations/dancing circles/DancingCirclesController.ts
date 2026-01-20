@@ -1,3 +1,19 @@
+/**
+ * Dancing Circles controller (“brain”).
+ *
+ * Purpose:
+ * - Updates circle simulation targets in response to time and (optional) audio-derived parameters.
+ * - Encodes higher-level policies (beat/volume/idle movement rules), while delegating drawing to the renderer.
+ *
+ * Owns:
+ * - In-memory orchestration state (group selection, cooldown timestamps, smoothed volume baseline).
+ * - Policy decisions about when/how circles move or retarget (thresholds, caps, cooldowns).
+ *
+ * Does not own:
+ * - Rendering implementation (see `renderer.ts`).
+ * - Low-level drawing APIs.
+ * - App lifecycle / ticker wiring (see `runDancingCircles.ts`).
+ */
 import { getRandomIndexArray, getRandomX, getRandomY } from "@/utils/random";
 import { getRandomHsl } from "@/utils/hsl";
 import clamp from "@/utils/clamp";
@@ -14,18 +30,25 @@ import { TimeState } from "./timeState";
 import expSmoothing from "@/utils/expSmoothing";
 
 export type BeatFrame = {
+    /** Beat envelope/intensity used for motion and radius targets. */
     envelope: number;
+    /** Active parity group: circles are split by `index % 2`. */
     moveGroup: 0 | 1;
 };
 
 export type BeatMove = {
+    /** Last movement time in milliseconds (shared with the runner/beat logic). */
     lastMoveAtMs: number;
 };
 
 export type AudioParams = {
+    /** Whether the audio engine is currently playing. */
     isPlaying: boolean;
+    /** Output volume in percent (0–100), as produced by the audio engine. */
     volumePercentage: number;
+    /** Pitch clarity/quality in $[0,1]$ (higher = more reliable pitch). */
     clarity: number; // 0..1
+    /** Estimated fundamental pitch in Hz. */
     pitchHz: number;
 };
 
@@ -40,6 +63,18 @@ type ControllerDeps = {
     time: TimeState;
 };
 
+/**
+ * Controller for Dancing Circles state updates.
+ *
+ * Lifecycle expectations:
+ * - Constructed once per run and stepped indirectly via {@link DancingCirclesController.updateForAudio}
+ *   and {@link DancingCirclesController.updateIdle} on a schedule owned by the runner.
+ *
+ * Ownership & mutation:
+ * - Holds references to `circles`, `beatFrame`, `beatMove`, and `time` and mutates those objects in place.
+ * - Assumes the provided `circles` array is stable for the lifetime of the controller; parity groups are
+ *   computed once in the constructor.
+ */
 export default class DancingCirclesController {
     private readonly bounds: CircleBounds;
     private readonly circles: Circle[];
@@ -81,6 +116,18 @@ export default class DancingCirclesController {
         this.oddGroup = odd;
     }
 
+    /**
+     * Applies an audio-derived update.
+     *
+     * Inputs:
+     * - `audio.volumePercentage` is treated as 0–100 and normalized internally.
+     * - `audio.clarity`/`audio.pitchHz` drive global target color via {@link PitchColorPhaseController}.
+     * - Beat gating uses `beatFrame` (envelope + parity group) and time from `timeState` (milliseconds).
+     *
+     * Side effects:
+     * - Mutates circle targets (position, radius, color).
+     * - Updates beat/impulse cooldown timestamps to enforce throttling.
+     */
     updateForAudio(audio: AudioParams): void {
         this.latestAudio = audio;
 
@@ -90,6 +137,7 @@ export default class DancingCirclesController {
             return;
         }
 
+        // Controller policy: only one parity group receives movement impulses at a time.
         const activeGroup = this.beatFrame.moveGroup === 0 ? this.evenGroup : this.oddGroup;
 
         this.updateGlobalPitchColorTargets(audio.clarity, audio.pitchHz);
@@ -100,6 +148,11 @@ export default class DancingCirclesController {
         this.applyBeatMovement(activeGroup, audio.volumePercentage);
     }
 
+    /**
+     * Applies an idle update (no music).
+     *
+     * When audio is playing this is a no-op; otherwise it retargets circles to random positions and colors.
+     */
     updateIdle(isPlaying: boolean = this.latestAudio?.isPlaying ?? false): void {
         if (isPlaying) return;
 
@@ -157,7 +210,7 @@ export default class DancingCirclesController {
 
         const vol = clamp(volumePercentage / 100, 0, 1);
 
-        // Smooth volume to get a "trend" baseline (prevents noise spam).
+        // Smooth volume to estimate a trend baseline (prevents noise-triggered impulse spam).
         const alpha = expSmoothing(this.time.deltaMs, this.tuning.move.volumeImpulse.trendResponsiveness);
         this.volSmoothed = this.volSmoothed + (vol - this.volSmoothed) * alpha;
 
@@ -169,7 +222,7 @@ export default class DancingCirclesController {
 
         this.lastImpulseMs = this.time.nowMs;
 
-        // Small nudge, reusing the same movement mechanic as beats.
+        // Reuses the beat movement mechanic, but gated by volume deltas.
         this.nudgeGroup(activeGroup, this.tuning.move.volumeImpulse.jitterPx);
     }
 
@@ -192,6 +245,7 @@ export default class DancingCirclesController {
         const count = Math.max(1, Math.floor(activeGroup.length * this.tuning.move.drift.rate));
         const indices = getRandomIndexArray(activeGroup.length);
 
+        // Amplifies the contribution of volume-scaled drift without changing tuning defaults.
         const VOLUME_BOOST_MULT = 3;
         const baseJitter =
             this.tuning.move.drift.jitterPx * (1 + vol * (this.tuning.move.drift.volumeScale * VOLUME_BOOST_MULT));
