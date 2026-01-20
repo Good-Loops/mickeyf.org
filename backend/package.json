@@ -35,7 +35,6 @@
         "nodemon": "^3.1.0",
         "ts-loader": "^9.4.2",
         "ts-node": "^10.9.1",
-        "typedoc": "^0.28.16",
         "typescript": "^5.9.3",
         "webpack": "^5.104.1",
         "webpack-cli": "^5.0.2",

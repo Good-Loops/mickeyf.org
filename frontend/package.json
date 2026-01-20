@@ -34,7 +34,6 @@
         "@types/webfontloader": "^1.6.38",
         "@vitejs/plugin-react": "^5.1.0",
         "sass": "^1.49.8",
-        "typedoc": "^0.28.16",
         "typescript": "^5.9.3",
         "vite": "^7.1.12"
     }

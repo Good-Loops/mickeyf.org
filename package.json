@@ -6,8 +6,10 @@
 		"docs:json:frontend": "npm --prefix frontend run docs:json",
 		"docs:json:backend": "npm --prefix backend run docs:json",
 		"docs:json": "npm run docs:json:frontend && npm run docs:json:backend",
-		"docs:build": "npx typedoc --options typedoc.merge.json --merge .typedoc-tmp/frontend.json .typedoc-tmp/backend.json",
+		"docs:build": "npx typedoc --options typedoc.merge.json",
 		"docs": "npm run docs:clean && npm run docs:json && npm run docs:build"
+	},
+	"devDependencies": {
+		"typedoc": "^0.28.16"
 	}
 }
-
