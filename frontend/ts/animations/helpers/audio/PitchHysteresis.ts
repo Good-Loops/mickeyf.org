@@ -13,26 +13,32 @@ import clamp from "@/utils/clamp";
  * Tuning parameters for {@link PitchHysteresis}.
  */
 export type PitchHysteresisTuning = {
-	/** Minimum required pitch confidence in $[0, 1]$ (interpreted as a threshold). */
+
+    /** Minimum required pitch confidence in $[0, 1]$ (interpreted as a threshold). */
     minClarity: number;
-	/** Ignores detected pitch values below this frequency, in **Hz**. */
+
+    /** Ignores detected pitch values below this frequency, in **Hz**. */
     minHz: number;
-	/** Duration of continuous “silence” required to be considered a long silence, in **milliseconds**. */
+
+    /** Duration of continuous “silence” required to be considered a long silence, in **milliseconds**. */
     holdAfterSilenceMs: number;
 
-	/** Minimum time a candidate pitch class must persist before it can be committed, in **milliseconds**. */
+    /** Minimum time a candidate pitch class must persist before it can be committed, in **milliseconds**. */
     minStableMs: number;
-	/** Minimum time between commits, in **milliseconds**. */
+
+    /** Minimum time between commits, in **milliseconds**. */
     minHoldMs: number;
 
-	/** Base smoothing factor applied to pitch tracking (dimensionless). */
+    /** Base smoothing factor applied to pitch tracking (dimensionless). */
     smoothingBase: number;
-	/** Additional smoothing factor scaled by clarity (dimensionless). */
+
+    /** Additional smoothing factor scaled by clarity (dimensionless). */
     smoothingClarityScale: number;
 
-	/** Output clamp for micro drift, in **semitones** (fractional MIDI units). */
+    /** Output clamp for micro drift, in **semitones** (fractional MIDI units). */
     microSemitoneRange: number;
-	/** Deadband threshold in **semitones** (fractional MIDI units) used to suppress flicker. */
+
+    /** Deadband threshold in **semitones** (fractional MIDI units) used to suppress flicker. */
     deadbandFrac: number;
 };
 
@@ -42,20 +48,26 @@ export type PitchHysteresisTuning = {
 export type PitchResult =
 | {
     kind: "pitch";
-	/** Smoothed pitch estimate in **Hz**. */
+
+    /** Smoothed pitch estimate in **Hz**. */
     hz: number;
-	/** Continuous MIDI note number (can be fractional). */
+
+    /** Continuous MIDI note number (can be fractional). */
     midi: number;
-	/** Committed pitch class in `[0, 11]`. */
+
+    /** Committed pitch class in `[0, 11]`. */
     pitchClass: number;
-	/** Fractional distance from the nearest semitone, in **semitones** (clamped). */
+
+    /** Fractional distance from the nearest semitone, in **semitones** (clamped). */
     fractionalDistance: number;
-	/** `true` only when a new pitch-class commit occurs (event-like). */
+
+    /** `true` only when a new pitch-class commit occurs (event-like). */
     changed: boolean;
 }
 | {
     kind: "silence";
-	/** Accumulated time without a valid pitch, in **milliseconds**. */
+
+    /** Accumulated time without a valid pitch, in **milliseconds**. */
     silenceMs: number;
 };
 
