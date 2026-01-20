@@ -1,3 +1,8 @@
+/**
+ * Fullscreen toggle button.
+ * Bridges the DOM Fullscreen API into a small React control.
+ * Subscribes to `fullscreenchange` and must unregister on unmount.
+ */
 import React, { useEffect, useState, useRef } from "react";
 
 interface FullscreenButtonProps {
@@ -6,7 +11,6 @@ interface FullscreenButtonProps {
     label?: string;
 }
 
-// ⛶-style ENTER icon (outer corners)
 const FullscreenEnterIcon: React.FC = () => (
     <svg
         viewBox="0 0 24 24"
@@ -29,7 +33,6 @@ const FullscreenEnterIcon: React.FC = () => (
     </svg>
 );
 
-// “Inverted ⛶” EXIT icon (inner corners, contracting)
 const FullscreenExitIcon: React.FC = () => (
     <svg
         viewBox="0 0 24 24"
@@ -79,6 +82,7 @@ const FullscreenButton: React.FC<FullscreenButtonProps> = ({
             setIsFullscreen(document.fullscreenElement === target);
         };
 
+        // Must unregister on unmount to prevent leaked listeners.
         document.addEventListener("fullscreenchange", update);
 
         return () =>

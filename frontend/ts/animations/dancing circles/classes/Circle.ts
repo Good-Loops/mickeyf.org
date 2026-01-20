@@ -1,18 +1,38 @@
+/**
+ * Dancing Circles domain entity.
+ *
+ * Purpose:
+ * - Represents a single mutable circle in the Dancing Circles simulation.
+ * - Holds per-circle state used by the controller (targets) and renderer (current position/radius/color).
+ *
+ * Ownership boundaries:
+ * - Created/owned by the controller/runner; mutated over time via `step`.
+ * - Rendering is performed elsewhere (`renderer.ts`) by reading this entity’s state.
+ * - Global policies (retarget cadence, audio gating, bounds rules) are controller responsibilities.
+ */
 import { getRandomX, getRandomY } from "@/utils/random";
 import lerp from "@/utils/lerp";
 import { getRandomHsl, HslColor, HslRanges, lerpHsl } from "@/utils/hsl";
 
 type CircleInit = {
+    /** Stable per-circle index used for ordering and group selection (e.g., parity groups). */
     index: number;
+    /** Minimum gap in pixels used by random placement helpers. */
     gap: number;
+    /** Allowed HSL ranges for randomized/idle target color selection. */
     colorRanges: HslRanges;
+    /** Optional starting color (HSL; hue degrees and saturation/lightness percents). */
     initialColor?: HslColor;
+    /** Optional starting target color (HSL; hue degrees and saturation/lightness percents). */
     initialTargetColor?: HslColor;
 };
 
 type CircleStep = {
+    /** Position interpolation factor in $[0, 1]$ (derived from time + tuning). */
     posAlpha: number;
+    /** Radius interpolation factor in $[0, 1]$ (derived from time + tuning). */
     radiusAlpha: number;
+    /** Color interpolation factor in $[0, 1]$ (derived from time + tuning). */
     colorAlpha: number;
 };
 
@@ -20,17 +40,23 @@ const BASE_RADIUS_START = 50;
 const BASE_RADIUS_STEP = 3;
 const RADIUS_GROWTH = 0.13;
 
-/**
- * Calculates and returns the base radius for a circle based on its index.
- * The base radius is adjusted by the last radius, an adjustment ratio, and the index.
- * 
- * @param index - The index of the circle for which the base radius is being calculated.
- * 
- * @returns The calculated base radius for the given index.
- */
+/** Computes a deterministic base radius for the given circle index (in pixels). */
 const computeBaseRadius = (i: number) =>
   BASE_RADIUS_START + i * BASE_RADIUS_STEP * RADIUS_GROWTH * BASE_RADIUS_START;
 
+/**
+ * Mutable simulation entity for a single circle.
+ *
+ * Units & conventions:
+ * - Positions (`x`, `y`, `targetX`, `targetY`) and radii are in PIXI canvas coordinates (**pixels**).
+ * - Alpha inputs to interpolation methods are normalized $[0,1]$.
+ * - Colors use {@link HslColor} (hue in degrees; saturation/lightness in percent).
+ *
+ * Invariants (expected to hold throughout the lifetime of an instance):
+ * - `index` is stable.
+ * - Radii are finite and non-negative.
+ * - Positions are finite; bounds clamping is performed outside this class.
+ */
 export default class Circle {
 
     index: number;
@@ -54,20 +80,18 @@ export default class Circle {
     colorRanges: HslRanges;
 
     /**
-     * Creates an instance of CircleHandler.
-     * 
-     * @param index - The index of the circle, used to calculate the base radius.
-     * 
-     * Initializes the following properties:
-     * - `baseRadius`: The base radius of the circle, calculated using the index.
-     * - `currentRadius`: The current radius of the circle, initially set to the base radius.
-     * - `targetRadius`: The target radius of the circle, initially set to the base radius.
-     * - `x`: The x-coordinate of the circle, randomly generated within a range.
-     * - `y`: The y-coordinate of the circle, randomly generated within a range.
-     * - `targetX`: The target x-coordinate of the circle, randomly generated within a range.
-     * - `targetY`: The target y-coordinate of the circle, randomly generated within a range.
-     * 
-     * Adds the created circle instance to the static `circleArray` of CircleHandler.
+     * Creates a circle entity and seeds initial position/targets.
+     *
+     * Randomness:
+     * - Initial `x/y` and `targetX/targetY` are sampled via `getRandomX/getRandomY` using the derived base radius
+     *   and `gap`.
+     *
+     * @param init.index - Stable index used for grouping/ordering.
+     * @param init.gap - Minimum separation in pixels used by the placement helpers.
+     * @param init.colorRanges - Allowed HSL ranges for random colors.
+     * @param init.initialColor - Optional explicit starting color.
+     * @param init.initialTargetColor - Optional explicit starting target color.
+     * @param damping - Velocity damping factor (dimensionless). Typical range is $[0,1]$.
      */
     constructor(
             { index, gap, colorRanges, initialColor, initialTargetColor }: CircleInit, 
@@ -92,11 +116,9 @@ export default class Circle {
     }
 
     /**
-     * Linearly interpolates the current color towards the target color.
-     * The interpolation factor can be adjusted for smoother or faster transitions.
-     * Updates the `color` property of the instance with the interpolated color.
-     * 
-     * @param alpha - Optional custom interpolation factor (0-1). Defaults to 0.05 for smoother transitions.
+     * Interpolates `color` toward `targetColor`.
+     *
+     * @param alpha - Optional interpolation factor in $[0,1]$.
      */
     lerpColor(alpha?: number): void {
         const interpolationFactor = alpha ?? .05;
@@ -104,10 +126,9 @@ export default class Circle {
     }
 
     /**
-     * Linearly interpolates the position of the circle along the specified axis (X or Y) towards its target position.
-     * Uses velocity for more natural movement.
-     * 
-     * @param alpha - Interpolation factor (0-1).
+     * Interpolates `x/y` toward `targetX/targetY` with velocity + damping.
+     *
+     * @param alpha - Interpolation factor in $[0,1]$.
      */
     lerpPosition(alpha: number): void {
         const nextX = lerp(this.x, this.targetX, alpha);
@@ -120,12 +141,9 @@ export default class Circle {
     }
 
     /**
-     * Linearly interpolates the current radius towards the target radius.
-     * This method updates the `currentRadius` property by moving it a fraction
-     * of the way towards the `targetRadius` based on a customizable interpolation factor.
-     * Tracks velocity for smoother beat-responsive pulsations.
+     * Interpolates `currentRadius` toward `targetRadius`.
      *
-     * @param alpha - Optional custom interpolation factor (0-1). Defaults to 0.25 for snappy response.
+     * @param alpha - Optional interpolation factor in $[0,1]$.
      */
     lerpRadius(alpha?: number): void {
         const interpolationFactor = alpha ?? 0.25;
@@ -134,6 +152,11 @@ export default class Circle {
         this.currentRadius = newRadius;
     }
 
+    /**
+     * Advances this circle entity by one render/simulation step.
+     *
+     * Side effects: mutates position, radius, and color toward their respective targets.
+     */
     step({ posAlpha, radiusAlpha, colorAlpha }: CircleStep): void {
         this.lerpRadius(radiusAlpha);
         this.lerpPosition(posAlpha);

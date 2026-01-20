@@ -1,4 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+/**
+ * Generic dropdown/select UI primitive.
+ * Depends on React state and a document click listener to close on outside interaction.
+ * Cleanup must remove the document listener on unmount.
+ */
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 
 type DropdownOption = { value: string; label: string };
 
@@ -14,22 +19,9 @@ interface DropdownProps {
     caretClassName?: string;
     menuClassName?: string;
     optionClassName?: string;
-    /**
-     * Optional custom renderer for the selected label.
-     * If provided, it receives the selected option (or null) and the
-     * fallback label string (selected label or placeholder).
-     */
-    renderSelected?: (selected: DropdownOption | null, label: string) => React.ReactNode;
+    /** Optional custom renderer for the selected label. */
+    renderSelected?: (selected: DropdownOption | null, label: string) => ReactNode;
 }
-
-/**
- * Generic React dropdown component.
- *
- * Styling:
- * - Provides base CSS hooks: `dropdown`, `dropdown__button`, `dropdown__selected`,
- *   `dropdown__caret`, `dropdown__menu`, `dropdown__option`, and `dropdown--open`.
- * - Callers can pass additional class names via props to adapt it to any page.
- */
 const Dropdown: React.FC<DropdownProps> = ({
     options,
     value,
@@ -54,6 +46,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             }
         };
 
+        // Must unregister on unmount to prevent leaked listeners.
         document.addEventListener('click', handleDocClick);
         return () => document.removeEventListener('click', handleDocClick);
     }, []);

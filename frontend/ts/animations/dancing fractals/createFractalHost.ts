@@ -1,3 +1,13 @@
+/**
+ * Creates and wires the concrete `FractalHost` implementation for the dancing-fractals page.
+ *
+ * This module owns the PIXI `Application`, the ticker binding, and the canvas element appended to the
+ * provided container. The caller owns the mount element and overall page/routing lifecycle.
+ *
+ * Design constraints:
+ * - Keep the per-frame ticker path allocation-light.
+ * - Ensure disposal is deterministic: detach ticker, remove canvas, and destroy PIXI resources.
+ */
 import { Application, Ticker } from "pixi.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 import type { FractalAnimationConstructor } from "./interfaces/FractalAnimation";
@@ -6,8 +16,19 @@ import type { FractalHost } from "./interfaces/FractalHost";
 import audioEngine from "@/animations/helpers/audio/AudioEngine";
 import createMusicFeatureExtractor from "@/animations/helpers/music/createMusicFeatureExtractor";
 
+/**
+ * Instantiates a PIXI `Application`, mounts its canvas into `container`, and returns a host that can
+ * swap/restart a single active fractal animation, apply config patches, and dispose resources.
+ * The canvas is initialized at `CANVAS_WIDTH` × `CANVAS_HEIGHT` pixels.
+ *
+ * @param container - Mount point element that will receive the PIXI canvas.
+ * @returns A `FractalHost` that drives one active animation instance at a time. After `dispose()`,
+ * the returned host must not be used again.
+ */
 export const createFractalHost = async (container: HTMLElement): Promise<FractalHost> => {
     const app = new Application();
+
+    // Dev hook for debugging in the browser console.
     (globalThis as any).__PIXI_APP__ = app;
 
     await app.init({
@@ -37,28 +58,26 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
     const musicFeatureExtractor = createMusicFeatureExtractor();
 
-    // Single ticker that always calls into the current fractal, if any
+    // Route-safety guard: if the URL path changes, the host is no longer active and should self-dispose.
     const onTick = (time: Ticker): void => {
         if (destroyed) return;
 
-        // If the URL path changed, this page is no longer active → dispose host
         if (window.location.pathname !== initialPathname) {
             dispose();
             destroyed = true;
             return;
         }
 
+        // PIXI ticker reports timing in milliseconds; animations consume (deltaSeconds, nowMs).
         const deltaMs = time.deltaMS;
         const deltaSeconds = deltaMs / 1000;
         const nowMs = time.lastTime;
 
-        // Update FPS estimate
         if (deltaSeconds > 0) {
             const inst = 1 / deltaSeconds;
             fps = fps === 0 ? inst : fps + (inst - fps) * fpsSmoothing;
         }
 
-        // Decrease remaining lifetime if enabled and a fractal is running
         if (
             lifetimeSeconds !== null &&
             currentFractal &&
@@ -83,12 +102,13 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
     const applyLifetime = () => {
         if (!currentFractal) return;
-        if (lifetimeSeconds == null) { // Disable auto-disposal
+        if (lifetimeSeconds == null) {
             remainingLifetime = null;
             return;
         }
 
         remainingLifetime = lifetimeSeconds;
+        // `scheduleDisposal` delay is expressed in seconds.
         currentFractal.scheduleDisposal(lifetimeSeconds);
     };
 
@@ -96,7 +116,6 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         Fractal: FractalAnimationConstructor<C>,
         config: C
     ) => {
-        // Dispose current fractal graphics, but keep app alive
         if (currentFractal) {
             currentFractal.dispose();
             currentFractal = null;
@@ -107,7 +126,6 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
         musicFeatureExtractor.reset();
 
-        // Update background for the new fractal
         (app.renderer as any).background.color = Fractal.backgroundColor;
 
         const fractal = new Fractal(centerX, centerY, config);
@@ -127,7 +145,6 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
     const restart = () => {
         if (!currentCtor || currentConfig == null) return;
 
-        // Dispose current fractal
         if (currentFractal) {
             currentFractal.dispose();
             currentFractal = null;
@@ -137,7 +154,6 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
 
         musicFeatureExtractor.reset();
 
-        // Recreate fractal with last known config
         const fractal = new Fractal(centerX, centerY, currentConfig);
         fractal.init(app);
         
@@ -152,12 +168,11 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
             return;
         }
 
-        if (lifetimeSeconds == null) { // Disable auto-disposal
+        if (lifetimeSeconds == null) {
             remainingLifetime = null;
             return;
         }
 
-        // Reset countdown and re-arm disposal
         remainingLifetime = lifetimeSeconds;
         currentFractal.scheduleDisposal(lifetimeSeconds);
     };

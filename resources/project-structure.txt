@@ -9,10 +9,12 @@ mickeyf.org
 │   ├── dist
 │   │   ├── server.min.js
 │   │   └── server.min.js.map
-│   ├── node_modules  [374 entries exceeds filelimit, not opening dir]
+│   ├── node_modules  [351 entries exceeds filelimit, not opening dir]
 │   ├── routers
 │   │   ├── authRouter.ts
 │   │   └── mainRouter.ts
+│   ├── scripts
+│   │   └── dev-db.sh
 │   ├── types
 │   │   └── customTypes.ts
 │   ├── app.ts
@@ -202,15 +204,30 @@ mickeyf.org
 │   │   └── variables.gradle
 │   ├── dist
 │   │   ├── assets
-│   │   │   ├── index-B6-_fvjh.css
+│   │   │   ├── SharedSystems-CFYAOkpv.js
+│   │   │   ├── WebGLRenderer-DTh2-dyi.js
+│   │   │   ├── WebGPURenderer-C-wqJe-Z.js
+│   │   │   ├── bg-sound-p4-DiTfBKxC.mp3
+│   │   │   ├── bhBlue-CbyD_ZDh.png
+│   │   │   ├── bhRed-CS4XDvN4.png
+│   │   │   ├── bhYellow-DRD567x1.png
+│   │   │   ├── browserAll-CfhM-i44.js
+│   │   │   ├── colorToUniform-BXaCBwVl.js
+│   │   │   ├── index-Ced_oFwA.css
+│   │   │   ├── index-Dxw0C360.js
 │   │   │   ├── normal-Bp6G4da6.cur
 │   │   │   ├── notallowed-DFEaDEIs.cur
-│   │   │   └── select-uk4jwcNT.cur
+│   │   │   ├── p4-BGWiohlB.png
+│   │   │   ├── select-uk4jwcNT.cur
+│   │   │   └── webworkerAll-Dl0QRV0y.js
 │   │   ├── apple-touch-icon.png
-│   │   ├── favicon.png
+│   │   ├── favicon-96x96.png
+│   │   ├── favicon.ico
 │   │   ├── favicon.svg
 │   │   ├── index.html
-│   │   └── site.webmanifest
+│   │   ├── site.webmanifest
+│   │   ├── web-app-manifest-192x192.png
+│   │   └── web-app-manifest-512x512.png
 │   ├── docs
 │   │   ├── assets
 │   │   │   ├── hierarchy.js
@@ -341,15 +358,15 @@ mickeyf.org
 │   │       ├── CordovaPlugins.podspec
 │   │       ├── CordovaPluginsResources.podspec
 │   │       └── CordovaPluginsStatic.podspec
-│   ├── node_modules  [177 entries exceeds filelimit, not opening dir]
+│   ├── node_modules  [178 entries exceeds filelimit, not opening dir]
 │   ├── public
-│   │   ├── icons
-│   │   │   ├── web-app-manifest-192x192.png
-│   │   │   └── web-app-manifest-512x512.png
 │   │   ├── apple-touch-icon.png
-│   │   ├── favicon.png
+│   │   ├── favicon-96x96.png
+│   │   ├── favicon.ico
 │   │   ├── favicon.svg
-│   │   └── site.webmanifest
+│   │   ├── site.webmanifest
+│   │   ├── web-app-manifest-192x192.png
+│   │   └── web-app-manifest-512x512.png
 │   ├── sass
 │   │   ├── abstracts
 │   │   │   ├── _colors.scss
@@ -398,27 +415,58 @@ mickeyf.org
 │   │   ├── animations
 │   │   │   ├── dancing circles
 │   │   │   │   ├── classes
-│   │   │   │   │   ├── CircleHandler.ts
-│   │   │   │   │   └── ColorHandler.ts
-│   │   │   │   └── runDancingCircles.ts
+│   │   │   │   │   ├── Circle.ts
+│   │   │   │   │   └── CircleBounds.ts
+│   │   │   │   ├── DancingCirclesController.ts
+│   │   │   │   ├── renderer.ts
+│   │   │   │   ├── runDancingCircles.ts
+│   │   │   │   ├── timeState.ts
+│   │   │   │   └── tuning.ts
 │   │   │   ├── dancing fractals
-│   │   │   │   ├── classes
-│   │   │   │   │   ├── FlowerSpiral.ts
-│   │   │   │   │   └── Tree.ts
 │   │   │   │   ├── components
 │   │   │   │   │   ├── FlowerSpiralControls.tsx
+│   │   │   │   │   ├── MandelbrotControls.tsx
 │   │   │   │   │   └── TreeControls.tsx
 │   │   │   │   ├── config
 │   │   │   │   │   ├── FlowerSpiralConfig.ts
+│   │   │   │   │   ├── MandelbrotConfig.ts
 │   │   │   │   │   └── TreeConfig.ts
+│   │   │   │   ├── fractals
+│   │   │   │   │   ├── flower spiral
+│   │   │   │   │   │   ├── FlowerSpiralShader.ts
+│   │   │   │   │   │   ├── flowerSpiral.frag
+│   │   │   │   │   │   └── flowerSpiral.vert
+│   │   │   │   │   ├── mandelbrot
+│   │   │   │   │   │   ├── MandelbrotShader.ts
+│   │   │   │   │   │   ├── MandelbrotSights.ts
+│   │   │   │   │   │   ├── MandelbrotTour.ts
+│   │   │   │   │   │   ├── MandelbrotTourStateMachine.ts
+│   │   │   │   │   │   ├── MandelbrotTourTypes.ts
+│   │   │   │   │   │   ├── mandelbrot.frag
+│   │   │   │   │   │   └── mandelbrot.vert
+│   │   │   │   │   ├── FlowerSpiral.ts
+│   │   │   │   │   ├── Mandelbrot.ts
+│   │   │   │   │   └── Tree.ts
+│   │   │   │   ├── helpers
+│   │   │   │   │   └── PitchHueCommitter.ts
 │   │   │   │   ├── interfaces
 │   │   │   │   │   ├── FractalAnimation.ts
 │   │   │   │   │   └── FractalHost.ts
 │   │   │   │   └── createFractalHost.ts
-│   │   │   ├── helpers
-│   │   │   │   ├── AudioHandler.ts
-│   │   │   │   └── ColorInterpolator.ts
-│   │   │   └── animations.types.ts
+│   │   │   └── helpers
+│   │   │       ├── audio
+│   │   │       │   ├── AudioEngine.ts
+│   │   │       │   ├── BeatEnvelope.ts
+│   │   │       │   ├── PitchColorPhaseController.ts
+│   │   │       │   ├── PitchColorPolicy.ts
+│   │   │       │   ├── PitchHysteresis.ts
+│   │   │       │   ├── pitchClassToHue.ts
+│   │   │       │   └── pitchInfo.ts
+│   │   │       ├── color
+│   │   │       │   └── PaletteTween.ts
+│   │   │       └── music
+│   │   │           ├── MusicFeatureExtractor.ts
+│   │   │           └── createMusicFeatureExtractor.ts
 │   │   ├── assets
 │   │   │   ├── audio
 │   │   │   │   └── bg-sound-p4.mp3
@@ -460,6 +508,8 @@ mickeyf.org
 │   │   │   │   └── p4-Vega.ts
 │   │   │   └── utils
 │   │   │       └── gameOver.ts
+│   │   ├── hooks
+│   │   │   └── useAudioEngineState.ts
 │   │   ├── pages
 │   │   │   ├── animations
 │   │   │   │   ├── DancingCircles.tsx
@@ -477,13 +527,19 @@ mickeyf.org
 │   │   ├── services
 │   │   │   └── authService.ts
 │   │   ├── utils
+│   │   │   ├── clamp.ts
 │   │   │   ├── constants.ts
 │   │   │   ├── detectEnvironment.ts
+│   │   │   ├── expSmoothing.ts
+│   │   │   ├── groupByParity.ts
+│   │   │   ├── hsl.ts
 │   │   │   ├── isColliding.ts
 │   │   │   ├── keys.ts
 │   │   │   ├── lerp.ts
+│   │   │   ├── mod1.ts
 │   │   │   ├── random.ts
 │   │   │   ├── scales.ts
+│   │   │   ├── smoothstep01.ts
 │   │   │   └── transpose.ts
 │   │   ├── App.tsx
 │   │   ├── Header.tsx
@@ -500,12 +556,14 @@ mickeyf.org
 ├── resources
 │   ├── colors.txt
 │   └── project-structure.txt
+├── scripts
+│   ├── dev-down.sh
+│   ├── dev-start.sh
+│   ├── dev-up.sh
+│   └── devcontainer-backend-start.sh
 ├── Dockerfile
-├── LICENSE
 ├── README.md
 ├── cloudbuild.yaml
 ├── docker-compose.yml
 ├── firebase.json
 └── install-scout.sh
-
-185 directories, 323 files

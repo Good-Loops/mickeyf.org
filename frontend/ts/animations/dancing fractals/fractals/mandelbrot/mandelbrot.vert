@@ -1,5 +1,11 @@
 #version 300 es
 
+/*
+ * Mandelbrot vertex shader: positions a full-screen quad and passes UVs to mandelbrot.frag.
+ * Uses uOutputFrame/uOutputTexture for frame/aspect mapping.
+ * Uniforms are wired by MandelbrotShader.ts.
+ */
+
 in vec2 aPosition;
 out vec2 vUv;
 

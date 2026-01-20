@@ -1,41 +1,113 @@
 import { type HslColor } from "@/utils/hsl";
 
+/**
+ * Configuration contract for the FlowerSpiral fractal animation.
+ *
+ * This module defines a stable, data-only configuration surface used to tune appearance,
+ * motion, and audio-reactivity.
+ *
+ * Ownership boundaries:
+ * - Values are consumed by `FlowerSpiral.ts` and forwarded to the shader via `FlowerSpiralShader.ts`.
+ * - Interpretation and any clamping/guard behavior live in those modules, not here.
+ */
 export interface FlowerSpiralConfig {
+    /**
+     * Palette anchor colors in HSL.
+     *
+     * Consumed by `FlowerSpiral.ts` (via `PaletteTween`) and uploaded to the shader as HSL where:
+     * - hue is degrees
+     * - saturation/lightness are normalized to $[0, 1]$
+     */
     palette: HslColor[];
 
-    flowerAmount: number;        // how many flowers in the spiral
-    petalsPerFlower: number;     // petals per flower
+    // --- Geometry / density ---
+    /** Number of flowers in the spiral (clamped in the renderer/shader to a fixed maximum). */
+    flowerAmount: number;
 
-    flowersPerSecond: number;    // how fast flowers appear/disappear
-    flowersAlpha: number;        // base alpha for strokes
+    /** Number of petals per flower (integer; clamped in the shader). */
+    petalsPerFlower: number;
 
-    colorChangeInterval: number; // seconds between palette shifts
+    // --- Temporal behavior (CPU-side) ---
+    /**
+     * Rate that flowers appear/disappear, in flowers per second.
+     *
+     * Consumed by `FlowerSpiral.ts` to update `uVisibleFlowerCount` smoothly.
+     */
+    flowersPerSecond: number;
 
-    petalRotationSpeed: number;  // speed of petal rotation
+    /** Base alpha multiplier for stroke compositing in the shader (typically treated as $[0, 1]$). */
+    flowersAlpha: number;
 
-    minRadiusScale: number;      // radius scaling from center
+    // --- Palette cycling ---
+    /** Seconds between palette retargets when there is no music input (clamped to a tiny minimum in code). */
+    colorChangeInterval: number;
+
+    // --- Motion (shader-side) ---
+    /** Petal rotation angular speed, in radians per second (the shader advances using `uTimeMs * 0.001`). */
+    petalRotationSpeed: number;
+
+    /** Minimum radial scale factor applied to petal length at the spiral center (dimensionless). */
+    minRadiusScale: number;
+
+    /** Maximum radial scale factor applied to petal length at the spiral edge (dimensionless). */
     maxRadiusScale: number;
 
-    spiralIncrement: number;     // distance between flowers
-    revolutions: number;         // how many full turns
+    /** Base spacing between successive flowers along the spiral, in pixels (used by the shader). */
+    spiralIncrement: number;
 
+    /** Number of full spiral turns (revolutions) used to compute angular position. */
+    revolutions: number;
+
+    // --- Idle thickness/length LFO (shader-side, `uTimeMs` timebase) ---
+    /** Base stroke thickness, in pixels. */
     petalThicknessBase: number;
+
+    /** Sinusoidal thickness variation amplitude, in pixels. */
     petalThicknessVariation: number;
+
+    /** Thickness LFO phase rate multiplied by milliseconds (effectively radians per millisecond). */
     petalThicknessSpeed: number;
 
+    /** Base petal length, in pixels. */
     petalLengthBase: number;
+
+    /** Sinusoidal length variation amplitude, in pixels. */
     petalLengthVariation: number;
+
+    /** Length LFO phase rate multiplied by milliseconds (effectively radians per millisecond). */
     petalLengthSpeed: number;
 
-    recursionDepth: number;      // how many recursive child spirals
-    scale: number;               // overall scale factor of the spiral
+    // --- Structural scaling ---
+    /**
+     * Recursive child spiral depth.
+     *
+     * Note: this field is part of the public config surface but is not currently consumed by the animation.
+     */
+    recursionDepth: number;
 
+    /** Overall spiral scale multiplier (applied in the shader to pixel-space spiral radius). */
+    scale: number;
+
+    // --- Camera / zoom ---
+    /** Enables time-varying zoom. If explicitly false, zoom is forced to 1.0. */
     zoomEnabled: boolean;
+
+    /** Minimum zoom scale factor (dimensionless). */
     zoomMin: number;
+
+    /** Maximum zoom scale factor (dimensionless). */
     zoomMax: number;
-    zoomSpeed: number;           // cycles per second
+
+    /** Zoom oscillation speed, in cycles per second (Hz). */
+    zoomSpeed: number;
 }
 
+/**
+ * Default FlowerSpiral configuration.
+ *
+ * Defaults are tuned for visual stability, reasonable performance, and a clear baseline look
+ * even without music input.
+ */
 export const defaultFlowerSpiralConfig: FlowerSpiralConfig = {
     palette: [
         { hue: 328, saturation: 79, lightness: 57 },

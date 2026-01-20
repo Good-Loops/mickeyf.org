@@ -1,3 +1,14 @@
+/**
+ * Music feature extractor factory.
+ *
+ * Wires together the project’s standard audio→feature pipeline into a {@link MusicFeatureExtractor}
+ * instance (beat envelope, pitch hysteresis, pitch→color policy, and phase controller).
+ *
+ * Why a factory exists: centralizes tuning/config choices and keeps call sites decoupled from the
+ * specific implementation details.
+ *
+ * Used by the music/audio integration layer (e.g. animation setup that needs a feature stream).
+ */
 import BeatEnvelope from "@/animations/helpers/audio/BeatEnvelope";
 import PitchColorPhaseController from "@/animations/helpers/audio/PitchColorPhaseController";
 import PitchColorPolicy from "@/animations/helpers/audio/PitchColorPolicy";
@@ -63,6 +74,19 @@ const TUNING = {
     },
 } as const;
 
+/**
+ * Creates a {@link MusicFeatureExtractor} using the project’s default tuning.
+ *
+ * @returns A ready-to-use feature extractor instance.
+ *
+ * @remarks
+ * Ownership: the caller owns the returned instance and may call `reset()` as needed. This extractor
+ * is purely in-memory (no WebAudio nodes); audio capture/cleanup is owned elsewhere (e.g. by an
+ * `AudioEngine`).
+ *
+ * Time units: internal tunings are expressed in **milliseconds** and **Hz**. Per-frame timing is
+ * provided later to the extractor via `step({ deltaSeconds, nowMs, audioState })`.
+ */
 export default function createMusicFeatureExtractor(): MusicFeatureExtractor {
     const beatEnvelope = new BeatEnvelope({
         gateCooldownMs: TUNING.beat.gateCooldownMs,

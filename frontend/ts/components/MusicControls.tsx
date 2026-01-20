@@ -1,26 +1,20 @@
+/**
+ * Transport controls UI (play/pause/stop) for audio-driven experiences.
+ * Pure UI surface: delegates behavior to callbacks and does not own audio state.
+ */
 import React from "react";
 
+/** Props for `MusicControls`; callers own audio state and callbacks. */
 export interface MusicControlsProps {
-    /** True when an audio file has been loaded and is controllable */
     hasAudio: boolean;
-    /** True when audio is currently playing */
     isPlaying: boolean;
 
-    /** Called when user clicks Play */
     onPlay: () => void;
-    /** Called when user clicks Pause */
     onPause: () => void;
-    /** Called when user clicks Stop */
     onStop: () => void;
 
-    /** Optional extra class to position it (bottom-left, etc.) */
     className?: string;
 }
-
-/**
- * Reusable Play / Pause / Stop controls for any animation that uses audio.
- * Only becomes interactive when `hasAudio` is true.
- */
 const MusicControls: React.FC<MusicControlsProps> = ({
     hasAudio,
     isPlaying,

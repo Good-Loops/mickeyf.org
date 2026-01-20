@@ -1,3 +1,8 @@
+/**
+ * Home page ("/").
+ * Renders the landing content and runs the rotating quote display.
+ * Uses timers to cycle quotes; cleanup clears scheduled work on unmount.
+ */
 import React, { useEffect, useRef, useState } from "react";
 
 const QUOTES = [
@@ -123,6 +128,7 @@ const Home: React.FC = () => {
 		setVisible(true);
 
 		return () => {
+			// Must clear scheduled work on unmount to prevent leaks.
 			window.clearInterval(interval);
 			if (fadeTimeout !== undefined) {
 				window.clearTimeout(fadeTimeout);

@@ -1,3 +1,7 @@
+/**
+ * Social page ("/social").
+ * Links out to external profiles and community destinations.
+ */
 import React from "react";
 
 const Social: React.FC = () => {

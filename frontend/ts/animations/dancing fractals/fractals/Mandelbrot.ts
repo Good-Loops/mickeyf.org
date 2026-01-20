@@ -1,9 +1,29 @@
+/**
+ * Mandelbrot fractal animation.
+ *
+ * A GPU-rendered Mandelbrot set driven by a view model (center/zoom/rotation) and palette/shading
+ * controls. This animation draws via PIXI using a full-screen quad and a custom shader filter.
+ *
+ * High-level dataflow:
+ * - Inputs (per frame): `deltaSeconds` (seconds), `nowMs` (milliseconds), and music features (used
+ *   to bias palette phase and apply beat-kick zoom).
+ * - Output: updates shader uniforms and renders into the provided PIXI `Application` stage.
+ *
+ * Ownership boundaries:
+ * - This class owns the PIXI resources it creates (container, quad, filter, uniform group) and
+ *   disposes them when torn down.
+ * - Tour progression is delegated to {@link MandelbrotTour} when enabled.
+ * - Shader/uniform layout is defined by the Mandelbrot shader helpers in `./mandelbrot/MandelbrotShader`.
+ */
 import { Application, Container, Filter, Sprite, Texture, UniformGroup } from "pixi.js";
 
 import type FractalAnimation from "@/animations/dancing fractals/interfaces/FractalAnimation";
+
 import { defaultMandelbrotConfig, type MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
+
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
+
 import clamp from "@/utils/clamp";
 import lerp from "@/utils/lerp";
 import smoothstep01 from "@/utils/smoothstep01";
@@ -15,11 +35,10 @@ import {
     MAX_PALETTE,
     type MandelbrotUniforms,
 } from "./mandelbrot/MandelbrotShader";
-
 import { MandelbrotTour } from "./mandelbrot/MandelbrotTour";
 import type { TourDurations, TourOutput, TourPresentation, TourZoomTargets } from "./mandelbrot/MandelbrotTourTypes";
 
-import PitchHueCommitter from "../helpers/PitchHueCommitter";
+import PitchHueCommitter from "../../helpers/color/PitchHueCommitter";
 
 type MandelbrotRuntime = {
     elapsedAnimSeconds: number;
@@ -27,11 +46,28 @@ type MandelbrotRuntime = {
 };
 
 type ComposedView = {
+    /** Target view center in complex-plane coordinates (re = x, im = y). */
     targetCenter: { x: number; y: number };
+
+    /**
+     * Final zoom for the current frame, expressed in the **log-space zoom units** used by the
+     * Mandelbrot shader/view system.
+     */
     finalLogZoom: number;
+
+    /** World/camera rotation angle in **radians** (per project convention in Mandelbrot tour/presentation). */
     worldRotationRad: number;
 };
 
+/**
+ * GPU Mandelbrot animation implementation.
+ *
+ * Lifecycle:
+ * - {@link init} is called once with a PIXI {@link Application}.
+ * - {@link step} is called once per frame.
+ * - {@link updateConfig} may be called at any time to patch config.
+ * - {@link scheduleDisposal} / {@link startDisposal} drive teardown; {@link dispose} releases PIXI resources.
+ */
 export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
     static backgroundColor = "hsl(189, 100%, 89%)";
@@ -39,6 +75,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     private app: Application | null = null;
     private root: Container | null = null;
 
+    /** Full-screen shader pipeline (owned by this instance). */
     private filter: Filter | null = null;
     private mandelbrotUniforms: UniformGroup | null = null;
     private quad: Sprite | null = null;
@@ -52,8 +89,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
     private lightDir = new Float32Array([0, 0, 1]);
 
-    // Mutable runtime state that changes every frame; config is treated as immutable inputs during step().
-    // `config.palettePhase` is only an initial/externally-set seed; rendering uses `runtime.palettePhase`.
+    /**
+     * Mutable runtime state that changes every frame.
+     *
+     * `config` is treated as immutable input during {@link step}. `config.palettePhase` is only an
+     * initial/external seed; rendering advances `runtime.palettePhase`.
+     */
     private runtime: MandelbrotRuntime = { elapsedAnimSeconds: 0, palettePhase: 0 };
 
     private beatKick01 = 0;
@@ -74,8 +115,10 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
 
     private baseLogZoom = 0;
 
+    /** Optional automated tour driver; responsible for selecting sights and producing view deltas. */
     private tour: MandelbrotTour | null = null;
 
+    /** Commits a stable pitch-derived hue that can bias palette phase without flicker. */
     private readonly pitchHueCommitter = new PitchHueCommitter(0);
 
     constructor(_centerX: number, _centerY: number, initialConfig: Partial<MandelbrotConfig> = {}) {
@@ -91,6 +134,12 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.tour = this.createTourFromConfig(this.config);
     }
 
+    /**
+     * Applies a shallow config patch.
+     *
+     * Merge semantics: `this.config` is replaced via `{ ...this.config, ...patch }`.
+     * This also forwards tour-related patches to {@link MandelbrotTour.updateConfig}.
+     */
     updateConfig(patch: Partial<MandelbrotConfig>): void {
         this.config = { ...this.config, ...patch };
 
@@ -126,6 +175,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.syncUniforms();
     }
 
+    /** Initializes PIXI resources (container, full-screen quad, shader filter/uniforms). */
     init(app: Application): void {
         this.app = app;
 
@@ -200,6 +250,14 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         this.syncUniforms();
     }
 
+    /**
+     * Advances animation state and updates shader uniforms for the current frame.
+     *
+     * @param deltaSeconds - Elapsed time since the previous frame, in **seconds**.
+     * @param _nowMs - Absolute time in **milliseconds** (unused by this animation).
+     * @param _audioState - Raw audio state (unused; this animation consumes {@link MusicFeaturesFrame}).
+     * @param musicFeatures - Music feature frame used for palette bias and beat-kick zoom.
+     */
     step(deltaSeconds: number, _nowMs: number, _audioState: AudioState, musicFeatures: MusicFeaturesFrame): void {
         if (!this.root) return;
 
@@ -453,18 +511,25 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
         return this.baseLogZoom + A * s;
     }
 
+    /**
+     * Schedules disposal to start after a delay.
+     *
+     * @param seconds - Delay until disposal fade begins, in **seconds**.
+     */
     scheduleDisposal(seconds: number): void {
         this.disposalDelaySeconds = Math.max(0, seconds);
         this.isDisposing = false;
         this.disposalElapsed = 0;
     }
 
+    /** Starts the disposal fade immediately (fade duration uses {@link Mandelbrot.disposalSeconds}). */
     startDisposal(): void {
         this.disposalDelaySeconds = 0;
         this.isDisposing = true;
         this.disposalElapsed = 0;
     }
 
+    /** Immediately releases PIXI resources owned by this instance. */
     dispose(): void {
         if (!this.app || !this.root) return;
 

@@ -1,17 +1,50 @@
+/**
+ * Project audio capture + lightweight analysis for driving visuals.
+ *
+ * This module orchestrates a Web Audio graph around an `HTMLAudioElement`, extracts a small set of
+ * features (pitch/clarity, peak-derived volume in dB, and a simple beat heuristic), and exposes a
+ * single mutable `state` object for consumers.
+ *
+ * Dependencies: Web Audio APIs (`AudioContext`, `AnalyserNode`) and `pitchy` for pitch detection.
+ *
+ * Lifecycle (typical): `processAudio()`/`play()` → per-frame analysis loop (RAF) → `pause()`/`stop()`
+ * → `dispose()`.
+ *
+ * Non-goals: this is not a DAW and not precision DSP. It is tuned for responsiveness and stability
+ * in interactive visuals.
+ */
 import { PitchDetector } from "pitchy";
 
+/**
+ * Beat detection output for the current analysis frame.
+ */
 export type BeatState = {
+	/** Whether the current frame crosses the beat threshold. */
     isBeat: boolean;
+	/** Normalized beat strength in the range $[0, 1]$ (heuristic). */
     strength: number;
 };
 
+/**
+ * Snapshot of audio analysis state exposed to the rest of the app.
+ *
+ * Consumers typically treat these values as “latest known” readings that are refreshed while
+ * playback is running.
+ */
 export type AudioState = {
+	/** Whether an audio source has been loaded (file selected and graph initialized). */
     hasAudio: boolean;
+	/** Detected fundamental frequency in **Hz**. `0` when unknown/unavailable. */
     pitchHz: number;
+	/** Pitch confidence in $[0, 1]$ as returned by `pitchy`. */
     clarity: number;
+	/** Peak-derived volume estimate in **dB**. `-Infinity` represents silence/no signal. */
     volumeDb: number;  
+	/** Track duration in **seconds** (from the underlying `HTMLAudioElement`). */
     durationSec: number;
+	/** Whether playback is currently active. */
     playing: boolean;
+	/** Simple beat detection output for the current frame. */
     beat: BeatState;
 };
 
@@ -27,7 +60,14 @@ const DEFAULT_STATE: AudioState = {
 
 
 /**
- * Audio processing and analysis for animations.
+ * Audio processing/analysis engine.
+ *
+ * Ownership:
+ * - Owns the `AudioContext` and nodes it creates.
+ * - Owns the per-frame analysis loop (driven by `requestAnimationFrame`).
+ *
+ * Thread model: this code runs on the main JS thread; Web Audio processing occurs on the browser's
+ * internal audio thread and is sampled into JS on each analysis tick.
  */
 class AudioEngine {
     state: AudioState = { ...DEFAULT_STATE, beat: { ...DEFAULT_STATE.beat } };
@@ -47,22 +87,25 @@ class AudioEngine {
     private sessionId: number = 0;
     private listeners = new Set<(state: AudioState) => void>();
     
+    /**
+     * Subscribes to state updates.
+     *
+     * The listener is invoked immediately with the current state, then again on each subsequent
+     * state patch.
+     *
+     * @returns Unsubscribe function.
+     */
     subscribe(listener: (state: AudioState) => void): () => void {
         this.listeners.add(listener);
-        // Immediately emit current state so UI can initialize from it
         listener(this.state);
-        // Return unsubscribe fn (nice & clean for React useEffect cleanup)
         return () => this.listeners.delete(listener);
     }
 
     /**
-     * Initializes the upload button to handle file input and audio processing.
-     * Redirects clicks on the upload button to the file input element.
-     * 
-     * @param fileInput - The HTML input element for file uploads.
-     * 
-     * @returns A function to remove the event listeners when no longer needed.
+     * Wires a file input to `processAudio()`.
      *
+     * @param fileInput - File input element that provides audio files.
+     * @returns Cleanup function that removes the event listener.
      */
     initializeUploadButton(fileInput: HTMLInputElement): (() => void) {
         const handleChange = () => {
@@ -77,16 +120,17 @@ class AudioEngine {
     }
 
     /**
-     * Processes the audio file selected through the file input element.
+     * Loads an audio file, constructs the Web Audio graph, and begins playback/analysis.
      *
-     * @param file - The HTML input element of type file used to select the audio file.
+     * If an existing track is loaded, it is torn down first.
+        * Analyzer configuration: uses an `AnalyserNode` with `fftSize = 2048`.
      *
+     * @param file - Audio file selected by the user.
      */
     async processAudio(file: File): Promise<void> {
-        // Invalidate any previous analysis loop
         this.sessionId++;
 
-        // If a previous audio context/source exists, disconnect and close it
+        // Tear down any previous track so analysis sessions don't overlap.
         await this.teardownTrack({ closeContext: true });
         this.patchState({ hasAudio: false, playing: false });
 
@@ -110,40 +154,34 @@ class AudioEngine {
         const audioContext = new window.AudioContext();
         await audioContext.resume();
 
-        // analyser
+        // Analyzer provides the time-domain buffer used for pitch/volume extraction.
         const analyser = audioContext.createAnalyser();
         analyser.fftSize = 2048;
         this.analyserNode = analyser;
 
-        // 🔊 connect audio element → analyser → speakers
         const source = audioContext.createMediaElementSource(audio);
         source.connect(analyser);
         analyser.connect(audioContext.destination);
 
-        // store source for later cleanup
         this.sourceNode = source;
 
-        // store references for play/pause/stop
         this.audioElement = audio;
         this.audioContext = audioContext;
         this.patchState({ hasAudio: true });
 
-
-        // start playback
         audio.load();
-        // optionally await play to satisfy autoplay policies
         try {
             await audio.play();
             this.patchState({ playing: true });
             this.startAnalysis();
         } catch {
-            // if the browser blocks it, we still have the analyser
         }
     }
 
     /**
-     * Play the current audio (if loaded).
-     * Can be called from React MusicControls.
+        * Starts/resumes playback for the currently loaded track.
+        *
+        * If playback had previously reached the end, this restarts from the beginning.
      */
     async play() {
         const audio = this.audioElement;
@@ -168,7 +206,7 @@ class AudioEngine {
     }
 
     /**
-     * Pause playback, but keep currentTime so we can resume.
+     * Pauses playback while keeping the current playback position.
      */
     pause() {
         if (!this.audioElement) return;
@@ -179,8 +217,10 @@ class AudioEngine {
     }
 
     /**
-     * Stop playback, reset to the beginning,
-     * and request the analysis loop to clean up UI.
+        * Stops playback and resets the playback position to the beginning.
+        *
+        * This clears transient analysis state but keeps the `AudioContext` alive so that subsequent
+        * `play()` calls can resume without rebuilding the entire graph.
      */
     stop() {
         const audio = this.audioElement;
@@ -193,9 +233,6 @@ class AudioEngine {
             audio.currentTime = 0;
         } catch {}
 
-        // Mark not playing and clear transient state. Do not close the AudioContext
-        // here so that calling `play()` can resume both playback and analysis
-        // without needing to re-create the context.
         this.volumeHistory = [];
         this.patchState({ 
             playing: false,
@@ -204,6 +241,11 @@ class AudioEngine {
         });
     }
 
+    /**
+     * Fully tears down the current track and releases owned Web Audio resources.
+     *
+     * After disposal, state resets to its defaults.
+     */
     async dispose() {
         this.sessionId++;
         await this.teardownTrack({ closeContext: true });
@@ -212,17 +254,15 @@ class AudioEngine {
     }
 
     /**
-     * Converts a given volume level to a percentage.
+     * Maps a volume reading in dB to a UI-friendly percentage.
      *
-     * The volume level is expected to be in the range of -40 to 20.
-     * If the volume is less than -40, the percentage will be set to 0.
-     * If the volume is greater than 20, the percentage will be set to 100.
+     * The mapping assumes a typical display range of `[-40, 20]` dB.
      *
-     * @param volume - The volume level in decibels to be converted.
-     * @returns The volume level as a percentage.
+     * @param volume - Volume in **dB**.
+     * @returns Percentage in `[0, 100]`.
      */
     getVolumePercentage(volume: number): number {
-        const normalized = (volume + 40) / 60; // -40..20 => 0..1
+        const normalized = (volume + 40) / 60;
         return Math.max(0, Math.min(1, normalized)) * 100;
     }
 
@@ -242,7 +282,7 @@ class AudioEngine {
     }
 
     /**
-     * Notifies all subscribed listeners of the current audio state.
+        * Notifies all subscribed listeners of the current state.
      */
     private notifyState() {
         for (const listener of this.listeners) {
@@ -256,7 +296,10 @@ class AudioEngine {
     }
 
     /**
-     * Start the analysis loop using the current `audioElement` and `analyserNode`.
+        * Starts the per-frame analysis loop.
+        *
+        * This samples the analyzer time-domain buffer, runs pitch detection, derives a peak-based
+        * volume estimate in dB, and updates beat state.
      */
     private startAnalysis(): void {
         const analyser = this.analyserNode;
@@ -268,6 +311,7 @@ class AudioEngine {
 
         const currentSessionId = this.sessionId;
 
+        // Uses the analyzer buffer size and the context sample rate to run pitch detection.
         const detector = PitchDetector.forFloat32Array(analyser.fftSize);
         const input = new Float32Array(
             new ArrayBuffer(detector.inputLength * Float32Array.BYTES_PER_ELEMENT)
@@ -292,13 +336,11 @@ class AudioEngine {
             analyser.getFloatTimeDomainData(input);
             const [pitch, clarity] = detector.findPitch(input, audioCtx.sampleRate);
 
-            // Compute peak absolute value for volume
             let maxAbs = 0;
             for (let i = 0; i < input.length; i++) {
                 const v = Math.abs(input[i]);
                 if (v > maxAbs) maxAbs = v;
             }
-            // Volume in decibels
             const volumeDb =
                 maxAbs <= 0 ? -Infinity : Math.round(20 * Math.log10(maxAbs));
 
@@ -306,7 +348,7 @@ class AudioEngine {
 
             this.patchState({
                 pitchHz: Math.round(pitch * 10) * 0.1,
-                clarity, // still raw 0..1 for now
+                clarity,
                 volumeDb,
                 durationSec: music.duration,
                 beat,
@@ -324,7 +366,11 @@ class AudioEngine {
 
     /**
      * Detects beats based on volume changes.
-     * A beat is detected when there's a significant increase in volume compared to recent history.
+        *
+        * Heuristic: compares current dB value to the recent rolling average. Thresholds are expressed
+        * in **dB** (`> 3 dB` over average counts as a beat).
+        *
+        * `strength` is a normalized `volumeDiff / 10` clamped to $[0, 1]$.
      */
     private detectBeat(volumeDb: number): BeatState {
         if (Number.isFinite(volumeDb)) {
@@ -334,13 +380,11 @@ class AudioEngine {
             this.volumeHistory.shift();
         }
 
-        // Analyze volume history to detect beats
         const validHistory = this.volumeHistory.filter(Number.isFinite);
         if (validHistory.length < 3 || !Number.isFinite(volumeDb)) {
             return { isBeat: false, strength: 0 };
         }
 
-        // Calculate average volume from history
         const avgVolume = validHistory.reduce((a, b) => a + b, 0) / validHistory.length;
         const volumeDiff = volumeDb - avgVolume;
 
@@ -385,20 +429,18 @@ class AudioEngine {
             audio?.pause();
         } catch {}
 
-        // Disconnect nodes
         try {
             this.sourceNode?.disconnect();
         } catch {}
         this.sourceNode = null;
         this.analyserNode = null;
 
-        // Optionally close the AudioContext
         if (closeContext && this.audioContext) {
             try { await this.audioContext.close(); } catch {}
             this.audioContext = null;
         }
 
-        // Revoke object URL (avoid memory leaks)
+        // Revoke object URL to avoid memory leaks.
         if (this.objectUrl) {
             try {
                 URL.revokeObjectURL(this.objectUrl);
@@ -410,5 +452,11 @@ class AudioEngine {
     }
 }
 
+/**
+ * Shared singleton instance.
+ *
+ * Consumers typically read `audioEngine.state` each render frame (pull model) and/or subscribe to
+ * state changes for UI updates (push model).
+ */
 const audioEngine = new AudioEngine();
 export default audioEngine;

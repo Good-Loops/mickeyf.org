@@ -1,7 +1,24 @@
+/**
+ * Pitch-analysis data contract shared across audio helpers.
+ *
+ * This module defines a small, numeric representation of pitch information derived from a detected
+ * frequency in **Hz**. It is produced by pitch detection/tracking and consumed by downstream
+ * mapping policies (e.g. pitch-class → hue).
+ *
+ * Non-goal: this is not a music-theory abstraction; it is a signal-analysis convenience structure.
+ */
+
+/**
+ * Derived pitch information from a frequency input.
+ */
 export type PitchInfo = {
+	/** Input frequency clamped to a safe analysis range, in **Hz**. */
     hzClamped: number;
+	/** MIDI note number (can be fractional). */
     midi: number;
+	/** MIDI note number rounded to the nearest semitone (integer). */
     midiRounded: number;
+	/** Pitch class in the range `[0, 11]` derived from rounded MIDI. */
     pitchClass: number;
 };
 
@@ -18,11 +35,13 @@ const midiToPitchClass = (midi: number): number => {
 }
 
 /**
- * Converts a frequency in hertz to pitch and hue information.
- * 
- * @param hertz 
- * 
- * @returns PitchInfo to be used for color mapping 
+ * Converts a detected frequency in **Hz** into a {@link PitchInfo} structure.
+ *
+ * The frequency is clamped to the internal range `[40, 4000]` Hz before conversion.
+ *
+ * Numeric notes (by implementation):
+ * - `NaN` input propagates through to `NaN` fields.
+ * - `±Infinity` are clamped to finite bounds.
  */
 const hzToPitchInfo = (hertz: number): PitchInfo => {
     const hzClamped = clampHz(hertz);

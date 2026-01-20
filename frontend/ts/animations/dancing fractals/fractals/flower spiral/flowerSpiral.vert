@@ -1,5 +1,12 @@
 #version 300 es
 
+/*
+ * FlowerSpiral vertex shader.
+ * Pairs with `flowerSpiral.frag` and prepares the full-screen quad geometry/varyings.
+ * Applies PIXI output-frame/texture mapping (including aspect/viewport correction).
+ * Uniforms are wired by `FlowerSpiralShader.ts`.
+ */
+
 precision highp float;
 
 in vec2 aPosition;

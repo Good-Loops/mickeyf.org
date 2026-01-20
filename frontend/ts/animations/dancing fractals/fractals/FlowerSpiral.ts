@@ -1,17 +1,37 @@
-import { Application, Filter, GlProgram, Sprite, Texture, UniformGroup } from "pixi.js";
+/**
+ * FlowerSpiral fractal animation.
+ *
+ * High-level dataflow:
+ * - Inputs: per-frame timing (`deltaSeconds`, `nowMs`), config patches via {@link FlowerSpiral.updateConfig},
+ *   and optional music features ({@link MusicFeaturesFrame}).
+ * - Outputs: draws a full-screen quad with a GLSL filter; per-frame state is expressed via shader uniforms.
+ *
+ * Ownership boundaries:
+ * - This module owns the animation lifecycle and orchestration (state, config hot-updates, disposal).
+ * - Shader/uniform wiring is delegated to `FlowerSpiralShader.ts`.
+ */
+import { Application, Filter, Sprite, Texture, UniformGroup } from "pixi.js";
 
-import PaletteTween from "../../helpers/color/PaletteTween";
+import PaletteTween from "@/animations/helpers/color/PaletteTween";
+import PitchHueCommitter from "@/animations/helpers/color/PitchHueCommitter";
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
 import clamp from "@/utils/clamp";
 import type FractalAnimation from "../interfaces/FractalAnimation";
 import { defaultFlowerSpiralConfig, type FlowerSpiralConfig } from "../config/FlowerSpiralConfig";
 import { FLOWER_MAX, clampFlowerAmount, createFlowerSpiralFilter, createFlowerSpiralUniformGroup } from "./flower spiral/FlowerSpiralShader";
-import PitchHueCommitter from "../helpers/PitchHueCommitter";
 
 const PITCH_STABLE_THRESHOLD_MS = 120;
 const MIN_MUSIC_WEIGHT_FOR_COLOR = 0.25;
 
+/**
+ * GPU-driven generative spiral "flowers" animation.
+ *
+ * Units & semantics:
+ * - `deltaSeconds` is in **seconds**.
+ * - `nowMs` is an absolute time in **milliseconds** and is also uploaded to the shader as `uTimeMs`.
+ * - Pitch hue values are in **degrees** (from {@link PitchHueCommitter}).
+ */
 export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig> {
     constructor(
         private readonly centerX: number,
@@ -61,6 +81,12 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
     private autoDispose = false;
     private isDisposing = false;
 
+    /**
+     * Initializes PIXI resources and seeds shader uniforms.
+     *
+     * Call once before {@link FlowerSpiral.step}. Resources created here are released by
+     * {@link FlowerSpiral.dispose}.
+     */
     init(app: Application): void {
         this.app = app;
 
@@ -79,7 +105,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.uniformGroup = uniformGroup;
         this.paletteHsl = paletteHsl;
 
-        // Default zoom (no scaling)
+        // Seed zoom in case the config disables animated zoom.
         (uniformGroup.uniforms as any).uZoom = 1.0;
 
         const filter = createFlowerSpiralFilter(uniformGroup);
@@ -97,6 +123,14 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.paletteDirty = true;
     }
 
+    /**
+     * Advances the animation by one frame.
+     *
+     * @param deltaSeconds - Elapsed time since the previous frame, in **seconds**.
+     * @param nowMs - Absolute time in **milliseconds**.
+     * @param _audioState - Raw audio engine state (unused; this animation consumes {@link MusicFeaturesFrame}).
+     * @param musicFeatures - Feature frame used for beat/pitch-driven motion and palette bias.
+     */
     step(deltaSeconds: number, nowMs: number, _audioState: AudioState, musicFeatures: MusicFeaturesFrame): void {
         const app = this.app;
         const quad = this.mesh;
@@ -114,10 +148,10 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             }
         }
 
-        // Keep quad size synced to renderer.
         quad.width = app.screen.width;
         quad.height = app.screen.height;
 
+        // Audio-reactive behavior: gate by `hasMusic`, then apply beat/pitch-derived signals.
         const features = musicFeatures;
         const hasMusic = !!features?.hasMusic;
         const musicWeight01 = clamp(features?.musicWeight01 ?? 0, 0, 1);
@@ -130,7 +164,7 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             minMusicWeightForColor: MIN_MUSIC_WEIGHT_FOR_COLOR,
         }).pitchHueDeg;
 
-        // Beat kick (fast impulse)
+        // Beat kick: a fast impulse with a fixed decay rate.
         const KICK_DECAY_PER_SEC = 6;
         if (hasMusic) {
             if (beatHit) {
@@ -165,7 +199,66 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
             visibleFlowerCount: this.visibleFlowerCount,
         });
     }
-
+    
+    /**
+     * Applies a shallow config patch.
+     *
+     * Merge semantics: `this.config` is replaced via `{ ...this.config, ...patch }`.
+     * Palette-related changes rebuild the {@link PaletteTween} immediately and mark the palette upload dirty.
+     */
+    updateConfig(patch: Partial<FlowerSpiralConfig>): void {
+        const prev = this.config;
+        this.config = { ...this.config, ...patch };
+        
+        const paletteChanged = patch.palette != null && patch.palette !== prev.palette;
+        const flowerAmountChanged = patch.flowerAmount != null && patch.flowerAmount !== prev.flowerAmount;
+        
+        if (paletteChanged || flowerAmountChanged) {
+            this.paletteTween = new PaletteTween(this.config.palette, this.config.flowerAmount);
+            this.colorChangeCounter = 0;
+            this.beatRetargetCooldownMs = 0;
+            this.paletteDirty = true;
+        }
+        
+        this.configDirty = true;
+    }
+    
+    /** Schedules disposal to begin after `seconds` (in **seconds**) of runtime. */
+    scheduleDisposal(seconds: number): void {
+        this.disposalDelay = seconds;
+        this.disposalTimer = 0;
+        this.autoDispose = true;
+        this.isDisposing = false;
+    }
+    
+    /** Starts the disposal fade-out immediately (flower count decreases until it reaches zero). */
+    startDisposal(): void {
+        if (this.isDisposing) return;
+        this.isDisposing = true;
+    }
+    
+    /** Immediately releases PIXI resources owned by this instance. */
+    dispose(): void {
+        this.autoDispose = false;
+        this.isDisposing = false;
+        
+        if (this.mesh) {
+            this.mesh.removeFromParent();
+            this.mesh.destroy({ children: true, texture: false, textureSource: false });
+            this.mesh = null;
+        }
+        
+        if (this.filter) {
+            this.filter.destroy();
+            this.filter = null;
+        }
+        
+        this.uniformGroup = null;
+        this.paletteHsl = null;
+        
+        this.app = null;
+    }
+    
     private computeZoom(nowMs: number): number {
         // Enabled-by-default: treat missing/undefined as enabled.
         if (this.config.zoomEnabled === false) return 1.0;
@@ -182,67 +275,16 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         return z0 + (z1 - z0) * w;
     }
 
-    updateConfig(patch: Partial<FlowerSpiralConfig>): void {
-        const prev = this.config;
-        this.config = { ...this.config, ...patch };
-
-        const paletteChanged = patch.palette != null && patch.palette !== prev.palette;
-        const flowerAmountChanged = patch.flowerAmount != null && patch.flowerAmount !== prev.flowerAmount;
-
-        if (paletteChanged || flowerAmountChanged) {
-            this.paletteTween = new PaletteTween(this.config.palette, this.config.flowerAmount);
-            this.colorChangeCounter = 0;
-            this.beatRetargetCooldownMs = 0;
-            this.paletteDirty = true;
-        }
-
-        this.configDirty = true;
-    }
-
-    scheduleDisposal(seconds: number): void {
-        this.disposalDelay = seconds;
-        this.disposalTimer = 0;
-        this.autoDispose = true;
-        this.isDisposing = false;
-    }
-
-    startDisposal(): void {
-        if (this.isDisposing) return;
-        this.isDisposing = true;
-    }
-
-    dispose(): void {
-        this.autoDispose = false;
-        this.isDisposing = false;
-
-        if (this.mesh) {
-            this.mesh.removeFromParent();
-            // Do not destroy Texture.WHITE (shared). Destroying the Sprite + filter is enough.
-            this.mesh.destroy({ children: true, texture: false, textureSource: false });
-            this.mesh = null;
-        }
-
-        if (this.filter) {
-            this.filter.destroy();
-            this.filter = null;
-        }
-
-        this.uniformGroup = null;
-        this.paletteHsl = null;
-
-        this.app = null;
-    }
-
     private updateVisibleFlowers(deltaSeconds: number): void {
         const target = clampFlowerAmount(this.config.flowerAmount);
         const speed = this.config.flowersPerSecond;
-
+        
         if (!this.isDisposing) {
             this.visibleFlowerCount += speed * deltaSeconds;
             if (this.visibleFlowerCount > target) this.visibleFlowerCount = target;
             return;
         }
-
+        
         this.visibleFlowerCount -= speed * deltaSeconds;
         if (this.visibleFlowerCount <= 0) {
             this.visibleFlowerCount = 0;
@@ -297,6 +339,14 @@ export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig
         this.paletteDirty = false;
     }
 
+    /**
+     * Uploads config-derived uniforms.
+     *
+     * Central semantics (as consumed by the shader):
+     * - Counts are uploaded as integers (e.g. `uPetalsPerFlower`).
+     * - Pixel-space values (thickness/length) are uploaded as-is.
+     * - Rotation speed is interpreted in radians per second (shader uses `uTimeMs * 0.001`).
+     */
     private uploadConfigUniforms(uniformGroup: UniformGroup): void {
         const u = uniformGroup.uniforms as any;
         const cfg = this.config;

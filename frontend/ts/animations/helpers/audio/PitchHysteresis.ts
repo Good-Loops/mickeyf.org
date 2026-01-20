@@ -1,37 +1,82 @@
+/**
+ * Pitch stabilization via hysteresis.
+ *
+ * Sits in the audio pipeline after raw pitch detection and before mapping pitch to visuals.
+ * It reduces jitter by requiring a candidate pitch class to remain stable for a minimum duration
+ * before it is “committed” and exposed downstream.
+ *
+ * Tradeoff: increased stability (fewer flickers) at the cost of slower reaction to fast note changes.
+ */
 import clamp from "@/utils/clamp";
 
+/**
+ * Tuning parameters for {@link PitchHysteresis}.
+ */
 export type PitchHysteresisTuning = {
-    minClarity: number;       // 0..1
-    minHz: number;            // ignore below this
+
+    /** Minimum required pitch confidence in $[0, 1]$ (interpreted as a threshold). */
+    minClarity: number;
+
+    /** Ignores detected pitch values below this frequency, in **Hz**. */
+    minHz: number;
+
+    /** Duration of continuous “silence” required to be considered a long silence, in **milliseconds**. */
     holdAfterSilenceMs: number;
 
-    // hysteresis / stability
-    minStableMs: number;      // candidate must persist this long
-    minHoldMs: number;        // min time between commits
+    /** Minimum time a candidate pitch class must persist before it can be committed, in **milliseconds**. */
+    minStableMs: number;
 
-    // smoothing
-    smoothingBase: number;    // e.g. 0.06
-    smoothingClarityScale: number; // e.g. 0.30
+    /** Minimum time between commits, in **milliseconds**. */
+    minHoldMs: number;
 
-    // micro drift
-    microSemitoneRange: number; // semitone fraction clamp, usually 0.5
-    deadbandFrac: number; // 0..1 fraction of microSemitoneRange to ignore
+    /** Base smoothing factor applied to pitch tracking (dimensionless). */
+    smoothingBase: number;
+
+    /** Additional smoothing factor scaled by clarity (dimensionless). */
+    smoothingClarityScale: number;
+
+    /** Output clamp for micro drift, in **semitones** (fractional MIDI units). */
+    microSemitoneRange: number;
+
+    /** Deadband threshold in **semitones** (fractional MIDI units) used to suppress flicker. */
+    deadbandFrac: number;
 };
 
+/**
+ * Result of a {@link PitchHysteresis.update} step.
+ */
 export type PitchResult =
 | {
     kind: "pitch";
-    hz: number;                 // smoothed
-    midi: number;               // continuous
-    pitchClass: number;           // committed pitch class (0..11)
-    fractionalDistance: number; // midi - midiStep (clamped)
-    changed: boolean;           // true when a new semitone commit happened
+
+    /** Smoothed pitch estimate in **Hz**. */
+    hz: number;
+
+    /** Continuous MIDI note number (can be fractional). */
+    midi: number;
+
+    /** Committed pitch class in `[0, 11]`. */
+    pitchClass: number;
+
+    /** Fractional distance from the nearest semitone, in **semitones** (clamped). */
+    fractionalDistance: number;
+
+    /** `true` only when a new pitch-class commit occurs (event-like). */
+    changed: boolean;
 }
 | {
     kind: "silence";
+
+    /** Accumulated time without a valid pitch, in **milliseconds**. */
     silenceMs: number;
 };
 
+/**
+ * Stabilizes pitch changes and emits committed pitch-class updates.
+ *
+ * “Commit” in this project means: the pitch class is considered stable enough to drive downstream
+ * decisions (e.g. pitch→color mapping) without rapid back-and-forth flicker.
+ */
 export default class PitchHysteresis {
     private smoothedHz = 0;
     private silenceMs = 0;
@@ -45,6 +90,7 @@ export default class PitchHysteresis {
 
     constructor(private tuning: PitchHysteresisTuning) {}
 
+    /** Resets all internal state, including silence/commit timers. */
     reset(): void {
         this.smoothedHz = 0;
         this.silenceMs = 0;
@@ -54,6 +100,16 @@ export default class PitchHysteresis {
         this._candidateStableMs = 0;
     }
 
+    /**
+     * Updates the tracker for one frame.
+     *
+     * Call frequency: typically once per render/audio frame.
+     *
+     * @param input.pitchHz - Raw detected pitch in **Hz**.
+     * @param input.clarity - Pitch confidence in $[0, 1]$.
+     * @param input.dtMs - Elapsed time since the previous update, in **milliseconds**.
+     * @param input.nowMs - Absolute time, in **milliseconds** (monotonic clock).
+     */
     update(input: { pitchHz: number; clarity: number; dtMs: number; nowMs: number }): PitchResult {
         const { pitchHz, clarity, dtMs, nowMs } = input;
 
@@ -83,7 +139,7 @@ export default class PitchHysteresis {
         const hasCommitted = Number.isFinite(this.committedPitchClass);
 
         if (!hasCommitted) {
-            // “Bootstrap” so we never compare against -Infinity
+            // Bootstrap: commit immediately on first valid pitch.
             this._committedPitchClass = pitchClass;
             this.lastCommitAtMs = nowMs;
 
@@ -97,7 +153,6 @@ export default class PitchHysteresis {
             };
         }
 
-        // candidate stability tracking
         if (pitchClass !== this._candidatePitchClass) {
             this._candidatePitchClass = pitchClass;
             this._candidateStableMs = 0;
@@ -112,7 +167,6 @@ export default class PitchHysteresis {
             this.tuning.microSemitoneRange
         );
 
-        // Enforce "no color flickering"
         const absFrac = Math.abs(fractionalDistanceRaw);
         const deadBandOk = absFrac <= this.tuning.deadbandFrac;
 
@@ -138,16 +192,22 @@ export default class PitchHysteresis {
         };
     }
 
+    /** Returns `true` when silence has lasted at least `holdAfterSilenceMs`. */
     isSilentLongEnough(): boolean {
         return this.silenceMs >= this.tuning.holdAfterSilenceMs;
     }
 
+    /** Clamp range for returned `fractionalDistance`, in semitones. */
     get microSemitoneRange(): number { return this.tuning.microSemitoneRange; }
 
+    /** Committed pitch class in `[0, 11]`, or `-Infinity` before the first commit. */
     get committedPitchClass(): number { return this._committedPitchClass; }
+    /** Candidate pitch class in `[0, 11]`, or `-Infinity` when no candidate is tracked. */
     get candidatePitchClass(): number { return this._candidatePitchClass; }
+    /** How long the current candidate has been stable, in **milliseconds**. */
     get candidateStableMs(): number { return this._candidateStableMs; }
 
+    /** Converts frequency in **Hz** to a continuous MIDI note number. */
     static hzToMidi(hz: number): number {
         return 69 + 12 * Math.log2(hz / 440);
     }

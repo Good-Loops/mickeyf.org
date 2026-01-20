@@ -1,3 +1,8 @@
+/**
+ * SPA application shell.
+ * Composes the top-level layout (header/footer) and the client-side route table.
+ * Ownership: this module wires pages and navigation only; domain logic lives in feature modules, hooks, and services.
+ */
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Header from "@/Header";
@@ -18,31 +23,31 @@ import NotFound from "@/pages/NotFound";
 
 const App: React.FC = () => {
   return (
-    <div className="app-shell">
-      <Header />
-      <main className="main">
-        <Routes>
-          <Route path="/" element={<Home />} />
+	<div className="app-shell">
+		<Header />
+		<main className="main">
+			<Routes>
+				<Route path="/" element={<Home />} />
 
-          <Route path="/animations/*" element={<Animations />} />
-          <Route path="/animations/dancing-circles" element={<DancingCircles />} />
-          <Route path="/animations/dancing-fractals" element={<DancingFractals />} />
-          
-          <Route path="/games/*" element={<Games />} />
-          <Route path="/games/p4-Vega" element={<P4Vega />} />
+				<Route path="/animations/*" element={<Animations />} />
+				<Route path="/animations/dancing-circles" element={<DancingCircles />} />
+				<Route path="/animations/dancing-fractals" element={<DancingFractals />} />
+				
+				<Route path="/games/*" element={<Games />} />
+				<Route path="/games/p4-Vega" element={<P4Vega />} />
 
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/social" element={<Social />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-      <footer className="footer">
-        <p className="footer__text">
-          © 2025 Michel Fingergut {/* · Portfolio */}
-        </p>
-      </footer>
+				<Route path="/leaderboard" element={<Leaderboard />} />
+				<Route path="/social" element={<Social />} />
+				<Route path="/login" element={<Login />} />
+				<Route path="/register" element={<Register />} />
+				<Route path="*" element={<NotFound />} />
+			</Routes>
+		</main>
+		<footer className="footer">
+			<p className="footer__text">
+			© 2024 Michel Fingergut {/* · Portfolio */}
+			</p>
+		</footer>
     </div>
   );
 }

@@ -1,13 +1,17 @@
 #version 300 es
 
+/*
+ * Mandelbrot fragment shader (escape-time rendering + optional lighting/tonemapping).
+ * Uniforms are wired from the TS side in MandelbrotShader.ts.
+ * Maps screen UV to the complex plane using uResolution, uCenter, uLogZoom, and uRotation.
+ */
+
 precision highp float;
 precision highp int;
 
 in vec2 vUv;
 
 out vec4 finalColor;
-
-uniform sampler2D uTexture;
 
 uniform vec2 uResolution;
 uniform vec2 uCenter;
@@ -42,8 +46,6 @@ uniform float uRimPower;
 uniform float uAtmosStrength;
 uniform float uAtmosFalloff;
 uniform float uNormalZ;
-
-uniform float uTime;
 
 uniform float uFade;
 
