@@ -3,7 +3,7 @@
     "version": "0.4.2",
     "scripts": {
         "dev": "vite",
-        "test": "tsc --noEmit",
+        "test": "tsc -p tsconfig.json --noEmit",
         "build": "vite build",
         "preview": "vite preview",
         "docs:clean": "rimraf docs",

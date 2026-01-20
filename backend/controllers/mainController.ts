@@ -1,25 +1,40 @@
+/**
+ * Main controller: HTTP handlers for core API endpoints (non-auth).
+ *
+ * Responsibility:
+ * - Implements request/response contracts for core routes owned by the main router.
+ * - Orchestrates persistence operations for these endpoints.
+ *
+ * Non-responsibilities:
+ * - Route mounting and URL design (owned by routers).
+ * - Cross-cutting concerns like auth middleware, CORS, and error middleware (owned by app/router wiring).
+ * - Database pool construction and environment parsing (owned by config).
+ *
+ * Side effects:
+ * - Reads/writes user records in persistence and may emit logs depending on endpoint behavior.
+ *
+ * Trust boundary:
+ * - Treats inbound request data as untrusted; authorization assumptions must be enforced by middleware.
+ */
 import { Request, Response } from 'express';
 import { RowDataPacket } from 'mysql2';
 import { User } from '../types/customTypes';
 import { pool } from '../config/dbConfig';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { stat } from 'fs';
 
 /**
- * Main controller function to handle different types of requests.
- * 
- * @param req - The request object containing the request data.
- * @param res - The response object used to send back the desired HTTP response.
- * 
- * @returns A promise that resolves to the appropriate response based on the request type.
- * 
- * The function handles the following request types:
- * - 'signup': Calls the `addUser` function to handle user signup.
- * - 'login': Calls the `loginUser` function to handle user login.
- * - 'submit_score': Calls the `submitScore` function to handle score submission.
- * - 'get_leaderboard': Calls the `getLeaderboard` function to retrieve the leaderboard.
- * - Default: Returns a JSON response with an error message 'INVALID_TYPE' for unsupported request types.
+ * Main request multiplexer for `/api/users`.
+ *
+ * Request contract:
+ * - Reads: `req.body.type` to select an operation.
+ *
+ * Response contract:
+ * - Status: implicit 200 in most paths (no explicit status set here), except where delegated handlers set it.
+ * - Body: operation-specific JSON payloads; unknown `type` yields `{ error: 'INVALID_TYPE' }`.
+ *
+ * Side effects:
+ * - Delegates to handlers that may read/write persistence and set cookies.
  */
 const mainController = async (req: Request, res: Response) => {
     switch (req.body.type) {
@@ -37,49 +52,28 @@ const mainController = async (req: Request, res: Response) => {
 };
 
 /**
- * Adds a new user to the database.
- * 
- * @param req - The request object containing user details in the body.
- * @param res - The response object used to send back the appropriate response.
- * 
- * @remarks
- * This function performs several validations on the user input:
- * - Checks if `user_name` and `email` are provided.
- * - Ensures `user_password` is between 8 and 16 characters.
- * - Validates the format of the `email`.
- * - Checks for duplicate users in the database.
- * 
- * If all validations pass, the user's password is hashed and the user is inserted into the database.
- * 
- * @returns A JSON response indicating success or the type of error encountered.
- * 
- * @example
- * // Example request body
- * {
- *   "user_name": "john_doe",
- *   "email": "john@example.com",
- *   "user_password": "securePassword123"
- * }
- * 
- * // Example response on success
- * {
- *   "success": true
- * }
- * 
- * // Example response on error
- * {
- *   "error": "INVALID_EMAIL"
- * }
+ * Creates a new user.
+ *
+ * Request contract:
+ * - Reads: `req.body.user_name`, `req.body.email`, `req.body.user_password`.
+ *
+ * Response contract:
+ * - Status: implicit 200 (no explicit status set).
+ * - Body: `{ success: true }` or `{ error: <code> }`.
+ * - Note: duplicate user returns `{ error: 'DUPLICATE_USER', status: 409 }` in the JSON body without setting the HTTP
+ *   status code.
+ *
+ * Side effects:
+ * - Reads from persistence to detect duplicates.
+ * - Hashes the password and inserts a new user record.
+ *
+ * Failure modes:
+ * - Input validation failures return JSON error codes.
+ * - Persistence/other errors return `{ error: 'SERVER_ERROR' }` or `{ error: 'UNEXPECTED_ERROR' }`.
  */
 const addUser = async (req: Request, res: Response) => {
-    // Destructure the request body
     const { user_name, email, user_password } = req.body as User;
-
-    // This variable will hold the result of the query
-    // to check for duplicate users    
     let result = await pool.query('SELECT * FROM users WHERE user_name = ? OR email = ?', [user_name, email]);
-
-    // Validate each field
     if (!user_name || !email) {
         return res.json({ error: 'EMPTY_FIELDS' });
     }
@@ -93,7 +87,7 @@ const addUser = async (req: Request, res: Response) => {
         return res.json({ error: 'DUPLICATE_USER', status: 409 });
     }
 
-    // Hash password
+    /** Bcrypt cost factor for password hashing performed by this controller. */
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(user_password, saltRounds);
 
@@ -114,47 +108,34 @@ const addUser = async (req: Request, res: Response) => {
 };
 
 /**
- * Handles user login by verifying credentials and generating a JWT token.
+ * Authenticates a user and establishes a signed session cookie.
  *
- * @param req - The request object containing user credentials in the body.
- * @param res - The response object used to send back the result of the login attempt.
+ * Request contract:
+ * - Reads: `req.body.user_name`, `req.body.user_password`.
  *
- * @remarks
- * This function expects the request body to contain `user_name` and `user_password` fields.
- * It queries the database to find a user with the provided `user_name`, then compares the provided
- * password with the stored hashed password. If the credentials are correct, it generates a JWT token
- * and sends it back in the response.
+ * Response contract:
+ * - Status: implicit 200 (no explicit status set).
+ * - Body: `{ success: true, token: string, user_name: string }` or `{ error: <code>, message?: string }`.
+ * - Cookies/session: sets a signed, httpOnly `session` cookie on success.
  *
- * @throws Will send a JSON response with an error message if an exception occurs during the process.
+ * Side effects:
+ * - Reads user record from persistence.
+ * - Verifies password via bcrypt.
+ * - Issues a JWT token and sets it as a signed cookie.
+ * - Logs errors on unexpected failures.
  *
- * @example
- * // Example request body
- * {
- *   "user_name": "exampleUser",
- *   "user_password": "examplePassword"
- * }
- *
- * // Example response on success
- * {
- *   "success": true,
- *   "token": "jwtTokenHere",
- *   "user_name": "exampleUser"
- * }
- *
- * // Example response on authentication failure
- * {
- *   "error": "AUTH_FAILED"
- * }
- *
- * // Example response on server error
- * {
- *   "error": "SERVER_ERROR",
- *   "message": "Detailed error message"
- * }
+ * Failure modes:
+ * - Invalid credentials return `{ error: 'AUTH_FAILED' }`.
+ * - Unexpected errors return `{ error: 'SERVER_ERROR', message }` or `{ error: 'UNEXPECTED_ERROR' }`.
  */
 const loginUser = async (req: Request, res: Response) => {
     const { user_name, user_password } = req.body as User;
     try {
+        /**
+         * Controller-local helper that returns the first row of a query result (or null).
+         *
+         * Used to keep DB lookup logic localized to this handler without changing the response contract.
+         */
         async function fetchOne<T>(
             query: string,
             values: any[]
@@ -171,6 +152,13 @@ const loginUser = async (req: Request, res: Response) => {
         if (user) {
             const isPasswordCorrect = await bcrypt.compare(user_password, user.user_password);
             if (isPasswordCorrect) {
+                /**
+                 * Token issuance contract used by this handler.
+                 *
+                 * Invariants:
+                 * - JWT `expiresIn: '4h'` is mirrored by the cookie `maxAge` (milliseconds) below.
+                 * - Cookie name is `session` and is signed because the app uses a signing secret in cookie-parser.
+                 */
                 const token = jwt.sign({ user_id: user.user_id, user_name: user.user_name }, process.env.SESSION_SECRET!, { expiresIn: '4h' });
 
                 const isProd = process.env.NODE_ENV === 'production';
@@ -182,8 +170,7 @@ const loginUser = async (req: Request, res: Response) => {
                     maxAge: 4 * 60 * 60 * 1000, // 4 hours, same as token
                 });
 
-                // Send a JSON response with success status and the token
-                res.json({ success: true, token: token, user_name: user.user_name }); // Include the token in the response
+                res.json({ success: true, token: token, user_name: user.user_name });
             } else {
                 res.json({ error: 'AUTH_FAILED' });
             }
@@ -201,11 +188,20 @@ const loginUser = async (req: Request, res: Response) => {
 };
 
 /**
- * Submits a score for a user.
- * 
- * @param req - The request object.
- * @param res - The response object.
- * @returns A JSON response indicating success or error.
+ * Submits a user's p4-Vega score.
+ *
+ * Request contract:
+ * - Reads: `req.body.user_name`, `req.body.p4_score`.
+ *
+ * Response contract:
+ * - Status: 401 when `user_name` is missing; otherwise implicit 200 on success.
+ * - Body: `{ success: true, personalBest: boolean }` on success.
+ *
+ * Side effects:
+ * - Reads the current score from persistence and conditionally updates it.
+ *
+ * Failure modes:
+ * - Persistence/other errors return status 500 with `{ error: 'SERVER_ERROR' }`.
  */
 const submitScore = async (req: Request, res: Response) => {
     const { user_name, p4_score } = req.body;
@@ -217,18 +213,15 @@ const submitScore = async (req: Request, res: Response) => {
     }
 
     try {
-        // Fetch the current score from the database
         const [rows] = await pool.query(
             'SELECT p4_score FROM users WHERE user_name = ?',
             [user_name]
         );
 
-        // Check if the new score is higher than the current score
         if ((Array.isArray(rows)
         && rows.length > 0
         && (rows[0] as RowDataPacket).p4_score < p4_score)
         && p4_score !== null) {
-            // Update the user's score in the database
             await pool.query(
                 'UPDATE users SET p4_score = ? WHERE user_name = ?',
                 [p4_score, user_name]
@@ -243,14 +236,21 @@ const submitScore = async (req: Request, res: Response) => {
 };
 
 /**
- * Retrieves the leaderboard data.
- * @param _req - The request object.
- * @param res - The response object.
- * @returns A JSON response containing the leaderboard data.
+ * Retrieves leaderboard entries.
+ *
+ * Request contract:
+ * - Reads: no request fields (the request object is unused).
+ *
+ * Response contract:
+ * - Status: 200 on success; 500 on failure.
+ * - Body: `{ success: true, leaderboard: rows }` on success; `{ error: 'SERVER_ERROR' }` on failure.
+ *
+ * Side effects:
+ * - Reads from persistence (top 10 users with non-null scores, ordered descending).
+ * - Logs error details on failure.
  */
 const getLeaderboard = async (_req: Request, res: Response) => {
     try {
-        // Query the database to fetch the top 10 users with non-null p4_score, ordered by p4_score in descending order
         const [rows] = await pool.query(
             `SELECT user_name, p4_score 
                 FROM users 
@@ -258,13 +258,11 @@ const getLeaderboard = async (_req: Request, res: Response) => {
                 ORDER BY p4_score DESC 
                 LIMIT 10`
         );
-        // Send a JSON response with success status and the leaderboard data
         res.json({ success: true, leaderboard: rows });
     } catch (error: unknown) {
         const msg =
             error instanceof Error ? error.message : JSON.stringify(error); 
         console.error('Leaderboard error:', msg);
-        // Send a JSON response with error status if there is an error while fetching the leaderboard data
         res.status(500).json({ error: 'SERVER_ERROR' });
     }
 };
