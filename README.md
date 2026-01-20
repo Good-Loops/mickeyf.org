@@ -2,6 +2,13 @@
 
 This is a dynamic web platform designed to entertain and educate, featuring a curated selection of games, animations, and educational resources focused on music and math. The site aims to be a resource for learning, offering users the ability to explore new concepts through interactive content.
 
+## Documentation
+
+📚 **API Documentation (TypeDoc)**  
+https://good-loops.github.io/mickeyf.org/
+
+The documentation covers frontend and backend modules, animation systems, shaders, controllers, and configuration contracts. It is generated directly from the source and published automatically on each push to `main`.
+
 ## Features
 
 - In-browser games for entertainment and educational purposes.
