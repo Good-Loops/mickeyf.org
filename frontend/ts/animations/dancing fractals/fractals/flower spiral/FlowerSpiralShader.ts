@@ -1,3 +1,14 @@
+/**
+ * Host-side wiring for the FlowerSpiral GLSL shaders.
+ *
+ * Boundary:
+ * - Rendering/math lives in `flowerSpiral.frag` / `flowerSpiral.vert`.
+ * - This module defines the TS-side uniform shape and maps runtime values into a PIXI {@link UniformGroup}.
+ *
+ * Ownership:
+ * - Factories in this file allocate per-instance objects (uniform buffers, {@link UniformGroup}, {@link Filter}).
+ * - No shared caching is performed here; reuse is only safe if you intentionally want shared uniform state.
+ */
 import { Filter, GlProgram, UniformGroup } from "pixi.js";
 
 import clamp from "@/utils/clamp";
@@ -7,50 +18,109 @@ import fragmentSrc from "./flowerSpiral.frag?raw";
 
 export const FLOWER_MAX = 64;
 
+/**
+ * Uniforms consumed by `flowerSpiral.frag`.
+ *
+ * Notes:
+ * - Arrays are represented as `Float32Array` for efficient upload.
+ * - Some parameters are in shader-space; when units are ambiguous, the shader is authoritative.
+ */
 export type FlowerSpiralUniforms = {
-    // Frame
+    /** Absolute time in **milliseconds**. Shader derives seconds via `uTimeMs * 0.001`. */
     uTimeMs: number;
+    /** Viewport resolution in **pixels** as `[widthPx, heightPx]`. */
     uResolution: Float32Array;
+    /** Center point in **pixels**; shader uses `gl_FragCoord.xy - uCenterPx` for centered coordinates. */
     uCenterPx: Float32Array;
 
+    /** Dimensionless zoom factor (1 = no zoom). Applied in shader-space. */
     uZoom: number;
 
-    // Config
+    /** Number of flowers to draw. Clamped to `[1, FLOWER_MAX]` on the host. */
     uFlowerAmount: number;
+    /** Number of petals per flower. Integer (shader clamps to `[1, 64]`). */
     uPetalsPerFlower: number;
+    /**
+     * Flower spawn/visibility rate in flowers per second.
+     * Currently unused in the shader; retained for uniform shape parity.
+     */
     uFlowersPerSecond: number;
+    /** Alpha multiplier for flower strokes. Expected range $[0,1]$ (shader clamps final alpha). */
     uFlowersAlpha: number;
+    /** Petal rotation speed in radians per second (multiplied by `uTimeMs * 0.001` in shader). */
     uPetalRotationSpeed: number;
+    /**
+     * Radius scaling at the start of the spiral (dimensionless).
+     * Used as an interpolation endpoint for `radiusScale` in the shader.
+     */
     uMinRadiusScale: number;
+    /**
+     * Radius scaling at the end of the spiral (dimensionless).
+     * Used as an interpolation endpoint for `radiusScale` in the shader.
+     */
     uMaxRadiusScale: number;
+    /**
+     * Spiral increment in **pixels**.
+     * Used to compute the per-flower spiral radius before converting pixels → normalized shader space.
+     */
     uSpiralIncrement: number;
+    /** Total spiral rotations across the flower index range, in revolutions (multiplied by $2\pi$ in shader). */
     uRevolutions: number;
+    /** Dimensionless scale applied to the spiral radius (pixel-domain multiplier before normalization). */
     uScale: number;
+    /**
+     * Visible flower count as a float.
+     * Used for smooth grow/shrink: each flower uses `uVisibleFlowerCount - i` as a per-index visibility signal.
+     */
     uVisibleFlowerCount: number;
 
-    // Width/Radius LFO (idle)
+    /** Base petal thickness in **pixels** (before zoom normalization in shader). */
     uPetalThicknessBase: number;
+    /** Thickness modulation amplitude in **pixels**. */
     uPetalThicknessVariation: number;
+    /** Thickness modulation angular frequency applied to `uTimeMs` (radians per millisecond). */
     uPetalThicknessSpeed: number;
+    /** Base petal length in **pixels** (before zoom normalization in shader). */
     uPetalLengthBase: number;
+    /** Length modulation amplitude in **pixels**. */
     uPetalLengthVariation: number;
+    /** Length modulation angular frequency applied to `uTimeMs` (radians per millisecond). */
     uPetalLengthSpeed: number;
 
-    // Music
+    /** Music presence flag as float (expected 0 or 1). Used for shader-side mixing. */
     uHasMusic: number;
+    /** Music influence weight in $[0,1]$ used to bias hue. */
     uMusicWeight01: number;
+    /** Beat envelope in $[0,1]$ (continuous beat intensity). */
     uBeatEnv01: number;
+    /** Beat kick/impulse in $[0,1]$ (short-lived transient). */
     uBeatKick01: number;
+    /** Pitch-derived hue in **degrees**. */
     uPitchHue: number;
 
-    // Palette
+    /**
+     * Flower palette as HSL triples.
+     * Layout: contiguous `[hueDeg, saturation01, lightness01]` for `FLOWER_MAX` entries.
+     */
     uFlowerPaletteHsl: Float32Array;
 };
 
+/**
+ * Creates a {@link UniformGroup} plus the backing JS/typed-array storage used to update uniforms.
+ *
+ * Coordinate mapping:
+ * - This module forwards resolution/center in pixels.
+ * - Pixel → normalized coordinate mapping and aspect correction are performed in the fragment shader
+ *   (it normalizes by `uResolution.y`).
+ */
 export const createFlowerSpiralUniformGroup = (args: {
+    /** Viewport width in pixels. */
     widthPx: number;
+    /** Viewport height in pixels. */
     heightPx: number;
+    /** Center X in pixels, in the same coordinate space as `gl_FragCoord.x`. */
     centerX: number;
+    /** Center Y in pixels, in the same coordinate space as `gl_FragCoord.y`. */
     centerY: number;
 }): { uniformGroup: UniformGroup; uniforms: FlowerSpiralUniforms; paletteHsl: Float32Array } => {
     const paletteHsl = new Float32Array(FLOWER_MAX * 3);
@@ -128,6 +198,13 @@ export const createFlowerSpiralUniformGroup = (args: {
     return { uniformGroup, uniforms, paletteHsl };
 };
 
+/**
+ * Creates a PIXI {@link Filter} backed by the FlowerSpiral GLSL programs.
+ *
+ * Lifetime:
+ * - The returned filter is meant to be owned by a single animation instance.
+ * - Reusing a single filter/uniform group across multiple sprites will share uniform state.
+ */
 export const createFlowerSpiralFilter = (uniformGroup: UniformGroup): Filter => {
     return new Filter({
         glProgram: new GlProgram({
@@ -140,4 +217,5 @@ export const createFlowerSpiralFilter = (uniformGroup: UniformGroup): Filter => 
     });
 };
 
+/** Clamps a flower count to the shader-supported integer range `[1, FLOWER_MAX]`. */
 export const clampFlowerAmount = (n: number): number => clamp(n, 1, FLOWER_MAX) | 0;
