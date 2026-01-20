@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { RowDataPacket } from 'mysql2';
-import { IUser } from '../types/customTypes';
+import { User } from '../types/customTypes';
 import { pool } from '../config/dbConfig';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -73,7 +73,7 @@ const mainController = async (req: Request, res: Response) => {
  */
 const addUser = async (req: Request, res: Response) => {
     // Destructure the request body
-    const { user_name, email, user_password } = req.body as IUser;
+    const { user_name, email, user_password } = req.body as User;
 
     // This variable will hold the result of the query
     // to check for duplicate users    
@@ -153,7 +153,7 @@ const addUser = async (req: Request, res: Response) => {
  * }
  */
 const loginUser = async (req: Request, res: Response) => {
-    const { user_name, user_password } = req.body as IUser;
+    const { user_name, user_password } = req.body as User;
     try {
         async function fetchOne<T>(
             query: string,
@@ -163,7 +163,7 @@ const loginUser = async (req: Request, res: Response) => {
             return rows.length > 0 ? (rows[0] as T) : null;
         }
 
-        const user = await fetchOne<IUser>(
+        const user = await fetchOne<User>(
             'SELECT * FROM users WHERE user_name = ?',
             [user_name]
         );
