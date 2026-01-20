@@ -1,5 +1,12 @@
 #version 300 es
 
+/*
+ * FlowerSpiral fragment shader (petals/flowers in shader space).
+ * Uniforms are wired by `FlowerSpiralShader.ts`.
+ * Controls: time, resolution/center, geometry/thickness, palette/hue, and audio-reactivity inputs.
+ * Coordinate mapping is handled here (via `gl_FragCoord` and `uResolution`) rather than shared with the vertex shader.
+ */
+
 precision highp float;
 precision highp int;
 
