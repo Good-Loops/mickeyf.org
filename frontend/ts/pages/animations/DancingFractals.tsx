@@ -1,3 +1,8 @@
+/**
+ * Dancing Fractals page ("/animations/dancing-fractals").
+ * Hosts a PIXI fractal canvas and composes the configuration + music controls UI.
+ * Owns mount/unmount of the imperative fractal host and related monitoring loops.
+ */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type TreeConfig, defaultTreeConfig } from '@/animations/dancing fractals/config/TreeConfig'; 
@@ -86,6 +91,7 @@ const DancingFractals: React.FC = () => {
         })();
 
         return () => {
+            // Must dispose on unmount to prevent leaks/duplicate loops.
             cancelled = true;
             hostRef.current?.dispose();
             hostRef.current = null;

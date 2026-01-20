@@ -1,3 +1,7 @@
+/**
+ * Not-found route (catch-all).
+ * Rendered when no client-side route matches.
+ */
 import React from "react";
 
 const NotFound: React.FC = () => {

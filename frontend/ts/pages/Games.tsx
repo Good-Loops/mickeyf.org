@@ -1,3 +1,7 @@
+/**
+ * Games index page ("/games").
+ * Provides navigation to interactive game experiences.
+ */
 import React from "react";
 import { Link } from "react-router-dom";
 

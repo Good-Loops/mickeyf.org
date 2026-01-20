@@ -1,3 +1,8 @@
+/**
+ * p4-Vega game page ("/games/p4-Vega").
+ * Mounts the PIXI game runner and provides the page-level UI controls.
+ * Unmount must dispose the runner to stop the loop and release resources.
+ */
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from '@/context/AuthContext';
 import p4Vega from '@/games/p4-Vega/p4-Vega';
@@ -23,7 +28,10 @@ const P4Vega: React.FC = () => {
             });
         })();
 
-        return () => dispose?.();
+        return () => {
+            // Must dispose on unmount to prevent duplicate loops.
+            dispose?.();
+        };
     }, []);
 
     return (

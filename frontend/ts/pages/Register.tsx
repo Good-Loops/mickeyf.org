@@ -1,3 +1,7 @@
+/**
+ * Registration page ("/register").
+ * Collects signup details and calls the backend registration endpoint.
+ */
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { API_BASE } from "@/config/apiConfig";
