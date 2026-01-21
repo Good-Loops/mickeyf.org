@@ -19,7 +19,7 @@
 import { Request, Response } from 'express';
 import { RowDataPacket } from 'mysql2';
 import { User } from '../types/customTypes';
-import { pool } from '../config/dbConfig';
+import { pool } from '../db/dbConfig';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 

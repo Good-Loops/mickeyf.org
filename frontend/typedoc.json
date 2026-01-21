@@ -1,6 +1,11 @@
 {
   "tsconfig": "./tsconfig.typedoc.json",
-  "entryPoints": ["ts"],
+  "entryPoints": [
+    "ts/animations",
+    "ts/games",
+    "ts/services",
+    "ts/utils"
+  ],
   "entryPointStrategy": "expand",
   "exclude": [
     "**/App.tsx", 
@@ -8,7 +13,10 @@
     "**/Header.tsx", 
     "**/components/**", 
     "**/pages/**",
-    "**/hooks/**"
+    "**/hooks/**",
+    "**/context/**",
+    "**/node_modules/**",
+    "**/dist/**",
   ],
   "excludePrivate": true,
   "excludeProtected": true,

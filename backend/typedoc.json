@@ -1,12 +1,22 @@
 {
   "tsconfig": "./tsconfig.typedoc.json",
-  "entryPoints": ["ts"],
+  "entryPoints": [
+    "ts/controllers",
+    "ts/routers",
+    "ts/types",
+    "ts/db"
+  ],
   "entryPointStrategy": "expand",
-  "exclude": ["**/node_modules/**", "**/dist/**", "**/build/**", "**/*.test.ts", "**/*.spec.ts"],
+  "exclude": [
+    "**/node_modules/**", 
+    "**/dist/**", 
+    "**/build/**", 
+    "**/*.test.ts", 
+    "**/*.spec.ts"
+  ],
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeExternals": true,
   "readme": "none",
   "json": "../.typedoc-tmp/backend.json"
 }
-
