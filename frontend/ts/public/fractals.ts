@@ -4,6 +4,16 @@
 
 export { Mandelbrot } from '../animations/dancing fractals/fractals/Mandelbrot';
 
+export { MandelbrotTour } from '../animations/dancing fractals/fractals/mandelbrot/MandelbrotTour';
+export type {
+	Vec2,
+	TourOutput,
+	TourDurations,
+	TourZoomTargets,
+	TourPresentation,
+	TourConfigPatch,
+} from '../animations/dancing fractals/fractals/mandelbrot/MandelbrotTourTypes';
+
 export { FlowerSpiral } from '../animations/dancing fractals/fractals/FlowerSpiral';
 export { Tree } from '../animations/dancing fractals/fractals/Tree';
 

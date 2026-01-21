@@ -5,3 +5,5 @@
  */
 
 export { P4 } from '../games/p4-Vega/classes/P4';
+
+export { Entity } from '../games/helpers/Entity';
