@@ -13,7 +13,7 @@
  * - Route path + method pairs form a stable external contract.
  */
 import { Router } from 'express';
-import mainController from '../controllers/mainController';
+import { mainController } from '../controllers/mainController';
 
 /**
  * Configured Express router for core API routes.
@@ -31,4 +31,4 @@ mainRouter.get('/users', (_req, res) => {
     res.send('GET request to /api/users is not supported. Please use POST.');
 });
 
-export default mainRouter;
+export { mainRouter };

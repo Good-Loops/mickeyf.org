@@ -13,7 +13,7 @@
  * - Route path + method pairs form a stable external contract.
  */
 import { Router } from 'express';
-import authController from '../controllers/authController';
+import { authController } from '../controllers/authController';
 
 /**
  * Configured Express router for authentication routes.
@@ -40,4 +40,4 @@ authRouter.post('/logout', (_req, res) => {
     res.json({ loggedOut: true });
 });
 
-export default authRouter;
+export { authRouter };

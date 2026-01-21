@@ -31,8 +31,8 @@ import helmet from 'helmet'; // Import the Helmet module
 import cors from 'cors';  // Import the CORS module
  
 // Import routers
-import mainRouter from './routers/mainRouter'; // Import the main router
-import authRouter from './routers/authRouter'; // Import the auth router
+import { mainRouter } from './routers/mainRouter'; // Import the main router
+import { authRouter } from './routers/authRouter'; // Import the auth router
 
 /** Environment selector used to choose between the dev/prod API base URL env vars. */
 const environment: string = process.env.NODE_ENV as string; // Determine environment
@@ -143,4 +143,4 @@ const port = Number(process.env.BACKEND_PORT ?? 8080);
 /** Server start: starts the HTTP listener for this process using `BACKEND_PORT`/default port. */
 app.listen(port, () => console.log(`Listening on ${port}`));
 
-export default app; // Export the Express application
+export { app }; // Export the Express application
