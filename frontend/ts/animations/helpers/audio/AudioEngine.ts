@@ -69,7 +69,7 @@ const DEFAULT_STATE: AudioState = {
  * Thread model: this code runs on the main JS thread; Web Audio processing occurs on the browser's
  * internal audio thread and is sampled into JS on each analysis tick.
  */
-class AudioEngine {
+export class AudioEngine {
     state: AudioState = { ...DEFAULT_STATE, beat: { ...DEFAULT_STATE.beat } };
     
     private audioElement: HTMLAudioElement | null = null;

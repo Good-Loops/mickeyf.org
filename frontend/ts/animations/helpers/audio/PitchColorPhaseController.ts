@@ -40,7 +40,7 @@ type PitchColorPhaseState = {
     lastKind: "silence" | "pitch";
 };
 
-type PitchColorPhaseTuning = {
+export type PitchColorPhaseTuning = {
     colorIntervalMs: number;
     listenAfterSilenceMs: number;
     

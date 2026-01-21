@@ -52,7 +52,7 @@ export type AudioParams = {
     pitchHz: number;
 };
 
-type ControllerDeps = {
+export type ControllerDeps = {
     bounds: CircleBounds;
     circles: Circle[];
     beatFrame: BeatFrame;

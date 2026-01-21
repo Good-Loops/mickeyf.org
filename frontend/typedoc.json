@@ -1,12 +1,10 @@
 {
   "tsconfig": "./tsconfig.typedoc.json",
+  "basePath": "..",
   "entryPoints": [
-    "ts/animations",
-    "ts/games",
-    "ts/services",
-    "ts/utils"
+    "ts/public.ts"
   ],
-  "entryPointStrategy": "expand",
+  "entryPointStrategy": "resolve",
   "exclude": [
     "**/App.tsx", 
     "**/main.tsx", 
@@ -21,6 +19,12 @@
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeExternals": true,
+  "externalSymbolLinkMappings": {
+    "pixi.js": {
+      "Application": "https://pixijs.download/release/docs/PIXI.Application.html",
+      "Graphics": "https://pixijs.download/release/docs/PIXI.Graphics.html"
+    }
+  },
   "readme": "none",
   "json": "../.typedoc-tmp/frontend.json"
 }

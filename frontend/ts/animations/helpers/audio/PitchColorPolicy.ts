@@ -22,7 +22,7 @@ import { clamp } from "@/utils/clamp";
 import { getRandomHsl, HslColor, HslRanges } from "@/utils/hsl";
 import { pitchClassToHue } from "@/animations/helpers/audio/pitchClassToHue";
 
-type PitchColorPolicyDeps = {
+export type PitchColorPolicyDeps = {
     /** Pitch stabilizer that emits committed pitch-class updates. */
     tracker: PitchHysteresis;
     tuning: {
@@ -58,7 +58,7 @@ type PitchColorPolicyDeps = {
     initialColor?: HslColor;
 };
 
-type DecideInput = {
+export type DecideInput = {
     /** Raw detected pitch in **Hz**. */
     pitchHz: number;
 

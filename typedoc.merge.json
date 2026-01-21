@@ -10,6 +10,12 @@
   "readme": "docs-src/index.md",
   "cleanOutputDir": true,
   "excludeExternals": true,
+  "externalSymbolLinkMappings": {
+    "pixi.js": {
+      "Application": "https://pixijs.download/release/docs/PIXI.Application.html",
+      "Graphics": "https://pixijs.download/release/docs/PIXI.Graphics.html"
+    }
+  },
   "navigationLinks": {
     "Home": "index.html",
     "mickeyf.org": "https://mickeyf.org",

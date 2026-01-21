@@ -1,12 +1,10 @@
 {
   "tsconfig": "./tsconfig.typedoc.json",
+  "basePath": "..",
   "entryPoints": [
-    "ts/controllers",
-    "ts/routers",
-    "ts/types",
-    "ts/db"
+    "ts/public.ts"
   ],
-  "entryPointStrategy": "expand",
+  "entryPointStrategy": "resolve",
   "exclude": [
     "**/node_modules/**", 
     "**/dist/**", 

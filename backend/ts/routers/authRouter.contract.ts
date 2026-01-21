@@ -14,17 +14,7 @@
  * - `logout` clears the `session` cookie (if present) and returns `{ loggedOut: true }`.
  */
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-export type AuthLevel = 'public' | 'user' | 'admin';
-
-export type RouteContract<Req, Res> = {
-    id: string;
-    method: HttpMethod;
-    path: string;
-    auth: AuthLevel;
-    request: Req;
-    response: Res;
-};
+import type { RouteContract } from './routeContract';
 
 /**
  * GET /verify-token request.

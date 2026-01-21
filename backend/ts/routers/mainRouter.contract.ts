@@ -13,17 +13,7 @@
  * - Auth level describes expected caller context, not enforcement (middleware is responsible for enforcement).
  */
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-export type AuthLevel = 'public' | 'user' | 'admin';
-
-export type RouteContract<Req, Res> = {
-    id: string;
-    method: HttpMethod;
-    path: string;
-    auth: AuthLevel;
-    request: Req;
-    response: Res;
-};
+import type { RouteContract } from './routeContract';
 
 /**
  * POST /users request body.
