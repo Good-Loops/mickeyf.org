@@ -17,7 +17,7 @@
  */
 import { Graphics } from "pixi.js";
 
-import expSmoothing from "@/utils/expSmoothing";
+import { expSmoothing } from "@/utils/expSmoothing";
 import { toHslaString } from "@/utils/hsl";
 
 import Circle from "./classes/Circle";

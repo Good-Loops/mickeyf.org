@@ -10,7 +10,7 @@
  */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import { getRandomX, getRandomY } from '@/utils/random';
-import isColliding from '@/utils/isColliding';
+import { isColliding } from '@/utils/isColliding';
 
 import NoteSelector from '@/games/helpers/NoteSelector';
 import Entity from '@/games/helpers/Entity';

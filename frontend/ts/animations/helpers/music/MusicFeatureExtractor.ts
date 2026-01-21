@@ -13,7 +13,7 @@ import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { ColorDecision } from "@/animations/helpers/audio/PitchColorPolicy";
 import type BeatEnvelope from "@/animations/helpers/audio/BeatEnvelope";
 import type PitchColorPhaseController from "@/animations/helpers/audio/PitchColorPhaseController";
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 import type { HslColor } from "@/utils/hsl";
 
 /**

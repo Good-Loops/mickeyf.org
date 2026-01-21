@@ -24,9 +24,9 @@ import { defaultMandelbrotConfig, type MandelbrotConfig } from "@/animations/dan
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
 
-import clamp from "@/utils/clamp";
-import lerp from "@/utils/lerp";
-import smoothstep01 from "@/utils/smoothstep01";
+import { clamp } from "@/utils/clamp";
+import { lerp } from "@/utils/lerp";
+import { smoothstep01 } from "@/utils/smoothstep01";
 import { hslToRgb } from "@/utils/hsl";
 
 import {

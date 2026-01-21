@@ -11,7 +11,7 @@
  * - Global policies (retarget cadence, audio gating, bounds rules) are controller responsibilities.
  */
 import { getRandomX, getRandomY } from "@/utils/random";
-import lerp from "@/utils/lerp";
+import { lerp } from "@/utils/lerp";
 import { getRandomHsl, HslColor, HslRanges, lerpHsl } from "@/utils/hsl";
 
 type CircleInit = {

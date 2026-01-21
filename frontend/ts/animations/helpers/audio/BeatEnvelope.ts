@@ -9,8 +9,8 @@
  *
  * High-level mapping: raw beat/strength → gated trigger → smoothed envelope ($[0, 1]$) + `didTrigger`.
  */
-import clamp from "@/utils/clamp";
-import expSmoothing from "@/utils/expSmoothing";
+import { clamp } from "@/utils/clamp";
+import { expSmoothing } from "@/utils/expSmoothing";
 
 /**
  * Tuning parameters for {@link BeatEnvelope}.

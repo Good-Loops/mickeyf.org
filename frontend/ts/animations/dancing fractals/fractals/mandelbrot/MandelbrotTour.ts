@@ -18,8 +18,8 @@
  * - Output is a {@link TourOutput} describing the desired center/rotation and an additive log-zoom
  *   delta to be composed by the hosting view system.
  */
-import lerp from "@/utils/lerp";
-import clamp from "@/utils/clamp";
+import { lerp } from "@/utils/lerp";
+import { clamp } from "@/utils/clamp";
 
 import {
     advanceState,

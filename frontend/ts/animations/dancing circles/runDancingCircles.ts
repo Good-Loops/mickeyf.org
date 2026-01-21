@@ -27,7 +27,7 @@ import { createRenderer } from "@/animations/dancing circles/renderer";
 import Circle from "./classes/Circle";
 import CircleBounds from "./classes/CircleBounds";
 import DancingCirclesController, { AudioParams, BeatFrame, BeatMove } from "@/animations/dancing circles/DancingCirclesController";
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 
 type DancingCirclesDeps = {
     container: HTMLElement;

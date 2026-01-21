@@ -9,7 +9,7 @@
  * - Typically created by the runner/controller from the canvas dimensions.
  * - Consumed by controller/renderer code to constrain circle positions and targets.
  */
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 import Circle from "./Circle";
 
 /**

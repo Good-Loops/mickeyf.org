@@ -16,7 +16,7 @@ import {
     getRandomX,
     getRandomY,
 } from '@/utils/random';
-import isColliding from '@/utils/isColliding';
+import { isColliding } from '@/utils/isColliding';
 
 import Entity from '@/games/helpers/Entity';
 

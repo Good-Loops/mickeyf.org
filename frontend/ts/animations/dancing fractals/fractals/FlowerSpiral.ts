@@ -16,7 +16,7 @@ import PaletteTween from "@/animations/helpers/color/PaletteTween";
 import PitchHueCommitter from "@/animations/helpers/color/PitchHueCommitter";
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 import type FractalAnimation from "../interfaces/FractalAnimation";
 import { defaultFlowerSpiralConfig, type FlowerSpiralConfig } from "../config/FlowerSpiralConfig";
 import { FLOWER_MAX, clampFlowerAmount, createFlowerSpiralFilter, createFlowerSpiralUniformGroup } from "./flower spiral/FlowerSpiralShader";

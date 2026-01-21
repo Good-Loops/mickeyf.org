@@ -11,7 +11,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
  *
  * @returns `true` with probability ~0.5, otherwise `false`.
  */
-export const getRandomBoolean = (): boolean  => {
+export function getRandomBoolean (): boolean  {
     return Math.random() >= 0.5;
 }
 
@@ -29,7 +29,7 @@ export const getRandomBoolean = (): boolean  => {
  *   `(max - min + 1)` is non-positive.
  * - If any input is `NaN`, the result is `NaN`.
  */
-export const getRandomInt = (min: number, max: number): number => {
+export function getRandomInt (min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -41,7 +41,7 @@ export const getRandomInt = (min: number, max: number): number => {
  * @param width - Element width in pixels.
  * @param gap - Optional edge gap in pixels.
  */
-export const getRandomX = (width: number, gap: number = 0): number => {
+export function getRandomX (width: number, gap: number = 0): number {
     let x = (Math.random() * (CANVAS_WIDTH - width + gap));
     if (x < width - gap) {
         x += width - x;
@@ -57,7 +57,7 @@ export const getRandomX = (width: number, gap: number = 0): number => {
  * @param width - Element size in pixels (used as the placement constraint).
  * @param gap - Optional edge gap in pixels.
  */
-export const getRandomY = (width: number, gap: number = 0): number => {
+export function getRandomY (width: number, gap: number = 0): number {
     let y = (Math.random() * (CANVAS_HEIGHT - width + gap));
     if (y < width - gap) {
         y += width - y;
@@ -73,7 +73,7 @@ export const getRandomY = (width: number, gap: number = 0): number => {
  * @param arrayLength - Number of indices to generate.
  * @returns An array of length `arrayLength` containing each index exactly once.
  */
-export const getRandomIndexArray = (arrayLength: number): number[] => {
+export function getRandomIndexArray (arrayLength: number): number[] {
     const indices = Array.from({ length: arrayLength }, (_, i) => i);
 
     for (let i = indices.length - 1; i > 0; i--) {

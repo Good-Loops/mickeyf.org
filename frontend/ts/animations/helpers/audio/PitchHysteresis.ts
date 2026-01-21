@@ -7,7 +7,7 @@
  *
  * Tradeoff: increased stability (fewer flickers) at the cost of slower reaction to fast note changes.
  */
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 
 /**
  * Tuning parameters for {@link PitchHysteresis}.

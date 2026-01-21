@@ -18,7 +18,7 @@
  * Saturation/lightness are expressed as **percent** values (typically $[0, 100]$).
  */
 import PitchHysteresis, { PitchResult } from "@/animations/helpers/audio/PitchHysteresis";
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 import { getRandomHsl, HslColor, HslRanges } from "@/utils/hsl";
 import hzToPitchInfo from "@/animations/helpers/audio/pitchInfo";
 import pitchClassToHue from "@/animations/helpers/audio/pitchClassToHue";

@@ -18,9 +18,7 @@
  * - If `interpolationFactor` is `NaN`, the result is `NaN`.
  * - `±Infinity` for `interpolationFactor` clamp to `1` or `0` respectively.
  */
-const lerp = (start: number, end: number, interpolationFactor: number): number => {
+export function lerp (start: number, end: number, interpolationFactor: number): number {
     const t = Math.min(1, Math.max(0, interpolationFactor));
     return start + (end - start) * t;
 };
-
-export default lerp;

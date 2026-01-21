@@ -10,7 +10,7 @@
  * - `wrapHue` wraps degrees; it does not clamp saturation/lightness.
  * - `hslToRgb` converts to RGB byte channels for efficient pixel/uniform use.
  */
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 import { getRandomInt } from "@/utils/random";
 
 /**
@@ -60,7 +60,7 @@ const formatHue = (h: number): string => {
  *
  * @returns A string in the form `hsl(<hue>, <saturation>%, <lightness>%)`.
  */
-export const toHslString = (color: HslColor) => `hsl(${formatHue(color.hue)}, ${color.saturation}%, ${color.lightness}%)`;
+export function toHslString(color: HslColor) { return `hsl(${formatHue(color.hue)}, ${color.saturation}%, ${color.lightness}%)`; }
 
 /**
  * Formats an {@link HslColor} + alpha as a CSS `hsla(...)` string.
@@ -69,16 +69,16 @@ export const toHslString = (color: HslColor) => `hsl(${formatHue(color.hue)}, ${
  *
  * @returns A string in the form `hsla(<hue>, <saturation>%, <lightness>%, <alpha>)`.
  */
-export const toHslaString = (color: HslColor, alpha: number) => 
-	`hsla(${formatHue(color.hue)}, ${color.saturation}%, ${color.lightness}%, ${clamp(alpha, 0, 1).toFixed(3)})`;
-
+export function toHslaString(color: HslColor, alpha: number) { 
+	return `hsla(${formatHue(color.hue)}, ${color.saturation}%, ${color.lightness}%, ${clamp(alpha, 0, 1).toFixed(3)})`;
+};
 /**
  * Parses a CSS `hsl(...)` string into an {@link HslColor}.
  *
  * The parser is intentionally simple: it expects comma-separated components and reads integer
  * values (e.g. `"hsl(120, 50%, 40%)"`).
  */
-export const parseHslString = (hsl: string): HslColor => {
+export function parseHslString(hsl: string): HslColor {
     const rawHsl = hsl.slice(4, -1).split(",").map(string => string.trim());
 
     const hue = parseInt(rawHsl[0], 10);
@@ -91,7 +91,7 @@ export const parseHslString = (hsl: string): HslColor => {
 /**
  * Wraps a hue angle in degrees into the canonical range $[0, 360)$.
  */
-export const wrapHue = (h: number) => ((h % 360) + 360) % 360;
+export function wrapHue(h: number) { return ((h % 360) + 360) % 360; }
 
 const lerpHue = (h1: number, h2: number, t: number) => {
     const a = wrapHue(h1);
@@ -110,12 +110,13 @@ const lerpHue = (h1: number, h2: number, t: number) => {
  * Hue interpolation wraps through the shortest angular distance. Saturation/lightness are interpolated
  * linearly and rounded to integers.
  */
-export const lerpHsl = (a: HslColor, b: HslColor, t: number): HslColor => ({
-    hue: lerpHue(a.hue, b.hue, t),
-    saturation: Math.round(a.saturation + (b.saturation - a.saturation) * t),
-    lightness: Math.round(a.lightness + (b.lightness - a.lightness) * t),
-});
-
+export function lerpHsl(a: HslColor, b: HslColor, t: number): HslColor {
+    return {
+        hue: lerpHue(a.hue, b.hue, t),
+        saturation: Math.round(a.saturation + (b.saturation - a.saturation) * t),
+        lightness: Math.round(a.lightness + (b.lightness - a.lightness) * t),
+    };
+}
 /**
  * Converts an {@link HslColor} (degrees, percents) to RGB byte channels.
  *
@@ -124,7 +125,7 @@ export const lerpHsl = (a: HslColor, b: HslColor, t: number): HslColor => ({
  *
  * @returns `[r, g, b]` as integers in the range `[0, 255]`.
  */
-export const hslToRgb = (color: HslColor): [number, number, number] => {
+export function hslToRgb(color: HslColor): [number, number, number] {
 	const h = wrapHue(color.hue) / 360;
 	const s = clamp(color.saturation / 100, 0, 1);
 	const l = clamp(color.lightness / 100, 0, 1);
@@ -165,7 +166,7 @@ const getRandomHue = (): number => (Math.random() * 360) | 0;
  *
  * If `ranges.hue` is omitted, hue is chosen uniformly from `[0, 360)` degrees.
  */
-export const getRandomHsl = (ranges: HslRanges): HslColor => {
+export function getRandomHsl(ranges: HslRanges): HslColor {
 	const hue = ranges?.hue
 		? getRandomInt(ranges.hue[0], ranges.hue[1])
 		: getRandomHue();

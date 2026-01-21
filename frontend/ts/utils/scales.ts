@@ -47,7 +47,7 @@ export interface Scale {
  * - Iwato: Dissonant, exotic, and traditional. Found in Japanese music for creating an unusual sound.
  * - Blues Heptatonic: Rich, soulful, and expressive. Extends the traditional blues scale with added notes for more melodic options.
  */
-const scales: { [key: string]: Scale } = {
+export const scales: { [key: string]: Scale } = {
     'Major': {
         description: 'Bright, happy, and uplifting. Fundamental to Western music and often used in pop, classical, and folk music.',
         notes: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25] // C Major
@@ -169,5 +169,3 @@ const scales: { [key: string]: Scale } = {
         notes: [261.63, 293.66, 311.13, 349.23, 391.99, 415.30, 523.25] // C Blues Heptatonic
     }
 };
-
-export default scales;

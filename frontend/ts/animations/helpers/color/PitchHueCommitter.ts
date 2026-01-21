@@ -18,7 +18,7 @@
 import hzToPitchInfo from "@/animations/helpers/audio/pitchInfo";
 import pitchClassToHue from "@/animations/helpers/audio/pitchClassToHue";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 
 /** Output frame for {@link PitchHueCommitter.step}. */
 export type PitchHueCommitterOutput = {

@@ -8,7 +8,7 @@ import Entity from '@/games/helpers/Entity';
  * @param animB - The second animated sprite.
  * @returns `true` if the sprites are colliding, `false` otherwise.
  */
-export default function isColliding(animA: PIXI.AnimatedSprite, animB: PIXI.AnimatedSprite): boolean {
+export function isColliding(animA: PIXI.AnimatedSprite, animB: PIXI.AnimatedSprite): boolean {
 
     const boundsA = animA.getBounds();
     const boundsB = animB.getBounds();

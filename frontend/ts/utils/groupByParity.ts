@@ -19,7 +19,7 @@ export type WithIndex = { index: number };
  * @returns `{ even, odd }`, where `even` contains items with even `index` and `odd` contains items
  * with odd `index`.
  */
-export default function groupByParity<T extends WithIndex>(
+export function groupByParity<T extends WithIndex>(
   items: readonly T[]
 ): { even: T[]; odd: T[] } {
     const even: T[] = [];
