@@ -27,7 +27,7 @@ import { Container, ContainerChild, AnimatedSprite } from 'pixi.js';
  * - Uses PIXI/canvas coordinates in **pixels**.
  *
  * Ownership:
- * - Owns the `waterAnim` sprite reference and a private {@link NoteSelector} instance.
+ * - Owns the `waterAnim` sprite reference and a private NoteSelector instance.
  * - Sprite is added to the provided stage in the constructor and destroyed in {@link destroy}.
  */
 export class Water extends Entity<AnimatedSprite> {
