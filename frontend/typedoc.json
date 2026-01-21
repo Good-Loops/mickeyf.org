@@ -2,7 +2,14 @@
   "tsconfig": "./tsconfig.typedoc.json",
   "entryPoints": ["ts"],
   "entryPointStrategy": "expand",
-  "exclude": ["**/App.tsx", "**/main.tsx", "**/Header.tsx", "**/components/**", "**/pages/**"],
+  "exclude": [
+    "**/App.tsx", 
+    "**/main.tsx", 
+    "**/Header.tsx", 
+    "**/components/**", 
+    "**/pages/**",
+    "**/hooks/**"
+  ],
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeExternals": true,

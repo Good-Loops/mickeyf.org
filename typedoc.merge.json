@@ -7,7 +7,12 @@
   ],
   "out": "docs",
   "favicon": "frontend/public/favicon.ico",
-  "readme": "none",
+  "readme": "docs-src/index.md",
   "cleanOutputDir": true,
-  "excludeExternals": true
+  "excludeExternals": true,
+  "navigationLinks": {
+    "Home": "index.html",
+    "mickeyf.org": "https://mickeyf.org",
+    "GitHub": "https://github.com/Good-Loops/mickeyf.org"
+  }
 }
