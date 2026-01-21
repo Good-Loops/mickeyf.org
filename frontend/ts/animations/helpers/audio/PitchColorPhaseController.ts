@@ -14,7 +14,7 @@
  * - Hue is in **degrees** and wrapped into $[0, 360)$ using {@link wrapHue}.
  * - Internal LFO “phase” values are in **radians**.
  */
-import PitchColorPolicy, { type ColorDecision } from "@/animations/helpers/audio/PitchColorPolicy";
+import { PitchColorPolicy, type ColorDecision } from "@/animations/helpers/audio/PitchColorPolicy";
 import { clamp } from "@/utils/clamp";
 import { expSmoothing } from "@/utils/expSmoothing";
 import { HslColor, lerpHsl, wrapHue } from "@/utils/hsl";
@@ -97,7 +97,7 @@ export type PitchColorPhaseStepResult = {
  * State held by this controller includes commit timing, silence timers, smoothing accumulators,
  * and LFO phases used for “breathing” drift.
  */
-export default class PitchColorPhaseController {
+export class PitchColorPhaseController {
     private state: PitchColorPhaseState;
 
     constructor(

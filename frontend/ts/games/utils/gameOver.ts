@@ -17,7 +17,7 @@ import { Text, Graphics, ContainerChild } from 'pixi.js';
 
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 
-import P4 from '../p4-Vega/classes/P4'
+import { P4 } from '../p4-Vega/classes/P4'
 
 import WebFont from 'webfontloader';
 
@@ -77,7 +77,7 @@ const createBackgroundForText = (texts: Text[], padding: number, color: number, 
  * - A promise resolving to display objects (background first) for the caller to add to the stage.
  * - Note: if called with `gameLive === true`, the promise does not resolve (by construction).
  */
-export default function gameOver(gameLive: boolean, p4: P4): Promise<ContainerChild[]> {
+export function gameOver(gameLive: boolean, p4: P4): Promise<ContainerChild[]> {
     return new Promise((resolve) => {
         if (!gameLive) {
             WebFont.load({

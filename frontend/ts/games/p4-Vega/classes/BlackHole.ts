@@ -18,9 +18,9 @@ import {
 } from '@/utils/random';
 import { isColliding } from '@/utils/isColliding';
 
-import Entity from '@/games/helpers/Entity';
+import { Entity } from '@/games/helpers/Entity';
 
-import P4 from './P4';
+import { P4 } from './P4';
 
 import { Container, ContainerChild, AnimatedSprite } from 'pixi.js';
 
@@ -39,7 +39,7 @@ const VELOCITY_MAX = 4.5;
  * - Placement attempts to keep the black hole at least `MIN_DISTANCE` pixels away from the player's sprite.
  * - Movement is axis-aligned in the current implementation (only one of `vX`/`vY` is non-zero).
  */
-export default class BlackHole extends Entity<AnimatedSprite> {
+export class BlackHole extends Entity<AnimatedSprite> {
     private vX = 0;
     private vY = 0;
 

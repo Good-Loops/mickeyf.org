@@ -21,7 +21,7 @@ import { lerpHsl, type HslColor } from "@/utils/hsl";
  *
  * This class is stateful and uses `Math.random()` when (re)targeting.
  */
-export default class PaletteTween {
+export class PaletteTween {
     /** Current interpolated colors (length equals the `size` passed to the constructor). */
     currentColors: HslColor[];
     private targetColors: HslColor[];

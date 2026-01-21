@@ -9,7 +9,7 @@
  * - Entities own their own mutable state and may mutate their sprite.
  * - Scene/container ownership and overall teardown policy live outside this module.
  */
-import * as PIXI from 'pixi.js';
+import { AnimatedSprite } from 'pixi.js';
 
 /**
  * Abstract base class for a single gameplay entity.
@@ -22,7 +22,7 @@ import * as PIXI from 'pixi.js';
  * - `anim` is expected to remain a valid PIXI sprite reference for the lifetime of the entity.
  * - Subclasses should keep `update` safe to call every frame.
  */
-export default abstract class Entity<T extends PIXI.AnimatedSprite> {
+export abstract class Entity<T extends AnimatedSprite> {
     /**
      * @param anim - Backing PIXI animated sprite for this entity. The entity may mutate this sprite.
      */

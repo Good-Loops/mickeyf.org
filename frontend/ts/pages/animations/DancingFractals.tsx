@@ -21,7 +21,7 @@ import { FractalHost } from '@/animations/dancing fractals/interfaces/FractalHos
 import { createFractalHost } from '@/animations/dancing fractals/createFractalHost';
 import type { FractalAnimationConstructor } from '@/animations/dancing fractals/interfaces/FractalAnimation';
 
-import audioEngine from '@/animations/helpers/audio/AudioEngine';
+import { audioEngine } from '@/animations/helpers/audio/AudioEngine';
 import useAudioEngineState from '@/hooks/useAudioEngineState';
 import notAllowedCursor from '@/assets/cursors/notallowed.cur';
 import Dropdown from '@/components/Dropdown';

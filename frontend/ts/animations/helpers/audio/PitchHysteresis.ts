@@ -77,7 +77,7 @@ export type PitchResult =
  * “Commit” in this project means: the pitch class is considered stable enough to drive downstream
  * decisions (e.g. pitch→color mapping) without rapid back-and-forth flicker.
  */
-export default class PitchHysteresis {
+export class PitchHysteresis {
     private smoothedHz = 0;
     private silenceMs = 0;
 

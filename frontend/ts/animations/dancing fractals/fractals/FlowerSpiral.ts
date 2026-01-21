@@ -12,8 +12,8 @@
  */
 import { Application, Filter, Sprite, Texture, UniformGroup } from "pixi.js";
 
-import PaletteTween from "@/animations/helpers/color/PaletteTween";
-import PitchHueCommitter from "@/animations/helpers/color/PitchHueCommitter";
+import { PaletteTween } from "@/animations/helpers/color/PaletteTween";
+import { PitchHueCommitter } from "@/animations/helpers/color/PitchHueCommitter";
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
 import { clamp } from "@/utils/clamp";

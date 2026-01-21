@@ -10,7 +10,7 @@
  */
 import { AnimatedSprite, Container, ContainerChild } from 'pixi.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
-import Entity from '@/games/helpers/Entity';
+import { Entity } from '@/games/helpers/Entity';
 
 /**
  * Controllable player entity for P4-Vega.
@@ -27,7 +27,7 @@ import Entity from '@/games/helpers/Entity';
  * Invariants:
  * - Enforces on-canvas bounds: keeps the sprite fully within `[0, CANVAS_WIDTH] x [0, CANVAS_HEIGHT]`.
  */
-export default class P4 extends Entity<AnimatedSprite> {
+export class P4 extends Entity<AnimatedSprite> {
     private startX = Entity.gap;
     private startY = CANVAS_HEIGHT * 0.5;
 

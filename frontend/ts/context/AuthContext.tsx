@@ -27,6 +27,14 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Provider component that owns auth state and exposes it via context.
+ *
+ * State:
+ * - `userName`: the logged-in user's name, or `null` if not logged in.
+ * - `isAuthenticated`: whether the user is currently authenticated.
+ * - `loading`: whether the initial auth state is being determined. 
+ */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [userName, setUserName] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -133,6 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
+/** Custom hook to access auth context value. */
 export const useAuth = () => {
     const ctx = useContext(AuthContext);
     if (!ctx) {

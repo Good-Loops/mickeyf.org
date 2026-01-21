@@ -2,7 +2,7 @@ import { scales } from '@/utils/scales';
 import { keys } from '@/utils/keys';
 import { transpose } from '@/utils/transpose';
 
-import * as Tone from 'tone';
+import { now, MembraneSynth } from 'tone';
 
 /**
  * Represents a musical scale with a name and an array of note frequencies.
@@ -15,8 +15,8 @@ type scale = {
 /**
  * Class to handle note selection and playback based on musical scales and keys.
  */
-export default class NoteSelector {
-    private synth = new Tone.MembraneSynth().toDestination();
+export class NoteSelector {
+    private synth = new MembraneSynth().toDestination();
 
     private selectedKey = 'C';
     private lastKey = 'C';
@@ -242,6 +242,6 @@ export default class NoteSelector {
         const note = this.getNote(this.lastPlayedNote, isFirstNote) as number;
         this.lastPlayedNote = note;
 
-        this.synth?.triggerAttackRelease(note, 0.8, Tone.now());
+        this.synth?.triggerAttackRelease(note, 0.8, now());
     }
 }

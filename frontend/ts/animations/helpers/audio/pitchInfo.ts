@@ -43,7 +43,7 @@ const midiToPitchClass = (midi: number): number => {
  * - `NaN` input propagates through to `NaN` fields.
  * - `±Infinity` are clamped to finite bounds.
  */
-const hzToPitchInfo = (hertz: number): PitchInfo => {
+export function hzToPitchInfo (hertz: number): PitchInfo {
     const hzClamped = clampHz(hertz);
     const midi = hzToMidi(hzClamped);
     const midiRounded = Math.round(midi);
@@ -56,5 +56,3 @@ const hzToPitchInfo = (hertz: number): PitchInfo => {
         pitchClass
     };
 };
-
-export default hzToPitchInfo;

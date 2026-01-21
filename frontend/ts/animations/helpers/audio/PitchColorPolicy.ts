@@ -17,11 +17,10 @@
  * Hue in this project is expressed in **degrees** and generally normalized into $[0, 360)$.
  * Saturation/lightness are expressed as **percent** values (typically $[0, 100]$).
  */
-import PitchHysteresis, { PitchResult } from "@/animations/helpers/audio/PitchHysteresis";
+import { PitchHysteresis, PitchResult } from "@/animations/helpers/audio/PitchHysteresis";
 import { clamp } from "@/utils/clamp";
 import { getRandomHsl, HslColor, HslRanges } from "@/utils/hsl";
-import hzToPitchInfo from "@/animations/helpers/audio/pitchInfo";
-import pitchClassToHue from "@/animations/helpers/audio/pitchClassToHue";
+import { pitchClassToHue } from "@/animations/helpers/audio/pitchClassToHue";
 
 type PitchColorPolicyDeps = {
     /** Pitch stabilizer that emits committed pitch-class updates. */
@@ -91,7 +90,7 @@ export type ColorDecision = {
  * - It stores a “last good” color used during brief silence.
  * - It can (optionally) randomize a new idle color after sustained silence.
  */
-export default class PitchColorPolicy {
+export class PitchColorPolicy {
     private lastGood: HslColor;
 
     /**
@@ -134,10 +133,7 @@ export default class PitchColorPolicy {
         const hueOffset = clamp(fracNorm, -1, 1) * tuning.microHueDriftDeg;
 
         const committedPitchClass = result.pitchClass;
-        const info = hzToPitchInfo(result.hz);
-
         const committedBaseHue = pitchClassToHue(committedPitchClass);
-
         const finalHue = (committedBaseHue + hueOffset + 360) % 360;
 
         if (tuning.noteStep && !result.changed) {

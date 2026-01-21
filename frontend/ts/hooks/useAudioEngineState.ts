@@ -9,7 +9,7 @@
  * - This hook subscribes to state updates and unsubscribes on unmount.
  */
 import { useEffect, useState } from "react";
-import audioEngine, { type AudioState } from "@/animations/helpers/audio/AudioEngine";
+import { audioEngine, type AudioState } from "@/animations/helpers/audio/AudioEngine";
 
 /**
  * Subscribes to `audioEngine` and returns its current `AudioState`.

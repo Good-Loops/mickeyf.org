@@ -13,8 +13,8 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 import type { FractalAnimationConstructor } from "./interfaces/FractalAnimation";
 import type FractalAnimation from "./interfaces/FractalAnimation";
 import type { FractalHost } from "./interfaces/FractalHost";
-import audioEngine from "@/animations/helpers/audio/AudioEngine";
-import createMusicFeatureExtractor from "@/animations/helpers/music/createMusicFeatureExtractor";
+import { audioEngine } from "@/animations/helpers/audio/AudioEngine";
+import { createMusicFeatureExtractor } from "@/animations/helpers/music/createMusicFeatureExtractor";
 
 /**
  * Instantiates a PIXI `Application`, mounts its canvas into `container`, and returns a host that can

@@ -49,7 +49,7 @@ export type BeatEnvelopeInput = {
  * Maintains a smoothed envelope value and a toggle (`moveGroup`) that flips on each accepted
  * trigger. Call {@link step} once per render/audio frame.
  */
-export default class BeatEnvelope {
+export class BeatEnvelope {
     private envelope = 0;
     private lastBeatAtMs = -Infinity;
     private moveGroup: 0 | 1 = 0;

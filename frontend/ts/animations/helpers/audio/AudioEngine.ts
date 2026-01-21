@@ -459,4 +459,4 @@ class AudioEngine {
  * state changes for UI updates (push model).
  */
 const audioEngine = new AudioEngine();
-export default audioEngine;
+export { audioEngine };
