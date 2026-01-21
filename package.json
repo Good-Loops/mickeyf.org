@@ -7,9 +7,14 @@
 		"docs:json:backend": "npm --prefix backend run docs:json",
 		"docs:json": "npm run docs:json:frontend && npm run docs:json:backend",
 		"docs:build": "npx typedoc --options typedoc.merge.json",
-		"docs": "npm run docs:clean && npm run docs:json && npm run docs:build"
+		"docs": "npm run docs:clean && npm run docs:json && npm run docs:build",
+		"docs:serve": "npx http-server docs -p 8081",
+    	"docs:watch": "chokidar \"typedoc.merge.json\" \"frontend/public/favicon.ico\" \"frontend/ts/**/*.ts\" \"frontend/ts/**/*.tsx\" \"backend/ts/**/*.ts\" -c \"npm run docs\"",
+    	"docs:dev": "concurrently \"npm:docs:watch\" \"npm:docs:serve\""
 	},
 	"devDependencies": {
+		"chokidar-cli": "^3.0.0",
+		"concurrently": "^9.2.1",
 		"typedoc": "^0.28.16"
 	}
 }
