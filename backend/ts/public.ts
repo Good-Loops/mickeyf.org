@@ -4,4 +4,3 @@
  */
 
 export * from './public/contracts';
-export * from './public/types';

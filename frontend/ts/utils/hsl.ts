@@ -17,7 +17,7 @@ import { getRandomInt } from "@/utils/random";
  * HSL color expressed as degrees and percents.
  */
 export type HslColor = {
-	/** Hue angle in **degrees**. Helpers such as {@link wrapHue} normalize this into $[0, 360)$. */
+	/** Hue angle in **degrees**. Helpers such as wrapHue normalize this into $[0, 360)$. */
 	hue: number;
 	/** Saturation in **percent** (typically $[0, 100]$). */
 	saturation: number;
@@ -120,7 +120,7 @@ export function lerpHsl(a: HslColor, b: HslColor, t: number): HslColor {
 /**
  * Converts an {@link HslColor} (degrees, percents) to RGB byte channels.
  *
- * Hue is normalized via {@link wrapHue}. Saturation/lightness are clamped to $[0, 1]$ after
+	 * Hue is normalized via wrapHue. Saturation/lightness are clamped to $[0, 1]$ after
  * converting from percent.
  *
  * @returns `[r, g, b]` as integers in the range `[0, 255]`.

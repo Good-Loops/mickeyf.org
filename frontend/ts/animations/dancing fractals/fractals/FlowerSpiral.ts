@@ -30,7 +30,7 @@ const MIN_MUSIC_WEIGHT_FOR_COLOR = 0.25;
  * Units & semantics:
  * - `deltaSeconds` is in **seconds**.
  * - `nowMs` is an absolute time in **milliseconds** and is also uploaded to the shader as `uTimeMs`.
- * - Pitch hue values are in **degrees** (from {@link PitchHueCommitter}).
+ * - Pitch hue values are in **degrees** (from the pitch hue committer).
  */
 export class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig> {
     constructor(

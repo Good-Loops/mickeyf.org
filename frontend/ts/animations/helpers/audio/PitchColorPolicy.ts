@@ -6,7 +6,7 @@
  *
  * Separation of concerns:
  * - Pitch detection and confidence estimation live elsewhere (e.g. `AudioEngine`).
- * - Pitch stabilization (hysteresis / commit semantics) is handled by {@link PitchHysteresis}.
+ * - Pitch stabilization (hysteresis / commit semantics) is handled by the pitch hysteresis tracker.
  * - This policy maps those stable inputs → aesthetic color decisions.
  *
  * Key goals:
@@ -49,7 +49,7 @@ export type PitchColorPolicyDeps = {
         /**
          * Range used to pick an idle color after sustained silence.
          *
-         * If `hue` is omitted, hue is chosen uniformly from $[0, 360)$ by {@link getRandomHsl}.
+         * If `hue` is omitted, hue is chosen uniformly from $[0, 360)$.
          */
         silenceRanges: HslRanges;
     };
@@ -94,7 +94,7 @@ export class PitchColorPolicy {
     private lastGood: HslColor;
 
     /**
-     * @param deps - Policy dependencies and tuning. The provided {@link PitchHysteresis} instance
+    * @param deps - Policy dependencies and tuning. The provided pitch hysteresis tracker instance
      * is treated as owned-by-caller and is not disposed by this class.
      */
     constructor(private deps: PitchColorPolicyDeps) {

@@ -4,4 +4,4 @@
  * Stable domain/shared types used by contracts or consumers.
  */
 
-export type { User } from '../types/customTypes';
+// Intentionally empty: keep the backend public surface contract-first.

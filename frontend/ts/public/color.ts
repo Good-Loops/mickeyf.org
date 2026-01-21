@@ -4,19 +4,16 @@
 
 export { PitchColorPolicy } from '../animations/helpers/audio/PitchColorPolicy';
 export type {
-    ColorDecision,
-    DecideInput,
-    PitchColorPolicyDeps,
+	ColorDecision,
+	DecideInput,
+	PitchColorPolicyDeps,
 } from '../animations/helpers/audio/PitchColorPolicy';
 
 export { PitchColorPhaseController } from '../animations/helpers/audio/PitchColorPhaseController';
 export type {
-    PitchColorPhaseStepInput,
-    PitchColorPhaseStepResult,
-    PitchColorPhaseTuning,
+	PitchColorPhaseStepInput,
+	PitchColorPhaseStepResult,
+	PitchColorPhaseTuning,
 } from '../animations/helpers/audio/PitchColorPhaseController';
 
 export { PaletteTween } from '../animations/helpers/color/PaletteTween';
-
-export { PitchHueCommitter } from '../animations/helpers/color/PitchHueCommitter';
-export type { PitchHueCommitterOutput } from '../animations/helpers/color/PitchHueCommitter';

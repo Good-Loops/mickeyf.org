@@ -3,7 +3,7 @@
  *
  * A GPU-rendered Mandelbrot set driven by a view model (center/zoom/rotation) and palette/shading
  * controls. This animation draws via PIXI using a full-screen quad and a custom shader filter.
- *
+     * This also forwards tour-related patches to the internal tour layer.
  * High-level dataflow:
  * - Inputs (per frame): `deltaSeconds` (seconds), `nowMs` (milliseconds), and music features (used
  *   to bias palette phase and apply beat-kick zoom).
@@ -138,7 +138,7 @@ export class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
      * Applies a shallow config patch.
      *
      * Merge semantics: `this.config` is replaced via `{ ...this.config, ...patch }`.
-     * This also forwards tour-related patches to {@link MandelbrotTour.updateConfig}.
+        * This also forwards tour-related patches to the internal tour layer.
      */
     updateConfig(patch: Partial<MandelbrotConfig>): void {
         this.config = { ...this.config, ...patch };

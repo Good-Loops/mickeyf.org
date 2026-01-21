@@ -2,8 +2,10 @@
  * Frontend public surface: audio + music feature extraction.
  */
 
-export { audioEngine, AudioEngine } from '../animations/helpers/audio/AudioEngine';
-export type { AudioState, BeatState } from '../animations/helpers/audio/AudioEngine';
+export { AudioEngine } from '../animations/helpers/audio/AudioEngine';
+export type { AudioState } from '../animations/helpers/audio/AudioEngine';
+
+export type { BeatState } from '../animations/helpers/audio/AudioEngine';
 
 export { BeatEnvelope } from '../animations/helpers/audio/BeatEnvelope';
 export type { BeatEnvelopeInput, BeatEnvelopeTuning } from '../animations/helpers/audio/BeatEnvelope';
