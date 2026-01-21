@@ -16,6 +16,16 @@
                     "name": "general",
                 }
             ]
+        },
+        {
+            "splitTerminals": [
+                {
+                    "name": "docs",
+                    "commands": [
+                        "npm run docs:dev"
+                    ]
+                }
+            ]
         }
     ],
     "terminal.integrated.defaultProfile.linux": "rbash",

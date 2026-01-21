@@ -15,29 +15,27 @@
 import { Router } from 'express';
 import { authController } from '../controllers/authController';
 
-/**
- * Configured Express router for authentication routes.
- *
- * Ownership:
- * - Exports a fully-mounted router; mounting location (base path) is owned by the app bootstrap.
- *
- * Side effects:
- * - None beyond Express route registration.
- */
-const authRouter: Router = Router();
+import { handleLogout } from './authRouter.handlers';
 
-/** GET /verify-token — validates auth context for the current request. */
-authRouter.get('/verify-token', authController);
+export { authRoutesContract } from './authRouter.contract';
 
-/** POST /logout — clears the session cookie, ending the authenticated session. */
-authRouter.post('/logout', (_req, res) => {
-    res.clearCookie('session', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        signed: true,
-    });
-    res.json({ loggedOut: true });
-});
+export function createAuthRouter(): Router {
+    /**
+     * Configured Express router for authentication routes.
+     *
+     * Ownership:
+     * - Exports a fully-mounted router; mounting location (base path) is owned by the app bootstrap.
+     *
+     * Side effects:
+     * - None beyond Express route registration.
+     */
+    const router: Router = Router();
 
-export { authRouter };
+    /** GET /verify-token — validates auth context for the current request. */
+    router.get('/verify-token', authController);
+
+    /** POST /logout — clears the session cookie, ending the authenticated session. */
+    router.post('/logout', handleLogout);
+
+    return router;
+}

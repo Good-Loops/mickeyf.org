@@ -14,21 +14,24 @@
  */
 import { Router } from 'express';
 import { mainController } from '../controllers/mainController';
+import { handleGetUsersNotSupported } from './mainRouter.handlers';
 
-/**
- * Configured Express router for core API routes.
- *
- * Ownership:
- * - Exports a fully-configured router; the base mount path is owned by app bootstrap.
- */
-const mainRouter = Router();
+export { mainRoutesContract } from './mainRouter.contract';
 
-/** POST /users — core API request multiplexer (mutating/command-style). */
-mainRouter.post('/users', mainController);
+export function createMainRouter(): Router {
+    /**
+     * Configured Express router for core API routes.
+     *
+     * Ownership:
+     * - Exports a fully-configured router; the base mount path is owned by app bootstrap.
+     */
+    const router = Router();
 
-/** GET /users — read-only endpoint explicitly not supported (returns guidance message). */
-mainRouter.get('/users', (_req, res) => {
-    res.send('GET request to /api/users is not supported. Please use POST.');
-});
+    /** POST /users — core API request multiplexer (mutating/command-style). */
+    router.post('/users', mainController);
 
-export { mainRouter };
+    /** GET /users — read-only endpoint explicitly not supported (returns guidance message). */
+    router.get('/users', handleGetUsersNotSupported);
+
+    return router;
+}
