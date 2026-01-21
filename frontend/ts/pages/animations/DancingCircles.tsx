@@ -8,7 +8,7 @@ import { runDancingCircles } from "@/animations/dancing circles/runDancingCircle
 import FullscreenButton from "@/components/FullscreenButton";
 import MusicControls from "@/components/MusicControls";
 import { audioEngine } from "@/animations/helpers/audio/AudioEngine";
-import useAudioEngineState from "@/hooks/useAudioEngineState";
+import { useAudioEngineState } from "@/hooks/useAudioEngineState";
 import { CANVAS_WIDTH } from "@/utils/constants";
 
 const DancingCircles: React.FC = () => {

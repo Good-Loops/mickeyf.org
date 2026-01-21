@@ -24,9 +24,9 @@ import { TUNING } from "./tuning";
 import { createTimeState, resetControlElapsed, resetIdleElapsed } from "./timeState";
 import { createRenderer } from "@/animations/dancing circles/renderer";
 
-import Circle from "./classes/Circle";
-import CircleBounds from "./classes/CircleBounds";
-import DancingCirclesController, { AudioParams, BeatFrame, BeatMove } from "@/animations/dancing circles/DancingCirclesController";
+import { Circle } from "./classes/Circle";
+import { CircleBounds } from "./classes/CircleBounds";
+import { DancingCirclesController, AudioParams, BeatFrame, BeatMove } from "@/animations/dancing circles/DancingCirclesController";
 import { clamp } from "@/utils/clamp";
 
 type DancingCirclesDeps = {
@@ -45,7 +45,7 @@ type DancingCirclesDeps = {
  *
  * @returns A disposer function that unregisters the frame callback and destroys PIXI resources.
  */
-export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
+export async function runDancingCircles({ container }: DancingCirclesDeps) {
     const app = new Application();
 
     await app.init({

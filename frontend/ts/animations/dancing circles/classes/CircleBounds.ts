@@ -10,7 +10,7 @@
  * - Consumed by controller/renderer code to constrain circle positions and targets.
  */
 import { clamp } from "@/utils/clamp";
-import Circle from "./Circle";
+import { Circle } from "./Circle";
 
 /**
  * Rectangular bounds for the Dancing Circles canvas.
@@ -23,7 +23,7 @@ import Circle from "./Circle";
  * - `width`/`height` are expected to be finite and non-negative.
  * - Callers must ensure `radius <= width/2` and `radius <= height/2` for meaningful clamping.
  */
-export default class CircleBounds {
+export class CircleBounds {
   constructor(
     private readonly width: number,
     private readonly height: number

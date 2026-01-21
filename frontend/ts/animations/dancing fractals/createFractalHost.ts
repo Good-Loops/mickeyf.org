@@ -11,7 +11,7 @@
 import { Application, Ticker } from "pixi.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 import type { FractalAnimationConstructor } from "./interfaces/FractalAnimation";
-import type FractalAnimation from "./interfaces/FractalAnimation";
+import type { FractalAnimation } from "./interfaces/FractalAnimation";
 import type { FractalHost } from "./interfaces/FractalHost";
 import { audioEngine } from "@/animations/helpers/audio/AudioEngine";
 import { createMusicFeatureExtractor } from "@/animations/helpers/music/createMusicFeatureExtractor";
@@ -25,7 +25,7 @@ import { createMusicFeatureExtractor } from "@/animations/helpers/music/createMu
  * @returns A `FractalHost` that drives one active animation instance at a time. After `dispose()`,
  * the returned host must not be used again.
  */
-export const createFractalHost = async (container: HTMLElement): Promise<FractalHost> => {
+export async function createFractalHost(container: HTMLElement): Promise<FractalHost> {
     const app = new Application();
 
     // Dev hook for debugging in the browser console.

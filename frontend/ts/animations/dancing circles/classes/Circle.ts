@@ -57,7 +57,7 @@ const computeBaseRadius = (i: number) =>
  * - Radii are finite and non-negative.
  * - Positions are finite; bounds clamping is performed outside this class.
  */
-export default class Circle {
+export class Circle {
 
     index: number;
 

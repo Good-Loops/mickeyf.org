@@ -12,7 +12,7 @@
  * - Smoothing/clamping and HSL utilities are delegated to `expSmoothing`, `clamp`, and `hsl` helpers.
  */
 import { Application, Graphics } from "pixi.js";
-import FractalAnimation from "../interfaces/FractalAnimation";
+import { FractalAnimation } from "../interfaces/FractalAnimation";
 import { PaletteTween } from "../../helpers/color/PaletteTween";
 import { TreeConfig, defaultTreeConfig } from "../config/TreeConfig";
 import { clamp } from "@/utils/clamp";
@@ -48,7 +48,7 @@ const DEPTH_HUE_STEP_DEG = 26;
  * - When initialized, `depthGraphics.length === config.maxDepth + 1`.
  * - `baseConfig` captures the post-construction baseline used for music-driven motion targets.
  */
-export default class Tree implements FractalAnimation<TreeConfig> {
+export class Tree implements FractalAnimation<TreeConfig> {
 	constructor(
 		private readonly centerX: number,
 		centerY: number,

@@ -18,8 +18,8 @@ import { getRandomIndexArray, getRandomX, getRandomY } from "@/utils/random";
 import { getRandomHsl } from "@/utils/hsl";
 import { clamp } from "@/utils/clamp";
 
-import Circle from "./classes/Circle";
-import CircleBounds from "./classes/CircleBounds";
+import { Circle } from "./classes/Circle";
+import { CircleBounds } from "./classes/CircleBounds";
 
 import { PitchColorPhaseController } from "@/animations/helpers/audio/PitchColorPhaseController";
 import { BeatEnvelope } from "@/animations/helpers/audio/BeatEnvelope";
@@ -75,7 +75,7 @@ type ControllerDeps = {
  * - Assumes the provided `circles` array is stable for the lifetime of the controller; parity groups are
  *   computed once in the constructor.
  */
-export default class DancingCirclesController {
+export class DancingCirclesController {
     private readonly bounds: CircleBounds;
     private readonly circles: Circle[];
     private readonly beatFrame: BeatFrame;

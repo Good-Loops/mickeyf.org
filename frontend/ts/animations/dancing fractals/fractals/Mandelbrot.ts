@@ -17,7 +17,7 @@
  */
 import { Application, Container, Filter, Sprite, Texture, UniformGroup } from "pixi.js";
 
-import type FractalAnimation from "@/animations/dancing fractals/interfaces/FractalAnimation";
+import type { FractalAnimation } from "@/animations/dancing fractals/interfaces/FractalAnimation";
 
 import { defaultMandelbrotConfig, type MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
 
@@ -68,7 +68,7 @@ type ComposedView = {
  * - {@link updateConfig} may be called at any time to patch config.
  * - {@link scheduleDisposal} / {@link startDisposal} drive teardown; {@link dispose} releases PIXI resources.
  */
-export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
+export class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
     static backgroundColor = "hsl(189, 100%, 89%)";
 
