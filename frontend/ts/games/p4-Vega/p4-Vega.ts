@@ -15,7 +15,7 @@
  */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import { getRandomInt } from '@/utils/random';
-import { gameOver } from '../utils/gameOver';
+import { gameOver } from './utils/gameOver';
 
 import { API_BASE } from '@/config/apiConfig';
 

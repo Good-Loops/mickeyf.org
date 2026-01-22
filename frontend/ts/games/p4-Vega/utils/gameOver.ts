@@ -17,7 +17,7 @@ import { Text, Graphics, ContainerChild } from 'pixi.js';
 
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 
-import { P4 } from '../p4-Vega/classes/P4'
+import { P4 } from '../classes/P4'
 
 import WebFont from 'webfontloader';
 
