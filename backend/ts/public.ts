@@ -4,3 +4,4 @@
  */
 
 export * from './public/contracts';
+export * from './public/contracts.support';
