@@ -7,13 +7,23 @@ import { now, MembraneSynth } from 'tone';
 /**
  * Represents a musical scale with a name and an array of note frequencies.
  */
-type scale = {
+type Scale = {
     name: string;
     notes: number[];
 };
 
 /**
- * Class to handle note selection and playback based on musical scales and keys.
+ * Utility for selecting (and optionally playing) notes from a scale.
+ *
+ * This is designed to be reusable across games: callers can explicitly provide the desired key/scale
+ * via {@link playNote}. If omitted, the implementation falls back to reading the current selection
+ * from DOM elements (`[data-selected-scale]` and `[data-selected-key]`) to preserve existing behavior.
+ *
+ * Notes:
+ * - Uses Tone.js for audio output.
+ * - Note values are frequencies (Hz).
+ *
+ * @category Games — Core
  */
 export class NoteSelector {
     private synth = new MembraneSynth().toDestination();
@@ -22,7 +32,7 @@ export class NoteSelector {
     private lastKey = 'C';
     private lastPlayedNote?: number;
 
-    private selectedScale: scale = {
+    private selectedScale: Scale = {
         name: 'Major',
         notes: scales['Major'].notes,
     };
@@ -218,18 +228,28 @@ export class NoteSelector {
     }
 
     /**
-     * Plays a note based on the selected scale and key.
+     * Plays a note based on the provided selection.
+     *
+     * If no selection is provided, this falls back to DOM-driven configuration:
+     * - `[data-selected-scale]` (textContent = scale name)
+     * - `[data-selected-key]` (textContent = key)
+     *
+     * @param selection - Optional explicit selection for reusable (non-DOM) callers.
      */
-    playNote(): void {
-        const selectedScaleElement = document.querySelector(
-            '[data-selected-scale]'
-        ) as Element;
-        const selectedScale = selectedScaleElement.textContent || 'Major';
+    playNote(selection?: { key: string; scaleName: string }): void {
+        const selectedScale =
+            selection?.scaleName ||
+            (
+                document.querySelector('[data-selected-scale]') as Element | null
+            )?.textContent ||
+            'Major';
 
-        const selectedKeyElement = document.querySelector(
-            '[data-selected-key]'
-        ) as Element;
-        let selectedKey = selectedKeyElement.textContent || 'C';
+        const selectedKey =
+            selection?.key ||
+            (
+                document.querySelector('[data-selected-key]') as Element | null
+            )?.textContent ||
+            'C';
 
         this.getNotesForScale(selectedKey, selectedScale, this.lastKey);
 
