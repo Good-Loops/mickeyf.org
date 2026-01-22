@@ -4,6 +4,9 @@
  * “Type tail” exports required by headline fractal engines/tour APIs.
  */
 
+/**
+ * @category Fractals — Support
+ */
 export type {
 	Vec2,
 	TourOutput,
