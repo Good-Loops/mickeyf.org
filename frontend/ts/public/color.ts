@@ -16,8 +16,8 @@
  * - {@link PitchColorPhaseController}
  * - {@link PaletteTween}
  *
- * Notes:
- * - Some policies may introduce randomness; determinism depends on the configured inputs/tuning.
+ * Invariants:
+ * - Determinism depends on configured tuning and inputs.
  */
 export { PitchColorPolicy } from '../animations/helpers/audio/PitchColorPolicy';
 export { PitchColorPhaseController } from '../animations/helpers/audio/PitchColorPhaseController';

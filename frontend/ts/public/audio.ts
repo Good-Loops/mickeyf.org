@@ -16,9 +16,8 @@
  * - {@link MusicFeatureExtractor}
  * - {@link createMusicFeatureExtractor}
  *
- * Notes:
- * - Audio capture/analysis is driven by Web Audio; consumers sample results on the main thread.
- * - Time values are a mix of milliseconds and seconds depending on API; check each signature.
+ * Invariants:
+ * - Consumers treat state/feature outputs as "latest" readings sampled each frame.
  */
 
 export { AudioEngine } from '../animations/helpers/audio/AudioEngine';

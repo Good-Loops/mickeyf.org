@@ -17,7 +17,8 @@
  * - {@link FractalAnimation}
  *
  * Notes:
- * - Host owns engine lifecycle/ownership (create → run → dispose).
+ * - Callers own the mount element; the host owns engine lifecycle (create → run → dispose).
+ * - Contracts are intended for main-thread use.
  */
 export type { FractalAnimation } from '../animations/dancing fractals/interfaces/FractalAnimation';
 export type { FractalAnimationConstructor } from '../animations/dancing fractals/interfaces/FractalAnimation';

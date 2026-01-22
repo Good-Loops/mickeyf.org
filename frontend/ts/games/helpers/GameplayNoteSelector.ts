@@ -5,7 +5,7 @@ import { transpose } from '@/utils/transpose';
 import { now, MembraneSynth } from 'tone';
 
 /**
- * Represents a musical scale with a name and an array of note frequencies.
+ * Represents a musical scale definition.
  */
 type Scale = {
     name: string;
@@ -13,15 +13,17 @@ type Scale = {
 };
 
 /**
- * Utility for selecting (and optionally playing) notes from a scale.
+ * Note selection + playback helper.
  *
- * This is designed to be reusable across games: callers can explicitly provide the desired key/scale
- * via {@link playNote}. If omitted, the implementation falls back to reading the current selection
- * from DOM elements (`[data-selected-scale]` and `[data-selected-key]`) to preserve existing behavior.
+ * Responsibility:
+ * - Select a scale/key and emit a short percussive note.
  *
- * Notes:
- * - Uses Tone.js for audio output.
- * - Note values are frequencies (Hz).
+ * Side effects:
+ * - Plays audio via Tone.js.
+ * - If no explicit selection is provided, reads from the DOM (`[data-selected-scale]`, `[data-selected-key]`).
+ *
+ * Units:
+ * - Notes are frequencies in **Hz**.
  *
  * @category Games — Core
  */
@@ -228,13 +230,13 @@ export class GameplayNoteSelector {
     }
 
     /**
-     * Plays a note based on the provided selection.
-     *
-     * If no selection is provided, this falls back to DOM-driven configuration:
-     * - `[data-selected-scale]` (textContent = scale name)
-     * - `[data-selected-key]` (textContent = key)
-     *
-     * @param selection - Optional explicit selection for reusable (non-DOM) callers.
+        * Plays a note using the provided selection.
+        *
+        * Invariants:
+        * - When `selection` is omitted, scale/key are read from the DOM and default to `Major`/`C`.
+        * - Unknown scale names fall back to `Major`.
+        *
+        * @param selection - Optional explicit selection (`key` and `scaleName`).
      */
     playNote(selection?: { key: string; scaleName: string }): void {
         const selectedScale =

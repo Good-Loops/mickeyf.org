@@ -55,7 +55,10 @@ export type LogoutResponse = {
 
 /** @category Backend — Contracts */
 export type AuthRoutesContract = {
-    readonly routes: readonly RouteContract<any, any>[];
+    readonly routes: readonly (
+        | RouteContract<VerifyTokenRequest, VerifyTokenResponse>
+        | RouteContract<LogoutRequest, LogoutResponse>
+    )[];
 };
 
 /** @category Backend — Contracts */

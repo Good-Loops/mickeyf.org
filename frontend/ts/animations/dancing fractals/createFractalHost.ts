@@ -137,11 +137,11 @@ export async function createFractalHost(container: HTMLElement): Promise<Fractal
         applyLifetime();
     };
 
-    const updateConfig = (patch: any) => {
+    const updateConfig = <C>(patch: Partial<C>) => {
         if (!currentFractal || currentConfig == null) return;
 
         currentConfig = { ...currentConfig, ...patch };
-        currentFractal.updateConfig(patch);
+        currentFractal.updateConfig(patch as any);
     };
 
     const restart = () => {

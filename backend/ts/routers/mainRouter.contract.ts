@@ -16,35 +16,72 @@
 /**
  * POST /users request body.
  *
- * Notes:
- * - This endpoint is a command-style multiplexer: behavior is selected via `type`.
- * - Additional fields are operation-dependent (see controller for specifics).
+ * Responsibility:
+ * - Selects an operation via `type` and carries that operation's payload.
+ *
+ * Invariants:
+ * - This is a discriminated union; each `type` has a fixed payload shape.
+ * - Unknown/unsupported `type` yields {@link ApiErrorCode} `INVALID_TYPE`.
  *
  * @category Backend — DTOs
  */
 export type PostUsersRequest =
     | {
+                    /** Operation: create a new user account. */
           type: 'signup';
+
+                    /** Required; must be non-empty (server returns `EMPTY_FIELDS` when missing/empty). */
           user_name: string;
+
+                    /**
+                     * Required; must be non-empty.
+                     *
+                     * Validation quirk (as implemented): `INVALID_EMAIL` is returned only if the email is
+                     * simultaneously missing `@`, missing `.`, and shorter than 5 characters.
+                     */
           email: string;
+
+                    /**
+                     * Required.
+                     *
+                     * Validation (as implemented): length must be 8–16 characters, else `INVALID_PASSWORD`.
+                     */
           user_password: string;
       }
     | {
+                    /** Operation: authenticate an existing user. */
           type: 'login';
+
+                    /** Required. */
           user_name: string;
+
+                    /** Required. */
           user_password: string;
       }
     | {
+                    /** Operation: submit a p4-Vega score. */
           type: 'submit_score';
+
+                    /** Required; missing value yields HTTP 401 with `UNAUTHORIZED`. */
           user_name: string;
+
+                    /**
+                     * Score value (game-defined units). Nullable to indicate “no score”.
+                     *
+                     * Validation: not currently enforced server-side; callers should send a finite number.
+                     */
           p4_score: number | null;
       }
     | {
+                    /** Operation: fetch the leaderboard. */
           type: 'get_leaderboard';
       };
 
 /**
  * API error codes returned by multiplexer handlers.
+ *
+ * Invariants:
+ * - Codes are stable strings intended for programmatic handling.
  *
  * @category Backend — DTOs
  */
@@ -62,11 +99,11 @@ export type ApiErrorCode =
 /**
  * Error response shape shared by multiple operations.
  *
- * Note: many handlers return `{ error: ... }` without `success: false`.
- * Keep `success` optional to match runtime behavior.
- *
- * Some handlers encode HTTP-like status in the JSON body (e.g. DUPLICATE_USER).
- * Keep optional to match runtime behavior.
+ * Status vs body:
+ * - Many handlers return `{ error: ... }` without `success: false`.
+ * - Some handlers include a `status` field in the JSON body (e.g. `DUPLICATE_USER` uses `status: 409`)
+ *   without necessarily setting the HTTP status code.
+ * - Other handlers set real HTTP statuses (e.g. `UNAUTHORIZED` uses HTTP 401; `SERVER_ERROR` may use HTTP 500).
  *
  * @category Backend — DTOs
  */

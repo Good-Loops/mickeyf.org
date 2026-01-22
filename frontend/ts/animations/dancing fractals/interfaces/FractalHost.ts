@@ -45,7 +45,14 @@ export interface FractalHost {
      *
      * If no animation is active, this is a no-op.
      */
-    updateConfig(patch: any): void;
+    /**
+     * Applies a configuration patch to the active animation.
+     *
+     * Invariants:
+     * - Patch type should correspond to the config type `C` used with {@link setFractal}.
+     * - If no animation is active, this is a no-op.
+     */
+    updateConfig<C>(patch: Partial<C>): void;
 
     /**
      * Restarts the active animation using the last stored configuration.
