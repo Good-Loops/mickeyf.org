@@ -5,7 +5,6 @@
     "ts/public/audio.ts",
     "ts/public/animations.ts",
     "ts/public/color.ts",
-    "ts/public/types.ts",
     "ts/public/games.ts"
   ],
   "entryPointStrategy": "resolve",
