@@ -19,10 +19,6 @@
  * Notes:
  * - Mandelbrot tour uses log-zoom deltas; config patches are typed partial updates.
  */
-
-/** @hidden */
-export const __fractalsModule = true;
-
 export { Mandelbrot } from '../animations/dancing fractals/fractals/Mandelbrot';
 export { MandelbrotTour } from '../animations/dancing fractals/fractals/mandelbrot/MandelbrotTour';
 export { FlowerSpiral } from '../animations/dancing fractals/fractals/FlowerSpiral';
