@@ -12,7 +12,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import { getRandomX, getRandomY } from '@/utils/random';
 import { isColliding } from '@/utils/isColliding';
 
-import { NoteSelector } from '@/games/helpers/NoteSelector';
+import { GameplayNoteSelector } from '@/games/helpers/GameplayNoteSelector';
 import { Entity } from '@/games/helpers/Entity';
 
 import { BlackHole } from './BlackHole';
@@ -34,7 +34,7 @@ export class Water extends Entity<AnimatedSprite> {
     private startX = CANVAS_WIDTH - Entity.gap;
     private startY = CANVAS_HEIGHT * .5;
 
-    private noteSelector = new NoteSelector();
+    private noteSelector = new GameplayNoteSelector();
 
     /**
      * @param stage - Container that will own the water sprite in the scene graph.

@@ -13,8 +13,6 @@
  * - Auth level describes expected caller context, not enforcement (middleware is responsible for enforcement).
  */
 
-import type { RouteContract } from './routeContract';
-
 /**
  * POST /users request body.
  *
@@ -24,10 +22,84 @@ import type { RouteContract } from './routeContract';
  *
  * @category Backend — DTOs
  */
-export type PostUsersRequest = {
-    type: 'signup' | 'login' | 'submit_score' | 'get_leaderboard' | string;
-    [key: string]: unknown;
+export type PostUsersRequest =
+    | {
+          type: 'signup';
+          user_name: string;
+          email: string;
+          user_password: string;
+      }
+    | {
+          type: 'login';
+          user_name: string;
+          user_password: string;
+      }
+    | {
+          type: 'submit_score';
+          user_name: string;
+          p4_score: number | null;
+      }
+    | {
+          type: 'get_leaderboard';
+      };
+
+/**
+ * API error codes returned by multiplexer handlers.
+ *
+ * @category Backend — DTOs
+ */
+export type ApiErrorCode =
+    | 'INVALID_TYPE'
+    | 'EMPTY_FIELDS'
+    | 'INVALID_PASSWORD'
+    | 'INVALID_EMAIL'
+    | 'DUPLICATE_USER'
+    | 'AUTH_FAILED'
+    | 'UNAUTHORIZED'
+    | 'SERVER_ERROR'
+    | 'UNEXPECTED_ERROR';
+
+/**
+ * Error response shape shared by multiple operations.
+ *
+ * Note: many handlers return `{ error: ... }` without `success: false`.
+ * Keep `success` optional to match runtime behavior.
+ *
+ * Some handlers encode HTTP-like status in the JSON body (e.g. DUPLICATE_USER).
+ * Keep optional to match runtime behavior.
+ *
+ * @category Backend — DTOs
+ */
+export type ApiError = {
+    success?: false;
+    error: ApiErrorCode;
+    message?: string;
+    status?: number;
 };
+
+/** @category Backend — DTOs */
+export type SignupResponse = { success: true } | ApiError;
+
+/** @category Backend — DTOs */
+export type LoginResponse =
+    | { success: true; token: string; user_name: string }
+    | ApiError;
+
+/** @category Backend — DTOs */
+export type SubmitScoreResponse =
+    | { success: true; personalBest: boolean }
+    | ApiError;
+
+/** @category Backend — DTOs */
+export type GetLeaderboardResponse =
+    | {
+          success: true;
+          leaderboard: Array<{
+              user_name: string;
+              p4_score: number | null;
+          }>;
+      }
+    | ApiError;
 
 /**
  * POST /users response body.
@@ -37,7 +109,11 @@ export type PostUsersRequest = {
  *
  * @category Backend — DTOs
  */
-export type PostUsersResponse = unknown;
+export type PostUsersResponse =
+    | SignupResponse
+    | LoginResponse
+    | SubmitScoreResponse
+    | GetLeaderboardResponse;
 
 /**
  * GET /users response body (plain text guidance message).
@@ -45,30 +121,3 @@ export type PostUsersResponse = unknown;
  * @category Backend — DTOs
  */
 export type GetUsersResponse = string;
-
-/** @category Backend — Contracts */
-export type MainRoutesContract = {
-    readonly routes: readonly RouteContract<any, any>[];
-};
-
-/** @category Backend — Contracts */
-export const mainRoutesContract: MainRoutesContract = {
-    routes: [
-        {
-            id: 'main.postUsers',
-            method: 'POST',
-            path: '/users',
-            auth: 'public',
-            request: {} as PostUsersRequest,
-            response: {} as PostUsersResponse,
-        },
-        {
-            id: 'main.getUsersNotSupported',
-            method: 'GET',
-            path: '/users',
-            auth: 'public',
-            request: {} as Record<string, never>,
-            response: '' as GetUsersResponse,
-        },
-    ],
-};

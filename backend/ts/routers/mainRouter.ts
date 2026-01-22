@@ -16,8 +16,6 @@ import { Router } from 'express';
 import { mainController } from '../controllers/mainController';
 import { handleGetUsersNotSupported } from './mainRouter.handlers';
 
-export { mainRoutesContract } from './mainRouter.contract';
-
 export function createMainRouter(): Router {
     /**
      * Configured Express router for core API routes.

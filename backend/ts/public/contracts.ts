@@ -14,8 +14,7 @@
  *
  * Start here:
  * - {@link RouteContract}
- * - {@link AuthRoutesContract} and {@link authRoutesContract}
- * - {@link MainRoutesContract} and {@link mainRoutesContract}
+ * - {@link AuthRoutesContract}
  *
  * Notes:
  * - Treat contracts as versioned/stable; changes are breaking.
@@ -24,9 +23,6 @@
 export type { AuthLevel } from '../routers/routeContract';
 export type { HttpMethod } from '../routers/routeContract';
 export type { RouteContract } from '../routers/routeContract';
-export { authRoutesContract } from '../routers/authRouter.contract';
 export type { AuthRoutesContract } from '../routers/authRouter.contract';
-export { mainRoutesContract } from '../routers/mainRouter.contract';
-export type { MainRoutesContract } from '../routers/mainRouter.contract';
 
 export * from './contracts.support';

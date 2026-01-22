@@ -13,4 +13,3 @@ export type {
 	PitchColorPhaseStepResult,
 	PitchColorPhaseTuning,
 } from '../animations/helpers/audio/PitchColorPhaseController';
-export type { HslColor, HslRanges } from './types';

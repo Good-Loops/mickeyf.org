@@ -25,7 +25,7 @@ type Scale = {
  *
  * @category Games — Core
  */
-export class NoteSelector {
+export class GameplayNoteSelector {
     private synth = new MembraneSynth().toDestination();
 
     private selectedKey = 'C';
