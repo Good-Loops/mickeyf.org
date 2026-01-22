@@ -17,6 +17,8 @@ import { type HslColor } from "@/utils/hsl";
  * Callers apply partial updates via `Mandelbrot.updateConfig(patch)` semantics (a shallow merge patch).
  * Effective behavior is owned by the consumer (`Mandelbrot.ts` / `MandelbrotTour`), and some fields may
  * be ignored or applied only at specific lifecycle points.
+ *
+ * @category Fractals — Core
  */
 export type MandelbrotConfig = {
     // --- Render / escape-time iteration controls ---

@@ -40,6 +40,9 @@ type PitchColorPhaseState = {
     lastKind: "silence" | "pitch";
 };
 
+/**
+ * @category Color — Support
+ */
 export type PitchColorPhaseTuning = {
     colorIntervalMs: number;
     listenAfterSilenceMs: number;
@@ -64,6 +67,9 @@ export type PitchColorPhaseTuning = {
     noteStep: boolean;
 };
 
+/**
+ * @category Color — Support
+ */
 export type PitchColorPhaseStepInput = {
     /** Raw detected pitch in **Hz**. */
     pitchHz: number;
@@ -78,6 +84,9 @@ export type PitchColorPhaseStepInput = {
     deltaMs: number;
 };
 
+/**
+ * @category Color — Support
+ */
 export type PitchColorPhaseStepResult = {
     /** Render-ready HSL color (degrees + percents), after smoothing/drift is applied. */
     color: HslColor;
@@ -96,6 +105,8 @@ export type PitchColorPhaseStepResult = {
  *
  * State held by this controller includes commit timing, silence timers, smoothing accumulators,
  * and LFO phases used for “breathing” drift.
+ *
+ * @category Color — Core
  */
 export class PitchColorPhaseController {
     private state: PitchColorPhaseState;

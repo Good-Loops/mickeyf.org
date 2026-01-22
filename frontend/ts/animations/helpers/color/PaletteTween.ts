@@ -20,6 +20,8 @@ import { lerpHsl, type HslColor } from "@/utils/hsl";
  * Tweens a fixed-size array of HSL colors toward palette-chosen targets.
  *
  * This class is stateful and uses `Math.random()` when (re)targeting.
+ *
+ * @category Color — Core
  */
 export class PaletteTween {
     /** Current interpolated colors (length equals the `size` passed to the constructor). */

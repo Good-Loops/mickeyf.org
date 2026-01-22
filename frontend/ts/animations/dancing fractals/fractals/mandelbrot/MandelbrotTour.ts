@@ -103,6 +103,8 @@ type TourContext = {
  * Ownership:
  * - Owns its internal state machine state, sight registry instance, and internal timers.
  * - Does not own rendering; consumers decide how to apply {@link TourOutput}.
+ *
+ * @category Fractals — Core
  */
 export class MandelbrotTour {
     private readonly sightReg = createDefaultSightRegistry();

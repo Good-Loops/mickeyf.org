@@ -17,6 +17,8 @@ import { PitchDetector } from "pitchy";
 
 /**
  * Beat detection output for the current analysis frame.
+ *
+ * @category Audio — Support
  */
 export type BeatState = {
 	/** Whether the current frame crosses the beat threshold. */
@@ -30,6 +32,8 @@ export type BeatState = {
  *
  * Consumers typically treat these values as “latest known” readings that are refreshed while
  * playback is running.
+ *
+ * @category Audio — Support
  */
 export type AudioState = {
 	/** Whether an audio source has been loaded (file selected and graph initialized). */
@@ -68,6 +72,8 @@ const DEFAULT_STATE: AudioState = {
  *
  * Thread model: this code runs on the main JS thread; Web Audio processing occurs on the browser's
  * internal audio thread and is sampled into JS on each analysis tick.
+ *
+ * @category Audio — Core
  */
 export class AudioEngine {
     state: AudioState = { ...DEFAULT_STATE, beat: { ...DEFAULT_STATE.beat } };

@@ -67,6 +67,8 @@ type ComposedView = {
  * - {@link step} is called once per frame.
  * - {@link updateConfig} may be called at any time to patch config.
  * - {@link scheduleDisposal} / {@link startDisposal} drive teardown; {@link dispose} releases PIXI resources.
+ *
+ * @category Fractals — Core
  */
 export class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;

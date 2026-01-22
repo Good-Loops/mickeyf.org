@@ -22,6 +22,9 @@ import { clamp } from "@/utils/clamp";
 import { getRandomHsl, HslColor, HslRanges } from "@/utils/hsl";
 import { pitchClassToHue } from "@/animations/helpers/audio/pitchClassToHue";
 
+/**
+ * @category Color — Support
+ */
 export type PitchColorPolicyDeps = {
     /** Pitch stabilizer that emits committed pitch-class updates. */
     tracker: PitchHysteresis;
@@ -58,6 +61,9 @@ export type PitchColorPolicyDeps = {
     initialColor?: HslColor;
 };
 
+/**
+ * @category Color — Support
+ */
 export type DecideInput = {
     /** Raw detected pitch in **Hz**. */
     pitchHz: number;
@@ -74,6 +80,8 @@ export type DecideInput = {
 
 /**
  * Output of {@link PitchColorPolicy.decide}.
+ *
+ * @category Color — Support
  */
 export type ColorDecision = {
     /** HSL decision (degrees + percents) intended to drive downstream color controllers. */
@@ -89,6 +97,8 @@ export type ColorDecision = {
  * This class is stateful:
  * - It stores a “last good” color used during brief silence.
  * - It can (optionally) randomize a new idle color after sustained silence.
+ *
+ * @category Color — Core
  */
 export class PitchColorPolicy {
     private lastGood: HslColor;

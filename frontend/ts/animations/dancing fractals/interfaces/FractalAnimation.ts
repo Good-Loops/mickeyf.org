@@ -21,6 +21,9 @@ import type { Application } from 'pixi.js';
  *
  * - All methods are expected to be called from the main render loop (single-threaded JavaScript).
  */
+/**
+ * @category Animations — Core
+ */
 export interface FractalAnimation<C> {
     /**
      * Called exactly once after construction and before the first frame is rendered.
@@ -74,6 +77,8 @@ export interface FractalAnimation<C> {
 
 /**
  * Constructor type for FractalAnimation implementations.
+ *
+ * @category Animations — Core
  */
 export interface FractalAnimationConstructor<C> {
     /**

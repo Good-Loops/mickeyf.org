@@ -86,6 +86,8 @@ const TUNING = {
  *
  * Time units: internal tunings are expressed in **milliseconds** and **Hz**. Per-frame timing is
  * provided later to the extractor via `step({ deltaSeconds, nowMs, audioState })`.
+ *
+ * @category Audio — Core
  */
 export function createMusicFeatureExtractor(): MusicFeatureExtractor {
     const beatEnvelope = new BeatEnvelope({

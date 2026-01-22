@@ -9,7 +9,11 @@
  */
 import type { MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
 
-/** 2D vector used for complex-plane coordinates and screen-space-like values. */
+/**
+ * 2D vector used for complex-plane coordinates and screen-space-like values.
+ *
+ * @category Fractals — Support
+ */
 export type Vec2 = { x: number; y: number };
 
 /**
@@ -18,6 +22,8 @@ export type Vec2 = { x: number; y: number };
  * This is intentionally minimal: it provides a target center/rotation and an additive tour zoom
  * delta. Composition of “final” view parameters (e.g. baseline zoom + tour zoom + beat kick)
  * happens elsewhere.
+ *
+ * @category Fractals — Support
  */
 export type TourOutput = {
     /** Whether the tour is currently enabled and producing a meaningful output. */
@@ -74,6 +80,8 @@ export type TourSight = {
  * Durations for major tour phases.
  *
  * All fields are expressed in **seconds**.
+ *
+ * @category Fractals — Support
  */
 export type TourDurations = {
     /** Time to hold the wide view before zooming in, in **seconds**. */
@@ -88,6 +96,8 @@ export type TourDurations = {
  * Zoom targets and timing parameters used by the tour.
  *
  * Zoom is represented in **log-zoom units** throughout this subsystem.
+ *
+ * @category Fractals — Support
  */
 export type TourZoomTargets = {
     /** Absolute wide-view log zoom level. */
@@ -120,6 +130,8 @@ export type TourZoomTargets = {
 
 /**
  * Presentation parameters applied on top of the tour’s spatial targets.
+ *
+ * @category Fractals — Support
  */
 export type TourPresentation = {
     /** Base rotation, in **radians**. */
@@ -132,5 +144,7 @@ export type TourPresentation = {
  * Typed partial patch for the Mandelbrot fractal config.
  *
  * Kept here so tour code can apply patches without pulling in runtime dependencies.
+ *
+ * @category Fractals — Support
  */
 export type TourConfigPatch = Partial<MandelbrotConfig>;

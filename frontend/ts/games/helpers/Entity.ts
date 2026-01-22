@@ -21,6 +21,8 @@ import { AnimatedSprite } from 'pixi.js';
  * Invariants/expectations:
  * - `anim` is expected to remain a valid PIXI sprite reference for the lifetime of the entity.
  * - Subclasses should keep `update` safe to call every frame.
+ *
+ * @category Games — Core
  */
 export abstract class Entity<T extends AnimatedSprite> {
     /**

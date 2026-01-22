@@ -24,6 +24,8 @@ import { createMusicFeatureExtractor } from "@/animations/helpers/music/createMu
  * @param container - Mount point element that will receive the PIXI canvas.
  * @returns A `FractalHost` that drives one active animation instance at a time. After `dispose()`,
  * the returned host must not be used again.
+ *
+ * @category Animations — Core
  */
 export async function createFractalHost(container: HTMLElement): Promise<FractalHost> {
     const app = new Application();

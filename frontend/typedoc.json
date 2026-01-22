@@ -2,7 +2,11 @@
   "tsconfig": "./tsconfig.typedoc.json",
   "basePath": "..",
   "entryPoints": [
-    "ts/public.ts"
+    "ts/public/audio.ts",
+    "ts/public/animations.ts",
+    "ts/public/color.ts",
+    "ts/public/fractals.ts",
+    "ts/public/games.ts"
   ],
   "entryPointStrategy": "resolve",
   "exclude": [

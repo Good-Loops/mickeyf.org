@@ -47,6 +47,8 @@ const DEPTH_HUE_STEP_DEG = 26;
  * Invariants:
  * - When initialized, `depthGraphics.length === config.maxDepth + 1`.
  * - `baseConfig` captures the post-construction baseline used for music-driven motion targets.
+ *
+ * @category Fractals — Core
  */
 export class Tree implements FractalAnimation<TreeConfig> {
 	constructor(

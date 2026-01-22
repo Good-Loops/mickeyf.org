@@ -15,6 +15,8 @@ import { getRandomInt } from "@/utils/random";
 
 /**
  * HSL color expressed as degrees and percents.
+ *
+ * @category Color — Support
  */
 export type HslColor = {
 	/** Hue angle in **degrees**. Helpers such as wrapHue normalize this into $[0, 360)$. */
@@ -31,6 +33,8 @@ export type HslColor = {
  * All ranges are inclusive min/max tuples.
  * - `hue` is in **degrees** (wrapped by consumers if needed) and is optional by design.
  * - `saturation` and `lightness` are in **percent**.
+ *
+ * @category Color — Support
  */
 export type HslRanges = {
 	/** Optional hue range in **degrees**. If omitted, hue is chosen uniformly from $[0, 360)$. */

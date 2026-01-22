@@ -22,6 +22,8 @@ import type { FractalAnimationConstructor } from "./FractalAnimation";
  * - Configuration patching and lifecycle calls are issued by the host; the animation owns visuals/state.
  *
  * Thread model: methods are expected to be called from the main JS/UI thread.
+ *
+ * @category Animations — Core
  */
 export interface FractalHost {
     /**

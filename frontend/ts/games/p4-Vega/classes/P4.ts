@@ -26,6 +26,8 @@ import { Entity } from '@/games/helpers/Entity';
  *
  * Invariants:
  * - Enforces on-canvas bounds: keeps the sprite fully within `[0, CANVAS_WIDTH] x [0, CANVAS_HEIGHT]`.
+ *
+ * @category Games — Core
  */
 export class P4 extends Entity<AnimatedSprite> {
     private startX = Entity.gap;

@@ -14,6 +14,8 @@ import { expSmoothing } from "@/utils/expSmoothing";
 
 /**
  * Tuning parameters for {@link BeatEnvelope}.
+ *
+ * @category Audio — Support
  */
 export type BeatEnvelopeTuning = {
 	/** Minimum time between accepted triggers, in **milliseconds**. */
@@ -31,6 +33,8 @@ export type BeatEnvelopeTuning = {
 
 /**
  * Input for a single {@link BeatEnvelope.step} update.
+ *
+ * @category Audio — Support
  */
 export type BeatEnvelopeInput = {
 	/** Time since last update, in **milliseconds**. */
@@ -48,6 +52,8 @@ export type BeatEnvelopeInput = {
  *
  * Maintains a smoothed envelope value and a toggle (`moveGroup`) that flips on each accepted
  * trigger. Call {@link step} once per render/audio frame.
+ *
+ * @category Audio — Core
  */
 export class BeatEnvelope {
     private envelope = 0;

@@ -17,6 +17,8 @@ import { type HslColor } from "@/utils/hsl";
  *
  * Note: `Tree.ts` also derives some motion values from music input each frame (smoothing + clamping),
  * so certain fields act as *baselines* rather than strict per-frame constants.
+ *
+ * @category Fractals — Core
  */
 export interface TreeConfig {
     // --- Structure / complexity ---

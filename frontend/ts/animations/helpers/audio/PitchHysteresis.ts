@@ -11,6 +11,8 @@ import { clamp } from "@/utils/clamp";
 
 /**
  * Tuning parameters for {@link PitchHysteresis}.
+ *
+ * @category Audio — Support
  */
 export type PitchHysteresisTuning = {
 
@@ -44,6 +46,8 @@ export type PitchHysteresisTuning = {
 
 /**
  * Result of a {@link PitchHysteresis.update} step.
+ *
+ * @category Audio — Support
  */
 export type PitchResult =
 | {
@@ -76,6 +80,8 @@ export type PitchResult =
  *
  * “Commit” in this project means: the pitch class is considered stable enough to drive downstream
  * decisions (e.g. pitch→color mapping) without rapid back-and-forth flicker.
+ *
+ * @category Audio — Support
  */
 export class PitchHysteresis {
     private smoothedHz = 0;
