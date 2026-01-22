@@ -1,5 +1,21 @@
 /**
- * Frontend public surface: fractal engines + their stable config/types.
+ * Fractals domain public surface.
+ *
+ * Responsibility:
+ * - Fractal engines and their public configuration knobs.
+ * - Tour/exploration controllers that are part of the stable surface.
+ *
+ * Non-responsibilities:
+ * - Rendering host/UI integration (handled by the animations/host layer).
+ *
+ * Start here:
+ * - {@link Mandelbrot}
+ * - {@link MandelbrotTour}
+ * - {@link FlowerSpiral}
+ * - {@link Tree}
+ *
+ * Notes:
+ * - Mandelbrot tour uses log-zoom deltas; config patches are typed partial updates.
  */
 export { Mandelbrot } from '../animations/dancing fractals/fractals/Mandelbrot';
 export { MandelbrotTour } from '../animations/dancing fractals/fractals/mandelbrot/MandelbrotTour';
