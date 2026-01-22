@@ -40,14 +40,6 @@ export interface FractalHost {
     /**
      * Applies a configuration patch to the active animation.
      *
-     * The host stores the merged config internally (for later restarts) and forwards the patch to the
-     * active animation.
-     *
-     * If no animation is active, this is a no-op.
-     */
-    /**
-     * Applies a configuration patch to the active animation.
-     *
      * Invariants:
      * - Patch type should correspond to the config type `C` used with {@link setFractal}.
      * - If no animation is active, this is a no-op.
