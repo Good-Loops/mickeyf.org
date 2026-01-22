@@ -22,7 +22,7 @@ import type { RouteContract } from './routeContract';
  * - This endpoint is a command-style multiplexer: behavior is selected via `type`.
  * - Additional fields are operation-dependent (see controller for specifics).
  *
- * @category Contracts — Support
+ * @category Backend — DTOs
  */
 export type PostUsersRequest = {
     type: 'signup' | 'login' | 'submit_score' | 'get_leaderboard' | string;
@@ -35,21 +35,23 @@ export type PostUsersRequest = {
  * Notes:
  * - Response is operation-dependent and may include success flags, tokens, leaderboards, or error codes.
  *
- * @category Contracts — Support
+ * @category Backend — DTOs
  */
 export type PostUsersResponse = unknown;
 
 /**
  * GET /users response body (plain text guidance message).
  *
- * @category Contracts — Support
+ * @category Backend — DTOs
  */
 export type GetUsersResponse = string;
 
+/** @category Backend — Contracts */
 export type MainRoutesContract = {
     readonly routes: readonly RouteContract<any, any>[];
 };
 
+/** @category Backend — Contracts */
 export const mainRoutesContract: MainRoutesContract = {
     routes: [
         {

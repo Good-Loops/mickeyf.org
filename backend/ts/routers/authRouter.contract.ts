@@ -23,14 +23,14 @@ import type { RouteContract } from './routeContract';
  * - This endpoint consumes auth context from a signed cookie (`session`) or `Authorization: Bearer <token>`.
  * - No request body is used.
  *
- * @category Contracts — Support
+ * @category Backend — DTOs
  */
 export type VerifyTokenRequest = Record<string, never>;
 
 /**
  * GET /verify-token response body.
  *
- * @category Contracts — Support
+ * @category Backend — DTOs
  */
 export type VerifyTokenResponse = {
     loggedIn: boolean;
@@ -40,23 +40,25 @@ export type VerifyTokenResponse = {
 /**
  * POST /logout request (no body used).
  *
- * @category Contracts — Support
+ * @category Backend — DTOs
  */
 export type LogoutRequest = Record<string, never>;
 
 /**
  * POST /logout response body.
  *
- * @category Contracts — Support
+ * @category Backend — DTOs
  */
 export type LogoutResponse = {
     loggedOut: true;
 };
 
+/** @category Backend — Contracts */
 export type AuthRoutesContract = {
     readonly routes: readonly RouteContract<any, any>[];
 };
 
+/** @category Backend — Contracts */
 export const authRoutesContract: AuthRoutesContract = {
     routes: [
         {

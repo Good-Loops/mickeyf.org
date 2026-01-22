@@ -2,7 +2,7 @@
   "tsconfig": "./tsconfig.typedoc.json",
   "basePath": "..",
   "entryPoints": [
-    "ts/public.ts"
+    "ts/public/contracts.ts"
   ],
   "entryPointStrategy": "resolve",
   "exclude": [

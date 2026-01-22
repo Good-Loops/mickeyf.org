@@ -4,7 +4,7 @@
 	"scripts": {
 		"docs:clean": "rm -rf .typedoc-tmp docs",
 		"docs:json:frontend": "npx typedoc --options frontend/typedoc.json --tsconfig frontend/tsconfig.typedoc.json --json .typedoc-tmp/frontend.json",
-		"docs:json:backend": "npx typedoc --options backend/typedoc.json --tsconfig backend/tsconfig.typedoc.json --entryPoints backend/ts/public.ts --json .typedoc-tmp/backend.json",
+		"docs:json:backend": "npx typedoc --options backend/typedoc.json --tsconfig backend/tsconfig.typedoc.json --json .typedoc-tmp/backend.json",
 		"docs:json": "npm run docs:json:frontend && npm run docs:json:backend",
 		"docs:build": "npx typedoc --options typedoc.merge.json",
 		"docs": "npm run docs:clean && npm run docs:json && npm run docs:build",
