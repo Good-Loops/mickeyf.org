@@ -26,5 +26,6 @@
     }
   },
   "readme": "none",
-  "json": "../.typedoc-tmp/frontend.json"
+  "json": "../.typedoc-tmp/frontend.json",
+  "categorizeByGroup": true
 }

@@ -2,6 +2,8 @@
  * Shared HTTP route contract primitives.
  *
  * This module is types-only; it intentionally defines the stable shapes used by router contract modules.
+ *
+ * @category Contracts — Core
  */
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
