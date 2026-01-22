@@ -1,4 +1,6 @@
 /**
+ * @packageDocumentation
+ *
  * Audio domain public surface.
  *
  * Responsibility:
@@ -18,6 +20,10 @@
  * - Audio capture/analysis is driven by Web Audio; consumers sample results on the main thread.
  * - Time values are a mix of milliseconds and seconds depending on API; check each signature.
  */
+
+/** @hidden */
+export const __audioModule = true;
+
 export { AudioEngine } from '../animations/helpers/audio/AudioEngine';
 export { BeatEnvelope } from '../animations/helpers/audio/BeatEnvelope';
 export { MusicFeatureExtractor } from '../animations/helpers/music/MusicFeatureExtractor';

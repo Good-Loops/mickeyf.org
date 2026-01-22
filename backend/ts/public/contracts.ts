@@ -1,4 +1,6 @@
 /**
+ * @packageDocumentation
+ *
  * Backend contracts domain public surface.
  *
  * Responsibility:
@@ -19,6 +21,10 @@
  * - Treat contracts as versioned/stable; changes are breaking.
  * - DTOs are boundary shapes (do not rely on internal server types).
  */
+
+/** @hidden */
+export const __backendContractsModule = true;
+
 export type { AuthLevel } from '../routers/routeContract';
 export type { HttpMethod } from '../routers/routeContract';
 export type { RouteContract } from '../routers/routeContract';
