@@ -35,15 +35,39 @@ Speedrun readability always has priority over detail.
 ---
 
 ## Palette (LOCKED AFTER CONFIRMATION)
-All assets must exclusively use the locked palette below.
 
-- Outline color: TBD
-- Core neutrals: TBD
-- Accent colors: TBD (radioactive, tech, water themes)
+All assets must **exclusively** use the locked palette below.  
+Speedrun readability always takes priority over visual detail.
 
-Palette source: **Coolors.co**
+**Palette version:** v1 (locked)  
+**Palette source:** https://coolors.co/393e41-454741-6b6b6b-f0f0f0-7ed321-00ffff-003366-ffef00  
+**Total colors:** 8 (excluding transparency)
 
-⚠ Do not introduce new colors without updating this document and bumping the version.
+### Palette Colors & Roles
+
+| Role | Hex | Name | Usage |
+|---|---|---|---|
+| Outline / Primary Dark | `#393E41` | Gunmetal | 1px outlines, silhouettes, UI borders |
+| Dark Neutral | `#454741` | Charcoal Brown | Shadows, depth, environment contrast |
+| Mid Neutral | `#6B6B6B` | Dim Grey | Base surfaces, player clothing, platforms |
+| Light Neutral | `#F0F0F0` | Platinum | UI text, highlights, HP bars |
+| Toxic Accent | `#7ED321` | Yellow Green | Boss 1 (Bee), poison, radioactive effects |
+| Tech Accent | `#00FFFF` | Cyan | Boss 2 (Cyborg), tech weapons, pickups |
+| Depth Accent | `#003366` | Oxford Navy | Boss 3 (Kraken), deep shadows, water |
+| Highlight / VFX | `#FFEF00` | Sunbeam Yellow | Hits, damage numbers, critical effects |
+
+### Palette Rules
+
+- No pure black or pure white allowed
+- No additional colors may be introduced
+- Each color must serve a **distinct gameplay role**
+- Gradients must be simulated via dithering only
+- Palette changes require a **version bump** (v2, v3, …)
+
+### Status
+
+✅ Palette locked and approved  
+🚫 Do not modify without updating this document
 
 ---
 
