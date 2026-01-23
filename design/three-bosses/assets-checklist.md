@@ -1,159 +1,136 @@
 # Three Bosses — Assets Checklist (v1)
 
-This checklist tracks **asset completion**, not ideas.
-Items are checked only when the asset is final and usable in-game.
+Status: Active  
+Rule: Do not check an item until it is **final and game-ready**.
 
 ---
 
 ## Player
-- [ ] Idle
-- [ ] Run
-- [ ] Jump
-- [ ] Double Jump
-- [ ] Dash
-- [ ] Hurt
-- [ ] Death
+
+- [ ] Player idle (loop)
+- [ ] Player run
+- [ ] Player jump (up)
+- [ ] Player fall
+- [ ] Player dash
+- [ ] Player land
+- [ ] Player hurt
+- [ ] Player death
 
 ---
 
-## Weapons (10 Total)
-For each weapon:
+## Player VFX
 
-### Weapon 01
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
-
-### Weapon 02
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
-
-### Weapon 03
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
-
-### Weapon 04
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
-
-### Weapon 05
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
-
-### Weapon 06
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
-
-### Weapon 07
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
-
-### Weapon 08
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
-
-### Weapon 09
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
-
-### Weapon 10
-- [ ] Pickup sprite
-- [ ] Projectile sprite
-- [ ] UI icon
-- [ ] Impact / hit effect (optional)
+- [ ] Dash trail
+- [ ] Jump dust
+- [ ] Land impact
+- [ ] Hurt flash
+- [ ] Death effect
 
 ---
 
-## Bosses
+## Weapons (Generic)
 
-### Boss 1 — Radioactive Bee
-- [ ] Idle / hover
-- [ ] Attack A
-- [ ] Attack B
-- [ ] Phase transition tell
-- [ ] Hurt
-- [ ] Death
-
-### Boss 2 — Soldier-Cyborg
-- [ ] Idle / walk
-- [ ] Ranged attack
-- [ ] Mobility / charge attack
-- [ ] Phase transition
-- [ ] Hurt
-- [ ] Death
-
-### Boss 3 — Kraken
-- [ ] Tentacle attack
-- [ ] Projectile / ink attack
-- [ ] Arena hazard
-- [ ] Phase transition
-- [ ] Hurt
-- [ ] Death
+- [ ] Weapon pickup icon (generic)
+- [ ] Weapon drop from sky (falling)
+- [ ] Weapon equip flash
+- [ ] Weapon empty / no ammo feedback
 
 ---
 
-## Environments / Tilemaps
+## Weapons (Ranged — 10 total)
 
-### Arena 1
-- [ ] Ground tiles
-- [ ] Platform tiles
-- [ ] Edge / trim tiles
-- [ ] Background tiles
-- [ ] Hazard tiles
-- [ ] Decorative props
+_For each weapon: sprite + projectile + impact_
 
-### Arena 2
-- [ ] Ground tiles
-- [ ] Platform tiles
-- [ ] Edge / trim tiles
-- [ ] Background tiles
-- [ ] Hazard tiles
-- [ ] Decorative props
+- [ ] Weapon 01
+- [ ] Weapon 02
+- [ ] Weapon 03
+- [ ] Weapon 04
+- [ ] Weapon 05
+- [ ] Weapon 06
+- [ ] Weapon 07
+- [ ] Weapon 08
+- [ ] Weapon 09
+- [ ] Weapon 10
 
-### Arena 3
-- [ ] Ground tiles
+---
+
+## Boss 1 — Radioactive Bee
+
+- [ ] Boss idle
+- [ ] Boss move
+- [ ] Boss attack
+- [ ] Boss hurt
+- [ ] Boss phase transition
+- [ ] Boss death
+
+### Boss 1 VFX
+- [ ] Poison projectiles
+- [ ] Hit sparks
+- [ ] Phase change effect
+
+---
+
+## Boss 2 — Soldier Cyborg
+
+- [ ] Boss idle
+- [ ] Boss move
+- [ ] Boss attack
+- [ ] Boss hurt
+- [ ] Boss phase transition
+- [ ] Boss death
+
+### Boss 2 VFX
+- [ ] Tech projectiles
+- [ ] Impact sparks
+- [ ] Phase change effect
+
+---
+
+## Boss 3 — Kraken
+
+- [ ] Boss idle
+- [ ] Boss attack
+- [ ] Boss tentacle strike
+- [ ] Boss hurt
+- [ ] Boss phase transition
+- [ ] Boss death
+
+### Boss 3 VFX
+- [ ] Ink / water effects
+- [ ] Screen shake cues
+- [ ] Phase change effect
+
+---
+
+## Environment
+
+- [ ] Ground tiles (32px)
 - [ ] Platform tiles
-- [ ] Edge / trim tiles
-- [ ] Background tiles
 - [ ] Hazard tiles
-- [ ] Decorative props
+- [ ] Background tiles (minimal)
 
 ---
 
 ## UI
-- [ ] HP bar frame
-- [ ] HP fill
-- [ ] Timer digits / font
-- [ ] Split times UI
-- [ ] Results screen elements
+
+- [ ] HP bar
+- [ ] Ammo counter
+- [ ] Timer (speedrun)
+- [ ] Split time display
+- [ ] Boss health bar
 
 ---
 
-## VFX
-- [ ] Hit sparks
-- [ ] Damage numbers font
-- [ ] Weapon impact effects
-- [ ] Phase transition effects
+## Global VFX
+
+- [ ] Damage numbers
+- [ ] Critical hit flash
+- [ ] Screen shake presets
 
 ---
 
 ## Notes
-- Do not check an item until it is **final and game-ready**.
-- Placeholder assets should be tracked separately.
+
+- Placeholder assets must be tracked separately
+- All assets must respect the locked palette
+- Consistency > detail
