@@ -1,11 +1,34 @@
 {
   "tsconfig": "./tsconfig.typedoc.json",
-  "entryPoints": ["ts"],
-  "entryPointStrategy": "expand",
-  "exclude": ["**/App.tsx", "**/main.tsx", "**/Header.tsx", "**/components/**", "**/pages/**"],
+  "basePath": "..",
+  "entryPoints": [
+    "ts/public/audio.ts",
+    "ts/public/animations.ts",
+    "ts/public/color.ts",
+    "ts/public/games.ts"
+  ],
+  "entryPointStrategy": "resolve",
+  "exclude": [
+    "**/App.tsx", 
+    "**/main.tsx", 
+    "**/Header.tsx", 
+    "**/components/**", 
+    "**/pages/**",
+    "**/hooks/**",
+    "**/context/**",
+    "**/node_modules/**",
+    "**/dist/**",
+  ],
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeExternals": true,
+  "externalSymbolLinkMappings": {
+    "pixi.js": {
+      "Application": "https://pixijs.download/release/docs/PIXI.Application.html",
+      "Graphics": "https://pixijs.download/release/docs/PIXI.Graphics.html"
+    }
+  },
   "readme": "none",
-  "json": "../.typedoc-tmp/frontend.json"
+  "json": "../.typedoc-tmp/frontend.json",
+  "categorizeByGroup": true,
 }

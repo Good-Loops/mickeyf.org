@@ -1,4 +1,4 @@
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 
 /**
  * Normalized smoothstep easing utility.
@@ -19,9 +19,7 @@ import clamp from "@/utils/clamp";
  * - `x = 0` returns `0`.
  * - `x = 1` returns `1`.
  */
-const smoothstep01 = (x: number): number => {
+export function smoothstep01 (x: number): number {
     const t = clamp(x, 0, 1);
     return t * t * (3 - 2 * t);
 }
-
-export default smoothstep01;

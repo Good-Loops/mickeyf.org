@@ -23,7 +23,7 @@ export interface Key {
  * @property {string} knownFor - A brief description of what the key is commonly known for in music.
  * @property {number} semitone - The semitone number of the key in the chromatic scale.
  */
-const keys: { [key: string]: Key } = {
+export const keys: { [key: string]: Key } = {
     'C': {
         frequency: 261.63,
         characteristics: 'Neutral, balanced, foundational.',
@@ -97,5 +97,3 @@ const keys: { [key: string]: Key } = {
         semitone: 12
     }
 };
-
-export default keys;

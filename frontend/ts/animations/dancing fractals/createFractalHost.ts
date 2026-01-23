@@ -11,10 +11,10 @@
 import { Application, Ticker } from "pixi.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 import type { FractalAnimationConstructor } from "./interfaces/FractalAnimation";
-import type FractalAnimation from "./interfaces/FractalAnimation";
+import type { FractalAnimation } from "./interfaces/FractalAnimation";
 import type { FractalHost } from "./interfaces/FractalHost";
-import audioEngine from "@/animations/helpers/audio/AudioEngine";
-import createMusicFeatureExtractor from "@/animations/helpers/music/createMusicFeatureExtractor";
+import { audioEngine } from "@/animations/helpers/audio/AudioEngine";
+import { createMusicFeatureExtractor } from "@/animations/helpers/music/createMusicFeatureExtractor";
 
 /**
  * Instantiates a PIXI `Application`, mounts its canvas into `container`, and returns a host that can
@@ -24,8 +24,10 @@ import createMusicFeatureExtractor from "@/animations/helpers/music/createMusicF
  * @param container - Mount point element that will receive the PIXI canvas.
  * @returns A `FractalHost` that drives one active animation instance at a time. After `dispose()`,
  * the returned host must not be used again.
+ *
+ * @category Animations — Core
  */
-export const createFractalHost = async (container: HTMLElement): Promise<FractalHost> => {
+export async function createFractalHost(container: HTMLElement): Promise<FractalHost> {
     const app = new Application();
 
     // Dev hook for debugging in the browser console.
@@ -135,11 +137,11 @@ export const createFractalHost = async (container: HTMLElement): Promise<Fractal
         applyLifetime();
     };
 
-    const updateConfig = (patch: any) => {
+    const updateConfig = <C>(patch: Partial<C>) => {
         if (!currentFractal || currentConfig == null) return;
 
         currentConfig = { ...currentConfig, ...patch };
-        currentFractal.updateConfig(patch);
+        currentFractal.updateConfig(patch as any);
     };
 
     const restart = () => {

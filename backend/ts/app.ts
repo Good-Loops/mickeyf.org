@@ -31,8 +31,8 @@ import helmet from 'helmet'; // Import the Helmet module
 import cors from 'cors';  // Import the CORS module
  
 // Import routers
-import mainRouter from './routers/mainRouter'; // Import the main router
-import authRouter from './routers/authRouter'; // Import the auth router
+import { createMainRouter } from './routers/mainRouter'; // Import the main router factory
+import { createAuthRouter } from './routers/authRouter'; // Import the auth router factory
 
 /** Environment selector used to choose between the dev/prod API base URL env vars. */
 const environment: string = process.env.NODE_ENV as string; // Determine environment
@@ -124,9 +124,9 @@ app.use(cors({
 
 
 /** Route mounting: binds core API routes under the `/api` base path. */
-app.use('/api', mainRouter); // Main router for database-operations related routes
+app.use('/api', createMainRouter()); // Main router for database-operations related routes
 /** Route mounting: binds authentication routes under the `/auth` base path. */
-app.use('/auth', authRouter); // Auth router for authentication related routes
+app.use('/auth', createAuthRouter()); // Auth router for authentication related routes
 
 /** Proxy trust policy: enables correct scheme/IP handling behind a reverse proxy. */
 app.set('trust proxy', true); // Trust the first proxy
@@ -143,4 +143,4 @@ const port = Number(process.env.BACKEND_PORT ?? 8080);
 /** Server start: starts the HTTP listener for this process using `BACKEND_PORT`/default port. */
 app.listen(port, () => console.log(`Listening on ${port}`));
 
-export default app; // Export the Express application
+export { app }; // Export the Express application

@@ -1,3 +1,7 @@
+/**
+ * Header component with navigation links.
+ * Shows different links based on authentication status.
+ */
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';

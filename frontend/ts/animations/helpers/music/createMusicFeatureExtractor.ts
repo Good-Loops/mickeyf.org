@@ -9,11 +9,11 @@
  *
  * Used by the music/audio integration layer (e.g. animation setup that needs a feature stream).
  */
-import BeatEnvelope from "@/animations/helpers/audio/BeatEnvelope";
-import PitchColorPhaseController from "@/animations/helpers/audio/PitchColorPhaseController";
-import PitchColorPolicy from "@/animations/helpers/audio/PitchColorPolicy";
-import PitchHysteresis from "@/animations/helpers/audio/PitchHysteresis";
-import MusicFeatureExtractor from "./MusicFeatureExtractor";
+import { BeatEnvelope } from "@/animations/helpers/audio/BeatEnvelope";
+import { PitchColorPhaseController } from "@/animations/helpers/audio/PitchColorPhaseController";
+import { PitchColorPolicy } from "@/animations/helpers/audio/PitchColorPolicy";
+import { PitchHysteresis } from "@/animations/helpers/audio/PitchHysteresis";
+import { MusicFeatureExtractor } from "./MusicFeatureExtractor";
 
 const TUNING = {
     beat: {
@@ -86,8 +86,10 @@ const TUNING = {
  *
  * Time units: internal tunings are expressed in **milliseconds** and **Hz**. Per-frame timing is
  * provided later to the extractor via `step({ deltaSeconds, nowMs, audioState })`.
+ *
+ * @category Audio — Core
  */
-export default function createMusicFeatureExtractor(): MusicFeatureExtractor {
+export function createMusicFeatureExtractor(): MusicFeatureExtractor {
     const beatEnvelope = new BeatEnvelope({
         gateCooldownMs: TUNING.beat.gateCooldownMs,
         strengthPower: TUNING.beat.strengthPower,

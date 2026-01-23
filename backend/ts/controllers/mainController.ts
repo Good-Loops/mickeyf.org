@@ -19,7 +19,7 @@
 import { Request, Response } from 'express';
 import { RowDataPacket } from 'mysql2';
 import { User } from '../types/customTypes';
-import { pool } from '../config/dbConfig';
+import { pool } from '../db/dbConfig';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -36,7 +36,7 @@ import jwt from 'jsonwebtoken';
  * Side effects:
  * - Delegates to handlers that may read/write persistence and set cookies.
  */
-const mainController = async (req: Request, res: Response) => {
+export async function mainController(req: Request, res: Response) {
     switch (req.body.type) {
         case 'signup':
             return addUser(req, res);
@@ -266,6 +266,3 @@ const getLeaderboard = async (_req: Request, res: Response) => {
         res.status(500).json({ error: 'SERVER_ERROR' });
     }
 };
-
-
-export default mainController;

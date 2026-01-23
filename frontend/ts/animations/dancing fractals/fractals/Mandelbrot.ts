@@ -3,7 +3,7 @@
  *
  * A GPU-rendered Mandelbrot set driven by a view model (center/zoom/rotation) and palette/shading
  * controls. This animation draws via PIXI using a full-screen quad and a custom shader filter.
- *
+     * This also forwards tour-related patches to the internal tour layer.
  * High-level dataflow:
  * - Inputs (per frame): `deltaSeconds` (seconds), `nowMs` (milliseconds), and music features (used
  *   to bias palette phase and apply beat-kick zoom).
@@ -17,16 +17,16 @@
  */
 import { Application, Container, Filter, Sprite, Texture, UniformGroup } from "pixi.js";
 
-import type FractalAnimation from "@/animations/dancing fractals/interfaces/FractalAnimation";
+import type { FractalAnimation } from "@/animations/dancing fractals/interfaces/FractalAnimation";
 
 import { defaultMandelbrotConfig, type MandelbrotConfig } from "@/animations/dancing fractals/config/MandelbrotConfig";
 
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
 
-import clamp from "@/utils/clamp";
-import lerp from "@/utils/lerp";
-import smoothstep01 from "@/utils/smoothstep01";
+import { clamp } from "@/utils/clamp";
+import { lerp } from "@/utils/lerp";
+import { smoothstep01 } from "@/utils/smoothstep01";
 import { hslToRgb } from "@/utils/hsl";
 
 import {
@@ -38,7 +38,7 @@ import {
 import { MandelbrotTour } from "./mandelbrot/MandelbrotTour";
 import type { TourDurations, TourOutput, TourPresentation, TourZoomTargets } from "./mandelbrot/MandelbrotTourTypes";
 
-import PitchHueCommitter from "../../helpers/color/PitchHueCommitter";
+import { PitchHueCommitter } from "../../helpers/color/PitchHueCommitter";
 
 type MandelbrotRuntime = {
     elapsedAnimSeconds: number;
@@ -67,8 +67,10 @@ type ComposedView = {
  * - {@link step} is called once per frame.
  * - {@link updateConfig} may be called at any time to patch config.
  * - {@link scheduleDisposal} / {@link startDisposal} drive teardown; {@link dispose} releases PIXI resources.
+ *
+ * @category Fractals — Core
  */
-export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
+export class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
     static disposalSeconds = 2;
     static backgroundColor = "hsl(189, 100%, 89%)";
 
@@ -138,7 +140,7 @@ export default class Mandelbrot implements FractalAnimation<MandelbrotConfig> {
      * Applies a shallow config patch.
      *
      * Merge semantics: `this.config` is replaced via `{ ...this.config, ...patch }`.
-     * This also forwards tour-related patches to {@link MandelbrotTour.updateConfig}.
+        * This also forwards tour-related patches to the internal tour layer.
      */
     updateConfig(patch: Partial<MandelbrotConfig>): void {
         this.config = { ...this.config, ...patch };

@@ -5,7 +5,7 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from '@/context/AuthContext';
-import p4Vega from '@/games/p4-Vega/p4-Vega';
+import { p4Vega } from '@/games/p4-Vega/p4-Vega';
 import FullscreenButton from "@/components/FullscreenButton";
 import Dropdown from '@/components/Dropdown';
 

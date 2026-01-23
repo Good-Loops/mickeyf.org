@@ -15,14 +15,14 @@
  */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import { getRandomInt } from '@/utils/random';
-import gameOver from '../utils/gameOver';
+import { gameOver } from './utils/gameOver';
 
 import { API_BASE } from '@/config/apiConfig';
 
-import P4 from './classes/P4';
-import Water from './classes/Water';
-import BlackHole from './classes/BlackHole';
-import Sky from './classes/Sky';
+import { P4 } from './classes/P4';
+import { Water } from './classes/Water';
+import { BlackHole } from './classes/BlackHole';
+import { Sky } from './classes/Sky';
 
 import p4Data from './data/p4.json';
 import waterData from './data/water.json';
@@ -72,7 +72,7 @@ type P4VegaAuth = {
  * - Renderer/stage and event listeners are created immediately.
  * - Asset loading and entity construction happen inside `load()` (invoked once on start and again on restart).
  */
-export default async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth): Promise<() => void> {
+export async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth): Promise<() => void> {
     const renderer = await autoDetectRenderer({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,

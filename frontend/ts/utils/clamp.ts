@@ -21,5 +21,4 @@
  * - If `low > high`, the function returns `high`.
  * - `NaN` inputs propagate to `NaN`; `±Infinity` behave as normal numeric bounds.
  */
-const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
-export default clamp;
+export function clamp(value: number, low: number, high: number) { return Math.min(high, Math.max(low, value)); }

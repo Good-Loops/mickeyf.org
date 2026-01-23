@@ -1,28 +1,33 @@
 /**
  * Base entity contract for the games subsystem.
  *
- * Purpose:
- * - Defines a shared abstraction for game objects backed by a PIXI {@link PIXI.AnimatedSprite}.
- * - Encapsulates per-entity state + behavior; the game loop is responsible for iteration order and lifecycle.
+ * Responsibility:
+ * - Encapsulate per-entity state + behavior.
+ * - Provide a consistent lifecycle hook (`update`) for the host/game loop.
  *
- * Ownership boundaries:
- * - Entities own their own mutable state and may mutate their sprite.
- * - Scene/container ownership and overall teardown policy live outside this module.
+ * Non-responsibilities:
+ * - Owning the scene/container.
+ * - Scheduling/timing policy (the host decides cadence and ordering).
  */
-import * as PIXI from 'pixi.js';
+import { AnimatedSprite } from 'pixi.js';
 
 /**
  * Abstract base class for a single gameplay entity.
  *
- * Lifecycle:
- * - Constructed with an animated sprite (`anim`) and immediately started via {@link play}.
- * - The game loop should call {@link update} on each tick.
+ * Ownership/lifecycle:
+ * - Constructed with a backing sprite and immediately started via {@link play}.
+ * - The host calls {@link update} on each tick/frame.
  *
- * Invariants/expectations:
- * - `anim` is expected to remain a valid PIXI sprite reference for the lifetime of the entity.
- * - Subclasses should keep `update` safe to call every frame.
+ * Invariants:
+ * - `update` is safe to call repeatedly (typical: every frame).
+ * - The entity may mutate `anim`.
+ *
+ * @category Games — Core
  */
-export default abstract class Entity<T extends PIXI.AnimatedSprite> {
+export abstract class Entity<
+    T extends AnimatedSprite,
+    TUpdateArgs extends unknown[] = unknown[]
+> {
     /**
      * @param anim - Backing PIXI animated sprite for this entity. The entity may mutate this sprite.
      */
@@ -31,20 +36,19 @@ export default abstract class Entity<T extends PIXI.AnimatedSprite> {
     }
 
     /**
-     * Advances this entity's simulation by one game tick.
+     * Advances this entity by one tick/frame.
      *
-     * Contract:
-     * - Called by the game loop once per frame/tick.
-     * - Subclasses define their own argument contract; callers must follow the concrete implementation.
+     * Call order/cadence: owned by the host (typically once per render tick).
      *
-     * Note: this base type does not impose timing units; games may pass milliseconds, seconds, or richer context.
+     * @param args - Implementation-defined update context (e.g. delta time, input snapshot).
+     * The base contract does not prescribe units.
      */
-    abstract update(...args: any[]): void;
+    abstract update(...args: TUpdateArgs): void;
 
-    /** Default spacing hint (in pixels) used by games for layout/collision heuristics. */
+    /** Default spacing hint in **pixels** used for layout/collision heuristics. */
     static gap = 10;
 
-    /** Dimensionless hitbox scaling factor (e.g., < 1 shrinks hitboxes relative to sprite size). */
+    /** Hitbox scale factor (dimensionless), typically in $[0, 1]$. */
     static hitBoxAdjust = .8;
 
     /**

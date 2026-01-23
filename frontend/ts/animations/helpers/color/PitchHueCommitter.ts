@@ -15,10 +15,10 @@
  * This helper is generic and can be used by any animation system (palette tweening, shader uniforms,
  * UI highlights, etc.) that wants stable pitch-driven color influence.
  */
-import hzToPitchInfo from "@/animations/helpers/audio/pitchInfo";
-import pitchClassToHue from "@/animations/helpers/audio/pitchClassToHue";
+import { hzToPitchInfo } from "@/animations/helpers/audio/pitchInfo";
+import { pitchClassToHue } from "@/animations/helpers/audio/pitchClassToHue";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 
 /** Output frame for {@link PitchHueCommitter.step}. */
 export type PitchHueCommitterOutput = {
@@ -37,7 +37,7 @@ export type PitchHueCommitterOutput = {
  *
  * Usage model: create one instance per animation/controller and call {@link step} once per frame.
  */
-export default class PitchHueCommitter {
+export class PitchHueCommitter {
     private committedHueDeg: number;
 
     private lastCandidatePitchClass: number | null = null;

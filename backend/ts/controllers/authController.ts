@@ -34,7 +34,7 @@ import jwt from 'jsonwebtoken';
  * Failure modes:
  * - Missing/invalid token yields `{ loggedIn: false }`.
  */
-const authController = (req: Request, res: Response) => {
+export function authController(req: Request, res: Response) {
     /**
      * JWT verification secret.
      *
@@ -84,5 +84,3 @@ const authController = (req: Request, res: Response) => {
         res.json({ loggedIn: false });
     }
 }
-
-export default authController;
