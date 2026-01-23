@@ -12,12 +12,12 @@
  */
 import { Application, Filter, Sprite, Texture, UniformGroup } from "pixi.js";
 
-import PaletteTween from "@/animations/helpers/color/PaletteTween";
-import PitchHueCommitter from "@/animations/helpers/color/PitchHueCommitter";
+import { PaletteTween } from "@/animations/helpers/color/PaletteTween";
+import { PitchHueCommitter } from "@/animations/helpers/color/PitchHueCommitter";
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { MusicFeaturesFrame } from "@/animations/helpers/music/MusicFeatureExtractor";
-import clamp from "@/utils/clamp";
-import type FractalAnimation from "../interfaces/FractalAnimation";
+import { clamp } from "@/utils/clamp";
+import type { FractalAnimation } from "../interfaces/FractalAnimation";
 import { defaultFlowerSpiralConfig, type FlowerSpiralConfig } from "../config/FlowerSpiralConfig";
 import { FLOWER_MAX, clampFlowerAmount, createFlowerSpiralFilter, createFlowerSpiralUniformGroup } from "./flower spiral/FlowerSpiralShader";
 
@@ -30,9 +30,11 @@ const MIN_MUSIC_WEIGHT_FOR_COLOR = 0.25;
  * Units & semantics:
  * - `deltaSeconds` is in **seconds**.
  * - `nowMs` is an absolute time in **milliseconds** and is also uploaded to the shader as `uTimeMs`.
- * - Pitch hue values are in **degrees** (from {@link PitchHueCommitter}).
+ * - Pitch hue values are in **degrees** (from the pitch hue committer).
+ *
+ * @category Fractals — Core
  */
-export default class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig> {
+export class FlowerSpiral implements FractalAnimation<FlowerSpiralConfig> {
     constructor(
         private readonly centerX: number,
         private readonly centerY: number,

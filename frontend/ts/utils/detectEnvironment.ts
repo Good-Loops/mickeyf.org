@@ -26,7 +26,7 @@ export interface Environment {
  * - `isAndroid`: True if the user agent indicates an Android device.
  * - `isDesktop`: True if the environment is not mobile and not an app.
  */
-export const detectEnvironment = (): Environment => {
+export function detectEnvironment(): Environment {
     const { userAgent } = navigator;
 
     const isApp = window.location.href.includes('app=true');

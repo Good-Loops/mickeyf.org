@@ -10,13 +10,13 @@
  */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import { getRandomX, getRandomY } from '@/utils/random';
-import isColliding from '@/utils/isColliding';
+import { isColliding } from '@/utils/isColliding';
 
-import NoteSelector from '@/games/helpers/NoteSelector';
-import Entity from '@/games/helpers/Entity';
+import { GameplayNoteSelector } from '@/games/helpers/GameplayNoteSelector';
+import { Entity } from '@/games/helpers/Entity';
 
-import BlackHole from './BlackHole';
-import P4 from './P4';
+import { BlackHole } from './BlackHole';
+import { P4 } from './P4';
 
 import { Container, ContainerChild, AnimatedSprite } from 'pixi.js';
 
@@ -27,14 +27,14 @@ import { Container, ContainerChild, AnimatedSprite } from 'pixi.js';
  * - Uses PIXI/canvas coordinates in **pixels**.
  *
  * Ownership:
- * - Owns the `waterAnim` sprite reference and a private {@link NoteSelector} instance.
+ * - Owns the `waterAnim` sprite reference and a private NoteSelector instance.
  * - Sprite is added to the provided stage in the constructor and destroyed in {@link destroy}.
  */
-export default class Water extends Entity<AnimatedSprite> {
+export class Water extends Entity<AnimatedSprite> {
     private startX = CANVAS_WIDTH - Entity.gap;
     private startY = CANVAS_HEIGHT * .5;
 
-    private noteSelector = new NoteSelector();
+    private noteSelector = new GameplayNoteSelector();
 
     /**
      * @param stage - Container that will own the water sprite in the scene graph.

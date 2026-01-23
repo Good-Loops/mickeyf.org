@@ -12,7 +12,7 @@ const semitoneFrequencies = [
  * @param halfTones - The number of half tones to transpose the notes by.
  * @returns The transposed array of notes.
  */
-const transpose = (notes: number[], halfTones: number): number[] => {
+export function transpose(notes: number[], halfTones: number): number[] {
     return notes.map((note) => {
         const currentIndex = semitoneFrequencies.indexOf(note);
 
@@ -22,6 +22,4 @@ const transpose = (notes: number[], halfTones: number): number[] => {
 
         return semitoneFrequencies[newIndex];
     });
-};
-
-export default transpose;
+}

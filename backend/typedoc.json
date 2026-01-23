@@ -1,12 +1,21 @@
 {
   "tsconfig": "./tsconfig.typedoc.json",
-  "entryPoints": ["ts"],
-  "entryPointStrategy": "expand",
-  "exclude": ["**/node_modules/**", "**/dist/**", "**/build/**", "**/*.test.ts", "**/*.spec.ts"],
+  "basePath": "..",
+  "entryPoints": [
+    "ts/public/contracts.ts"
+  ],
+  "entryPointStrategy": "resolve",
+  "exclude": [
+    "**/node_modules/**", 
+    "**/dist/**", 
+    "**/build/**", 
+    "**/*.test.ts", 
+    "**/*.spec.ts"
+  ],
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeExternals": true,
   "readme": "none",
-  "json": "../.typedoc-tmp/backend.json"
+  "json": "../.typedoc-tmp/backend.json", 
+  "categorizeByGroup": true,
 }
-

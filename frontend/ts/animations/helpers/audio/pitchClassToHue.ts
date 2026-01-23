@@ -5,7 +5,6 @@
  * The specific mapping is an aesthetic design choice intended to distribute note classes around
  * the color wheel in a simple, predictable way.
  */
-const pitchClassToHue = (pitchClass: number): number => pitchClass * 30;
 
 /**
  * Converts a pitch class to a hue angle.
@@ -17,4 +16,4 @@ const pitchClassToHue = (pitchClass: number): number => pitchClass * 30;
  * This helper does not clamp or wrap its input/output. Callers that require canonical hue should
  * wrap the result into $[0, 360)$ (e.g. via `wrapHue` or `% 360`).
  */
-export default pitchClassToHue;
+export function pitchClassToHue (pitchClass: number): number { return pitchClass * 30 };

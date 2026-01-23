@@ -13,22 +13,23 @@
  * - Route path + method pairs form a stable external contract.
  */
 import { Router } from 'express';
-import mainController from '../controllers/mainController';
+import { mainController } from '../controllers/mainController';
+import { handleGetUsersNotSupported } from './mainRouter.handlers';
 
-/**
- * Configured Express router for core API routes.
- *
- * Ownership:
- * - Exports a fully-configured router; the base mount path is owned by app bootstrap.
- */
-const mainRouter = Router();
+export function createMainRouter(): Router {
+    /**
+     * Configured Express router for core API routes.
+     *
+     * Ownership:
+     * - Exports a fully-configured router; the base mount path is owned by app bootstrap.
+     */
+    const router = Router();
 
-/** POST /users — core API request multiplexer (mutating/command-style). */
-mainRouter.post('/users', mainController);
+    /** POST /users — core API request multiplexer (mutating/command-style). */
+    router.post('/users', mainController);
 
-/** GET /users — read-only endpoint explicitly not supported (returns guidance message). */
-mainRouter.get('/users', (_req, res) => {
-    res.send('GET request to /api/users is not supported. Please use POST.');
-});
+    /** GET /users — read-only endpoint explicitly not supported (returns guidance message). */
+    router.get('/users', handleGetUsersNotSupported);
 
-export default mainRouter;
+    return router;
+}

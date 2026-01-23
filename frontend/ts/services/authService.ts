@@ -47,9 +47,9 @@ type LoginError = {
  * - Rejects by throwing an `Error` when the HTTP status is non-2xx.
  * - Does not normalize JSON-level errors; any error shape in the successful JSON response is returned to the caller.
  */
-export const loginRequest = async (
+export async function loginRequest(
   payload: LoginPayload
-): Promise<LoginSuccess | LoginError> => {
+): Promise<LoginSuccess | LoginError> {
     const resp = await fetch(`${API_BASE}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,7 +80,7 @@ export const loginRequest = async (
    * Error semantics:
    * - Rejects by throwing an `Error` when the HTTP status is non-2xx.
    */
-export const verifyRequest = async () => {
+export async function verifyRequest() {
     const resp = await fetch(`${API_BASE}/auth/verify-token`, {
         method: 'GET',
         credentials: 'include',

@@ -17,7 +17,7 @@
  * - Inputs already in $[0, 1)$ return unchanged.
  * - `NaN` propagates to `NaN`; `±Infinity` produce `NaN`.
  */
-export default function mod1(x: number): number {
+export function mod1(x: number): number {
 	const y = x % 1;
 	return y < 0 ? y + 1 : y;
 }

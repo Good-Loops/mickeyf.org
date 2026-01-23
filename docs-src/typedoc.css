@@ -1,0 +1,118 @@
+/* ---------- Header logo ---------- */
+
+header.tsd-page-toolbar a.title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+header.tsd-page-toolbar a.title::before {
+    content: "";
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    background: url("./logo.svg") center / contain no-repeat;
+}
+
+/* ---------- Hide Settings > Member Visibility ---------- */
+
+.tsd-filter-visibility {
+    display: none !important;
+}
+
+/* ---------- Readability ---------- */
+
+body {
+    line-height: 1.55;
+}
+
+h1 { line-height: 1.15; }
+h2 { margin-top: 2rem; }
+h3 { margin-top: 1.4rem; }
+
+
+/* ---------- Layout width ---------- */
+
+:root {
+    --docs-max-width: 980px;
+}
+
+.col-content {
+    max-width: var(--docs-max-width);
+}
+
+/* ---------- Sidebar scanability ---------- */
+
+.site-menu .tsd-navigation a,
+.page-menu .tsd-navigation a {
+    line-height: 1.25;
+}
+
+.site-menu .tsd-navigation a.current {
+    font-weight: 600;
+}
+
+/* ---------- Code blocks ---------- */
+
+pre {
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+code {
+    tab-size: 2;
+}
+
+/* ---------- Tables ---------- */
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th,
+td {
+    padding: 0.55rem 0.7rem;
+}
+
+/* ---------- Panels / spacing ---------- */
+
+.tsd-panel {
+    margin: 1rem 0;
+}
+
+/* ---------- Accordion arrow vertical alignment ---------- */
+
+summary.tsd-accordion-summary {
+    display: flex;
+    align-items: center;
+    line-height: 1.2;
+}
+
+/* Arrow icon */
+summary.tsd-accordion-summary > svg {
+    flex-shrink: 0;
+    margin-top: 0;
+    translate: 0 10px;
+}
+
+/* ---------- Footer ---------- */
+
+footer {
+    opacity: 0.75;
+    font-size: 0.85em;
+}
+
+/* ---------- Navigation spacing ---------- */
+
+.site-menu .tsd-navigation li {
+    margin: 0.15rem 0;
+}
+
+/* ---------- Reduce visual noise ---------- */
+
+hr {
+  opacity: 0.4;
+}

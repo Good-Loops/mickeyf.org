@@ -6,7 +6,7 @@
  *
  * Separation of concerns:
  * - Pitch detection and confidence estimation live elsewhere (e.g. `AudioEngine`).
- * - Pitch stabilization (hysteresis / commit semantics) is handled by {@link PitchHysteresis}.
+ * - Pitch stabilization (hysteresis / commit semantics) is handled by the pitch hysteresis tracker.
  * - This policy maps those stable inputs → aesthetic color decisions.
  *
  * Key goals:
@@ -17,13 +17,15 @@
  * Hue in this project is expressed in **degrees** and generally normalized into $[0, 360)$.
  * Saturation/lightness are expressed as **percent** values (typically $[0, 100]$).
  */
-import PitchHysteresis, { PitchResult } from "@/animations/helpers/audio/PitchHysteresis";
-import clamp from "@/utils/clamp";
+import { PitchHysteresis, PitchResult } from "@/animations/helpers/audio/PitchHysteresis";
+import { clamp } from "@/utils/clamp";
 import { getRandomHsl, HslColor, HslRanges } from "@/utils/hsl";
-import hzToPitchInfo from "@/animations/helpers/audio/pitchInfo";
-import pitchClassToHue from "@/animations/helpers/audio/pitchClassToHue";
+import { pitchClassToHue } from "@/animations/helpers/audio/pitchClassToHue";
 
-type PitchColorPolicyDeps = {
+/**
+ * @category Color — Support
+ */
+export type PitchColorPolicyDeps = {
     /** Pitch stabilizer that emits committed pitch-class updates. */
     tracker: PitchHysteresis;
     tuning: {
@@ -50,7 +52,7 @@ type PitchColorPolicyDeps = {
         /**
          * Range used to pick an idle color after sustained silence.
          *
-         * If `hue` is omitted, hue is chosen uniformly from $[0, 360)$ by {@link getRandomHsl}.
+         * If `hue` is omitted, hue is chosen uniformly from $[0, 360)$.
          */
         silenceRanges: HslRanges;
     };
@@ -59,7 +61,10 @@ type PitchColorPolicyDeps = {
     initialColor?: HslColor;
 };
 
-type DecideInput = {
+/**
+ * @category Color — Support
+ */
+export type DecideInput = {
     /** Raw detected pitch in **Hz**. */
     pitchHz: number;
 
@@ -75,6 +80,8 @@ type DecideInput = {
 
 /**
  * Output of {@link PitchColorPolicy.decide}.
+ *
+ * @category Color — Support
  */
 export type ColorDecision = {
     /** HSL decision (degrees + percents) intended to drive downstream color controllers. */
@@ -90,12 +97,14 @@ export type ColorDecision = {
  * This class is stateful:
  * - It stores a “last good” color used during brief silence.
  * - It can (optionally) randomize a new idle color after sustained silence.
+ *
+ * @category Color — Core
  */
-export default class PitchColorPolicy {
+export class PitchColorPolicy {
     private lastGood: HslColor;
 
     /**
-     * @param deps - Policy dependencies and tuning. The provided {@link PitchHysteresis} instance
+    * @param deps - Policy dependencies and tuning. The provided pitch hysteresis tracker instance
      * is treated as owned-by-caller and is not disposed by this class.
      */
     constructor(private deps: PitchColorPolicyDeps) {
@@ -134,10 +143,7 @@ export default class PitchColorPolicy {
         const hueOffset = clamp(fracNorm, -1, 1) * tuning.microHueDriftDeg;
 
         const committedPitchClass = result.pitchClass;
-        const info = hzToPitchInfo(result.hz);
-
         const committedBaseHue = pitchClassToHue(committedPitchClass);
-
         const finalHue = (committedBaseHue + hueOffset + 360) % 360;
 
         if (tuning.noteStep && !result.changed) {

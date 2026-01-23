@@ -9,6 +9,8 @@ import { type HslColor } from "@/utils/hsl";
  * Ownership boundaries:
  * - Values are consumed by `FlowerSpiral.ts` and forwarded to the shader via `FlowerSpiralShader.ts`.
  * - Interpretation and any clamping/guard behavior live in those modules, not here.
+ *
+ * @category Fractals — Core
  */
 export interface FlowerSpiralConfig {
     /**

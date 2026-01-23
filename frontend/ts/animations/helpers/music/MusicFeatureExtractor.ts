@@ -11,9 +11,9 @@
  */
 import type { AudioState } from "@/animations/helpers/audio/AudioEngine";
 import type { ColorDecision } from "@/animations/helpers/audio/PitchColorPolicy";
-import type BeatEnvelope from "@/animations/helpers/audio/BeatEnvelope";
-import type PitchColorPhaseController from "@/animations/helpers/audio/PitchColorPhaseController";
-import clamp from "@/utils/clamp";
+import type { BeatEnvelope } from "@/animations/helpers/audio/BeatEnvelope";
+import type { PitchColorPhaseController } from "@/animations/helpers/audio/PitchColorPhaseController";
+import { clamp } from "@/utils/clamp";
 import type { HslColor } from "@/utils/hsl";
 
 /**
@@ -23,6 +23,8 @@ import type { HslColor } from "@/utils/hsl";
  * - All `*01` fields are normalized to $[0, 1]$.
  * - `nowMs`/`deltaMs` are in **milliseconds**.
  * - “Pulse” fields are edge-triggered and are typically `true` for a single frame.
+ *
+ * @category Audio — Support
  */
 export type MusicFeaturesFrame = {
     /** Absolute time, in **milliseconds** (monotonic clock). */
@@ -72,8 +74,10 @@ export type MusicFeaturesFrame = {
 
 /**
  * Combines beat/pitch feature extractors into a single per-frame feature stream.
+ *
+ * @category Audio — Core
  */
-export default class MusicFeatureExtractor {
+export class MusicFeatureExtractor {
     constructor(
         private deps: {
             beatEnvelope: BeatEnvelope;

@@ -27,9 +27,7 @@
  * - If `responsivenessPerSec < 0`, `alpha` becomes negative.
  * - `NaN` inputs propagate to `NaN`.
  */
-const expSmoothing = (dtMs: number, responsivenessPerSec: number): number => {
+export function expSmoothing(dtMs: number, responsivenessPerSec: number): number {
     const dt = dtMs / 1000;
     return 1 - Math.exp(-responsivenessPerSec * dt);
 };
-
-export default expSmoothing;

@@ -1,12 +1,25 @@
 {
-  "name": "mickeyf-docs",
+  "name": "mickeyf.docs",
   "entryPointStrategy": "merge",
   "entryPoints": [
     ".typedoc-tmp/frontend.json",
     ".typedoc-tmp/backend.json"
   ],
   "out": "docs",
-  "readme": "none",
+  "favicon": "frontend/public/favicon.ico",
+  "readme": "docs-src/index.md",
   "cleanOutputDir": true,
-  "excludeExternals": true
+  "excludeExternals": true,
+  "externalSymbolLinkMappings": {
+    "pixi.js": {
+      "Application": "https://pixijs.download/release/docs/PIXI.Application.html",
+      "Graphics": "https://pixijs.download/release/docs/PIXI.Graphics.html"
+    }
+  },
+  "navigationLinks": {
+    "Home": "/index.html",
+    "mickeyf.org": "https://mickeyf.org",
+    "GitHub": "https://github.com/Good-Loops/mickeyf.org"
+  },
+  "customCss": ["./docs-src/typedoc.css"]
 }

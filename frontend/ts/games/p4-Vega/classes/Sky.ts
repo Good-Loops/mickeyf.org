@@ -23,7 +23,7 @@ import { Graphics, Container } from 'pixi.js';
  * - {@link update} mutates positions/opacity once per frame.
  * - {@link destroy} detaches stars from the stage (caller owns stage lifetime).
  */
-export default class Sky {
+export class Sky {
     private stars: Graphics[] = [];
 
     /**

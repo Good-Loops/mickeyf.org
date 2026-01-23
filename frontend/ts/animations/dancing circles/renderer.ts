@@ -17,19 +17,32 @@
  */
 import { Graphics } from "pixi.js";
 
-import expSmoothing from "@/utils/expSmoothing";
+import { expSmoothing } from "@/utils/expSmoothing";
 import { toHslaString } from "@/utils/hsl";
 
-import Circle from "./classes/Circle";
-import CircleBounds from "./classes/CircleBounds";
+import { Circle } from "./classes/Circle";
+import { CircleBounds } from "./classes/CircleBounds";
 import { BeatFrame } from "./DancingCirclesController";
 import { DancingCirclesTuning } from "./tuning";
 
-export const createRenderer = (
+/**
+ * Creates a Dancing Circles renderer function.
+ *
+ * Ownership & lifetime:
+ * - The returned render function closes over the provided `graphics` instance, which it mutates per-frame.
+ * - The caller retains ownership of the `graphics` and is responsible for its disposal.
+ * 
+ * @param graphics The PIXI {@link Graphics} instance into which circles are drawn.
+ * @param bounds The bounding area within which circles are constrained.
+ * @param tuning The current {@link DancingCirclesTuning} parameters.
+ * @returns A per-frame render function: `(circles: Circle[], clarity: number, isPlaying: boolean, beatFrame: BeatFrame, deltaMs: number) => void` 
+ * that clears and redraws the circles into the provided `graphics`.
+ */
+export function createRenderer(
     graphics: Graphics,
     bounds: CircleBounds,
     tuning: DancingCirclesTuning
-) => {
+) {
     /**
      * Per-frame render entry point (returned closure).
      *

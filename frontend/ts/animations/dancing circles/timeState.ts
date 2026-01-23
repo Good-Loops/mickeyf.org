@@ -27,11 +27,11 @@ const createInitialState = (): TimeState => ({
     controlElapsedMs: 0,
 });
 
-export const resetIdleElapsed = (state: TimeState): void => {
+export function resetIdleElapsed(state: TimeState): void {
     state.idleElapsedMs = 0;
 };
 
-export const resetControlElapsed = (state: TimeState): void => {
+export function resetControlElapsed(state: TimeState): void {
     state.controlElapsedMs = 0;
 };
 
@@ -42,7 +42,7 @@ export const resetControlElapsed = (state: TimeState): void => {
  * - `tick(nowMs, deltaMs)` overwrites `state.nowMs`/`state.deltaMs` and increments the elapsed accumulators.
  * - This module does not clamp or normalize time; callers must pass consistent millisecond units.
  */
-export const createTimeState = () => {
+export function createTimeState() {
     const state = createInitialState();
 
     /** Advances the shared time state for the current frame. Inputs are in **milliseconds**. */

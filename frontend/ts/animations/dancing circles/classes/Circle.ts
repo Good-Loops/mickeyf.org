@@ -11,10 +11,10 @@
  * - Global policies (retarget cadence, audio gating, bounds rules) are controller responsibilities.
  */
 import { getRandomX, getRandomY } from "@/utils/random";
-import lerp from "@/utils/lerp";
+import { lerp } from "@/utils/lerp";
 import { getRandomHsl, HslColor, HslRanges, lerpHsl } from "@/utils/hsl";
 
-type CircleInit = {
+export type CircleInit = {
     /** Stable per-circle index used for ordering and group selection (e.g., parity groups). */
     index: number;
     /** Minimum gap in pixels used by random placement helpers. */
@@ -27,7 +27,7 @@ type CircleInit = {
     initialTargetColor?: HslColor;
 };
 
-type CircleStep = {
+export type CircleStep = {
     /** Position interpolation factor in $[0, 1]$ (derived from time + tuning). */
     posAlpha: number;
     /** Radius interpolation factor in $[0, 1]$ (derived from time + tuning). */
@@ -57,7 +57,7 @@ const computeBaseRadius = (i: number) =>
  * - Radii are finite and non-negative.
  * - Positions are finite; bounds clamping is performed outside this class.
  */
-export default class Circle {
+export class Circle {
 
     index: number;
 
@@ -86,11 +86,12 @@ export default class Circle {
      * - Initial `x/y` and `targetX/targetY` are sampled via `getRandomX/getRandomY` using the derived base radius
      *   and `gap`.
      *
-     * @param init.index - Stable index used for grouping/ordering.
-     * @param init.gap - Minimum separation in pixels used by the placement helpers.
-     * @param init.colorRanges - Allowed HSL ranges for random colors.
-     * @param init.initialColor - Optional explicit starting color.
-     * @param init.initialTargetColor - Optional explicit starting target color.
+     * @param init - Initialization inputs.
+     *   - `index`: stable index used for grouping/ordering
+     *   - `gap`: minimum separation in pixels used by the placement helpers
+     *   - `colorRanges`: allowed HSL ranges for random colors
+     *   - `initialColor`: optional explicit starting color
+     *   - `initialTargetColor`: optional explicit starting target color
      * @param damping - Velocity damping factor (dimensionless). Typical range is $[0,1]$.
      */
     constructor(

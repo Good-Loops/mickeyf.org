@@ -7,22 +7,22 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type TreeConfig, defaultTreeConfig } from '@/animations/dancing fractals/config/TreeConfig'; 
 import TreeControls from '@/animations/dancing fractals/components/TreeControls';
-import Tree from '@/animations/dancing fractals/fractals/Tree';
+import { Tree } from '@/animations/dancing fractals/fractals/Tree';
 
 import { type FlowerSpiralConfig, defaultFlowerSpiralConfig } from '@/animations/dancing fractals/config/FlowerSpiralConfig';
 import FlowerSpiralControls from '@/animations/dancing fractals/components/FlowerSpiralControls';
-import FlowerSpiral from '@/animations/dancing fractals/fractals/FlowerSpiral';
+import { FlowerSpiral } from '@/animations/dancing fractals/fractals/FlowerSpiral';
 
 import { type MandelbrotConfig, defaultMandelbrotConfig } from '@/animations/dancing fractals/config/MandelbrotConfig';
 import MandelbrotControls from '@/animations/dancing fractals/components/MandelbrotControls';
-import Mandelbrot from '@/animations/dancing fractals/fractals/Mandelbrot';
+import { Mandelbrot } from '@/animations/dancing fractals/fractals/Mandelbrot';
 
 import { FractalHost } from '@/animations/dancing fractals/interfaces/FractalHost';
 import { createFractalHost } from '@/animations/dancing fractals/createFractalHost';
 import type { FractalAnimationConstructor } from '@/animations/dancing fractals/interfaces/FractalAnimation';
 
-import audioEngine from '@/animations/helpers/audio/AudioEngine';
-import useAudioEngineState from '@/hooks/useAudioEngineState';
+import { audioEngine } from '@/animations/helpers/audio/AudioEngine';
+import { useAudioEngineState } from '@/hooks/useAudioEngineState';
 import notAllowedCursor from '@/assets/cursors/notallowed.cur';
 import Dropdown from '@/components/Dropdown';
 import FullscreenButton from '@/components/FullscreenButton';

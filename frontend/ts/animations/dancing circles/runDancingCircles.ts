@@ -14,20 +14,20 @@ import { Application, Graphics } from "pixi.js";
 
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 
-import audioEngine from "@/animations/helpers/audio/AudioEngine";
-import PitchHysteresis from "@/animations/helpers/audio/PitchHysteresis";
-import PitchColorPolicy from "@/animations/helpers/audio/PitchColorPolicy";
-import PitchColorPhaseController from "@/animations/helpers/audio/PitchColorPhaseController";
-import BeatEnvelope from "@/animations/helpers/audio/BeatEnvelope";
+import { audioEngine } from "@/animations/helpers/audio/AudioEngine";
+import { PitchHysteresis } from "@/animations/helpers/audio/PitchHysteresis";
+import { PitchColorPolicy } from "@/animations/helpers/audio/PitchColorPolicy";
+import { PitchColorPhaseController } from "@/animations/helpers/audio/PitchColorPhaseController";
+import { BeatEnvelope } from "@/animations/helpers/audio/BeatEnvelope";
 
 import { TUNING } from "./tuning";
 import { createTimeState, resetControlElapsed, resetIdleElapsed } from "./timeState";
 import { createRenderer } from "@/animations/dancing circles/renderer";
 
-import Circle from "./classes/Circle";
-import CircleBounds from "./classes/CircleBounds";
-import DancingCirclesController, { AudioParams, BeatFrame, BeatMove } from "@/animations/dancing circles/DancingCirclesController";
-import clamp from "@/utils/clamp";
+import { Circle } from "./classes/Circle";
+import { CircleBounds } from "./classes/CircleBounds";
+import { DancingCirclesController, AudioParams, BeatFrame, BeatMove } from "@/animations/dancing circles/DancingCirclesController";
+import { clamp } from "@/utils/clamp";
 
 type DancingCirclesDeps = {
     container: HTMLElement;
@@ -45,7 +45,7 @@ type DancingCirclesDeps = {
  *
  * @returns A disposer function that unregisters the frame callback and destroys PIXI resources.
  */
-export const runDancingCircles = async ({ container }: DancingCirclesDeps) => {
+export async function runDancingCircles({ container }: DancingCirclesDeps) {
     const app = new Application();
 
     await app.init({

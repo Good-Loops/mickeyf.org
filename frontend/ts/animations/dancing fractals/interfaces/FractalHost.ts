@@ -22,12 +22,14 @@ import type { FractalAnimationConstructor } from "./FractalAnimation";
  * - Configuration patching and lifecycle calls are issued by the host; the animation owns visuals/state.
  *
  * Thread model: methods are expected to be called from the main JS/UI thread.
+ *
+ * @category Animations — Core
  */
 export interface FractalHost {
     /**
      * Replaces the active animation with a new instance.
      *
-        * The host reuses the same PIXI `Application` + canvas, disposing the previous animation's
+     * The host reuses the same PIXI `Application` + canvas, disposing the previous animation's
      * resources first (via the animation's disposal flow).
      *
      * @param Fractal - Animation class/constructor to instantiate.
@@ -38,12 +40,11 @@ export interface FractalHost {
     /**
      * Applies a configuration patch to the active animation.
      *
-     * The host stores the merged config internally (for later restarts) and forwards the patch to the
-     * active animation.
-     *
-     * If no animation is active, this is a no-op.
+     * Invariants:
+     * - Patch type should correspond to the config type `C` used with {@link setFractal}.
+     * - If no animation is active, this is a no-op.
      */
-    updateConfig(patch: any): void;
+    updateConfig<C>(patch: Partial<C>): void;
 
     /**
      * Restarts the active animation using the last stored configuration.
@@ -55,9 +56,9 @@ export interface FractalHost {
     /**
      * Configures automatic disposal timing.
      *
-        * When an animation is active, setting a lifetime re-arms its disposal countdown.
-        *
-        * @param seconds - Lifetime in **seconds**. Use `null` to disable auto-disposal.
+     * When an animation is active, setting a lifetime re-arms its disposal countdown.
+     *
+     * @param seconds - Lifetime in **seconds**. Use `null` to disable auto-disposal.
      */
     setLifetime(seconds: number | null): void;
 

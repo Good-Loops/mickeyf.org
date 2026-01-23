@@ -11,7 +11,7 @@
  */
 import { Filter, GlProgram, UniformGroup } from "pixi.js";
 
-import clamp from "@/utils/clamp";
+import { clamp } from "@/utils/clamp";
 
 import vertexSrc from "./flowerSpiral.vert?raw";
 import fragmentSrc from "./flowerSpiral.frag?raw";
