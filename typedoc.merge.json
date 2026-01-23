@@ -17,8 +17,9 @@
     }
   },
   "navigationLinks": {
-    "Home": "index.html",
+    "Home": "/index.html",
     "mickeyf.org": "https://mickeyf.org",
     "GitHub": "https://github.com/Good-Loops/mickeyf.org"
-  }
+  },
+  "customCss": ["./docs-src/typedoc.css"]
 }

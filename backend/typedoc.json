@@ -17,5 +17,5 @@
   "excludeExternals": true,
   "readme": "none",
   "json": "../.typedoc-tmp/backend.json", 
-  "categorizeByGroup": true
+  "categorizeByGroup": true,
 }

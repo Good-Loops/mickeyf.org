@@ -29,7 +29,7 @@ export interface FractalHost {
     /**
      * Replaces the active animation with a new instance.
      *
-        * The host reuses the same PIXI `Application` + canvas, disposing the previous animation's
+     * The host reuses the same PIXI `Application` + canvas, disposing the previous animation's
      * resources first (via the animation's disposal flow).
      *
      * @param Fractal - Animation class/constructor to instantiate.
@@ -56,9 +56,9 @@ export interface FractalHost {
     /**
      * Configures automatic disposal timing.
      *
-        * When an animation is active, setting a lifetime re-arms its disposal countdown.
-        *
-        * @param seconds - Lifetime in **seconds**. Use `null` to disable auto-disposal.
+     * When an animation is active, setting a lifetime re-arms its disposal countdown.
+     *
+     * @param seconds - Lifetime in **seconds**. Use `null` to disable auto-disposal.
      */
     setLifetime(seconds: number | null): void;
 
