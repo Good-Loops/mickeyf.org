@@ -6,6 +6,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.OnScreen;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
@@ -110,13 +111,13 @@ namespace ThreeBosses.Tests
         public IEnumerator TouchStickDragReachesGameplayAndReturnsToNeutral()
         {
             Time.timeScale = 1f;
-            var inputFixture = new InputTestFixture();
             PlayerInput playerInput = null;
             InputActionAsset playerActions = null;
 
             try
             {
-                inputFixture.Setup();
+                // Scene UI actions must share one input runtime throughout the test.
+                // InputTestFixture resets global state beneath those live actions.
                 DisarmActiveCountdownRestore();
                 SceneManager.LoadScene(BattleScenes[0]);
                 yield return null;
@@ -204,18 +205,11 @@ namespace ThreeBosses.Tests
             }
             finally
             {
-                try
-                {
-                    DisableActiveOnScreenControls();
-                    if (playerActions != null)
-                        playerActions.devices = null;
-                    if (playerInput != null)
-                        playerInput.enabled = false;
-                }
-                finally
-                {
-                    inputFixture.TearDown();
-                }
+                if (playerInput != null)
+                    playerInput.enabled = false;
+                if (playerActions != null)
+                    playerActions.devices = null;
+                DisableActiveOnScreenControls();
             }
         }
 
@@ -404,7 +398,6 @@ namespace ThreeBosses.Tests
         public IEnumerator FireActionRequiresReleaseBeforeAnotherPress()
         {
             Time.timeScale = 1f;
-            var inputFixture = new InputTestFixture();
             InputActionAsset inputActions = null;
             InputAction fire = null;
             Gamepad gamepad = null;
@@ -414,7 +407,6 @@ namespace ThreeBosses.Tests
 
             try
             {
-                inputFixture.Setup();
                 DisarmActiveCountdownRestore();
                 SceneManager.LoadScene(BattleScenes[0]);
                 yield return null;
@@ -428,20 +420,21 @@ namespace ThreeBosses.Tests
                 fire.performed += CountPerformed;
                 fire.Enable();
 
-                inputFixture.Press(gamepad.buttonWest);
+                InputSystem.QueueStateEvent(gamepad, new GamepadState().WithButton(GamepadButton.West));
                 yield return null;
                 Assert.That(performedCount, Is.EqualTo(1));
 
-                inputFixture.Press(gamepad.buttonWest);
+                InputSystem.QueueStateEvent(gamepad, new GamepadState().WithButton(GamepadButton.West));
                 yield return null;
                 Assert.That(
                     performedCount,
                     Is.EqualTo(1),
                     "Holding Fire must not repeatedly dispatch presses.");
 
-                inputFixture.Release(gamepad.buttonWest);
+                InputSystem.QueueStateEvent(gamepad, new GamepadState());
                 yield return null;
-                inputFixture.Press(gamepad.buttonWest);
+                Assert.That(performedCount, Is.EqualTo(1), "Releasing Fire must not dispatch a press.");
+                InputSystem.QueueStateEvent(gamepad, new GamepadState().WithButton(GamepadButton.West));
                 yield return null;
                 Assert.That(performedCount, Is.EqualTo(2));
             }
@@ -459,13 +452,29 @@ namespace ThreeBosses.Tests
                         inputActions.devices = null;
                         UnityEngine.Object.DestroyImmediate(inputActions);
                     }
-                    if (gamepad != null && gamepad.added)
-                        InputSystem.RemoveDevice(gamepad);
                 }
                 finally
                 {
-                    inputFixture.TearDown();
+                    if (gamepad != null && gamepad.added)
+                        InputSystem.RemoveDevice(gamepad);
                 }
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator TouchInputScenariosCanRepeatAfterSceneInputWasInitialized()
+        {
+            // Reproduce the suite order that left shared UI actions pointing at
+            // invalid input state, then verify both input scenarios can repeat.
+            yield return BattleScenesPreserveKeyboardBindingsAndShareTouchControls();
+            yield return RestoreNeutralScene();
+
+            for (int repetition = 0; repetition < 2; repetition++)
+            {
+                yield return FireActionRequiresReleaseBeforeAnotherPress();
+                yield return RestoreNeutralScene();
+                yield return TouchStickDragReachesGameplayAndReturnsToNeutral();
+                yield return RestoreNeutralScene();
             }
         }
 
@@ -711,8 +720,8 @@ namespace ThreeBosses.Tests
 
         private static void DisableActiveOnScreenControls()
         {
-            // Virtual devices must be released before the isolated input test
-            // runtime is restored, or scene teardown will retain stale state.
+            // Release the scene's virtual devices without resetting global input
+            // state used by the other live scene components.
             foreach (OnScreenControl control in FindInActiveScene<OnScreenControl>())
             {
                 if (control.isActiveAndEnabled)

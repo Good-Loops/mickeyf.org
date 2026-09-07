@@ -6,6 +6,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 namespace ThreeBosses.Tests
 {
@@ -66,10 +67,17 @@ namespace ThreeBosses.Tests
                 false,
                 new TextLayoutContract(
                     "Time Survived Value",
-                    new Vector2(580f, -592f),
+                    new Vector2(571f, -592f),
                     new Vector2(570f, 74f),
-                    new Vector2(0f, -592f),
+                    new Vector2(20f, -592f),
                     new Vector2(570f, 74f),
+                    "Center"),
+                new TextLayoutContract(
+                    "Time Survived Caption",
+                    new Vector2(706f, -552f),
+                    new Vector2(300f, 40f),
+                    new Vector2(20f, -552f),
+                    new Vector2(300f, 40f),
                     "Center")),
             new(
                 "Defeat_Kraken",
@@ -77,10 +85,17 @@ namespace ThreeBosses.Tests
                 false,
                 new TextLayoutContract(
                     "Time Survived Value",
-                    new Vector2(580f, -592f),
+                    new Vector2(570f, -592f),
                     new Vector2(570f, 74f),
-                    new Vector2(0f, -592f),
+                    new Vector2(19f, -592f),
                     new Vector2(570f, 74f),
+                    "Center"),
+                new TextLayoutContract(
+                    "Time Survived Caption",
+                    new Vector2(705f, -552f),
+                    new Vector2(300f, 40f),
+                    new Vector2(19f, -552f),
+                    new Vector2(300f, 40f),
                     "Center")),
         };
 
@@ -194,6 +209,164 @@ namespace ThreeBosses.Tests
 
                 if (!contract.IsTransition)
                     AssertDefeatButtonLabelsCentered(contract.SceneName);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator CyborgDefeatLabelsStayCenteredOnPaintedArtworkAcrossHostLayoutModes()
+        {
+            // Inner rims: panel x=564..1148; buttons x=457..789 / 880..1227, y=738..852.
+            yield return AssertDefeatArtworkCenters("Cyborg", 856f, 623f, 1053.5f);
+        }
+
+        [UnityTest]
+        public IEnumerator KrakenDefeatLabelsStayCenteredOnPaintedArtworkAcrossHostLayoutModes()
+        {
+            // Independently measured Kraken rims differ from Cyborg despite the similar design.
+            // Panel x=564..1146; buttons x=459..789 / 879..1224, y=738..852.
+            yield return AssertDefeatArtworkCenters("Kraken", 855f, 624f, 1051.5f);
+        }
+
+        private static IEnumerator AssertDefeatArtworkCenters(
+            string bossName, float panelCenter, float retryCenter, float menuCenter)
+        {
+            Type serviceType = RequireRuntimeType("RunSessionService");
+            object service = serviceType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            Assert.That(service, Is.Not.Null);
+            object session = serviceType.GetProperty("Session")?.GetValue(service);
+            MethodInfo configurePortraitLayout = serviceType.GetMethod("ConfigurePortraitUiLayout");
+            Assert.That(configurePortraitLayout, Is.Not.Null);
+            configurePortraitLayout.Invoke(service, new object[] { "0" });
+            PrepareOutcomeSession(session, bossName, false);
+            SceneManager.LoadScene($"Defeat_{bossName}");
+            yield return null;
+
+            Image background = GameObject.Find("Background")?.GetComponent<Image>();
+            Assert.That(background, Is.Not.Null);
+            RectTransform artwork = background.rectTransform;
+            RectTransform artRoot = artwork.parent as RectTransform;
+            Assert.That(artRoot, Is.Not.Null);
+            artRoot.GetComponent<AspectRatioFitter>().enabled = false;
+            Vector2 artworkSize = background.sprite.rect.size;
+            artRoot.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, artworkSize.x);
+            artRoot.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, artworkSize.y);
+
+            var targets = new[]
+            {
+                (Path: "Time Survived Caption", Center: new Vector2(panelCenter, 572f)),
+                (Path: "Time Survived Value", Center: new Vector2(panelCenter, 629f)),
+                (Path: "Try Again Button/Label", Center: new Vector2(retryCenter, 795f)),
+                (Path: "Back To Menu Button/Label", Center: new Vector2(menuCenter, 795f)),
+            };
+            Image captionBacking = artRoot.Find("Time Survived Caption Backing")?.GetComponent<Image>();
+            Assert.That(captionBacking, Is.Not.Null);
+            Assert.That(captionBacking.raycastTarget, Is.False);
+            Assert.That(captionBacking.color.a, Is.EqualTo(1f));
+            RectTransform captionRect = artRoot.Find("Time Survived Caption") as RectTransform;
+            Assert.That(captionBacking.transform.GetSiblingIndex(), Is.LessThan(captionRect.GetSiblingIndex()));
+            foreach (string portraitMode in new[] { "0", "1", "0" })
+            {
+                configurePortraitLayout.Invoke(service, new object[] { portraitMode });
+                Canvas.ForceUpdateCanvases();
+                foreach (var target in targets)
+                {
+                    RectTransform label = artRoot.Find(target.Path) as RectTransform;
+                    Assert.That(label, Is.Not.Null, target.Path);
+                    Vector3 localCenter = artwork.InverseTransformPoint(label.TransformPoint(label.rect.center));
+                    Vector2 pixelCenter = new(
+                        (localCenter.x - artwork.rect.xMin) / artwork.rect.width * artworkSize.x,
+                        (artwork.rect.yMax - localCenter.y) / artwork.rect.height * artworkSize.y);
+                    Assert.That(Vector2.Distance(pixelCenter, target.Center), Is.LessThan(1f),
+                        $"{target.Path}, portrait mode {portraitMode}: center {pixelCenter} must match painted artwork {target.Center}");
+                }
+                AssertDefeatButtonLabelsCentered($"Defeat_{bossName}");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator EndSceneKeepsAllValuesCenteredOnArtworkCaptionsAcrossHostLayoutModes()
+        {
+            Type serviceType = RequireRuntimeType("RunSessionService");
+            object service = serviceType.GetProperty(
+                    "Instance",
+                    BindingFlags.Public | BindingFlags.Static)
+                ?.GetValue(null);
+            Assert.That(service, Is.Not.Null);
+            object session = serviceType.GetProperty("Session")?.GetValue(service);
+            Assert.That(session, Is.Not.Null);
+            MethodInfo configurePortraitLayout = serviceType.GetMethod("ConfigurePortraitUiLayout");
+            Assert.That(configurePortraitLayout, Is.Not.Null);
+            Type textType = Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro");
+            Assert.That(textType, Is.Not.Null);
+
+            foreach (string rank in new[] { "S", "A", "B", "C", "D", "UNRANKED" })
+            {
+                configurePortraitLayout.Invoke(service, new object[] { "0" });
+                PrepareOutcomeSession(session, "Kraken", true);
+                Assert.That(
+                    session.GetType().GetMethod("TrySetResult")?.Invoke(
+                        session,
+                        new object[] { rank == "UNRANKED" ? 0 : 1, rank }),
+                    Is.True,
+                    rank);
+                SceneManager.LoadScene("End");
+                yield return null;
+
+                GameObject rankObject = GameObject.Find("Rank Value");
+                Assert.That(rankObject, Is.Not.Null, rank);
+                Component rankLabel = rankObject.GetComponent(textType);
+                Assert.That(rankLabel, Is.Not.Null, rank);
+                RectTransform rankRect = rankObject.GetComponent<RectTransform>();
+                Image background = GameObject.Find("Background")?.GetComponent<Image>();
+                Assert.That(background, Is.Not.Null, rank);
+                Assert.That(background.sprite, Is.Not.Null, rank);
+                RectTransform artwork = background.rectTransform;
+                RectTransform artRoot = artwork.parent as RectTransform;
+                Assert.That(artRoot, Is.Not.Null, rank);
+
+                // Check the authored artwork coordinates independently of the Editor's Game-view aspect.
+                AspectRatioFitter fitter = artRoot.GetComponent<AspectRatioFitter>();
+                Assert.That(fitter, Is.Not.Null, rank);
+                fitter.enabled = false;
+                Vector2 artworkSize = background.sprite.rect.size;
+                artRoot.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, artworkSize.x);
+                artRoot.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, artworkSize.y);
+
+                foreach (string portraitMode in new[] { "0", "1", "0" })
+                {
+                    configurePortraitLayout.Invoke(service, new object[] { portraitMode });
+                    Canvas.ForceUpdateCanvases();
+                    string context = $"{rank}, portrait mode {portraitMode}";
+                    Assert.That(textType.GetProperty("text")?.GetValue(rankLabel), Is.EqualTo(rank), context);
+                    Assert.That(
+                        textType.GetProperty("alignment")?.GetValue(rankLabel)?.ToString(),
+                        Is.EqualTo("Center"),
+                        context);
+                    Assert.That(
+                        textType.GetProperty("margin")?.GetValue(rankLabel),
+                        Is.EqualTo(Vector4.zero),
+                        context);
+
+                    Vector3 centerInArtwork = artwork.InverseTransformPoint(
+                        rankRect.TransformPoint(rankRect.rect.center));
+                    float centerInArtworkPixels =
+                        (centerInArtwork.x - artwork.rect.xMin) / artwork.rect.width * artworkSize.x;
+                    // The baked RANK caption spans source pixels 1122 through 1184.
+                    Assert.That(centerInArtworkPixels, Is.EqualTo(1153f).Within(1f), context);
+                    // Independent baked-caption centers; don't validate against their own RectTransforms.
+                    foreach (var readout in new[]
+                    {
+                        (Name: "Completion Time Value", CenterX: 535f),
+                        (Name: "Score Value", CenterX: 833f),
+                    })
+                    {
+                        RectTransform value = artRoot.Find(readout.Name) as RectTransform;
+                        Assert.That(value, Is.Not.Null, readout.Name);
+                        Vector3 localCenter = artwork.InverseTransformPoint(value.TransformPoint(value.rect.center));
+                        float pixelX = (localCenter.x - artwork.rect.xMin) / artwork.rect.width * artworkSize.x;
+                        Assert.That(pixelX, Is.EqualTo(readout.CenterX).Within(1f), $"{context} {readout.Name}");
+                    }
+                }
             }
         }
 

@@ -34,6 +34,19 @@ public static class RunOutcomeSceneBuilder
     private const float TransitionFadeDurationSeconds = 0.35f;
 
     private static readonly Vector2 ArtReferenceResolution = new(1672f, 941f);
+    // The Cyborg readout panel's inner rims are at x=564 and x=1148 (center 856).
+    private static readonly Rect CyborgTimeRect = new(571f, 592f, 570f, 74f);
+    private static readonly Rect CyborgCaptionRect = new(706f, 552f, 300f, 40f);
+    private static readonly Rect CyborgTryAgainRect = new(431.5f, 720.5f, 383f, 149f);
+    private static readonly Rect CyborgMenuRect = new(859f, 720.5f, 389f, 149f);
+    // Kraken uses different artwork: its readout inner rims center at x=855.
+    private static readonly Rect KrakenTimeRect = new(570f, 592f, 570f, 74f);
+    private static readonly Rect KrakenCaptionRect = new(705f, 552f, 300f, 40f);
+    private static readonly Rect KrakenTryAgainRect = new(432.5f, 720.5f, 383f, 149f);
+    private static readonly Rect KrakenMenuRect = new(857f, 720.5f, 389f, 149f);
+    // Keep completion values directly beneath their baked TIME / SCORE captions.
+    private static readonly Rect CompletionTimeRect = new(385f, 690f, 300f, 78f);
+    private static readonly Rect CompletionScoreRect = new(704f, 690f, 258f, 78f);
 
     [MenuItem("Three Bosses/Results/Build Transitions and Results")]
     public static void Build()
@@ -76,17 +89,17 @@ public static class RunOutcomeSceneBuilder
                 CyborgDefeatPath,
                 $"{ScreenRoot}/CyborgDefeat.png",
                 BossId.Cyborg,
-                new Rect(580f, 592f, 570f, 74f),
-                new Rect(438f, 718f, 383f, 149f),
-                new Rect(850f, 718f, 389f, 149f),
+                CyborgTimeRect,
+                CyborgTryAgainRect,
+                CyborgMenuRect,
                 new Color(1f, 0.12f, 0.08f, 1f));
             BuildDefeatScene(
                 KrakenDefeatPath,
                 $"{ScreenRoot}/KrakenDefeat.png",
                 BossId.Kraken,
-                new Rect(580f, 592f, 570f, 74f),
-                new Rect(438f, 718f, 383f, 149f),
-                new Rect(850f, 718f, 389f, 149f),
+                KrakenTimeRect,
+                KrakenTryAgainRect,
+                KrakenMenuRect,
                 new Color(0.68f, 0.24f, 1f, 1f));
 
             BuildEndScene();
@@ -170,6 +183,101 @@ public static class RunOutcomeSceneBuilder
         }
     }
 
+    [MenuItem("Three Bosses/Results/Align Cyborg Defeat Artwork")]
+    public static void AlignCyborgDefeatArtwork()
+        => AlignSavedArtwork(CyborgDefeatPath, ConfigureCyborgDefeatArtwork);
+
+    [MenuItem("Three Bosses/Results/Align Kraken Defeat Artwork")]
+    public static void AlignKrakenDefeatArtwork()
+        => AlignSavedArtwork(KrakenDefeatPath, ConfigureKrakenDefeatArtwork);
+
+    [MenuItem("Three Bosses/Results/Align Completion Readout")]
+    public static void AlignCompletionReadout()
+        => AlignSavedArtwork(EndPath, ConfigureCompletionReadout);
+
+    private static void ConfigureCompletionReadout(RectTransform artRoot)
+    {
+        SetTopLeftRect((RectTransform)artRoot.Find("Completion Time Value"), CompletionTimeRect);
+        SetTopLeftRect((RectTransform)artRoot.Find("Score Value"), CompletionScoreRect);
+    }
+
+    private static void AlignSavedArtwork(string scenePath, Action<RectTransform> configure)
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new InvalidOperationException("Exit Play Mode before aligning outcome artwork.");
+        if (SceneManager.sceneCount != 1)
+            throw new InvalidOperationException("Open only one saved scene before aligning outcome artwork.");
+        Scene originalScene = SceneManager.GetActiveScene();
+        if (originalScene.isDirty)
+            throw new InvalidOperationException("Save the active scene before aligning outcome artwork.");
+        string originalPath = originalScene.path;
+        try
+        {
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            RectTransform artRoot = scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<RectTransform>(true))
+                .Single(rect => rect.name == "Art Root");
+            configure(artRoot);
+            SaveScene(scene, scenePath);
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(originalPath))
+                EditorSceneManager.OpenScene(originalPath, OpenSceneMode.Single);
+        }
+    }
+
+    private static void ConfigureCyborgDefeatArtwork(RectTransform artRoot)
+        => ConfigureDefeatArtwork(artRoot, CyborgTimeRect, CyborgCaptionRect,
+            CyborgTryAgainRect, CyborgMenuRect);
+
+    private static void ConfigureKrakenDefeatArtwork(RectTransform artRoot)
+        => ConfigureDefeatArtwork(artRoot, KrakenTimeRect, KrakenCaptionRect,
+            KrakenTryAgainRect, KrakenMenuRect);
+
+    private static void ConfigureDefeatArtwork(
+        RectTransform artRoot, Rect timeRect, Rect captionRect, Rect tryAgainRect, Rect menuRect)
+    {
+        TMP_Text timeLabel = artRoot.Find("Time Survived Value").GetComponent<TMP_Text>();
+        SetTopLeftRect(timeLabel.rectTransform, timeRect);
+        SetTopLeftRect((RectTransform)artRoot.Find("Try Again Button"), tryAgainRect);
+        SetTopLeftRect((RectTransform)artRoot.Find("Back To Menu Button"), menuRect);
+
+        // The source PNG is flattened. Cover only its old caption so both lines can
+        // use native text coordinates without changing the surrounding artwork.
+        const string backingName = "Time Survived Caption Backing";
+        Image backing = artRoot.Find(backingName)?.GetComponent<Image>()
+            ?? CreateImage(backingName, artRoot, Color.black);
+        SetTopLeftRect(backing.rectTransform,
+            new Rect(captionRect.x, captionRect.y - 2f, captionRect.width, captionRect.height + 4f));
+        backing.color = Color.black;
+        backing.raycastTarget = false;
+        backing.transform.SetSiblingIndex(artRoot.Find("Background").GetSiblingIndex() + 1);
+
+        const string captionName = "Time Survived Caption";
+        TMP_Text caption = artRoot.Find(captionName)?.GetComponent<TMP_Text>()
+            ?? CreateText(captionName, artRoot, "TIME SURVIVED", 24f);
+        SetTopLeftRect(caption.rectTransform, captionRect);
+        caption.text = "TIME SURVIVED";
+        caption.fontSize = 24f;
+        caption.alignment = TextAlignmentOptions.Center;
+        caption.fontStyle = FontStyles.Normal;
+        caption.characterSpacing = 2f;
+        caption.color = timeLabel.color;
+        caption.raycastTarget = false;
+        caption.margin = Vector4.zero;
+        caption.textWrappingMode = TextWrappingModes.NoWrap;
+
+        PortraitTextGroupLayout layout = artRoot.GetComponent<PortraitTextGroupLayout>();
+        SetObjectReferences(layout, "textTargets", new[] { timeLabel, caption });
+        float panelOffset = timeRect.center.x - ArtReferenceResolution.x * 0.5f;
+        SetVector2Values(layout, "portraitPositions", new[]
+        {
+            new Vector2(panelOffset, -timeRect.y),
+            new Vector2(panelOffset, -captionRect.y),
+        });
+    }
+
     private static void BuildTransitionScene(
         string scenePath,
         string spritePath,
@@ -231,6 +339,10 @@ public static class RunOutcomeSceneBuilder
 
         Button tryAgainButton = CreateButton("Try Again Button", artRoot, tryAgainRect, "TRY AGAIN", 32f, accent);
         Button backToMenuButton = CreateButton("Back To Menu Button", artRoot, menuRect, "BACK TO MENU", 30f, accent);
+        if (expectedBoss == BossId.Cyborg)
+            ConfigureCyborgDefeatArtwork(artRoot);
+        else if (expectedBoss == BossId.Kraken)
+            ConfigureKrakenDefeatArtwork(artRoot);
 
         GameObject controllerObject = new("Defeat Controller");
         DefeatScreenController controller = controllerObject.AddComponent<DefeatScreenController>();
@@ -253,15 +365,16 @@ public static class RunOutcomeSceneBuilder
             out ScreenFade screenFade);
 
         TMP_Text timeLabel = CreateText("Completion Time Value", artRoot, "00:00.000", 46f);
-        SetTopLeftRect(timeLabel.rectTransform, new Rect(397f, 690f, 300f, 78f));
+        SetTopLeftRect(timeLabel.rectTransform, CompletionTimeRect);
         ConfigureValueText(timeLabel, Color.white);
 
         TMP_Text scoreLabel = CreateText("Score Value", artRoot, "0", 46f);
-        SetTopLeftRect(scoreLabel.rectTransform, new Rect(710f, 690f, 258f, 78f));
+        SetTopLeftRect(scoreLabel.rectTransform, CompletionScoreRect);
         ConfigureValueText(scoreLabel, Color.white);
 
         TMP_Text rankLabel = CreateText("Rank Value", artRoot, "UNRANKED", 42f);
-        SetTopLeftRect(rankLabel.rectTransform, new Rect(980f, 690f, 310f, 78f));
+        // The baked RANK caption is centered at x=1153 in the source artwork.
+        SetTopLeftRect(rankLabel.rectTransform, new Rect(998f, 690f, 310f, 78f));
         ConfigureValueText(rankLabel, Color.white);
 
         Button tryAgainButton = CreateButton(
@@ -456,6 +569,10 @@ public static class RunOutcomeSceneBuilder
         PortraitTextGroupLayout layout = layouts.SingleOrDefault()
             ?? artRoot.gameObject.AddComponent<PortraitTextGroupLayout>();
         ConfigurePortraitTextLayout(layout, targets, portraitSplitTop);
+        if (scenePath == CyborgDefeatPath)
+            ConfigureCyborgDefeatArtwork(artRoot);
+        else if (scenePath == KrakenDefeatPath)
+            ConfigureKrakenDefeatArtwork(artRoot);
         EditorUtility.SetDirty(layout);
 
         SaveScene(scene, scenePath);

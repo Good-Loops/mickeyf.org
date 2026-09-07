@@ -457,6 +457,13 @@ $three-bosses-frame-inset: $three-bosses-frame-padding + $three-bosses-frame-bor
             env(safe-area-inset-bottom),
             calc((100dvh - (100vw * 9 / 16)) / 2 + .8rem)
         );
+
+        @include compact-viewport {
+            // Use the screen corner, not the letterboxed game's corner, to
+            // keep the exit control clear of the touch HUD inside the canvas.
+            right: max(.4rem, env(safe-area-inset-right));
+            bottom: max(.4rem, env(safe-area-inset-bottom));
+        }
     }
 
     &__canvas-wrapper:fullscreen,
