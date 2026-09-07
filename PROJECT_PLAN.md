@@ -1122,12 +1122,29 @@ Execution order clarified with the owner on 2026-09-07 to avoid circular work:
    The owner approved the local source checkpoint on 2026-09-07. All five
    recovery files are archived outside Unity source with matching SHA-256
    hashes; only the saved transition scene's 14 trailing-whitespace lines were
-   normalized. This checkpoint excludes local `.vscode/settings.json` and does
-   not authorize a push or deployment. Continue with the fresh candidate below.
-3. Build/package a fresh certified WebGL candidate from that checkpoint, and
-   verify the candidate's hashes, hosting headers and actual browser startup.
-   These artifact-specific checks are necessary because the old package predates
-   the source fixes; accepted gameplay/visual checks are not reopened by default.
+   normalized. The initial checkpoint excluded local `.vscode/settings.json`
+   and was local-only. The owner subsequently requested commit-and-sync:
+   `8eaa6615` is now on `origin/feature/three-bosses-polish`. Machine-local
+   terminal options were moved to VS Code User settings, leaving workspace
+   settings unchanged. This does not authorize deployment or a main merge.
+3. Fresh certified WebGL candidate completed on 2026-09-07 from `8eaa6615`:
+   package `2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7`
+   replaces the stale generated release in `frontend/public/unity/three-bosses`.
+   The guarded Unity build restored source/index state and certified 996 Unity
+   source files. An isolated production-config frontend build, four-asset
+   SHA-256/size/provenance validation, local Firebase-header simulation and a
+   fresh signed-out Chrome startup smoke all passed. The screenshot visibly
+   shows the Main Menu; the packaged manifest is byte-identical to the tested
+   candidate. The old generated package remains recoverable from Git.
+   This is local candidate evidence, not Firebase CDN, physical-device, FPS or
+   authenticated submission acceptance; no live score writes were performed.
+   Installed Unity CLI `1.0.0-beta.8` command execution is incompatible with the
+   pinned Pipeline `0.5.0-exp.1` command parser. An external MCP transport adapter
+   invoked the existing build guard without changing its checks or upgrading
+   project dependencies. Standard CLI command compatibility remains separate
+   tooling follow-up. Evidence and exact commands are in the external Codex
+   `release-checks-20260907` report. Accepted gameplay/visual checks and completed
+   dependency assessments are not reopened by this artifact refresh.
 4. Close only remaining candidate-specific authenticated score/replay/PB/
    leaderboard and physical-device loading/layout checks; perform the final
    cumulative security review and resolve or explicitly disposition open risks.
