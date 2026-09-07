@@ -894,6 +894,137 @@ Account content in place of the old corner label. The final responsive phase
 still owns full mobile-device navigation acceptance, but the compact glass
 header is now visible and browser-verified on the existing vertical web layout.
 
+Pending shared-shell follow-ups from the 2026-09-06 physical-device review:
+
+- **Safari background integration:** the owner selected the non-scrolling
+  treatment and physically confirmed the preview's rotation, address-bar keyboard
+  recovery, flash-free loading/rotation, zoom boundaries, and zoomed-refresh fixes.
+  The accepted behavior is now in the shared application shell, scoped to ordinary
+  iPhone Safari 26+; Android, desktop, older Safari, and standalone/native views
+  keep their existing shell. Pinch zoom remains enabled. Short routes lock at the
+  painted inset; tall content can scroll within its real bounds, input focus
+  releases alignment, and native/CSS-fallback fullscreen owns scrolling until exit.
+  Home -> Connect -> Home on the normal development site was confirmed by the
+  owner on iPhone. Nineteen controller regressions and the full 95-test frontend
+  suite pass, as does the production frontend build. Chromium with an iPhone
+  identity passed navigation, forms, tall content, fullscreen and history checks;
+  it is not an iOS rendering substitute. Windows WebKit emulation did not activate
+  the computed CSS inset, so that run is not counted as a pass. The owner confirmed
+  integrated Log in keyboard show/dismiss preserves both painted bars, but reported
+  unwanted field focus zoom and black bands after Dancing Circles fullscreen exit.
+  Compact Log in/Sign up fields now have a 16px minimum font, with pinch zoom still
+  enabled. Safari-edge fullscreen now locks only the root while keeping body
+  overflow visible, preserving the existing document scroll container. A Chromium
+  fallback check confirmed unchanged inset, visible body overflow and root lock
+  before/during/after fullscreen, and realignment to shell top on exit. This does
+  not prove Safari toolbar painting: the owner confirmed field auto-zoom is fixed,
+  but fullscreen exit still restores black bands. Fullscreen recovery remains open;
+  do not count the CSS-only change or Chromium geometry pass as an iPhone fix.
+  A subsequent failure-path reproduction showed that deferred scroll alignment on
+  fullscreen exit permanently disposed the controller, so later Home navigation
+  could not recover. Position verification now keeps the inset/controller mounted
+  and permits two delayed retries, then yields to browser events without looping.
+  Three regressions cover delayed exit, exhausted retries with later recovery, and
+  position movement immediately after locking. Chromium fault injection recovered
+  after an 800ms ignored-alignment window. The owner still observed black bars
+  after fullscreen exit with this newer fix, so recovery remains unresolved.
+  A one-shot DEV-only diagnostic on the existing route, enabled solely by
+  `fullscreen-debug=1`, reports phase/inset/viewport/overflow/fullscreen state in
+  an on-device popup. The owner screenshot confirmed a healthy locked controller:
+  inset/scroll/visual page top 695px, shell top 0, scale 1, root overflow hidden,
+  body overflow visible, and neither fullscreen mode active. Both browser bars
+  instead retained the fullscreen canvas's solid blue. The diagnostic has now
+  been removed from development source after capturing this evidence.
+  WebKit's `Page::updateFixedContainerEdges` retains the last sampled fixed
+  element's color while it remains visible, even after it stops being fixed.
+  A neutral `backdrop-filter: saturate(1)` candidate passed Chromium geometry,
+  color and native/fallback checks, but the owner reported black bands on the
+  first iPhone enter/exit. That unsuccessful filter has been removed, not retained
+  as extra compositor work. Source evidence at WebKit commit
+  `a09cbd759c1a2625ac0e34ddf8a488dc154fe582`, `Source/WebCore/page/Page.cpp`
+  (`updateFixedContainerEdges`) and `LayoutTests/fast/page-color-sampling/`
+  `color-sampling-ignores-backdrop-filters.html`; this does not establish the
+  behavior of the owner's deployed Safari version.
+  The accepted recovery uses the retained-color code's hidden-renderer check:
+  after an explicit Safari CSS-fallback exit, temporarily hide only the exiting
+  wrapper across two animation callbacks, then restore its original visibility.
+  The canvas remains mounted, with no new scroll/zoom adjustments or game restart.
+  A 150ms deadline and tab-visibility cleanup bound the operation; re-entry and
+  unmount restore it immediately. Both click and Escape await restoration before
+  focus returns, with stale async completions ignored. Native fullscreen and
+  non-Safari exits bypass this pulse. The owner subsequently confirmed on the
+  physical iPhone that fullscreen enter/exit no longer restores the black bands.
+  Preserve this accepted recovery while adjusting fullscreen canvas sizing.
+  Eleven deterministic fullscreen lifecycle regressions cover restoration,
+  cancellation, timeout, ownership and browser scope; the complete frontend suite
+  passes 106 tests. `npm test && npm run build` and `git diff --check` pass (the
+  existing large-chunk build warning remains). Chromium repeated click/Escape
+  cycles restore focus and retain the same canvas node, including landscape;
+  native fullscreen and desktop fallback never receive the visibility pulse.
+  Automated checks establish lifecycle safety; the owner's physical confirmation
+  establishes acceptance of the browser-bar recovery on that tested iPhone.
+  Separately, the Dancing Circles fullscreen black canvas was traced to the shared
+  fullscreen selector outranking its blue page override and hiding the breathing
+  layer. The page selector now matches that scope and keeps the existing layer
+  edge-to-edge. Native/fallback browser checks preserve breathing blue and custom
+  colors; 95 frontend tests and the build pass. Physical iPhone color confirmation
+  remains pending.
+  The bottom browser fade remains accepted, unresolved polish. No deployment
+  or release is implied by this local integration.
+- **Compact fullscreen aspect ratio (2026-09-07):** reproduced the landscape
+  distortion at 852x300: a 1920x1080 canvas was stretched to 852x300 because
+  fullscreen forced full width while independently clamping height. The shared
+  fullscreen mixin now uses intrinsic auto sizing, percentage content-box bounds,
+  and no flex shrink only within the existing named compact-viewport mixin.
+  The same canvas now fits at approximately 533x300; backing dimensions and
+  animation/game state remain unchanged. Portrait, short landscape, native and
+  fallback Circles checks pass; Fractals and P4 Vega also preserve their ratio.
+  Larger desktop sizing, including enlargement to 2560x1440, is unchanged.
+  Three compiled-Sass regressions were added; `npm --prefix frontend test`
+  passes 109 tests and `npm --prefix frontend run build` passes with the existing
+  large-chunk warning. Eight Chromium scenarios retain canvas identity, exit
+  focus and button containment, with breathing colors still changing. Physical
+  iPhone verification of round circles and retained exit recovery is pending.
+  Ordinary iPhone Safari's address bar and cached toolbar tint are browser-owned;
+  native video fullscreen is not an interactive-canvas replacement. Do not add
+  continuous repaint/scroll tricks or promise animated toolbar colors. Larger
+  landscape tablets outside the compact breakpoints retain the previous sizing.
+  On 2026-09-07 the owner accepted the visible Safari address bar and static
+  toolbar tint as limitations not worth further work. Do not pursue a video
+  streaming workaround. Resume Three Bosses physical iPhone gameplay acceptance;
+  this decision does not mark the pending Circles device check or temporary
+  Safari experiment cleanup as completed.
+- **Mobile landscape navigation:** the owner supplied an iPhone Safari
+  screenshot where the glass navigation rail collapses to a thin strip and its
+  labels extend outside it, and reports the same issue on Android. Cause: the
+  width-only compact breakpoint stopped applying after rotation, restoring a
+  fixed 5svh header that was shorter than its links. A shared compact-viewport
+  Sass mixin now also covers landscape height <= the named 500px token, applying
+  intrinsic shell/header sizing and the existing compact navigation together.
+  The owner's follow-up screenshot showed insufficient canvas separation; compact
+  main content now has a minimum 1.6rem top inset. Chromium verified 844x390,
+  932x430, 915x412 and both sides of the 780px width boundary, dropdown containment,
+  Tab/Escape focus recovery and rotation with a dropdown open. Desktop header
+  geometry at 1440x900 is unchanged; ordinary taller desktop sizing is out of scope.
+  The canvas gap measured 16px at short landscape sizes without resizing the canvas.
+  Frontend tests and build pass. Still verify the spacing and both dropdowns with
+  expanded/collapsed browser bars on physical iPhone and Android before closing.
+- **Safari experiment cleanup:** after the background comparison is finished,
+  remove all disposable test/preview pages and instrumentation, stop only the
+  isolated preview, and remove its temporary cache. Confirm no experiment files
+  remain in the project; preserve the normal development stack and only retain
+  an explicitly accepted production implementation.
+  Integration is now implemented, but the combined stop/delete command was
+  rejected by the execution policy on 2026-09-06. Cleanup is therefore unfinished:
+  the disposable files remain outside the repository in
+  `%TEMP%/mickeyf-safari-edge-check-20260906` and
+  `%TEMP%/mickeyf-iphone-vite-dQirRt`, and the isolated port-5175 server remains
+  running. No preview routes were copied into the project. The temporary
+  `fullscreen-debug` effect in `useSafariBackgroundEdges.ts` was removed after
+  receiving the owner's geometry screenshot; no diagnostic button or alert remains
+  in that hook. External preview/cache cleanup remains outstanding.
+  Complete this explicit cleanup before closing the background task.
+
 The Dancing Circles visual pass was implemented and browser-verified on
 2026-08-29. It removes the visible page title, preserves the PIXI/audio logic,
 adds a transparent canvas with an accessible glass control rail, provides a

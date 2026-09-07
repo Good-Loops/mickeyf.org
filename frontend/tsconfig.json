@@ -5,6 +5,7 @@
         "module": "esnext",
         "moduleResolution": "bundler",
         "allowImportingTsExtensions": true,
+        "noEmit": true,
         "outDir": "public/dist",
         "paths": {
             "@/*": ["./ts/*"]

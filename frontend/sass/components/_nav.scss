@@ -267,7 +267,7 @@
 
 @include generate-media-queries($bps-nav);
 
-@include viewport-at-most($bp-m) {
+@include compact-viewport {
     .nav {
         display: flex;
         width: 100%;

@@ -5,6 +5,8 @@
  * so unsupported browsers receive a reversible, viewport-filling CSS mode.
  */
 
+import { cancelSafariFullscreenPaint, releaseSafariFullscreenPaint } from './safariFullscreenPaint.ts';
+
 export const CANVAS_FULLSCREEN_FALLBACK_ATTRIBUTE = 'data-canvas-fullscreen';
 export const CANVAS_FULLSCREEN_FALLBACK_VALUE = 'fallback';
 export const CANVAS_FULLSCREEN_ROOT_CLASS = 'canvas-fullscreen-fallback-active';
@@ -130,6 +132,7 @@ export const clearCanvasFullscreenFallback = (
     target: HTMLElement,
     fullscreenDocument: WebKitFullscreenDocument = document,
 ): void => {
+    cancelSafariFullscreenPaint(target);
     lateNativeCleanupByTarget.get(target)?.();
     target.removeAttribute(CANVAS_FULLSCREEN_FALLBACK_ATTRIBUTE);
     restoreFallbackIsolation(target);
@@ -220,6 +223,8 @@ export const enterCanvasFullscreen = async (
         throw new TypeError('The fullscreen target is not connected to the document.');
     }
 
+    cancelSafariFullscreenPaint(target);
+
     const requestFullscreen = requestNativeFullscreen(target);
 
     if (!requestFullscreen) {
@@ -255,7 +260,11 @@ export const exitCanvasFullscreen = async (
 ): Promise<boolean> => {
     if (isCanvasFullscreenFallback(target)) {
         clearCanvasFullscreenFallback(target, fullscreenDocument);
-        return false;
+        if (!readNativeFullscreenElement(fullscreenDocument)) {
+            await releaseSafariFullscreenPaint(target, fullscreenDocument);
+        }
+        // A new entry may have cancelled the pending paint restoration.
+        return isCanvasFullscreen(target, fullscreenDocument);
     }
 
     if (readNativeFullscreenElement(fullscreenDocument) === target) {

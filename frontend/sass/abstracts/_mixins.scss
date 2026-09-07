@@ -23,6 +23,13 @@
     }
 }
 
+@mixin compact-viewport {
+    @media only screen and (max-width: $bp-m),
+        only screen and (orientation: landscape) and (max-height: $bp-compact-height) {
+        @content;
+    }
+}
+
 //////////////////////// Typography ////////////////////////
 // Main title coloring
 @mixin title-coloring {
@@ -180,6 +187,13 @@
             border-color: rgba($white, .1);
             opacity: .55;
             cursor: $cursor-notallowed;
+        }
+    }
+
+    @include compact-viewport {
+        &__input {
+            // Readable input text avoids Safari's focus zoom without blocking pinch zoom.
+            font-size: max(1.6rem, 16px);
         }
     }
 
@@ -414,6 +428,18 @@
         max-height: 100vh;
         max-height: 100dvh;
         display: block;
+
+        @include compact-viewport {
+            // Let the intrinsic ratio constrain both axes when browser bars
+            // reduce landscape height; clamping height alone squashes the scene.
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            min-width: 0;
+            min-height: 0;
+            flex: 0 0 auto;
+        }
     }
 }
 

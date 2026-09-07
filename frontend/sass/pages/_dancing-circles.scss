@@ -372,9 +372,10 @@
     @include block-canvas-fullscreen('dancing-circles');
     @include canvas-fullscreen-button-position('dancing-circles');
 
-    &__canvas-wrapper:fullscreen,
-    &__canvas-wrapper:-webkit-full-screen,
-    &__canvas-wrapper[data-canvas-fullscreen='fallback'] {
+    // Match the shared fullscreen mixin's scope so its black default cannot win.
+    & &__canvas-wrapper:fullscreen,
+    & &__canvas-wrapper:-webkit-full-screen,
+    & &__canvas-wrapper[data-canvas-fullscreen='fallback'] {
         padding: 0;
         border: 0;
         background-color: #2c4668;
@@ -383,7 +384,12 @@
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
 
-        &::before,
+        // Keep the same breathing/custom layer behind the transparent canvas.
+        &::before {
+            inset: 0;
+            border-radius: 0;
+        }
+
         &::after {
             display: none;
         }

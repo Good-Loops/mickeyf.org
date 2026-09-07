@@ -18,7 +18,7 @@
     }
 }
 
-@include viewport-at-most($bp-m) {
+@include compact-viewport {
     // Mobile browser chrome can change the large viewport while the visible
     // viewport stays smaller. Intrinsic outer rows keep short pages in-frame.
     .app-shell {
@@ -31,6 +31,7 @@
 
         > .main {
             min-height: 0;
+            padding-top: 1.6rem;
         }
 
         > .footer {

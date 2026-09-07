@@ -1,0 +1,62 @@
+// Activated only by the iPhone Safari controller; all other browsers retain the
+// ordinary shell. The inset is frozen in pixels before the first painted frame.
+html[data-safari-edges] {
+    background: transparent;
+    overflow: hidden auto;
+    scroll-behavior: auto;
+
+    body {
+        padding-block: var(--safari-edge-inset, 100svh);
+        overflow: visible;
+    }
+
+    .app-shell > .space-background {
+        position: absolute;
+        inset: 0;
+        overflow: visible;
+    }
+
+    .space-background::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 75%;
+        bottom: calc(-1 * var(--safari-edge-inset, 100svh));
+        background: linear-gradient(to bottom, transparent, rgba(91, 167, 164, .16) 18rem);
+    }
+
+    .space-background__stars {
+        top: calc(-1 * var(--safari-edge-inset, 100svh));
+        bottom: calc(-1 * var(--safari-edge-inset, 100svh));
+        overflow: hidden;
+    }
+
+    .space-background__nebula {
+        left: 0;
+        right: 0;
+        // Keep the animated nebula inside the painted edge geometry.
+        transform: none !important;
+    }
+
+    .home { position: static; }
+    .home__quotes-container { position: absolute; overflow: hidden; }
+
+    .footer__text {
+        font-size: .75rem;
+        line-height: 1.2;
+        padding: .2rem 0 0;
+        transform: translateY(.8rem);
+    }
+
+    &[data-safari-edges='locked'] { overflow-y: hidden; }
+
+    // The iPhone canvas fallback is CSS fullscreen, not native fullscreen.
+    &.canvas-fullscreen-fallback-active,
+    &[data-safari-edges='fullscreen'] { overflow: hidden; }
+
+    // Keep the same document scroll container behind Safari's bars. Locking body
+    // as well creates a second scroll container and disrupts the painted inset.
+    &.canvas-fullscreen-fallback-active body,
+    &[data-safari-edges='fullscreen'] body { overflow: visible; }
+}
