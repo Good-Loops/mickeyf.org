@@ -263,12 +263,16 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   must prevent other operators/automation from re-enabling triggers, routing
   traffic or starting writers between checks. Google-authenticated provenance
   binding is not independent signature verification; do not claim otherwise.
-- **Blocked database readiness:** production `@@performance_schema=0` and the
-  existing operator's PROCESS probe is denied. Do not accept empty lock tables
-  or operator-limited activity visibility as a drained database. Establish an
-  approved maintenance/metadata inspection path and explicitly review the
-  disabled-instrumentation case before DDL. No privilege or instance change is
-  implied by the approved traffic freeze.
+- **Resolved instrumentation gap:** separately approved maintenance enabled
+  performance_schema and verified effective PROCESS, metadata/global
+  instrumentation and zero lost records using a restricted temporary inspector.
+  Both temporary accounts were removed; permanent account grants are unchanged
+  by provisioning. The existing operator intentionally remains unprivileged for
+  global inspection. Future migration access must be scoped separately.
+- **Pending exclusive migration window:** quiet transaction/lock snapshots do
+  not exclude external writers; five other client sessions were observed.
+  Obtain a write-free window and fresh guarded evidence before DDL. Memory
+  overhead and actual outage duration were not measured in this maintenance.
 - **Blocked pending explicit rollout approval:** live migration and grant
   cutover, enabled-revision deployment, cleanup credentials/IAM, alert routing
   and scheduler activation. Approved deployment, login acceptance and traffic
@@ -279,11 +283,10 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   before the integration test asserts drainage; all 50 MySQL tests pass without
   weakening production checks. The active dev install still retains four known
   parser failures until a deliberate refresh to the locked dependencies.
-- **Blocked maintenance access:** instrumentation/inspection maintenance is
-  approved, but no usable SQL administrator connection is configured to create
-  the inspector. Arrange existing administrator access or obtain separate
-  bootstrap-account approval before the restart; do not reset root credentials
-  or elevate the API/operator account as an implicit substitute.
+- **Resolved temporary-access lifecycle:** separately approved bootstrap access
+  provisioned the inspector and was removed before restart; the inspector was
+  removed after verification. Original user inventory restored, no credentials
+  persisted, no root password reset and no permanent account elevation.
 
 ## Local verification checkpoint (2026-09-08)
 
@@ -677,3 +680,47 @@ then remove the bootstrap access. Both temporary identities must be removed
 and their absence verified when their respective work ends. No production
 mutation or outage was introduced by this preflight. Recheck operation/settings
 drift before executing the already approved instrumentation maintenance.
+
+## Approved instrumentation maintenance completed (2026-09-08)
+
+The user explicitly approved the temporary bootstrap administrator and the
+previously planned maintenance batch. Execution completed at
+`2026-09-08T18:53:46.453Z` with the following verified scope:
+
+- Fresh backups/PITR, settings, proxy target, frozen revision and paused
+  automation checks passed. Only `performance_schema=on` was added using the
+  current settings version; operation `3dc62fba-1eea-4604-8562-4c7600000032`
+  completed, settings version changed 863 to 864 and the instance is RUNNABLE.
+  Tier, HA, networking, backups and all other settings were preserved.
+- Bootstrap `receipt_boot_0908_5a3f8cfd@cloudsqlproxy~%` provisioned inspector
+  `receipt_view_0908_0f667c60@cloudsqlproxy~%` with only global PROCESS and SELECT
+  on `metadata_locks`, `setup_instruments`, `setup_consumers`, `global_status`
+  in performance_schema. Exact grants and role `NONE` were checked. The
+  application/operator/root grant hashes were unchanged by provisioning.
+  Bootstrap socket/session closure and user deletion were verified before the
+  restart; inspector closure/deletion and the original user inventory were
+  verified afterward. No password or token was persisted or logged.
+- SQL samples at `18:52:59.580Z` and `18:53:04.750Z` confirmed instrumentation=1,
+  enabled metadata/global instrumentation, zero lost lock/thread records before
+  and after activity reads, zero active transactions and zero pending metadata
+  locks. Five other client sessions remained; no SQL text/player rows were
+  collected and exclusive writer control was not asserted.
+- Seven public checks before and seven after passed: anonymous auth, catalog,
+  both boards and all three frozen submission gates. Both leaderboard hashes
+  were identical. Exact frozen revision/configuration, generation 128 and
+  automation checks passed; no traffic, image, app schema/data, runtime grants,
+  IAM, cleanup schedule or score enablement changed. Authenticated login was not
+  repeated. Actual outage duration and memory overhead were not measured.
+
+The one-shot execution used `node --use-system-ca` and retained TLS checks;
+the non-secret result is outside the repository at
+`C:/Users/User/AppData/Local/Temp/mickeyf-maintenance-20260908-1547/result.json`.
+The temporary executable helper was removed after verification; no deployment
+or credential helper was added to the project.
+Independent closeout reads confirmed the flag, original three users and no
+active Cloud SQL operation. Independent review found no remaining material
+maintenance findings. This closes instrumentation maintenance, not permission
+to migrate: the next batch needs a scoped migration principal, approved
+write-free window, fresh preservation plan/drain and explicit DDL approval.
+No application code changed, so builds and test suites were not rerun for this
+operations/documentation checkpoint; `git diff --check` passed.

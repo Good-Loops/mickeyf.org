@@ -63,60 +63,47 @@ log queries. Three samples passed 30 public HTTP checks total; both leaderboard
 response hashes stayed identical. This closes the traffic/request checks, not
 the database drain gate below.
 
-Database readiness is **blocked**, not implicitly cleared by routing success.
-An existing-operator read-only connection at `18:23:36.091Z` independently
-matched the production database/account/server UUID, but its PROCESS probe was
-denied and `@@performance_schema` was 0. No permissions or instance flags were
-changed. Before DDL, establish an explicitly approved metadata-capable
-maintenance path and obtain fresh transaction/lock and external-writer drain
-evidence. Do not run the migration or bypass its guards yet. Maintain operator/
-automation exclusion because these checks are not a distributed IAM lock.
-Preserve bests, migrate, replace grants and verify the final schema/read paths;
-write enablement and
-normal traffic require their own approval and authenticated acceptance checks.
-Activate the separately credentialed cleanup job only after alerts and manual
-verification. No live schema, data, grants, credentials, scheduler or cleanup
-were changed by these receipt checkpoints. The separately approved traffic-only
-freeze is the only normal traffic change after the zero-traffic deployment.
+Database visibility maintenance **completed with separate user approval** on
+2026-09-08. Cloud SQL operation `3dc62fba-1eea-4604-8562-4c7600000032` enabled
+`performance_schema=on` and restarted the instance; settings version changed
+863 to 864, with every other setting preserved and no resize. The temporary
+bootstrap administrator was removed before the restart. The inspector had only
+PROCESS plus SELECT on the four approved performance-schema tables, no roles,
+and was removed afterward. Permanent account grant fingerprints were unchanged
+by provisioning; the original three-account inventory was restored.
+
+Two post-restart samples at `18:52:59.580Z` and `18:53:04.750Z` verified enabled
+metadata/global instrumentation, zero lost records, zero active transactions
+and zero pending metadata locks. All 14 before/after public checks passed with
+identical leaderboard hashes. Cloud Run generation 128, frozen score gates and
+paused backend triggers are unchanged. No migration, application-data write,
+runtime-grant cutover, cleanup activation or write re-enablement occurred.
+
+Migration remains **separately gated**: five other client sessions were present
+and exclusive writer control was not established. Before DDL, approve the
+migration principal/rights and write-free window, exclude external writers,
+and obtain the fresh guarded plan/drain evidence. Do not repeat instrumentation
+setup or reopen resolved test failures. Preserve bests, migrate, replace grants
+and verify final schema/read paths; write enablement and cleanup activation
+still require their own acceptance/approval. Instrumentation memory overhead
+and actual outage duration were not measured by this bounded maintenance run.
 
 Local drain-guard hardening completed (2026-09-08): receipt apply now refuses
 disabled/inaccessible instrumentation, missing effective PROCESS, malformed
 inspection results, lost lock/thread records, active transactions and pending
 metadata locks before transition DDL. Empty lock tables alone cannot pass.
-The [maintenance-access proposal](backend/RECEIPT_RETENTION.md#maintenance-access-proposal-not-executed)
-is prepared, not executed: the verified `db-custom-1-3840` instance needs no
-resize, but enabling `performance_schema` requires an approved database restart
-and a narrowly scoped inspection identity. Production permissions, flags and
-data remain unchanged. This local CLI change does not require a new API image.
+The [maintenance record](backend/RECEIPT_RETENTION.md#approved-instrumentation-maintenance-completed-2026-09-08)
+contains the executed scope and cleanup evidence. The local CLI guard did not
+require a new API image.
 
-Latest verification: 27 focused guard tests and TypeScript passed; all 19
-migration integration tests passed. The full disposable MySQL run passed 49/50:
-the unchanged runtime-grant session-drain test reported a still-open session
-immediately after client close. Resolve that check before grant cutover; a
-teardown timing race is only a hypothesis. The active-install unit run passed
-194/198, retaining the four known `qs` 6.15.3 versus locked 6.16.0 failures.
-No active dependencies were replaced; the disposable database was removed.
-These are explicit verification limits, not an all-green release checkpoint.
-
-Session-drain follow-up (2026-09-08): the failure is resolved without changing
-production checks. `mysql2` resolves `end()` before the server processes
-COM_QUIT; the integration fixture now waits with a strict deadline for its exact
-connection ID to disappear. All 50 disposable MySQL integration tests, 12
-focused runtime-grant unit tests, TypeScript and diff checks passed. The known
-four stale-install parser failures remain a separate dependency checkpoint.
-
-The user approved the planned instrumentation/inspection maintenance batch.
-Read-only preflight confirmed settings version 862, no active Cloud SQL
-operation, enabled backups/binary logs with seven-day transaction-log retention,
-and the latest successful automated backup `1788811200000`. Cloud Run remains
-at generation 128 with 100% frozen traffic and all four global backend triggers
-disabled. The restart has not been requested: no usable SQL administrator
-connection is configured for provisioning the inspector. The previous
-provisioning identity was removed; current users are `root`, `cms_mickeyf` and
-`michel_operator`. Arrange existing administrator access or separately approve
-a short-lived bootstrap administrator before restarting. No production account,
-grant, instance flag, application data or traffic changes occurred in this
-preflight. Migration and write activation remain separately gated.
+Latest code verification: 27 focused guard tests, all 50 disposable MySQL
+integration tests, 12 focused runtime-grant unit tests, TypeScript and diff
+checks passed. The session-drain fixture race is fixed: mysql2 resolves end()
+before the server processes COM_QUIT, so the fixture observes removal of its
+exact connection with a strict deadline. Production checks remain unchanged.
+The full active-install unit run retains four known `qs` 6.15.3 versus locked
+6.16.0 failures (194/198); no active dependencies were replaced. These remain
+explicit release limits, not a reason to repeat the completed maintenance.
 
 The local preparation adds `scripts/render-frozen-backend-deploy.mjs` (offline,
 hash-pinned canonical derivation with strict feature-source/image provenance and
