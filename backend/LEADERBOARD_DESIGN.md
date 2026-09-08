@@ -577,6 +577,16 @@ were retired after migration `0003`. The aggregate reconciliation logic remains
 only as a pre-DDL safety check when planning or replaying the drop against the
 fresh pre-drop backup.
 
+Retention check (2026-09-07): the live Cloud SQL backup inventory still includes
+successful on-demand pre-drop backup `1787787054951` (2026-08-26), plus the
+pre-backfill/additive snapshots. Newer automated backups and seven-day PITR do
+not by themselves retire that documented historical restore path. The current
+drop-plan/apply workflow still depends on reconciliation; it is not application
+runtime code. Retiring it requires retiring or replacing the whole supported
+legacy replay workflow, not deleting its safety check alone. No backup or
+migration tooling was deleted in this inspection. Keep immutable migrations and
+checksums even when that operational workflow is eventually retired.
+
 ## Completed live metadata preflight
 
 The approved read-only preflight on 2026-08-24 confirmed:

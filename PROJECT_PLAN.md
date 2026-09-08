@@ -163,6 +163,21 @@ reads remained healthy, no temporary database user or revision remained, and
 Cloud SQL reported no pending operation. This closes the runtime
 least-privilege blocker for the reviewed transitional manifest.
 
+Personal database inspection/maintenance follow-up (2026-09-07): the owner
+approved a separate `michel_operator@cloudsqlproxy~%` account for TablePlus.
+It has only `SELECT`, `INSERT`, `UPDATE`, and `DELETE` on the three application
+tables (`cms.users`, `cms.game_runs`, `cms.game_personal_bests`), with no schema-
+changing, migration-history, grant-option, or role privileges. Fresh logins
+through the existing authenticated loopback proxy verified all-column reads
+using `LIMIT 0`; permission inspection verified row-edit grants without writing
+player data. Runtime `cms_mickeyf` grants were identical before/after. The
+short-lived provisioning identity was removed and a fresh operator login
+passed afterward. The password is stored only in a current-user DPAPI-encrypted
+file outside the repository, with current-user/SYSTEM filesystem access; no
+runtime environment or application connection was changed. The owner must
+finish the separate TablePlus login. Sanitized verification is in the external
+Codex `release-checks-20260907/tableplus-operator-verification.json` record.
+
 The approved Phase 13 storage end state is for both the existing p4-Vega API
 operations and the generic leaderboard read to use `game_personal_bests` as
 their source of truth. After transactional dual writes, a complete backfill,
