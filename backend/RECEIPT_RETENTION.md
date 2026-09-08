@@ -128,7 +128,7 @@ plan digest is rechecked under the migration lock before DDL. The production
    version, execution/backlog/missing-run alerts, a reviewed manual run, then the
    hourly schedule. Prove expired cleanup leaves personal bests unchanged.
 
-## Frozen rollout tooling — local preparation only
+## Frozen rollout tooling — separate approval per live action
 
 - `scripts/render-frozen-backend-deploy.mjs` derives a separate source-less
   deployment document offline from a hash-pinned canonical Stage B recipe. Its
@@ -259,9 +259,11 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   must prevent other operators/automation from re-enabling triggers, routing
   traffic or starting writers between checks. Google-authenticated provenance
   binding is not independent signature verification; do not claim otherwise.
-- **Blocked pending explicit rollout approval:** live migration and grant
-  cutover, new image deployment, cleanup credentials/IAM, alert routing and
-  scheduler activation. No such production action is implied by this commit.
+- **Blocked pending acceptance/explicit rollout approval:** successful existing-
+  account login on the frozen candidate, traffic cutover, live migration and
+  grant cutover, enabled-revision deployment, cleanup credentials/IAM, alert
+  routing and scheduler activation. The separately approved zero-traffic
+  deployment below does not authorize these remaining actions.
 - **Deferred to release closeout:** the cumulative whole-project security pass
   and the remaining release/device checks in `PROJECT_PLAN.md`.
 
@@ -359,3 +361,48 @@ fixes do not change the application image's pinned source commit above.
 Next gate: separately approve the frozen zero-traffic revision and necessary
 automation exclusions described in checklist step 2. Do not infer approval for
 traffic cutover, migration or write enablement from this image-build checkpoint.
+
+## Approved frozen zero-traffic deployment (2026-09-08)
+
+The user subsequently approved checklist step 2, including temporary pauses of
+the two canonical automatic deployment triggers. No traffic cutover, database
+mutation, IAM/grant change, cleanup or scheduler action was performed.
+
+- Deployment build: `4e24e8ec-6254-4262-a068-832699ba92ba`, approved at
+  `2026-09-08T17:43:48.258676Z`; all seven steps succeeded at
+  `2026-09-08T17:49:12.520244Z`.
+- Dedicated source-less, approval-required trigger:
+  `1c9c6502-f53f-4e04-ac9e-06bf49668acf` (`frozen-backend-receipts`). Its inline
+  configuration and the pending build were compared exactly to the locally
+  reviewed renderer output before approval; no source/event binding was added.
+- Source/image pins are unchanged from the approved image-build review above.
+  Independently resolved deployment-step SHA-256:
+  `8effa287403d64d0184169a5a4a517a3b725926fee95f9f38add1dcfee8bc783`.
+  The successful build's executable steps exactly matched this offline evidence.
+- Ready revision: `mickeyf-org-freeze-12ec9e8eff4a493cbe8c025423e5110c`.
+  Both score-submission flags are `false`; the complete runtime contract and
+  provenance/scan checks passed, including the post-deployment exclusion check.
+- Service generation changed from 126 to 127. The prior revision
+  `mickeyf-org-build-3db9219129ee44e88daba01bcdcf9c3d` still has 100% normal
+  traffic. The only added routing entry is the zero-traffic frozen test tag:
+  `https://f-12ec9e8eff4a493cbe8c025423e5110c---mickeyf-org-j7yuum4tiq-uc.a.run.app`.
+- Public leaderboard/database reads, unknown-game/legacy read contracts,
+  anonymous authentication, Three Bosses HTTP 403 `SUBMISSION_DISABLED` and
+  p4-Vega HTTP 503 `SUBMISSIONS_FROZEN` checks passed. The SDK emitted an API-
+  enablement precheck warning; actual revision readiness and database reads
+  succeeded, so no permission or API configuration was changed.
+- After terminal success, the dedicated deployment trigger was disabled and
+  canonical Stage B then Stage A were restored to their original enabled states.
+  Full configurations matched the captured originals; the manual source trigger
+  stayed unchanged. No pending/queued/working builds remained in either region.
+  This is not the all-trigger maintenance freeze required by checklist step 3.
+
+**Remaining acceptance gate:** successfully log in using an existing approved
+test account on the exact tagged revision, then use its issued cookie for
+`GET /auth/verify-token` and verify `loggedIn: true` with the expected identity.
+No signup or score writes are needed. Anonymous smoke cannot prove password-
+column access, bcrypt, JWT issuance or signed-cookie round-trip behavior. No
+existing account credentials were supplied or used in this checkpoint; the
+retained rollback candidate is not fully accepted until this check passes.
+Afterward, checklist step 3 still requires separate maintenance-freeze and
+traffic-plan approval. The schema migration must not start yet.

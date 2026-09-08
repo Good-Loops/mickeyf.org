@@ -23,12 +23,23 @@ queries returned zero vulnerability and zero secret occurrences. This is a
 dated scan result, not a promise about future advisories. The image build did
 not change Cloud Run generation 126 or its existing 100% traffic allocation.
 
-Next unfinished checkpoint: obtain separate approval for the frozen zero-traffic
-deployment and its required temporary automation exclusions. The image is
-reviewed, but no receipt-compatible frozen revision has been deployed or tested
-yet. Before DDL, verify that frozen revision as the retained rollback target.
-Freeze conflicting
-automation with approval: after the successful frozen deployment, disable all
+Frozen zero-traffic deployment completed with separate user approval
+(2026-09-08): build `4e24e8ec-6254-4262-a068-832699ba92ba` succeeded with all
+seven steps passing. Revision
+`mickeyf-org-freeze-12ec9e8eff4a493cbe8c025423e5110c` is Ready with both
+submission flags false. Service generation 127 keeps the original revision at
+100% normal traffic and adds only the frozen candidate's zero-traffic test tag.
+Runtime, provenance/scan, anonymous authentication, public leaderboard SQL reads
+and frozen submission-response checks passed. Canonical Stage A/B were paused
+only for deployment, then restored exactly; the manual source trigger is
+unchanged and the dedicated frozen-deployment trigger is now disabled.
+
+Next unfinished checkpoint: verify successful login with an existing approved
+test account on that exact frozen revision, then confirm its issued cookie with
+`/auth/verify-token`. Anonymous smoke does not prove password access or a working
+authenticated session; do not call the rollback target fully accepted yet.
+After that acceptance, freeze conflicting automation with separate approval:
+disable all
 Cloud Build triggers in `global`/`us-central1`, including both reviewed manual triggers,
 and verify no active builds. Then separately approve the five-minute,
 etag-bound frozen traffic plan, remove all revision tags, wait beyond the
@@ -39,8 +50,10 @@ Preserve bests, migrate, replace grants and verify the final schema/read paths;
 write enablement and
 normal traffic require their own approval and authenticated acceptance checks.
 Activate the separately credentialed cleanup job only after alerts and manual
-verification. No live schema, grants, credentials, scheduler, Cloud Run deployment
-or traffic were changed by the receipt implementation or approved image build.
+verification. No live schema, grants, credentials, scheduler, cleanup or normal
+traffic allocation were changed by these receipt checkpoints. Only the separately
+approved zero-traffic revision/test tag and temporary trigger exclusions were
+added after the image build.
 
 The local preparation adds `scripts/render-frozen-backend-deploy.mjs` (offline,
 hash-pinned canonical derivation with strict feature-source/image provenance and
@@ -55,8 +68,10 @@ latest completed run passed 56 frozen-rollout checks plus three existing
 candidate-image and two cleanup-template contracts (61 total). Independent
 review found no remaining P1/P2 findings in this change. Source/provenance checks
 now pass against the actual image build after narrow URL-safe signature encoding
-and exact Git/builder dependency validation corrections. Frozen-deployment and
-traffic execution remain unverified. PR CI now invokes all of these checks.
+and exact Git/builder dependency validation corrections. The frozen deployment
+also passed live, and its successful steps exactly match the independently
+resolved offline fingerprint. Authenticated candidate acceptance and traffic
+cutover remain unverified. PR CI now invokes all of these checks.
 The root tooling lockfile's narrow `qs` update to 6.16.0 has an isolated audit
 with zero vulnerabilities; this is not new backend-image scan evidence.
 
