@@ -34,15 +34,26 @@ and frozen submission-response checks passed. Canonical Stage A/B were paused
 only for deployment, then restored exactly; the manual source trigger is
 unchanged and the dedicated frozen-deployment trigger is now disabled.
 
-Next unfinished checkpoint: verify successful login with an existing approved
-test account on that exact frozen revision, then confirm its issued cookie with
-`/auth/verify-token`. Anonymous smoke does not prove password access or a working
-authenticated session; do not call the rollback target fully accepted yet.
-After that acceptance, freeze conflicting automation with separate approval:
-disable all
-Cloud Build triggers in `global`/`us-central1`, including both reviewed manual triggers,
-and verify no active builds. Then separately approve the five-minute,
-etag-bound frozen traffic plan, remove all revision tags, wait beyond the
+Existing-account backend acceptance passed at `2026-09-08T18:06:15.6709583Z`:
+the operator completed login on the exact frozen HTTPS tag, the helper checked
+the Secure/HttpOnly signed cookie and matching authenticated `/auth/verify-token`
+response, and service generation/tag mapping remained unchanged. This accepts
+the retained frozen backend rollback candidate on the existing schema; it is
+not a browser cross-site cookie test. Credentials and session cookies were not
+recorded in the evidence files.
+
+Automation pause and read-only traffic planning completed with user approval
+(2026-09-08): all four backend Cloud Build triggers in `global` are disabled;
+`us-central1` has none. Full trigger configurations are unchanged apart from the
+disabled flags, and no pending/queued/working builds remain. The reviewed plan
+was generated at `18:13:03.959Z` against service generation 127. It proposes
+100% traffic to the accepted frozen revision and removal of its sole test tag.
+No traffic patch was sent: public score submissions still use the original
+enabled revision. Triggers remain paused pending the controlled cutover; this
+does not pause GitHub/Firebase frontend workflows.
+
+Next approval: execute a fresh, reviewed five-minute, etag-bound traffic-only
+freeze and its bounded readiness/drain checks: remove all revision tags, wait beyond the
 300-second old-request maximum and repeat retired-revision/request/SQL drain
 checks. Traffic success alone is not drain; maintain operator/automation
 exclusion throughout because these checks are not a distributed IAM lock.
@@ -52,8 +63,8 @@ normal traffic require their own approval and authenticated acceptance checks.
 Activate the separately credentialed cleanup job only after alerts and manual
 verification. No live schema, grants, credentials, scheduler, cleanup or normal
 traffic allocation were changed by these receipt checkpoints. Only the separately
-approved zero-traffic revision/test tag and temporary trigger exclusions were
-added after the image build.
+approved zero-traffic revision/test tag and backend automation pauses were
+performed after the image build. The traffic plan itself performed no writes.
 
 The local preparation adds `scripts/render-frozen-backend-deploy.mjs` (offline,
 hash-pinned canonical derivation with strict feature-source/image provenance and
@@ -64,14 +75,18 @@ etag-bound traffic-only apply to the exact frozen revision, all tags removed).
 Traffic pins include independently resolved offline deployment-step evidence;
 copying live build steps is not an approval substitute. Authenticated Google
 provenance binding is checked, not independent signature verification. The
-latest completed run passed 56 frozen-rollout checks plus three existing
-candidate-image and two cleanup-template contracts (61 total). Independent
+latest completed run passed 57 frozen-rollout checks plus three existing
+candidate-image and two cleanup-template contracts (62 total). Independent
 review found no remaining P1/P2 findings in this change. Source/provenance checks
 now pass against the actual image build after narrow URL-safe signature encoding
 and exact Git/builder dependency validation corrections. The frozen deployment
 also passed live, and its successful steps exactly match the independently
-resolved offline fingerprint. Authenticated candidate acceptance and traffic
-cutover remain unverified. PR CI now invokes all of these checks.
+resolved offline fingerprint. Authenticated backend candidate acceptance also
+passed; traffic cutover remains unexecuted. PR CI now invokes all these checks.
+The Windows traffic CLI now explicitly invokes the installed `gcloud.cmd`
+wrapper rather than the execution-policy-blocked PowerShell wrapper; no
+execution policy was changed. Live read-only planning passed with system CA
+trust enabled, without disabling TLS verification.
 The root tooling lockfile's narrow `qs` update to 6.16.0 has an isolated audit
 with zero vulnerabilities; this is not new backend-image scan evidence.
 

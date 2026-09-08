@@ -297,7 +297,7 @@ function accessToken() {
     try {
         // Fixed command only; no user data is passed through a shell.
         return process.platform === 'win32'
-            ? execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', 'gcloud auth print-access-token'], { encoding: 'utf8', timeout: 30_000, stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+            ? execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', 'gcloud.cmd auth print-access-token'], { encoding: 'utf8', timeout: 30_000, stdio: ['ignore', 'pipe', 'pipe'] }).trim()
             : execFileSync('gcloud', ['auth', 'print-access-token'], { encoding: 'utf8', timeout: 30_000, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
     } catch { fail('Could not obtain a short-lived gcloud access token'); }
 }

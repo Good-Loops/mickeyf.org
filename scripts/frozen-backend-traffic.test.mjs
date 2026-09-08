@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 import {
     PROJECT, REGION, SERVICE, IMAGE, REVISION_TYPE, fingerprint, revisionName,
@@ -14,6 +15,15 @@ const pins = {
     imageDigest: `sha256:${'b'.repeat(64)}`, deploymentBuildId: '22222222-2222-4222-8222-222222222222',
     deploymentTriggerId: '33333333-3333-4333-8333-333333333333', deploymentStepsSha256: deploymentStepsFingerprint(steps),
 };
+
+test('Windows token command selects the installed cmd wrapper without changing execution policy', async () => {
+    const source = await readFile(new URL('./frozen-backend-traffic.mjs', import.meta.url), 'utf8');
+    const tokenHelper = source.slice(source.indexOf('function accessToken()'), source.indexOf('async function readJson('));
+    assert.ok(tokenHelper.includes("execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', 'gcloud.cmd auth print-access-token'], { encoding: 'utf8', timeout: 30_000, stdio: ['ignore', 'pipe', 'pipe'] }).trim()"));
+    assert.ok(!tokenHelper.includes('ExecutionPolicy'));
+    assert.ok(tokenHelper.includes("catch { fail('Could not obtain a short-lived gcloud access token'); }"));
+});
+
 function fixture() {
     const revision = {
         name: `${SERVICE}/revisions/${revisionName(pins)}`, service: 'mickeyf-org', uid: 'revision-uid',

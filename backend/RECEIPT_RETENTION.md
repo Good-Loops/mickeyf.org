@@ -1,9 +1,10 @@
 # Personal bests and bounded submission receipts
 
-Implementation checkpoint: 2026-09-08. This is the new local backend contract,
-**not evidence of a production migration or deployment**. Historical migrations
-0001–0003 are unchanged. Live schema, grants, traffic and cleanup activation
-require a separate approved cutover.
+Implementation checkpoint: 2026-09-08. The storage contract below is implemented
+but **not migrated in production**. Subsequent approved zero-traffic deployment,
+backend acceptance and read-only planning are recorded separately below.
+Historical migrations 0001–0003 are unchanged. Live schema, grants, traffic and
+cleanup activation require a separate approved cutover.
 
 ## Storage contract
 
@@ -216,10 +217,11 @@ traffic to 100% frozen with no tags. It does not disable triggers itself, freeze
 operator sessions, drain database writers or make signup read-only. Keep those
 operational checks explicit; settled routing alone is not permission for DDL.
 
-These local deliverables have not been executed against production. The latest
-completed local run passed 56 frozen-rollout checks, plus the three existing
-candidate-image and two cleanup-template contracts. Live
-deployment, freeze/drain and migration validation remain separate gates.
+The frozen deployment and read-only traffic planning have now been exercised
+against live resources as recorded below; traffic apply remains unexecuted.
+The latest local run passed 57 frozen-rollout checks plus the three existing
+candidate-image and two cleanup-template contracts (62 total). Traffic
+freeze/drain, migration and write enablement remain separate gates.
 
 ## Failure and recovery
 
@@ -259,11 +261,11 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   must prevent other operators/automation from re-enabling triggers, routing
   traffic or starting writers between checks. Google-authenticated provenance
   binding is not independent signature verification; do not claim otherwise.
-- **Blocked pending acceptance/explicit rollout approval:** successful existing-
-  account login on the frozen candidate, traffic cutover, live migration and
-  grant cutover, enabled-revision deployment, cleanup credentials/IAM, alert
+- **Blocked pending explicit rollout approval:** traffic cutover, live migration
+  and grant cutover, enabled-revision deployment, cleanup credentials/IAM, alert
   routing and scheduler activation. The separately approved zero-traffic
-  deployment below does not authorize these remaining actions.
+  deployment and successful existing-account login below do not authorize these
+  remaining actions.
 - **Deferred to release closeout:** the cumulative whole-project security pass
   and the remaining release/device checks in `PROJECT_PLAN.md`.
 
@@ -397,12 +399,86 @@ mutation, IAM/grant change, cleanup or scheduler action was performed.
   stayed unchanged. No pending/queued/working builds remained in either region.
   This is not the all-trigger maintenance freeze required by checklist step 3.
 
-**Remaining acceptance gate:** successfully log in using an existing approved
-test account on the exact tagged revision, then use its issued cookie for
-`GET /auth/verify-token` and verify `loggedIn: true` with the expected identity.
-No signup or score writes are needed. Anonymous smoke cannot prove password-
-column access, bcrypt, JWT issuance or signed-cookie round-trip behavior. No
-existing account credentials were supplied or used in this checkpoint; the
-retained rollback candidate is not fully accepted until this check passes.
-Afterward, checklist step 3 still requires separate maintenance-freeze and
-traffic-plan approval. The schema migration must not start yet.
+At deployment completion, existing-account login remained untested; anonymous
+smoke alone could not accept that part of the rollback candidate. The subsequent
+operator-assisted acceptance below closes that backend gate. Checklist step 3
+still requires separate maintenance-freeze and traffic-plan approval. The schema
+migration must not start yet.
+
+## Existing-account backend acceptance (2026-09-08)
+
+The operator entered an existing website account's credentials into a masked
+VS Code terminal prompt, not chat or a saved credential file. The one-shot
+helper pinned the exact frozen HTTPS origin and revision/image above, refused
+redirects, retained TLS verification and kept the cookie jar in memory only.
+The check completed successfully at `2026-09-08T18:06:15.6709583Z`:
+
+- Anonymous `GET /auth/verify-token` returned `loggedIn: false` without a cookie.
+- Existing-account `POST /api/users` login succeeded with the expected identity.
+- Exactly one signed `session` cookie had Secure, HttpOnly, SameSite=None and
+  Path=/ attributes, with no Domain broadening.
+- The same in-memory cookie jar's `GET /auth/verify-token` returned
+  `loggedIn: true` and the matching identity. No bearer token shortcut was used.
+- Post-login cloud reads confirmed the same settled service generation 127 and
+  exact zero-traffic tag mapping. An independent subsequent read confirmed the
+  pinned image, both submission flags false and unchanged original 100% traffic.
+
+This verifies password-column access, bcrypt/JWT issuance and the signed-cookie
+backend round trip. It does not assert browser cross-site cookie compatibility.
+No signup, score write, database mutation or traffic change was performed.
+The retained non-secret result contains only pass/stage, UTC timestamp,
+revision, image digest and test scope; the username/password/cookie are absent.
+The frozen backend rollback candidate is now accepted on the existing schema;
+post-migration schema/grants/read-path validation remains mandatory.
+
+## Approved automation pause and read-only traffic plan (2026-09-08)
+
+After backend acceptance, the user approved pausing backend deployment automation
+and preparing the traffic-freeze plan. The three still-enabled triggers were
+patched using only `updateMask=disabled`; the already-disabled frozen deployment
+trigger stayed disabled. Full before/after comparisons confirmed no other
+configuration changes:
+
+- Stage A: `ef5a2981-95be-4f4d-af91-f997fde73356` — disabled.
+- Stage B: `d71109da-8350-4f2f-a3be-2053bb6ccd45` — disabled.
+- Manual image source: `648fadca-3cd1-4b57-9d35-0f62a1468443` — disabled.
+- Frozen deployment: `1c9c6502-f53f-4e04-ac9e-06bf49668acf` — remains disabled.
+
+The `us-central1` trigger inventory is empty. The planner's paginated checks
+verified no pending, queued or working builds in either region. These backend
+Cloud Build triggers remain paused pending controlled cutover; GitHub/Firebase
+frontend workflows were not changed. If the cutover is abandoned, restore only
+the captured original enabled states after checking drift: frozen deployment
+must stay disabled. Do not silently leave backend deployment automation paused.
+
+The exact existing source/deployment pins and independently reviewed steps hash
+above produced the following **read-only** plan:
+
+- Created: `2026-09-08T18:13:03.959Z`; generation `127`, with an etag-bound
+  service/configuration fingerprint and exact frozen-revision fingerprint.
+- Plan SHA-256: `d488bb2c40889ccfae4c72477581d5457055dfd50755e25f3bcc04c30fe84da4`.
+- Before: original enabled revision at 100%, accepted frozen candidate at zero
+  traffic via its `f-12ec9e8eff4a493cbe8c025423e5110c` tag.
+- Proposed: exact accepted frozen revision at 100%, all revision tags removed
+  (the current inventory has only that one tag).
+- Not executed: no traffic PATCH, schema/data/grant changes or cleanup actions.
+  Public score writes remain enabled on the old revision until traffic changes.
+- Validity: five minutes from creation; an expired/drifted plan must be freshly
+  generated and reviewed, never applied by bypassing the time/etag guards.
+
+The Windows token launcher needed one fixed-command correction from `gcloud`
+to `gcloud.cmd` inside its existing noninteractive PowerShell child. Timeout,
+output sanitization and no-stdin behavior are preserved; execution policy was
+not altered. The exact corrected token launch and live planning succeeded.
+The planning invocation used `node --use-system-ca
+scripts/frozen-backend-traffic.mjs plan --pins <reviewed-traffic-pins.json>
+--output <new-plan.json>` so Node trusts the existing system certificate store
+without disabling TLS checks. All 62 targeted rollout contracts and
+`git diff --check` passed; no application/Unity rebuild was required.
+
+Next approval can batch traffic freezing with read-only readiness/drain checks.
+The freeze temporarily rejects score submissions, but preserves login and
+leaderboard reads. Readiness and the mandatory old-request drain are distinct;
+signup/operator sessions can still write and must be accounted for before DDL.
+Database migration, grant changes and score-write enablement remain outside
+this approval boundary.
