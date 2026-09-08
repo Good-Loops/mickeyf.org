@@ -13,11 +13,21 @@ ledger remain deployment history, not the new design. See
 [`backend/RECEIPT_RETENTION.md`](backend/RECEIPT_RETENTION.md) for the storage
 contract, guarded migration/recovery workflow and scoped security disposition.
 
-Next unfinished checkpoint: obtain approval for the exact feature image build
-and its scan/provenance review. The local frozen-rollout tooling is implemented
-and reviewed; each production gate still needs separate approval. Before DDL, prepare a
-scanned/provenance-pinned receipt-compatible image and verify its frozen
-zero-traffic revision as the retained rollback target. Freeze conflicting
+Image review completed with user approval (2026-09-08): Cloud Build
+`12ec9e8e-ff4a-493c-be8c-025423e5110c` successfully built exact source
+`d1d5dbf6fcc1bedd596827a540779f437fe3501f`. Immutable image digest:
+`sha256:9ec1bd83ea73a283ad36961b2dcd3022b9b0a40cbf16bd725398ff562015c3c3`.
+Source/approval/provenance binding checks passed. Artifact Analysis completed
+with active continuous analysis including OS, NPM and SECRET; complete direct
+queries returned zero vulnerability and zero secret occurrences. This is a
+dated scan result, not a promise about future advisories. The image build did
+not change Cloud Run generation 126 or its existing 100% traffic allocation.
+
+Next unfinished checkpoint: obtain separate approval for the frozen zero-traffic
+deployment and its required temporary automation exclusions. The image is
+reviewed, but no receipt-compatible frozen revision has been deployed or tested
+yet. Before DDL, verify that frozen revision as the retained rollback target.
+Freeze conflicting
 automation with approval: after the successful frozen deployment, disable all
 Cloud Build triggers in `global`/`us-central1`, including both reviewed manual triggers,
 and verify no active builds. Then separately approve the five-minute,
@@ -29,8 +39,8 @@ Preserve bests, migrate, replace grants and verify the final schema/read paths;
 write enablement and
 normal traffic require their own approval and authenticated acceptance checks.
 Activate the separately credentialed cleanup job only after alerts and manual
-verification. No live schema, grants, credentials, scheduler or deployment were
-changed by the receipt implementation or this local rollout preparation.
+verification. No live schema, grants, credentials, scheduler, Cloud Run deployment
+or traffic were changed by the receipt implementation or approved image build.
 
 The local preparation adds `scripts/render-frozen-backend-deploy.mjs` (offline,
 hash-pinned canonical derivation with strict feature-source/image provenance and
@@ -43,8 +53,10 @@ copying live build steps is not an approval substitute. Authenticated Google
 provenance binding is checked, not independent signature verification. The
 latest completed run passed 56 frozen-rollout checks plus three existing
 candidate-image and two cleanup-template contracts (61 total). Independent
-review found no remaining P1/P2 findings in this change; live verification
-remains pending. PR CI now invokes all of these checks.
+review found no remaining P1/P2 findings in this change. Source/provenance checks
+now pass against the actual image build after narrow URL-safe signature encoding
+and exact Git/builder dependency validation corrections. Frozen-deployment and
+traffic execution remain unverified. PR CI now invokes all of these checks.
 The root tooling lockfile's narrow `qs` update to 6.16.0 has an isolated audit
 with zero vulnerabilities; this is not new backend-image scan evidence.
 

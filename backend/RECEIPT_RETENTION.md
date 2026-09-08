@@ -312,3 +312,50 @@ it contains reproducible test dependencies, not release assets or credentials.
 No deletion workaround was attempted.
 No live build, CI trigger, deployment, traffic, schema, grants or cleanup
 activation is authorized by these local preparation changes.
+
+## Approved image-build review (2026-09-08)
+
+The user subsequently approved the exact candidate image build and scan review,
+not deployment, traffic, schema/grant changes or cleanup activation.
+
+- Source: `d1d5dbf6fcc1bedd596827a540779f437fe3501f`.
+- Manual source trigger: `648fadca-3cd1-4b57-9d35-0f62a1468443`
+  (`feature-new-leaderboard-candidate`). Its default ref remains
+  `refs/heads/feature/new-leaderboard`; the explicit `--sha` override selected
+  the reviewed commit for both requested and resolved Git source. No trigger
+  configuration was changed.
+- Build: `12ec9e8e-ff4a-493c-be8c-025423e5110c`, approved at
+  `2026-09-08T17:28:37.010377Z`, successful at
+  `2026-09-08T17:30:24.913932Z`.
+- Image repository:
+  `us-central1-docker.pkg.dev/noted-reef-387021/cloud-run-source-deploy/cloud-run-source-deploy`.
+- Immutable digest:
+  `sha256:9ec1bd83ea73a283ad36961b2dcd3022b9b0a40cbf16bd725398ff562015c3c3`.
+- Source, exact image-only steps, fixed build identity, approval and authenticated
+  provenance binding all passed against actual records. The live envelope uses
+  URL-safe base64 for its signature; its payload exactly equals the displayed
+  statement. The two resolved dependencies are the exact Git commit and pinned
+  Docker builder. The checker now requires that exact pair rather than a loose
+  builder-URI prefix; signature metadata remains distinct from independent
+  cryptographic signature verification.
+- Scan discovery: `FINISHED_SUCCESS`, continuous analysis `ACTIVE`, last scan
+  `2026-09-08T17:30:35.899738685Z`; completed types include OS, NPM and SECRET.
+  Direct regional Container Analysis queries for this exact image returned
+  HTTP 200 `{}` for both VULNERABILITY and SECRET, with no pagination token:
+  zero occurrences in either complete result. Recheck before deployment;
+  advisories and the two-hour source-build freshness gate can change readiness.
+- Cloud Run remained at generation 126, with 100% traffic to
+  `mickeyf-org-build-3db9219129ee44e88daba01bcdcf9c3d`. No revision, traffic,
+  SQL, IAM, scheduler or trigger configuration was changed.
+
+The queued raw build configuration was compared with the committed image-only
+recipe before approval. Commands used were `gcloud builds triggers run` with
+the exact trigger/`--sha`, then `gcloud beta builds approve` for that one build.
+The installed stable track has no `builds approve` command; the successful
+approval was verified from the authoritative build record. Registry discovery
+and direct occurrence reads followed success. Operational checker/documentation
+fixes do not change the application image's pinned source commit above.
+
+Next gate: separately approve the frozen zero-traffic revision and necessary
+automation exclusions described in checklist step 2. Do not infer approval for
+traffic cutover, migration or write enablement from this image-build checkpoint.

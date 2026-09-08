@@ -238,21 +238,34 @@ statement={"_type":"https://in-toto.io/Statement/v1","predicateType":"https://sl
  "subject":[{"digest":{"sha256":digest.removeprefix("sha256:")},"name":f"https://{tag}"}],
  "predicate":{"buildDefinition":{"buildType":"https://cloud.google.com/build/gcb-buildtypes/google-worker/v1",
  "externalParameters":{"substitutions":{}},"internalParameters":{"systemSubstitutions":system,"triggerUri":f"projects/{NUMBER}/locations/global/triggers/{pins['sourceTriggerId']}"},
- "resolvedDependencies":[{"digest":{"sha256":BUILDER.split("sha256:")[1]},"uri":BUILDER}]},
+ "resolvedDependencies":[{"digest":{"gitCommit":pins["sourceCommit"]},"uri":f"git+{REPOSITORY}"},
+ {"digest":{"sha256":BUILDER.split("sha256:")[1]},"uri":f"{BUILDER}@sha256:{BUILDER.split('sha256:')[1]}"}]},
  "runDetails":{"builder":{"id":"https://cloudbuild.googleapis.com/GoogleHostedWorker"},"metadata":{"invocationId":f"https://cloudbuild.googleapis.com/v1/projects/{PROJECT}/locations/global/builds/{bid}"}}}}
 occurrence={"kind":"BUILD","resourceUri":f"https://{target}","noteName":f"projects/verified-builder/notes/intoto_slsa_v1_{bid}",
  "build":{"inTotoSlsaProvenanceV1":statement},"envelope":{"payloadType":"application/vnd.in-toto+json","payload":base64.b64encode(json.dumps(statement).encode()).decode(),
- "signatures":[{"keyid":"projects/verified-builder/locations/global/keyRings/attestor/cryptoKeys/google-hosted-worker/cryptoKeyVersions/1","sig":base64.b64encode(b"test-signature-metadata").decode()}]}}
+ "signatures":[{"keyid":"projects/verified-builder/locations/global/keyRings/attestor/cryptoKeys/google-hosted-worker/cryptoKeyVersions/1","sig":base64.urlsafe_b64encode(bytes([251,255])*36).decode()}]}}
 provenance={"image_summary":{"digest":digest,"fully_qualified_digest":target,"registry":"us-central1-docker.pkg.dev","repository":"cloud-run-source-deploy","slsa_build_level":3},
  "provenance_summary":{"provenance":[occurrence]}}
 verify_provenance(provenance,pins)
 for path,value in [(("image_summary","digest"),"sha256:"+"d"*64),
  (("provenance_summary","provenance",0,"envelope","payload"),base64.b64encode(b"{}").decode()),
  (("provenance_summary","provenance",0,"envelope","signatures",0,"keyid"),"wrong"),
+ (("provenance_summary","provenance",0,"envelope","signatures",0,"sig"),"bad!signature"),
  (("provenance_summary","provenance",0,"noteName"),"wrong")]:
     changed=deepcopy(provenance); cursor=changed
     for key in path[:-1]:cursor=cursor[key]
     cursor[path[-1]]=value
+    fails(lambda:verify_provenance(changed,pins))
+for dependencies in [
+ [{"digest":{"gitCommit":"c"*40},"uri":f"git+{REPOSITORY}"}, statement["predicate"]["buildDefinition"]["resolvedDependencies"][1]],
+ statement["predicate"]["buildDefinition"]["resolvedDependencies"]+[{"uri":"unreviewed","digest":{"sha256":"d"*64}}],
+ [statement["predicate"]["buildDefinition"]["resolvedDependencies"][1]],
+ [statement["predicate"]["buildDefinition"]["resolvedDependencies"][0], {"uri":BUILDER+"-spoof","digest":{"sha256":BUILDER.split("sha256:")[1]}}],
+]:
+    changed=deepcopy(provenance)
+    item=changed["provenance_summary"]["provenance"][0]
+    item["build"]["inTotoSlsaProvenanceV1"]["predicate"]["buildDefinition"]["resolvedDependencies"]=dependencies
+    item["envelope"]["payload"]=base64.b64encode(json.dumps(item["build"]["inTotoSlsaProvenanceV1"]).encode()).decode()
     fails(lambda:verify_provenance(changed,pins))
 print("provenance fixtures passed")
 `;

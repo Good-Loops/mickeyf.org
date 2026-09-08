@@ -166,7 +166,9 @@ def verify_provenance(provenance, pins):
     try:
         if json.loads(base64.b64decode(envelope["payload"], validate=True)) != statement:
             reject("SLSA envelope payload and displayed statement disagree")
-        if not base64.b64decode(signatures[0]["sig"], validate=True):
+        # Container Analysis serializes this bytes field with URL-safe base64.
+        # Keep strict alphabet validation; do not silently discard invalid bytes.
+        if not base64.b64decode(signatures[0]["sig"], altchars=b"-_", validate=True):
             reject("SLSA signature is empty")
     except (KeyError, ValueError, UnicodeError):
         reject("SLSA envelope is malformed")
@@ -187,9 +189,15 @@ def verify_provenance(provenance, pins):
             or internal.get("triggerUri") != f"projects/{NUMBER}/locations/global/triggers/{pins['sourceTriggerId']}"):
         reject("SLSA source commit, build identity or trigger differs")
     dependencies = definition.get("resolvedDependencies") or []
-    if (len(dependencies) != 1 or dependencies[0].get("digest") != {"sha256": BUILDER.split("sha256:")[1]}
-            or not str(dependencies[0].get("uri", "")).startswith(BUILDER)):
-        reject("SLSA builder dependency differs")
+    builder_digest = BUILDER.split("sha256:")[1]
+    expected_dependencies = [
+        {"digest": {"gitCommit": commit}, "uri": f"git+{REPOSITORY}"},
+        {"digest": {"sha256": builder_digest}, "uri": f"{BUILDER}@sha256:{builder_digest}"},
+    ]
+    if (not isinstance(dependencies, list) or len(dependencies) != 2
+            or sorted(json.dumps(item, sort_keys=True) for item in dependencies)
+            != sorted(json.dumps(item, sort_keys=True) for item in expected_dependencies)):
+        reject("SLSA exact Git source and builder dependencies differ")
     if (details.get("builder") != {"id": "https://cloudbuild.googleapis.com/GoogleHostedWorker"}
             or details.get("metadata", {}).get("invocationId") != f"https://cloudbuild.googleapis.com/v1/projects/{PROJECT}/locations/global/builds/{build_id}"):
         reject("SLSA hosted builder or invocation differs")
