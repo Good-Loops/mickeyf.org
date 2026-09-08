@@ -5,8 +5,9 @@ Current checkpoint: 2026-09-08. The storage contract below is implemented and
 receipt-compatible frozen backend is restored to normal traffic. Both score
 gates and receipt cleanup remain disabled. Historical migrations 0001–0003 are
 unchanged. Dated preparation entries below are historical; the final section
-records the approved execution. Score re-enablement and cleanup activation still
-require their own acceptance/approval.
+records the approved enabled backend acceptance and test-resource cleanup.
+Normal-traffic score re-enablement and retention-job activation still require
+their own rollout approval; the controlled submission acceptance has passed.
 
 ## Storage contract
 
@@ -278,10 +279,15 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   runtime/operator grants, public restoration and temporary-account removal
   passed. The receipt-compatible frozen image is the rollback target, not an
   older pre-receipt writer. Instrumentation memory overhead remains unmeasured.
-- **Blocked pending explicit rollout approval:** enabled-revision deployment,
-  authenticated submission/replay acceptance, normal score-write promotion,
+- **Resolved controlled enabled acceptance:** the separately approved private
+  service used the verified image and a disposable website account. All 64 HTTP
+  assertions passed, including authenticated submission/replay and database rate
+  limiting. Its service, account and synthetic score rows were removed; original
+  data hashes and public production config/IAM/board responses were preserved.
+  This was backend HTTP acceptance, not a physical-device/browser-cookie test.
+- **Blocked pending explicit rollout approval:** normal score-write promotion,
   cleanup credentials/IAM, alert routing and scheduler activation. The completed
-  database cutover does not authorize these remaining actions.
+  database cutover and private acceptance do not authorize these remaining actions.
 - **Deferred to release closeout:** the cumulative whole-project security pass
   and the remaining release/device checks in `PROJECT_PLAN.md`.
 - **Resolved fixture race:** server-side teardown is now observed explicitly
@@ -855,3 +861,70 @@ Restoring the existing backend dev workload resumed its normal watcher.
 Authenticated login and enabled submission/replay were not repeated, cleanup
 was not activated, and both score flags/deployment triggers remain disabled.
 Those are the remaining rollout gates, not an unfinished migration.
+
+## Approved private enabled acceptance completed (2026-09-08)
+
+The user approved one complete test-and-cleanup batch: a private Cloud Run
+service using the already verified image, one disposable website account,
+controlled submissions against the production database, and removal of those
+temporary resources. The user was told the synthetic bests would briefly appear
+on public leaderboards; existing player scores were not used for testing.
+
+Execution ran from `19:48:30.853Z` to `19:49:40.355Z`:
+
+- Production generation 130, frozen revision/image, 100% traffic and IAM matched
+  the captured pins. Project IAM had no `allUsers`/`allAuthenticatedUsers`
+  bindings and the project had no parent. No production service mutation,
+  database schema/grant change, deployment-trigger change or scheduler change
+  was performed.
+- Private service `mickeyf-receipt-check-b3e497a2` used image digest
+  `sha256:9ec1bd83ea73a283ad36961b2dcd3022b9b0a40cbf16bd725398ff562015c3c3`,
+  the existing runtime identity/pinned secret references/Cloud SQL mount and
+  a maximum of one instance. Only its two submission flags were enabled. IAM
+  checks remained on, the service policy had no public members, and an
+  unauthenticated request returned 403. A Google ID token in
+  `X-Serverless-Authorization` provided service access separately from the
+  application's signed session cookie.
+- HTTP signup/login created only `receipt_check_20260908_b3e497a2`. Login's
+  Secure/HttpOnly/SameSite=None signed cookie verified the matching session;
+  the helper generated the website password in memory and did not forge JWTs
+  or read the runtime session secret. Existing operator credentials entered
+  through a DPAPI-to-stdin handoff, not command arguments or evidence files.
+- Eleven genuine server tickets were issued, followed by an actual 13-second
+  wait. Ten new runs were accepted. First/worse/better results retained the
+  fastest 11,000 ms best, canonical score 909,091 and rank S. Identical retries
+  returned the original result, including after the rate limit; a changed
+  payload returned 409 and the eleventh new run returned 429 without a receipt.
+  The 25 ticket/submission requests remained below the separate 30-request IP
+  ceiling, so that ceiling did not substitute for the database-limit check.
+- p4-Vega scores 20, 20, 10 and 30 produced improvement results true, false,
+  false and true. Database readback showed one best for each game, ten Three
+  Bosses receipts and no p4-Vega receipts. Both leaderboard readbacks included
+  the expected synthetic result. All **64 HTTP assertions passed**.
+- Creation operation `d5fa4807-c86d-4aba-b194-ae4a5e789c6a` was settled before
+  teardown. The exact owned service was deleted and absence verified at
+  `19:49:32.438Z`. Then a transaction under the application's shared per-user
+  lock removed exactly ten owned receipt UUIDs, two bests and the one user,
+  with numeric ID/username/email ownership checks and child-before-parent
+  deletion. No prefix deletion or auto-increment reset was used. Absence of all
+  test rows was verified; these synthetic rows are intentionally discarded.
+- The original seven personal bests retained SHA-256
+  `f4a64890694cec7e40b9257ba946ab560c1386e9c6428dab078af232496ad6fc`;
+  the original five receipts retained SHA-256
+  `b5ee68f7af91d417fa6f69cf663da7bc2cd3aa3957483fd4e479bd40558d9334`.
+  Public response hashes, production config and IAM were identical afterward.
+  Both public backend origins still rejected Three Bosses writes with 403 and
+  p4-Vega writes with 503. Local development servers were not stopped.
+
+Non-secret evidence: `result.json` in
+`C:/Users/User/AppData/Local/Temp/mickeyf-receipt-acceptance-20260908-b3e497a2/`.
+The temporary Node/PowerShell execution helpers were removed after review;
+credentials, cookies and run tickets were not persisted. Node syntax and
+PowerShell parser checks passed. No dependencies were installed and no
+application/unit/Unity builds were rerun for this operations-only batch.
+
+This closes the controlled enabled backend acceptance gate, not normal public
+write activation or browser cross-site-cookie/gameplay acceptance. Next is
+separately approved normal-traffic score promotion of this verified image;
+receipt-cleanup credentials, alerts, manual execution and scheduling remain
+separately gated by the cleanup runbook.

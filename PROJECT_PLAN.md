@@ -26,9 +26,23 @@ the operator's existing DML rights moved from `game_runs` to
 Both temporary accounts are removed. The original VS Code `back` workload is
 running again; frontend, WebGL and SQL proxy listeners were preserved. Public
 and local read/frozen-gate checks passed, with identical public board hashes.
-Next: separately approved enabled-revision submission/replay acceptance, then
-normal score-write promotion and receipt-cleanup activation. Do not repeat the
-completed migration or use a pre-receipt backend revision as a rollback target.
+Enabled backend acceptance completed at `2026-09-08T19:49:40.355Z` under separate
+user approval. A private, temporary Cloud Run service used the same verified
+image with both submission flags enabled and one disposable website account.
+All 64 HTTP assertions passed: signed-cookie login, real server run tickets,
+canonical submissions, exact retries, payload conflict, worse/better scores,
+the ten-new-runs database limit, and both leaderboard readbacks. Three Bosses
+created ten receipts and one best; p4-Vega kept one best without receipts.
+The service was deleted, then only that account's ten receipts, two bests and
+user row were removed under the shared user lock and a transaction. The original
+seven bests/five receipts, public board responses and production config/IAM
+matched their baselines. No browser/gameplay or Safari-cookie test is claimed.
+Temporary execution helpers were removed; non-secret evidence is outside the
+repository. Normal traffic remains frozen at generation 130.
+
+Next: approve normal score-write promotion of the verified image, then the
+separately gated receipt-cleanup activation. Do not repeat the completed
+migration/acceptance or use a pre-receipt backend revision as a rollback target.
 
 Image review completed with user approval (2026-09-08): Cloud Build
 `12ec9e8e-ff4a-493c-be8c-025423e5110c` successfully built exact source
