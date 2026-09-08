@@ -2,12 +2,12 @@
 
 Current checkpoint: 2026-09-08. The storage contract below is implemented and
 **migrated in production**; exact runtime/operator grants are verified and the
-receipt-compatible frozen backend is restored to normal traffic. Both score
-gates and receipt cleanup remain disabled. Historical migrations 0001–0003 are
-unchanged. Dated preparation entries below are historical; the final section
-records the approved enabled backend acceptance and test-resource cleanup.
-Normal-traffic score re-enablement and retention-job activation still require
-their own rollout approval; the controlled submission acceptance has passed.
+receipt-compatible image now serves normal traffic with both score flags
+**enabled** after approved acceptance and promotion. Receipt cleanup remains
+disabled. Historical migrations 0001–0003 are unchanged. Dated preparation
+entries below are historical; the final section records production activation.
+Retention-job credentials, alerting and activation still require their own
+rollout approval; migration and score-submission activation are complete.
 
 ## Storage contract
 
@@ -285,9 +285,14 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   limiting. Its service, account and synthetic score rows were removed; original
   data hashes and public production config/IAM/board responses were preserved.
   This was backend HTTP acceptance, not a physical-device/browser-cookie test.
-- **Blocked pending explicit rollout approval:** normal score-write promotion,
-  cleanup credentials/IAM, alert routing and scheduler activation. The completed
-  database cutover and private acceptance do not authorize these remaining actions.
+- **Resolved normal score-write promotion:** separate approval enabled both
+  score flags on the verified image, first at zero traffic and then at 100%.
+  Generation 132 passed all 36 live rollout assertions. IAM, ingress and other
+  runtime settings are unchanged; the receipt-compatible frozen rollback is
+  Ready. Existing deployment automation remains paused.
+- **Blocked pending explicit rollout approval:** cleanup credentials/IAM, alert
+  routing, manual cleanup validation and scheduler activation. The completed
+  migration/acceptance/promotion does not authorize these remaining actions.
 - **Deferred to release closeout:** the cumulative whole-project security pass
   and the remaining release/device checks in `PROJECT_PLAN.md`.
 - **Resolved fixture race:** server-side teardown is now observed explicitly
@@ -928,3 +933,58 @@ write activation or browser cross-site-cookie/gameplay acceptance. Next is
 separately approved normal-traffic score promotion of this verified image;
 receipt-cleanup credentials, alerts, manual execution and scheduling remain
 separately gated by the cleanup runbook.
+
+## Approved normal score-submission activation (2026-09-08)
+
+The user approved enabling normal production submissions for both games using
+the verified image. Execution completed at `20:01:05.143Z`; Cloud Run service
+`mickeyf-org` is at generation **132**, with intended and observed traffic both
+100% on `mickeyf-org-scores-9ec1bd83-0908`, no tags and no floating LATEST target.
+
+- The image remains
+  `sha256:9ec1bd83ea73a283ad36961b2dcd3022b9b0a40cbf16bd725398ff562015c3c3`
+  from the reviewed source/build. Only
+  `P4_VEGA_SCORE_SUBMISSIONS_ENABLED=true`,
+  `THREE_BOSSES_RUN_SUBMISSIONS_ENABLED=true` and the required new revision name
+  changed in the template. Secrets, runtime identity, Cloud SQL attachment,
+  CPU/memory, scaling, concurrency and timeouts were preserved exactly.
+- An etag-bound template-only PATCH created generation 131 while all traffic
+  remained on the frozen revision. Operation
+  `3127a46d-3b4a-4e43-b94c-c744620cc05c` completed; the enabled revision was Ready
+  and its runtime/provenance matched before promotion. A fresh etag-bound
+  traffic-only PATCH then completed as
+  `7eda635f-b26b-4d3e-888a-870103f6910b`. No image rebuild was needed.
+- All **36 live HTTP rollout assertions passed** across both public backend
+  origins. Three Bosses now advertises `enabled`; p4-Vega correctly remains
+  `legacy-only` in the catalog because it uses `/api/users`, not because it is
+  frozen. Signed-out mutations now return the application-level 401
+  `UNAUTHORIZED` instead of the disabled/frozen response. Anonymous session
+  checks, leaderboard DTO/order checks, both trusted website Origin preflights,
+  credential headers and mutation no-store/no-cookie checks passed.
+- The board response hashes happened to match before and after promotion;
+  legitimate submissions are now allowed to change them. This batch created no
+  synthetic scores or test accounts and performed no direct SQL writes. Real
+  authenticated persistence proof comes from the preceding private-service
+  acceptance, not the unsigned rollout probes. No new Safari/gameplay claim is
+  made.
+- IAM, ingress and unrelated service configuration are unchanged. Existing
+  backend build triggers remained disabled with no active builds at the checked
+  boundaries. No scheduler, cleanup credential, database grant/schema or local
+  development server was changed. The exact receipt-compatible frozen revision
+  `mickeyf-org-freeze-12ec9e8eff4a493cbe8c025423e5110c` remains Ready as the rollback
+  target. Do not roll back to the retired pre-receipt writer or re-enable old
+  deployment automation without reviewing its receipt compatibility.
+
+Evidence: service-before/staged/after snapshots, the staged enabled revision,
+IAM baseline and `result.json` in
+`C:/Users/User/AppData/Local/Temp/mickeyf-score-promotion-20260908-e4d8c26a/`.
+The zero-traffic revision snapshot is staging history, not the final traffic
+state. Independent closeout review passed. The one-shot `promote.mjs` helper was
+syntax-checked with `node --check`, then executed with `node --use-system-ca`;
+existing guard imports and `git diff --check` passed. The helper was removed
+afterward; only non-secret evidence remains. No dependency install, application
+build or unit-test rerun was needed for this configuration-only rollout.
+
+Next: the separately approved cleanup runbook, including dedicated credentials,
+least-privilege IAM, operator alerts, a reviewed manual execution and then hourly
+scheduling. Score activation alone does not enforce receipt expiry.

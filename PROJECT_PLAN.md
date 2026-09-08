@@ -6,8 +6,9 @@ each phase boundary.
 
 Current storage checkpoint (2026-09-08): the receipt-based backend is implemented
 on `feature/three-bosses-polish` and its production schema/grant cutover is
-complete. The accepted receipt-compatible revision serves normal traffic with
-both score-submission flags still false. Permanent `game_personal_bests` are
+complete. The accepted receipt-compatible image now serves normal traffic with
+both score-submission flags true after the approved production promotion.
+Permanent `game_personal_bests` are
 independent of short-lived `game_submission_receipts`; Three Bosses retry and
 rate-limit receipts have a minimum 24-hour retention with an implemented hourly
 bounded cleanup job that is not yet activated. Historical paragraphs below describing the immutable `game_runs`
@@ -38,11 +39,24 @@ user row were removed under the shared user lock and a transaction. The original
 seven bests/five receipts, public board responses and production config/IAM
 matched their baselines. No browser/gameplay or Safari-cookie test is claimed.
 Temporary execution helpers were removed; non-secret evidence is outside the
-repository. Normal traffic remains frozen at generation 130.
+repository. That acceptance batch left normal traffic frozen at generation 130.
 
-Next: approve normal score-write promotion of the verified image, then the
-separately gated receipt-cleanup activation. Do not repeat the completed
-migration/acceptance or use a pre-receipt backend revision as a rollback target.
+Approved production promotion completed at `2026-09-08T20:01:05.143Z`:
+`mickeyf-org-scores-9ec1bd83-0908` uses the same verified image and serves 100%
+of intended and observed traffic at generation 132. Generation 131 first staged
+it with zero traffic; only the two submission flags and required revision name
+changed. All 36 live rollout assertions passed across both public backend
+origins, including enabled/authentication gates, leaderboard reads and trusted
+website CORS. Public board hashes were unchanged during these checks. No new
+synthetic writes, credentials, SQL/schema/grant changes or frontend/Unity builds
+were needed. IAM, ingress and other runtime settings are unchanged, deployment
+automation is still paused, and the receipt-compatible frozen revision remains
+Ready for rollback. The temporary promotion helper was removed; only non-secret
+evidence remains outside the repository.
+
+Next: separately approved receipt-cleanup credentials, alerting, manual
+validation and hourly activation. Do not repeat the completed migration,
+acceptance or score promotion; do not use a pre-receipt backend for rollback.
 
 Image review completed with user approval (2026-09-08): Cloud Build
 `12ec9e8e-ff4a-493c-be8c-025423e5110c` successfully built exact source
