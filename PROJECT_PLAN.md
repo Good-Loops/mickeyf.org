@@ -5,13 +5,30 @@ and game plan. Detailed implementation decisions remain subject to review at
 each phase boundary.
 
 Current storage checkpoint (2026-09-08): the receipt-based backend is implemented
-locally on `feature/three-bosses-polish`. Permanent `game_personal_bests` are
+on `feature/three-bosses-polish` and its production schema/grant cutover is
+complete. The accepted receipt-compatible revision serves normal traffic with
+both score-submission flags still false. Permanent `game_personal_bests` are
 independent of short-lived `game_submission_receipts`; Three Bosses retry and
-rate-limit receipts have a minimum 24-hour retention with an hourly bounded
-cleanup job. Historical paragraphs below describing the immutable `game_runs`
+rate-limit receipts have a minimum 24-hour retention with an implemented hourly
+bounded cleanup job that is not yet activated. Historical paragraphs below describing the immutable `game_runs`
 ledger remain deployment history, not the new design. See
 [`backend/RECEIPT_RETENTION.md`](backend/RECEIPT_RETENTION.md) for the storage
 contract, guarded migration/recovery workflow and scoped security disposition.
+
+Approved cutover completed at `2026-09-08T19:26:19.570Z`: fresh successful
+backup `1788894880118`, verified writer drain, and guarded migrations 0004/0005
+preserved all seven personal bests and five receipts with identical canonical
+hashes. All five migrations are recorded; none are pending or recoverable.
+The runtime has exactly the reviewed column-level privileges (no DELETE), and
+the operator's existing DML rights moved from `game_runs` to
+`game_submission_receipts`. Public ingress is restored, Cloud Run generation
+130 retains the same frozen image/revision and 100% traffic, and IAM is unchanged.
+Both temporary accounts are removed. The original VS Code `back` workload is
+running again; frontend, WebGL and SQL proxy listeners were preserved. Public
+and local read/frozen-gate checks passed, with identical public board hashes.
+Next: separately approved enabled-revision submission/replay acceptance, then
+normal score-write promotion and receipt-cleanup activation. Do not repeat the
+completed migration or use a pre-receipt backend revision as a rollback target.
 
 Image review completed with user approval (2026-09-08): Cloud Build
 `12ec9e8e-ff4a-493c-be8c-025423e5110c` successfully built exact source
@@ -79,7 +96,8 @@ identical leaderboard hashes. Cloud Run generation 128, frozen score gates and
 paused backend triggers are unchanged. No migration, application-data write,
 runtime-grant cutover, cleanup activation or write re-enablement occurred.
 
-Migration remains **separately gated**: five other client sessions were present
+At that instrumentation checkpoint, migration remained **separately gated**:
+five other client sessions were present
 and exclusive writer control was not established. Before DDL, approve the
 migration principal/rights and write-free window, exclude external writers,
 and obtain the fresh guarded plan/drain evidence. Do not repeat instrumentation
@@ -92,13 +110,14 @@ Cutover preparation (2026-09-08): the existing operator's read-only consistent
 snapshot at `19:00:17.660Z` contains seven personal bests (five p4-Vega, two
 Three Bosses) and five Three Bosses submission records. Counts and canonical
 preservation hashes are recorded in the [cutover proposal](backend/RECEIPT_RETENTION.md#consolidated-cutover-proposal-awaiting-approval).
-This is not the final migration plan: the operator cannot inspect migration
-history or establish complete dependency/writer visibility. No access was
-elevated or live configuration/data changed. The next approval should batch the
-temporary backend ingress barrier, local backend/operator drain, temporary
+That snapshot was not the final migration plan: the operator cannot inspect
+migration history or establish complete dependency/writer visibility. No access was
+elevated or live configuration/data changed during preparation. The subsequent
+approval covered the temporary backend ingress barrier, local backend/operator
+drain, temporary
 bootstrap/admin and scoped migration access, fresh backup/final guarded plan,
-exact 0004/0005 transition,
-runtime/operator grant update and verified restoration of frozen service.
+exact 0004/0005 transition, runtime/operator grant update and verified restoration
+of frozen service.
 Login/signup/leaderboard reads will be interrupted during that window; static
 content, frontend, WebGL and the local SQL proxy stay available. Preserve the
 existing score freeze and leave receipt cleanup disabled.
@@ -136,7 +155,8 @@ now pass against the actual image build after narrow URL-safe signature encoding
 and exact Git/builder dependency validation corrections. The frozen deployment
 also passed live, and its successful steps exactly match the independently
 resolved offline fingerprint. Authenticated backend candidate acceptance also
-passed; traffic cutover is complete, but database drain remains blocked.
+passed; traffic cutover was complete, but database drain was still blocked at
+that checkpoint. The approved database cutover above subsequently resolved it.
 PR CI now invokes all these checks.
 The Windows traffic CLI now explicitly invokes the installed `gcloud.cmd`
 wrapper rather than the execution-policy-blocked PowerShell wrapper; no

@@ -1,10 +1,12 @@
 # Personal bests and bounded submission receipts
 
-Implementation checkpoint: 2026-09-08. The storage contract below is implemented
-but **not migrated in production**. Subsequent approved zero-traffic deployment,
-backend acceptance and read-only planning are recorded separately below.
-Historical migrations 0001–0003 are unchanged. Live schema, grants, traffic and
-cleanup activation require a separate approved cutover.
+Current checkpoint: 2026-09-08. The storage contract below is implemented and
+**migrated in production**; exact runtime/operator grants are verified and the
+receipt-compatible frozen backend is restored to normal traffic. Both score
+gates and receipt cleanup remain disabled. Historical migrations 0001–0003 are
+unchanged. Dated preparation entries below are historical; the final section
+records the approved execution. Score re-enablement and cleanup activation still
+require their own acceptance/approval.
 
 ## Storage contract
 
@@ -269,14 +271,17 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   Both temporary accounts were removed; permanent account grants are unchanged
   by provisioning. The existing operator intentionally remains unprivileged for
   global inspection. Future migration access must be scoped separately.
-- **Pending exclusive migration window:** quiet transaction/lock snapshots do
-  not exclude external writers; five other client sessions were observed.
-  Obtain a write-free window and fresh guarded evidence before DDL. Memory
-  overhead and actual outage duration were not measured in this maintenance.
-- **Blocked pending explicit rollout approval:** live migration and grant
-  cutover, enabled-revision deployment, cleanup credentials/IAM, alert routing
-  and scheduler activation. Approved deployment, login acceptance and traffic
-  freezing do not authorize these remaining actions.
+- **Resolved migration window and cutover:** the approved public ingress
+  barrier, local backend pause, admitted-request wait and exact session drain
+  preceded the guarded 0004/0005 apply. Complete instrumentation showed zero
+  active transactions/pending locks; all best/receipt hashes survived. Exact
+  runtime/operator grants, public restoration and temporary-account removal
+  passed. The receipt-compatible frozen image is the rollback target, not an
+  older pre-receipt writer. Instrumentation memory overhead remains unmeasured.
+- **Blocked pending explicit rollout approval:** enabled-revision deployment,
+  authenticated submission/replay acceptance, normal score-write promotion,
+  cleanup credentials/IAM, alert routing and scheduler activation. The completed
+  database cutover does not authorize these remaining actions.
 - **Deferred to release closeout:** the cumulative whole-project security pass
   and the remaining release/device checks in `PROJECT_PLAN.md`.
 - **Resolved fixture race:** server-side teardown is now observed explicitly
@@ -794,3 +799,59 @@ plan; never silently restore an enabled old writer or rewrite migration history.
 This batch does not enable scores, deploy another image, activate cleanup or
 change Unity. No servers were stopped, accounts created, grants altered or
 production routing/schema/data changed during this read-only preparation.
+
+## Approved receipt cutover completed (2026-09-08)
+
+The user approved the complete scoped cutover, including temporary privileged
+bootstrap/migration access, the backend barrier, saved operator-session drain,
+backup, both pinned migrations, exact grant changes and service restoration.
+Execution finished at `19:26:19.570Z` with no pending or recoverable migrations.
+
+- Backup `1788894880118` completed successfully at `19:16:11.521Z`; existing
+  backup/PITR settings and instance sizing were preserved. Full privileged
+  metadata inspection found no views, routines, events or triggers in `cms`,
+  and only the reviewed composite foreign key referencing `game_runs`.
+- Temporary `receipt_boot_0908_9827650c@cloudsqlproxy~%` provisioned scoped
+  `receipt_mig_0908_9827650c@cloudsqlproxy~%`. Exact table privileges, global
+  PROCESS only, no grant options and no assigned/default roles were verified
+  for the migrator. Pre-DDL runtime/operator baselines matched reviewed rights.
+- Only VS Code's `back` workload was paused. Both public backend origins were
+  blocked by the etag-bound ingress change; the backend's admitted-request
+  timeout passed before SQL drain. No other regional Cloud Run services/jobs
+  were present; Cloud Scheduler was disabled and backend build triggers stayed
+  disabled with no active builds. The one remaining sleeping runtime session
+  was positively identified and closed. Repeated checks found no reconnects,
+  active transactions, pending locks or lost instrumentation records.
+- Final ready plan SHA-256
+  `37901a35a11562d747d4ed9a2a01cba33709fa9de44a8b1f4e411a505da07fe3`
+  matched the approved target, immutable SQL and preservation hashes above.
+  Guarded apply verified 0004/0005 at `19:23:31.506Z`; all seven personal bests
+  and five receipts retained identical hashes. No best/receipt rows were deleted.
+- Grant approval SHA-256
+  `f5f804e6e1dfd857402a65cf4eae7f7e05a7489f4a14b38f8b3344e220731615`
+  removed only obsolete runtime column grants, applied the exact receipt-era
+  manifest and transferred the operator's old-table DML. Runtime verification
+  returned `reduced`/compliant, with no API DELETE or inherited roles. Operator
+  rights remain SELECT/INSERT/UPDATE/DELETE on users, bests and renamed receipts.
+- Public ingress returned to `all` at `19:25:19.552Z`. Generation 130 retains
+  the same frozen revision/image, 100% traffic and no tags; IAM is unchanged.
+  Seven public checks before and seven after passed, with identical raw
+  leaderboard-response hashes. The original local backend command was restarted
+  in `back`; both local boards returned 200, Three Bosses ticket submission 403
+  and p4-Vega submission 503. Frontend/WebGL/proxy listener PIDs were unchanged.
+- Both temporary accounts were removed and the original three-user inventory
+  restored after settled operation checks. No passwords, tokens or player rows
+  were persisted. An earlier preparation helper stopped on a composite-FK
+  counting error before downtime/DDL; its bootstrap account was also removed.
+  Temporary executable helpers were deleted; only non-secret evidence remains
+  outside the repository in
+  `C:/Users/User/AppData/Local/Temp/mickeyf-receipt-cutover-20260908/`.
+
+Evidence: `result-9827650c.json` in that directory, including the final schema,
+preservation digests, grant plans, backup and cleanup events. Independent
+closeout review passed. Helper syntax checks and `git diff --check` passed;
+application/unit/Unity builds were not rerun for this operations-only batch.
+Restoring the existing backend dev workload resumed its normal watcher.
+Authenticated login and enabled submission/replay were not repeated, cleanup
+was not activated, and both score flags/deployment triggers remain disabled.
+Those are the remaining rollout gates, not an unfinished migration.
