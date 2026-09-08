@@ -724,3 +724,73 @@ to migrate: the next batch needs a scoped migration principal, approved
 write-free window, fresh preservation plan/drain and explicit DDL approval.
 No application code changed, so builds and test suites were not rerun for this
 operations/documentation checkpoint; `git diff --check` passed.
+
+## Consolidated cutover proposal (awaiting approval)
+
+Read-only preparation on 2026-09-08 used the existing DPAPI-protected operator
+credential through the verified loopback proxy. A consistent READ ONLY
+transaction captured canonical ordered preservation hashes, then rolled back;
+no player rows or credentials were printed/persisted. At `19:00:17.660Z`:
+
+| Preserved data | Rows | SHA-256 |
+| --- | ---: | --- |
+| Personal bests (5 p4-Vega, 2 Three Bosses) | 7 | `f4a64890694cec7e40b9257ba946ab560c1386e9c6428dab078af232496ad6fc` |
+| Existing Three Bosses submissions | 5 | `b5ee68f7af91d417fa6f69cf663da7bc2cd3aa3957483fd4e479bd40558d9334` |
+
+The pinned target is `cms` on `noted-reef-387021:us-central1:cms-mickeyf`,
+server UUID `d1e6865c-ecad-11ee-a6b0-42010a400002`. Instrumentation remains on.
+The operator's grant hash still matches the maintenance baseline. Its history
+read is denied, so this snapshot is explicitly **not an authoritative migration
+plan or drain proof**. The non-secret evidence is outside the repository at
+`C:/Users/User/AppData/Local/Temp/mickeyf-cutover-plan-20260908-1558/preservation-snapshot.json`;
+the one-shot snapshot helper was removed afterward.
+
+Only these immutable migration files are proposed:
+
+- `0004_detach_personal_best_sources.sql`, SHA-256
+  `88cc121f6410f6c324cff0d6bb57691062a64a10722c0c35deb826ce4cc0f9a6`:
+  drop the best-to-run foreign key, supporting index and source ID column.
+- `0005_retain_submission_receipts.sql`, SHA-256
+  `f91a3f5aa52f14e43c652282ca9cc1a9e6dc5e9294c8c7c330c8142cbd33becc`:
+  rename `game_runs` to `game_submission_receipts`, rename its boolean to
+  `improved_personal_best`, and replace the obsolete index/check. Neither file
+  deletes personal bests or existing receipt rows.
+
+Recommended single approval scope, not executed during preparation:
+
+1. Save/disconnect TablePlus edits and pause only the VS Code `back` workload;
+   preserve `front`, WebGL, docs and the Docker SQL proxy. Temporarily restrict
+   the existing Cloud Run service's ingress from captured `all` to `internal`,
+   preserving its image, traffic and IAM. Verify both known public run.app
+   endpoints are blocked and account for internal callers. Login, signup and
+   leaderboard reads will be interrupted; static site/game assets remain up.
+   Internal ingress is not universal isolation. [Cloud Run ingress](https://docs.cloud.google.com/run/docs/securing/ingress).
+2. Provision short-lived privileged bootstrap/admin access for account
+   provisioning and the reviewed grant changes, plus the scoped migration
+   identity. Capture exact existing grants, verify full dependency metadata
+   and take a fresh backup.
+   Drain admitted requests and local writers. Close only positively identified
+   application/operator SQL sessions after saved edits are confirmed; never
+   kill arbitrary/system sessions. Require zero runtime sessions, active
+   transactions and pending locks, plus complete instrumentation. Do not lock
+   the runtime account as a shortcut: the existing grant runner rejects it.
+3. Generate/review the final guarded plan under full visibility. Apply only the
+   two pinned migrations if target, checksums and preservation hashes match;
+   drift requires a new decision, not a bypass. Verify final schema/history and
+   identical canonical data hashes while the writer barrier remains in place.
+4. Revoke only reviewed obsolete `game_runs` grants and any surviving
+   `source_game_run_id` column grants, then apply/verify the exact runtime
+   manifest. Transfer the operator's captured old-table privileges to the new
+   name without broadening other access; never add API DELETE. Table-specific
+   grants do not follow a rename. [MySQL rename semantics](https://dev.mysql.com/doc/refman/8.0/en/rename-table.html).
+5. Restore captured ingress and the local backend only after schema/grant/read
+   verification, then check the same frozen public contracts and board hashes.
+   Remove temporary maintenance accounts and verify removal. Keep both score
+   gates, backend deployment triggers and receipt cleanup disabled.
+
+Before-DDL failure should restore the captured frozen service after cleanup.
+After partial DDL, preserve the barrier and use the existing reviewed recovery
+plan; never silently restore an enabled old writer or rewrite migration history.
+This batch does not enable scores, deploy another image, activate cleanup or
+change Unity. No servers were stopped, accounts created, grants altered or
+production routing/schema/data changed during this read-only preparation.

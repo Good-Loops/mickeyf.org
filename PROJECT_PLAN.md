@@ -88,6 +88,21 @@ and verify final schema/read paths; write enablement and cleanup activation
 still require their own acceptance/approval. Instrumentation memory overhead
 and actual outage duration were not measured by this bounded maintenance run.
 
+Cutover preparation (2026-09-08): the existing operator's read-only consistent
+snapshot at `19:00:17.660Z` contains seven personal bests (five p4-Vega, two
+Three Bosses) and five Three Bosses submission records. Counts and canonical
+preservation hashes are recorded in the [cutover proposal](backend/RECEIPT_RETENTION.md#consolidated-cutover-proposal-awaiting-approval).
+This is not the final migration plan: the operator cannot inspect migration
+history or establish complete dependency/writer visibility. No access was
+elevated or live configuration/data changed. The next approval should batch the
+temporary backend ingress barrier, local backend/operator drain, temporary
+bootstrap/admin and scoped migration access, fresh backup/final guarded plan,
+exact 0004/0005 transition,
+runtime/operator grant update and verified restoration of frozen service.
+Login/signup/leaderboard reads will be interrupted during that window; static
+content, frontend, WebGL and the local SQL proxy stay available. Preserve the
+existing score freeze and leave receipt cleanup disabled.
+
 Local drain-guard hardening completed (2026-09-08): receipt apply now refuses
 disabled/inaccessible instrumentation, missing effective PROCESS, malformed
 inspection results, lost lock/thread records, active transactions and pending
