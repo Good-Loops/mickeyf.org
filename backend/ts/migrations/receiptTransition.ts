@@ -196,21 +196,72 @@ export async function planReceiptTransition(
         await planMigrations(connection, migrations, settings), identity);
 }
 
-async function assertQuiescent(connection: MigrationConnection): Promise<void> {
-    const transactions = await rows<{ activeTransactions: number }>(connection,
-        'SELECT COUNT(*) AS activeTransactions FROM information_schema.INNODB_TRX');
-    if (Number(transactions[0]?.activeTransactions) !== 0) {
+async function inspectionCount(
+    connection: MigrationConnection, sql: string, label: string
+): Promise<number> {
+    try {
+        const result = await rows<{ inspectionCount: unknown }>(connection, sql);
+        const value = result[0]?.inspectionCount;
+        if (result.length !== 1
+            || !((typeof value === 'number' || typeof value === 'string') && /^\d+$/.test(String(value)))
+            || !Number.isSafeInteger(Number(value))) {
+            throw new Error('Missing or malformed inspection count');
+        }
+        return Number(value);
+    } catch {
+        // Do not expose database diagnostics or mistake unavailable metadata for zero.
+        throw new Error(`Receipt transition cannot verify ${label}`);
+    }
+}
+
+async function assertNoLostLockInstrumentation(connection: MigrationConnection): Promise<void> {
+    for (const counter of ['Performance_schema_metadata_lock_lost', 'Performance_schema_thread_instances_lost']) {
+        const lost = await inspectionCount(connection, `
+            SELECT VARIABLE_VALUE AS inspectionCount FROM performance_schema.global_status
+            WHERE VARIABLE_NAME = '${counter}'
+        `, counter);
+        if (lost !== 0) throw new Error(`Receipt transition requires ${counter}=0`);
+    }
+}
+
+async function assertLockInspectionAvailable(connection: MigrationConnection): Promise<void> {
+    const enabled = await inspectionCount(connection,
+        'SELECT @@performance_schema AS inspectionCount', 'performance_schema availability');
+    if (enabled !== 1) throw new Error('Receipt transition requires performance_schema enabled');
+    await inspectionCount(connection,
+        'SELECT COUNT(*) AS inspectionCount FROM information_schema.INNODB_BUFFER_POOL_STATS',
+        'effective PROCESS privilege');
+    for (const [table, name] of [
+        ['setup_instruments', 'wait/lock/metadata/sql/mdl'],
+        ['setup_consumers', 'global_instrumentation'],
+    ]) {
+        const enabledCount = await inspectionCount(connection, `
+            SELECT COUNT(*) AS inspectionCount FROM performance_schema.${table}
+            WHERE NAME = '${name}' AND ENABLED = 'YES'
+        `, name);
+        if (enabledCount !== 1) throw new Error(`Receipt transition requires ${name} enabled`);
+    }
+    await assertNoLostLockInstrumentation(connection);
+}
+
+export async function assertReceiptMigrationQuiescent(connection: MigrationConnection): Promise<void> {
+    await assertLockInspectionAvailable(connection);
+    const transactions = await inspectionCount(connection,
+        'SELECT COUNT(*) AS inspectionCount FROM information_schema.INNODB_TRX', 'active transactions');
+    if (transactions !== 0) {
         throw new Error('Receipt transition requires zero active InnoDB transactions');
     }
-    const pending = await rows<{ pendingMetadataLocks: number }>(connection, `
-        SELECT COUNT(*) AS pendingMetadataLocks FROM performance_schema.metadata_locks
+    const pending = await inspectionCount(connection, `
+        SELECT COUNT(*) AS inspectionCount FROM performance_schema.metadata_locks
         WHERE OBJECT_SCHEMA = DATABASE()
           AND OBJECT_NAME IN ('game_runs', 'game_submission_receipts', 'game_personal_bests', 'schema_migrations')
           AND LOCK_STATUS = 'PENDING'
-    `);
-    if (Number(pending[0]?.pendingMetadataLocks) !== 0) {
+    `, 'pending metadata locks');
+    if (pending !== 0) {
         throw new Error('Receipt transition requires zero pending metadata locks');
     }
+    // Capacity loss during the activity reads would make those empty results unreliable.
+    await assertNoLostLockInstrumentation(connection);
 }
 
 export async function applyReceiptTransition(
@@ -228,7 +279,7 @@ export async function applyReceiptTransition(
     await applyMigrations(connection, migrations, settings, {
         allowedEffectKinds: TRANSITION_EFFECTS,
         beforeApply: async (schema) => {
-            await assertQuiescent(connection);
+            await assertReceiptMigrationQuiescent(connection);
             const plan = await buildPlan(connection, migrations, schema, identity);
             if (plan.sha256 !== confirmation.approvedPlanSha256) {
                 throw new Error('MIGRATION_CONFIRM_RECEIPT_PLAN_SHA256 does not match the current plan');

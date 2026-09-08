@@ -68,8 +68,7 @@ An existing-operator read-only connection at `18:23:36.091Z` independently
 matched the production database/account/server UUID, but its PROCESS probe was
 denied and `@@performance_schema` was 0. No permissions or instance flags were
 changed. Before DDL, establish an explicitly approved metadata-capable
-maintenance path, review the disabled-instrumentation case (empty lock tables
-are not evidence), and obtain fresh transaction/lock and external-writer drain
+maintenance path and obtain fresh transaction/lock and external-writer drain
 evidence. Do not run the migration or bypass its guards yet. Maintain operator/
 automation exclusion because these checks are not a distributed IAM lock.
 Preserve bests, migrate, replace grants and verify the final schema/read paths;
@@ -79,6 +78,25 @@ Activate the separately credentialed cleanup job only after alerts and manual
 verification. No live schema, data, grants, credentials, scheduler or cleanup
 were changed by these receipt checkpoints. The separately approved traffic-only
 freeze is the only normal traffic change after the zero-traffic deployment.
+
+Local drain-guard hardening completed (2026-09-08): receipt apply now refuses
+disabled/inaccessible instrumentation, missing effective PROCESS, malformed
+inspection results, lost lock/thread records, active transactions and pending
+metadata locks before transition DDL. Empty lock tables alone cannot pass.
+The [maintenance-access proposal](backend/RECEIPT_RETENTION.md#maintenance-access-proposal-not-executed)
+is prepared, not executed: the verified `db-custom-1-3840` instance needs no
+resize, but enabling `performance_schema` requires an approved database restart
+and a narrowly scoped inspection identity. Production permissions, flags and
+data remain unchanged. This local CLI change does not require a new API image.
+
+Latest verification: 27 focused guard tests and TypeScript passed; all 19
+migration integration tests passed. The full disposable MySQL run passed 49/50:
+the unchanged runtime-grant session-drain test reported a still-open session
+immediately after client close. Resolve that check before grant cutover; a
+teardown timing race is only a hypothesis. The active-install unit run passed
+194/198, retaining the four known `qs` 6.15.3 versus locked 6.16.0 failures.
+No active dependencies were replaced; the disposable database was removed.
+These are explicit verification limits, not an all-green release checkpoint.
 
 The local preparation adds `scripts/render-frozen-backend-deploy.mjs` (offline,
 hash-pinned canonical derivation with strict feature-source/image provenance and

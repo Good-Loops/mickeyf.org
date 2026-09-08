@@ -779,6 +779,52 @@ test('receipt preservation digest pages BIGINT identifiers above JavaScript inte
     assert.deepEqual(after.preservedData, before.preservedData);
 });
 
+test('receipt apply refuses missing inspection privileges and disabled instrumentation before DDL', async () => {
+    await prepareReceiptTransition();
+    const identity = await receiptIdentity();
+    const plan = await planReceiptTransition(asMigrationConnection(connection), allMigrations, config, identity);
+    const confirmation = { confirmedServerUuid: identity.serverUuid, approvedPlanSha256: plan.sha256 };
+    await assert.rejects(() => applyReceiptTransition(
+        asMigrationConnection(connection), allMigrations, config, identity, confirmation
+    ), /cannot verify effective PROCESS privilege/);
+
+    // This admin connection is restricted to the disposable target verified in before().
+    const admin = await mysql.createConnection({
+        host: config.host, port: config.port, database: config.database,
+        user: process.env.MIGRATION_TEST_ROOT_USER,
+        password: process.env.MIGRATION_TEST_ROOT_PASSWORD,
+        dateStrings: true, multipleStatements: false,
+    });
+    try {
+        const adminIdentity = await receiptIdentity(admin);
+        const adminPlan = await planReceiptTransition(asMigrationConnection(admin), allMigrations, config, adminIdentity);
+        for (const [table, name] of [
+            ['setup_instruments', 'wait/lock/metadata/sql/mdl'],
+            ['setup_consumers', 'global_instrumentation'],
+        ]) {
+            const [original] = await admin.query<RowDataPacket[]>(
+                `SELECT ENABLED FROM performance_schema.${table} WHERE NAME = ?`, [name]
+            );
+            assert.equal(original.length, 1);
+            try {
+                await admin.query(`UPDATE performance_schema.${table} SET ENABLED = 'NO' WHERE NAME = ?`, [name]);
+                await assert.rejects(() => applyReceiptTransition(
+                    asMigrationConnection(admin), allMigrations, config, adminIdentity,
+                    { confirmedServerUuid: adminIdentity.serverUuid, approvedPlanSha256: adminPlan.sha256 }
+                ), /requires .* enabled/);
+            } finally {
+                await admin.query(`UPDATE performance_schema.${table} SET ENABLED = ? WHERE NAME = ?`, [original[0].ENABLED, name]);
+            }
+        }
+        assert.equal(await columnCount('game_personal_bests', 'source_game_run_id'), 1);
+        assert.equal(await tableCount('game_submission_receipts'), 0);
+        const after = await planReceiptTransition(asMigrationConnection(connection), allMigrations, config, identity);
+        assert.deepEqual(after, plan, 'Failed preflight must leave schema, history and data unchanged');
+    } finally {
+        await admin.end();
+    }
+});
+
 test('receipt apply compares the approved data digest under lock and verifies post-DDL preservation', async () => {
     await prepareReceiptTransition();
     // This privileged connection belongs solely to the already-verified disposable test container.

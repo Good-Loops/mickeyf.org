@@ -252,7 +252,9 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   checks; original immutable migration checksums preserved. Frozen-rollout
   tooling independently pins approved deployment steps and image provenance,
   requires frozen flags and automation exclusion, and limits the traffic patch
-  to the reviewed revision under its fresh service etag.
+  to the reviewed revision under its fresh service etag. Receipt apply now
+  rejects missing/incomplete lock instrumentation and ineffective PROCESS
+  access before transition DDL; empty lock tables cannot establish readiness.
 - **Accepted design:** UUID recognition ends when its receipt is deleted;
   retention can exceed 24 hours during job failure/backlog; existing ticket
   expiration and game validation remain unchanged.
@@ -273,6 +275,10 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   freezing do not authorize these remaining actions.
 - **Deferred to release closeout:** the cumulative whole-project security pass
   and the remaining release/device checks in `PROJECT_PLAN.md`.
+- **Unresolved verification:** the latest disposable MySQL run's unchanged
+  runtime-grant session-drain test saw a session after client close; resolve
+  before grant cutover. The active dev install also retains four known parser
+  test failures until a deliberate refresh to the locked dependencies.
 
 ## Local verification checkpoint (2026-09-08)
 
@@ -547,9 +553,9 @@ visibility and the migration preflight's disabled-instrumentation case, then
 repeat drain evidence while operators and external writers are excluded.
 Signup remains writable on the frozen backend. No migration, cleanup job,
 Scheduler activation or write re-enablement has occurred. The migration's
-current metadata-lock count must be hardened to fail closed when instrumentation
-is disabled or invisible before any live apply is considered. Merely granting
-PROCESS would not resolve the independently confirmed instrumentation gap.
+metadata-lock preflight has subsequently been hardened locally to fail closed
+when instrumentation is disabled or invisible. Merely granting PROCESS would
+not resolve the independently confirmed production instrumentation gap.
 
 The dated non-secret plan and three readiness snapshots, SQL-visibility result
 and one-shot probes are retained outside the repository in the operator's
@@ -558,3 +564,72 @@ source changed in this checkpoint; tracked changes record the rollout and
 blocker in this runbook and `PROJECT_PLAN.md`. `git diff --check` passed;
 application/Unity builds and unit suites were not rerun for documentation-only
 changes.
+
+## Local visibility guard verification (2026-09-08)
+
+Receipt apply checks `@@performance_schema`, effective PROCESS through
+`INNODB_BUFFER_POOL_STATS`, enabled metadata-lock instrumentation and the global
+instrumentation consumer. Lost metadata-lock/thread-instance counters must be
+zero both before and after reading transactions and pending locks. Missing,
+denied or malformed results fail closed with sanitized errors. This does not
+replace maintenance-window writer exclusion or reconstruct unrecorded locks.
+
+Commands run from `backend`:
+
+- `node --test -r ts-node/register ts/migrations/receiptTransition.test.ts`:
+  27/27 passed, including unavailable/disabled instrumentation and lost records.
+- `npm run test`: TypeScript passed.
+- `npm run test:unit`: 194/198 passed. The four existing Express/body-parser
+  parser checks fail with installed `qs` 6.15.3 versus locked 6.16.0. No active
+  installation changes or weakened assertions were used.
+- `npm run test:migrations`: 49/50 passed in the guarded disposable MySQL
+  8.0.31 container, including all 19 migration tests. New refusal cases preserve
+  schema, history and data; the existing successful transition test also passes.
+  The unchanged runtime-grant session-drain test found an open session after
+  client close. A teardown timing race is a hypothesis, not a verified cause.
+  The runner removed its container and network; no production SQL was involved.
+
+## Maintenance-access proposal (not executed)
+
+A read-only instance description verified `cms-mickeyf` in `noted-reef-387021`:
+MySQL 8.0.31, Enterprise, regional, tier `db-custom-1-3840` (3.75 GB), with no
+explicit database flags returned. This tier supports `performance_schema`
+without resizing. Enabling it requires a database restart and adds memory
+overhead; database-backed login/leaderboards can be interrupted during restart.
+Disabling it again also requires a restart. [Cloud SQL flag requirements](https://docs.cloud.google.com/sql/docs/mysql/flags).
+
+The next approval may cover this bounded maintenance/inspection batch only:
+
+1. Capture fresh instance settings/flags and version, backup/PITR readiness and
+   active-operation state. Preserve unrelated flags and configuration when
+   enabling `performance_schema`; do not clear flags wholesale. Keep the frozen
+   revision, score gates and paused backend triggers unchanged. Any rollback
+   restores the captured flag state with its separately understood restart.
+2. Reuse an already approved maintenance identity if available; otherwise use
+   an authorized administrator to create one short-lived inspector through the
+   existing Cloud SQL proxy. Leave `michel_operator` and the API account alone.
+   Grant only global PROCESS plus SELECT on these exact tables:
+   `performance_schema.metadata_locks`, `performance_schema.setup_instruments`,
+   `performance_schema.setup_consumers`, `performance_schema.global_status`.
+   This inspector needs no player-table, DDL/DML, GRANT OPTION or connection-kill
+   privileges. PROCESS exposes server-wide activity: collect aggregates only.
+   Avoid inherited `cloudsqlsuperuser` access; use explicit SQL grants or verify
+   and remove broad defaults before use. [Cloud SQL user roles](https://docs.cloud.google.com/sql/docs/mysql/users).
+3. After the controlled restart, verify enabled metadata/global instrumentation
+   and zero lost-record counters; keep them enabled for the entire window.
+   Do not treat enabling a previously disabled instrument mid-session as
+   recovery of earlier locks. Obtain fresh bounded transaction/lock and writer
+   exclusion evidence; signup and external operators can still write despite
+   the score freeze. [MySQL metadata-lock instrumentation](https://dev.mysql.com/doc/refman/8.0/en/performance-schema-metadata-locks-table.html),
+   [lost-record counters](https://dev.mysql.com/doc/refman/8.0/en/performance-schema-status-variables.html).
+4. Close inspector sessions, remove its temporary access/account, and verify
+   removal when inspection ends. Report failures instead of leaving elevated
+   access silently. If no authorized administrator exists, stop for a separate
+   access-bootstrap decision rather than escalating the application account.
+
+This proposal does not authorize migration DDL, runtime-grant cutover, cleanup,
+IAM/scheduler activation or score re-enablement. The migration principal and
+its DDL rights require their own reviewed scope; the inspector is not that
+principal. Resolve the existing grant-test failure before any grant cutover.
+No instance, account, production data or traffic changes were made while
+preparing this plan.
