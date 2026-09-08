@@ -54,9 +54,23 @@ automation is still paused, and the receipt-compatible frozen revision remains
 Ready for rollback. The temporary promotion helper was removed; only non-secret
 evidence remains outside the repository.
 
-Next: separately approved receipt-cleanup credentials, alerting, manual
-validation and hourly activation. Do not repeat the completed migration,
-acceptance or score promotion; do not use a pre-receipt backend for rollback.
+Receipt-cleanup alert acceptance is in progress (2026-09-08). The owner selected
+an email recipient; an enabled notification channel, component ERROR/backlog
+policy and native execution-failure policy now exist. The dedicated job uses
+the reviewed image but remains
+`RECEIPT_CLEANUP_ENABLED=false`, with no database credentials, secret/socket
+mounts or direct project grants. Its first deliberate test execution failed
+with the expected sanitized configuration error before database access.
+The native failed-execution metric and log-policy incident are verified;
+the native-policy incident and owner-confirmed delivery are still being
+validated. The no-success watchdog remains unarmed until a real successful
+cleanup is observed. No cleanup SQL identity, secret or hourly schedule exists.
+Production score submissions remain enabled and unaffected.
+
+Next: confirm alert delivery, then complete the separately gated cleanup
+credentials, manual validation and hourly activation. Do not repeat the
+completed migration, acceptance or score promotion; do not use a pre-receipt
+backend for rollback.
 
 Image review completed with user approval (2026-09-08): Cloud Build
 `12ec9e8e-ff4a-493c-be8c-025423e5110c` successfully built exact source

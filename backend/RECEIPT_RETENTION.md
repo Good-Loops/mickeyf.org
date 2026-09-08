@@ -6,8 +6,9 @@ receipt-compatible image now serves normal traffic with both score flags
 **enabled** after approved acceptance and promotion. Receipt cleanup remains
 disabled. Historical migrations 0001–0003 are unchanged. Dated preparation
 entries below are historical; the final section records production activation.
-Retention-job credentials, alerting and activation still require their own
-rollout approval; migration and score-submission activation are complete.
+Retention-job alert acceptance is now in progress with the owner-approved
+recipient; credentials, real cleanup and scheduling remain gated on that
+acceptance. Migration and score-submission activation are complete.
 
 ## Storage contract
 
@@ -988,3 +989,54 @@ build or unit-test rerun was needed for this configuration-only rollout.
 Next: the separately approved cleanup runbook, including dedicated credentials,
 least-privilege IAM, operator alerts, a reviewed manual execution and then hourly
 scheduling. Score activation alone does not enforce receipt expiry.
+
+## Receipt-cleanup alert acceptance (2026-09-08; activation still disabled)
+
+The owner approved the notification recipient. Channel
+`9138709485205441101` is enabled; its email address is stored in Cloud Monitoring,
+not in this repository. Component ERROR/backlog policy `17739991777076766134`
+and native execution-failure policy `15588823733398199471` are enabled and use
+that channel. The test emitted a positive `result=failed` metric; the log policy
+opened incident `0.ocefwkir0c1s` at `23:34:07Z`.
+
+Cloud Run job `mickeyf-submission-receipt-cleanup` in `us-central1` has UID
+`332dff70-87d6-40ec-a617-368bb9c5dc0a`. It pins the already-reviewed
+`sha256:9ec1bd83ea73a283ad36961b2dcd3022b9b0a40cbf16bd725398ff562015c3c3`
+image and runs the dedicated cleanup entrypoint. It has only
+`NODE_ENV=production` and `RECEIPT_CLEANUP_ENABLED=false`, no database credentials,
+secret references, volumes or mounts, one task, no task retries, and a 180-second
+timeout. The new `mickeyf-receipt-cleanup` service account has no direct project
+roles or user-managed keys; the job has no public IAM binding. No cleanup SQL
+account, secret, scheduler identity or schedule was created.
+
+The one dispatched no-database test, execution
+`mickeyf-submission-receipt-cleanup-6jxdx`, completed at `23:33:04.351162Z`
+with exit code 1 and the expected structured `configuration-or-shutdown`
+failure. The false flag is rejected before the entrypoint creates a database
+connection. An initial service-account attachment returned 403; a read-only
+check then showed the caller already had `actAs`, and creation succeeded without
+adding permissions. No privilege widening was used to resolve that delay.
+
+Security/acceptance disposition:
+
+- Verified: disabled-first execution, exact job identity/image, no DB/secret
+  configuration, no direct new-identity project grants, and no public job access.
+- Pending: the native-policy incident and actual inbox delivery.
+  Creating a channel/policy or seeing the intentional failure is not delivery
+  proof. The no-success watchdog must be armed only after a real successful run
+  and its positive Monitoring datapoint, before hourly activation.
+- Preserved: production generation 132, both submission flags enabled and 100%
+  intended/observed traffic on the accepted revision. No application data,
+  website runtime roles, traffic, backend triggers or local servers were changed.
+- Deferred to the next gate: dedicated least-privilege cleanup SQL credentials,
+  pinned secret, reviewed manual deletion with preservation/replay checks, and
+  hourly scheduling. Public writes can legitimately change personal bests;
+  historical receipt hashes are not a current frozen baseline.
+
+Non-secret operational evidence and independent closeout are outside the repo:
+`C:/Users/User/AppData/Local/Temp/mickeyf-cleanup-alerts-20260908-f6b1c8e2/`.
+Only this operational documentation changed. `node --check` on the temporary
+helper and `git diff --check` passed; no dependencies, builds or application
+tests were needed for this cloud-configuration-only batch. The temporary
+execution helper was removed after verification; only non-secret evidence
+remains outside the repository.

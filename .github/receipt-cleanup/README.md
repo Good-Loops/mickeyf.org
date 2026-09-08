@@ -36,6 +36,13 @@ job is disabled and has intentionally invalid image/secret placeholders.
 
 ## Activation gates (operator checklist; do not skip)
 
+Alert delivery can be accepted before SQL provisioning: first create the
+dedicated job identity without SQL/secret roles and a pinned-image job containing
+only `NODE_ENV=production` and `RECEIPT_CLEANUP_ENABLED=false`, with no credentials
+or Cloud SQL volume. The entrypoint rejects that flag before opening a database
+connection. Test step 5 with this configuration; complete steps 2–4 only after
+the owner confirms delivery. Never enable this deliberately incomplete job.
+
 1. Obtain explicit approval for the production schema/data and IAM changes.
    Verify the receipt migration and the removed personal-best dependency first;
    record that all bests and their leaderboard ordering survived the cutover.
@@ -82,6 +89,33 @@ the runtime role as a rollback. Already expired receipts cannot be recreated
 without a separately reviewed backup restore, and their deletion must never
 invalidate permanent personal bests. The normal 30-minute run-ticket expiration
 does not change, and receipt deletion removes historical ID recognition.
+
+## Alert conditions and acceptance
+
+Scope every condition to `cloud_run_job`, this project, `us-central1`, and
+`mickeyf-submission-receipt-cleanup`; use the owner-approved email channel.
+
+- Native `run.googleapis.com/job/completed_execution_count`: five-minute sum of
+  the verified `result=failed` series greater than zero, with no retest delay.
+  This also catches failed executions that never emit the component JSON log.
+- Separate log-match policy: `jsonPayload.component=submission-receipt-cleanup`
+  and ERROR severity, `backlog=true`, or `status=failed`. Limit notifications to
+  once per five minutes and automatically close inactive incidents after
+  thirty minutes. An open incident is not proof the email reached the inbox.
+- Before hourly scheduling, configure the no-success watchdog: a five-minute
+  sum below one for two hours, treating missing data as failing. Verify the
+  success-result label and observe an actual positive success datapoint before
+  arming it. This detects zeros as well as missing reports; metric absence alone
+  misses zero-valued samples. The two-hour window has alignment/ingestion delay,
+  not an exact two-cron-occurrence guarantee. Do not arm it during disabled-job
+  acceptance.
+
+Correlate each intentional failure with the exact job UID, execution name,
+sanitized configuration-error log and native result metric. Save a pending
+dispatch marker before calling `:run`; reconcile an uncertain response rather
+than blindly launching another test. Confirm each policy's incident and ask the
+owner to confirm email delivery. Never claim receipt from a successful channel
+creation or absence of notification-error logs.
 
 ## Official references
 
