@@ -98,6 +98,26 @@ teardown timing race is only a hypothesis. The active-install unit run passed
 No active dependencies were replaced; the disposable database was removed.
 These are explicit verification limits, not an all-green release checkpoint.
 
+Session-drain follow-up (2026-09-08): the failure is resolved without changing
+production checks. `mysql2` resolves `end()` before the server processes
+COM_QUIT; the integration fixture now waits with a strict deadline for its exact
+connection ID to disappear. All 50 disposable MySQL integration tests, 12
+focused runtime-grant unit tests, TypeScript and diff checks passed. The known
+four stale-install parser failures remain a separate dependency checkpoint.
+
+The user approved the planned instrumentation/inspection maintenance batch.
+Read-only preflight confirmed settings version 862, no active Cloud SQL
+operation, enabled backups/binary logs with seven-day transaction-log retention,
+and the latest successful automated backup `1788811200000`. Cloud Run remains
+at generation 128 with 100% frozen traffic and all four global backend triggers
+disabled. The restart has not been requested: no usable SQL administrator
+connection is configured for provisioning the inspector. The previous
+provisioning identity was removed; current users are `root`, `cms_mickeyf` and
+`michel_operator`. Arrange existing administrator access or separately approve
+a short-lived bootstrap administrator before restarting. No production account,
+grant, instance flag, application data or traffic changes occurred in this
+preflight. Migration and write activation remain separately gated.
+
 The local preparation adds `scripts/render-frozen-backend-deploy.mjs` (offline,
 hash-pinned canonical derivation with strict feature-source/image provenance and
 scan checks, both submission flags false, and a separate approval-required

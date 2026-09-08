@@ -275,10 +275,15 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   freezing do not authorize these remaining actions.
 - **Deferred to release closeout:** the cumulative whole-project security pass
   and the remaining release/device checks in `PROJECT_PLAN.md`.
-- **Unresolved verification:** the latest disposable MySQL run's unchanged
-  runtime-grant session-drain test saw a session after client close; resolve
-  before grant cutover. The active dev install also retains four known parser
-  test failures until a deliberate refresh to the locked dependencies.
+- **Resolved fixture race:** server-side teardown is now observed explicitly
+  before the integration test asserts drainage; all 50 MySQL tests pass without
+  weakening production checks. The active dev install still retains four known
+  parser failures until a deliberate refresh to the locked dependencies.
+- **Blocked maintenance access:** instrumentation/inspection maintenance is
+  approved, but no usable SQL administrator connection is configured to create
+  the inspector. Arrange existing administrator access or obtain separate
+  bootstrap-account approval before the restart; do not reset root credentials
+  or elevate the API/operator account as an implicit substitute.
 
 ## Local verification checkpoint (2026-09-08)
 
@@ -633,3 +638,42 @@ its DDL rights require their own reviewed scope; the inspector is not that
 principal. Resolve the existing grant-test failure before any grant cutover.
 No instance, account, production data or traffic changes were made while
 preparing this plan.
+
+## Session-drain fix and approved maintenance preflight (2026-09-08)
+
+The prior test failure is resolved. In the installed mysql2 implementation,
+`PromiseConnection.end()` resolves the Quit callback before `Quit.start()`
+writes COM_QUIT, so client completion does not establish server session removal.
+Only the integration fixture changed: poll its exact connection ID with a
+five-second deadline and bounded queries after each relevant close. SQL errors
+and an unclosed session still fail; production drain checks are unchanged.
+
+Verification: focused runtime-grant unit tests passed 12/12; the full guarded
+`npm run test:migrations` run passed 50/50, including all five runtime-grant
+operation tests. `npm run test` (TypeScript) and `git diff --check` passed.
+The disposable container and network were removed and their absence verified.
+No dependencies were installed or refreshed.
+
+The user then authorized the maintenance batch above. Fresh read-only Cloud SQL
+checks found settings version 862, unchanged tier/HA configuration, no explicit
+database flags and no active operation. Automated backups and binary logging
+are enabled with seven-day transaction-log retention; the latest backup
+`1788811200000` completed successfully at `2026-09-07T22:07:09.495Z`.
+Cloud Run still reports generation 128 with 100% traffic to the same frozen
+revision and no tags; all four global backend deployment triggers remain
+disabled.
+
+Access preparation is blocked before restart: the configured operator lacks
+provisioning rights, the earlier temporary provisioning identity was removed,
+and no usable administrator connection is configured. Cloud SQL lists only
+`root@%`, `cms_mickeyf@%` and `michel_operator@cloudsqlproxy~%`; the scoped secret
+metadata lookup found only the runtime DB credential, not an administrator
+credential. No passwords were read or tested against another account.
+
+The restart/flag update and inspector creation have not been attempted. Use an
+existing authorized SQL administrator connection or separately approve a
+short-lived bootstrap administrator solely to provision the minimal inspector,
+then remove the bootstrap access. Both temporary identities must be removed
+and their absence verified when their respective work ends. No production
+mutation or outage was introduced by this preflight. Recheck operation/settings
+drift before executing the already approved instrumentation maintenance.
