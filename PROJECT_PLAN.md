@@ -48,23 +48,37 @@ Automation pause and read-only traffic planning completed with user approval
 disabled flags, and no pending/queued/working builds remain. The reviewed plan
 was generated at `18:13:03.959Z` against service generation 127. It proposes
 100% traffic to the accepted frozen revision and removal of its sole test tag.
-No traffic patch was sent: public score submissions still use the original
-enabled revision. Triggers remain paused pending the controlled cutover; this
-does not pause GitHub/Firebase frontend workflows.
+No traffic patch was sent in that planning checkpoint. The subsequent approved
+traffic-only cutover completed on 2026-09-08: fresh plan
+`53ce1331052791c90f4a7462235302ae9f2747e8cf9429044438a6d6ddfc6283`
+changed generation 127 to 128, routing 100% to the accepted frozen revision and
+removing its sole tag. Both public score-submission paths are now frozen.
+Runtime/image configuration is unchanged; backend deployment triggers remain
+paused. GitHub/Firebase frontend workflows were not changed.
 
-Next approval: execute a fresh, reviewed five-minute, etag-bound traffic-only
-freeze and its bounded readiness/drain checks: remove all revision tags, wait beyond the
-300-second old-request maximum and repeat retired-revision/request/SQL drain
-checks. Traffic success alone is not drain; maintain operator/automation
-exclusion throughout because these checks are not a distributed IAM lock.
+Delayed request-drain checks at `18:26:18.852Z` and `18:26:42.707Z` were both
+beyond the 300-second retiring-request limit. All eight non-target revisions
+remained retired, with no post-settlement requests found in the fully paginated
+log queries. Three samples passed 30 public HTTP checks total; both leaderboard
+response hashes stayed identical. This closes the traffic/request checks, not
+the database drain gate below.
+
+Database readiness is **blocked**, not implicitly cleared by routing success.
+An existing-operator read-only connection at `18:23:36.091Z` independently
+matched the production database/account/server UUID, but its PROCESS probe was
+denied and `@@performance_schema` was 0. No permissions or instance flags were
+changed. Before DDL, establish an explicitly approved metadata-capable
+maintenance path, review the disabled-instrumentation case (empty lock tables
+are not evidence), and obtain fresh transaction/lock and external-writer drain
+evidence. Do not run the migration or bypass its guards yet. Maintain operator/
+automation exclusion because these checks are not a distributed IAM lock.
 Preserve bests, migrate, replace grants and verify the final schema/read paths;
 write enablement and
 normal traffic require their own approval and authenticated acceptance checks.
 Activate the separately credentialed cleanup job only after alerts and manual
-verification. No live schema, grants, credentials, scheduler, cleanup or normal
-traffic allocation were changed by these receipt checkpoints. Only the separately
-approved zero-traffic revision/test tag and backend automation pauses were
-performed after the image build. The traffic plan itself performed no writes.
+verification. No live schema, data, grants, credentials, scheduler or cleanup
+were changed by these receipt checkpoints. The separately approved traffic-only
+freeze is the only normal traffic change after the zero-traffic deployment.
 
 The local preparation adds `scripts/render-frozen-backend-deploy.mjs` (offline,
 hash-pinned canonical derivation with strict feature-source/image provenance and
@@ -82,7 +96,8 @@ now pass against the actual image build after narrow URL-safe signature encoding
 and exact Git/builder dependency validation corrections. The frozen deployment
 also passed live, and its successful steps exactly match the independently
 resolved offline fingerprint. Authenticated backend candidate acceptance also
-passed; traffic cutover remains unexecuted. PR CI now invokes all these checks.
+passed; traffic cutover is complete, but database drain remains blocked.
+PR CI now invokes all these checks.
 The Windows traffic CLI now explicitly invokes the installed `gcloud.cmd`
 wrapper rather than the execution-policy-blocked PowerShell wrapper; no
 execution policy was changed. Live read-only planning passed with system CA

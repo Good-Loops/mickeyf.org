@@ -217,11 +217,11 @@ traffic to 100% frozen with no tags. It does not disable triggers itself, freeze
 operator sessions, drain database writers or make signup read-only. Keep those
 operational checks explicit; settled routing alone is not permission for DDL.
 
-The frozen deployment and read-only traffic planning have now been exercised
-against live resources as recorded below; traffic apply remains unexecuted.
+The frozen deployment, read-only traffic planning and separately approved
+traffic apply have been exercised against live resources as recorded below.
 The latest local run passed 57 frozen-rollout checks plus the three existing
 candidate-image and two cleanup-template contracts (62 total). Traffic
-freeze/drain, migration and write enablement remain separate gates.
+drain, migration and write enablement remain separate gates.
 
 ## Failure and recovery
 
@@ -261,11 +261,16 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   must prevent other operators/automation from re-enabling triggers, routing
   traffic or starting writers between checks. Google-authenticated provenance
   binding is not independent signature verification; do not claim otherwise.
-- **Blocked pending explicit rollout approval:** traffic cutover, live migration
-  and grant cutover, enabled-revision deployment, cleanup credentials/IAM, alert
-  routing and scheduler activation. The separately approved zero-traffic
-  deployment and successful existing-account login below do not authorize these
-  remaining actions.
+- **Blocked database readiness:** production `@@performance_schema=0` and the
+  existing operator's PROCESS probe is denied. Do not accept empty lock tables
+  or operator-limited activity visibility as a drained database. Establish an
+  approved maintenance/metadata inspection path and explicitly review the
+  disabled-instrumentation case before DDL. No privilege or instance change is
+  implied by the approved traffic freeze.
+- **Blocked pending explicit rollout approval:** live migration and grant
+  cutover, enabled-revision deployment, cleanup credentials/IAM, alert routing
+  and scheduler activation. Approved deployment, login acceptance and traffic
+  freezing do not authorize these remaining actions.
 - **Deferred to release closeout:** the cumulative whole-project security pass
   and the remaining release/device checks in `PROJECT_PLAN.md`.
 
@@ -482,3 +487,74 @@ leaderboard reads. Readiness and the mandatory old-request drain are distinct;
 signup/operator sessions can still write and must be accounted for before DDL.
 Database migration, grant changes and score-write enablement remain outside
 this approval boundary.
+
+## Approved traffic-only freeze and database-readiness blocker (2026-09-08)
+
+The user approved routing all traffic to the accepted frozen backend and the
+bounded read-only readiness/drain checks, excluding migration and permission
+changes. A fresh plan at `18:19:24.571Z` matched the previous plan's routing,
+source/deployment pins and service fingerprints exactly; only its timestamp
+changed. Its SHA-256 was
+`53ce1331052791c90f4a7462235302ae9f2747e8cf9429044438a6d6ddfc6283`.
+The guarded command was:
+
+```text
+node --use-system-ca scripts/frozen-backend-traffic.mjs apply --plan <reviewed-plan.json> --confirm-plan 53ce1331052791c90f4a7462235302ae9f2747e8cf9429044438a6d6ddfc6283 --confirm-freeze-all-traffic
+```
+
+The etag-bound, traffic-only PATCH completed successfully. Cloud Run reported
+Ready at `18:20:20.586249Z`, service generation 128, exactly 100% to
+`mickeyf-org-freeze-12ec9e8eff4a493cbe8c025423e5110c`, and no revision tags.
+An independent settled observation was recorded by `18:20:38Z`; this later
+time is the conservative start of the old-request drain window. The complete
+runtime configuration and frozen revision fingerprints are unchanged. All four
+backend triggers remain disabled and no active builds were found.
+
+The first public check passed all ten anonymous HTTP/database-read contracts:
+root and unknown-game responses, anonymous auth/no cookie, catalog, both
+leaderboards, both Three Bosses 403 gates, p4-Vega's 503 frozen gate, and legacy
+p4 leaderboard parity. Signed-in login is the earlier accepted exact-revision
+check, not a newly repeated browser test. No authenticated score write or signup
+was attempted. All eight non-target revisions were listed as retired and had
+300-second timeouts. These checks alone did not complete the delayed drain.
+
+The delayed samples completed at `18:26:18.852Z` and `18:26:42.707Z`, respectively
+340.852 and 364.707 seconds after the conservative settled observation. Each
+rechecked exact generation/routing/configuration, frozen revision pins, all
+eight retired states and timeouts, and paused automation/no active builds.
+Complete paginated request-log queries found zero non-target-revision requests
+with timestamps at or after `18:20:38Z`. These two samples were 23.855 seconds
+apart; explicit result assertions verified zero old requests and all retired
+states rather than treating successful collection as a pass. All three samples
+passed ten public HTTP checks each (30 total), with identical p4-Vega and Three
+Bosses response hashes throughout. This is bounded traffic/request-drain
+evidence, not proof that database or external writers are idle.
+
+At `18:23:36.091Z`, a read-only SQL probe through the verified existing Cloud SQL
+proxy used the existing `michel_operator@cloudsqlproxy~%` account. Database `cms`
+and server UUID `d1e6865c-ecad-11ee-a6b0-42010a400002` matched the pinned target.
+The effective PROCESS probe returned `ER_SPECIFIC_ACCESS_DENIED_ERROR`, and
+`@@performance_schema` was 0. Therefore neither full transaction visibility nor
+instrumented metadata-lock visibility was available. No player rows were read,
+no credentials were emitted or persisted, and no SQL/grant/instance mutation
+was made. Existing local encrypted credentials were used only in memory through
+the child process's standard input.
+
+**Database drain remains unverified and migration is blocked.** The existing
+operator must not be silently elevated, and enabling server instrumentation is
+not authorized here. The next maintenance plan must resolve full activity/lock
+visibility and the migration preflight's disabled-instrumentation case, then
+repeat drain evidence while operators and external writers are excluded.
+Signup remains writable on the frozen backend. No migration, cleanup job,
+Scheduler activation or write re-enablement has occurred. The migration's
+current metadata-lock count must be hardened to fail closed when instrumentation
+is disabled or invisible before any live apply is considered. Merely granting
+PROCESS would not resolve the independently confirmed instrumentation gap.
+
+The dated non-secret plan and three readiness snapshots, SQL-visibility result
+and one-shot probes are retained outside the repository in the operator's
+`mickeyf-traffic-cutover-20260908-1819` temporary evidence folder. No production
+source changed in this checkpoint; tracked changes record the rollout and
+blocker in this runbook and `PROJECT_PLAN.md`. `git diff --check` passed;
+application/Unity builds and unit suites were not rerun for documentation-only
+changes.
