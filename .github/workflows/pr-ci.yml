@@ -86,7 +86,10 @@ jobs:
           npm --prefix .github/firebase-deploy run test:three-bosses-webgl-smoke
 
       - name: Validate isolated backend candidate build
-        run: npm run test:cloudbuild-candidate
+        run: |
+          npm run test:cloudbuild-candidate
+          npm run test:frozen-backend
+          npm run test:receipt-cleanup
 
       - name: Test and build backend
         run: |
