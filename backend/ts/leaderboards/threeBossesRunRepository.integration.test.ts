@@ -17,6 +17,7 @@ import { loadMigrationManifest } from '../migrations/migrationManifest';
 import { applyMigrations } from '../migrations/migrationRunner';
 import { createLeaderboardRouter } from '../routers/leaderboardRouter';
 import { calculateThreeBossesScore } from './leaderboardContract';
+import { cleanupSubmissionReceipts } from './submissionReceiptCleanup';
 import {
     readThreeBossesLeaderboard,
     submitThreeBossesRun,
@@ -168,6 +169,7 @@ async function resetFixture(): Promise<void> {
         await observer.query(`
             DROP TABLE IF EXISTS
                 game_personal_bests,
+                game_submission_receipts,
                 game_runs,
                 schema_migrations,
                 users
@@ -197,9 +199,15 @@ async function resetFixture(): Promise<void> {
     }
 
     await applyMigrations(asMigrationConnection(observer), migrations, config);
+    await applyMigrations(asMigrationConnection(observer), migrations, config, {
+        allowedEffectKinds: ['drop-column'],
+    });
+    await applyMigrations(asMigrationConnection(observer), migrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
 }
 
-async function countRows(table: 'game_runs' | 'game_personal_bests'): Promise<number> {
+async function countRows(table: 'game_submission_receipts' | 'game_personal_bests'): Promise<number> {
     const [rows] = await observer.query<Array<RowDataPacket & { count: number }>>(
         `SELECT COUNT(*) AS count FROM ${table}`
     );
@@ -274,9 +282,8 @@ test('reads the ten current-rule personal bests in deterministic completion orde
                 user_id,
                 score,
                 completion_time_ms,
-                recorded_at,
-                source_game_run_id
-             ) VALUES ('three-bosses', 1, ?, ?, ?, ?, NULL)`,
+                recorded_at
+             ) VALUES ('three-bosses', 1, ?, ?, ?, ?)`,
             [
                 userId,
                 calculateThreeBossesScore(completionTimeMs),
@@ -288,10 +295,10 @@ test('reads the ten current-rule personal bests in deterministic completion orde
     await observer.query(
         `INSERT INTO game_personal_bests (
             game_id, rules_version, user_id, score,
-            completion_time_ms, recorded_at, source_game_run_id
+            completion_time_ms, recorded_at
          ) VALUES
-            ('three-bosses', 2, 13, 100000000, 1, '1999-01-01 00:00:00.000000', NULL),
-            ('p4-vega', 1, 14, 2147483647, NULL, '1999-01-01 00:00:00.000000', NULL)`
+            ('three-bosses', 2, 13, 100000000, 1, '1999-01-01 00:00:00.000000'),
+            ('p4-vega', 1, 14, 2147483647, NULL, '1999-01-01 00:00:00.000000')`
     );
 
     assert.deepEqual(await readThreeBossesLeaderboard(applicationPool), [
@@ -308,7 +315,7 @@ test('reads the ten current-rule personal bests in deterministic completion orde
     ]);
 });
 
-test('stores immutable runs, strict personal bests, exact replays, and conflicts', async () => {
+test('stores temporary receipts, strict personal bests, exact replays, and conflicts', async () => {
     const firstRunId = randomUUID();
     const first = await submitThreeBossesRun(applicationPool, 1, firstRunId, 60_000);
     assert.deepEqual(first, {
@@ -352,15 +359,11 @@ test('stores immutable runs, strict personal bests, exact replays, and conflicts
     const [personalBests] = await observer.query<Array<RowDataPacket & {
         score: number;
         completionTimeMs: number;
-        runId: string;
     }>>(`
         SELECT
             game_personal_bests.score,
-            game_personal_bests.completion_time_ms AS completionTimeMs,
-            game_runs.run_id AS runId
+            game_personal_bests.completion_time_ms AS completionTimeMs
         FROM game_personal_bests
-        INNER JOIN game_runs
-          ON game_runs.game_run_id = game_personal_bests.source_game_run_id
         WHERE game_personal_bests.game_id = 'three-bosses'
           AND game_personal_bests.rules_version = 1
           AND game_personal_bests.user_id = 1
@@ -368,10 +371,81 @@ test('stores immutable runs, strict personal bests, exact replays, and conflicts
     assert.deepEqual(personalBests, [{
         score: 200_000,
         completionTimeMs: 50_000,
-        runId: bestRunId,
     }]);
-    assert.equal(await countRows('game_runs'), 4);
+    assert.equal(await countRows('game_submission_receipts'), 4);
     assert.equal(await countRows('game_personal_bests'), 1);
+});
+
+test('cleanup removes old receipts for idle users without changing either game best', async () => {
+    const oldRunId = randomUUID();
+    await submitThreeBossesRun(applicationPool, 1, oldRunId, 60_000);
+    await submitThreeBossesRun(applicationPool, 2, randomUUID(), 70_000);
+    await observer.query(`UPDATE game_submission_receipts
+        SET submitted_at = UTC_TIMESTAMP(6) - INTERVAL 25 HOUR`);
+    await submitThreeBossesRun(applicationPool, 1, randomUUID(), 50_000);
+    await observer.query(`INSERT INTO game_personal_bests
+        (game_id, rules_version, user_id, score, completion_time_ms, recorded_at)
+        VALUES ('p4-vega', 1, 1, 1500, NULL, '2020-01-01 00:00:00.000000')`);
+    const [beforeBests] = await observer.query(`SELECT * FROM game_personal_bests
+        ORDER BY game_id, rules_version, user_id`);
+
+    const cleanup = await cleanupSubmissionReceipts(applicationPool, { batchSize: 1 });
+    assert.equal(cleanup.status, 'completed');
+    assert.equal(cleanup.deletedReceipts, 2);
+    assert.equal(await countRows('game_submission_receipts'), 1);
+    const [afterBests] = await observer.query(`SELECT * FROM game_personal_bests
+        ORDER BY game_id, rules_version, user_id`);
+    assert.deepEqual(afterBests, beforeBests);
+
+    // Retention does not promise forever UUID recognition. A newly authorized
+    // submission of an old ID is new, but must not overwrite a faster best.
+    const reused = await submitThreeBossesRun(applicationPool, 1, oldRunId, 60_000);
+    assert.equal(reused.kind, 'accepted');
+    if (reused.kind !== 'accepted') assert.fail('expected accepted submission');
+    assert.equal(reused.replayed, false);
+    assert.equal(reused.personalBest, false);
+    const [unchangedBests] = await observer.query(`SELECT * FROM game_personal_bests
+        ORDER BY game_id, rules_version, user_id`);
+    assert.deepEqual(unchangedBests, beforeBests);
+});
+
+test('cleanup reports bounded backlog and a later sweep drains it', async () => {
+    for (const userId of [1, 2, 3]) {
+        await submitThreeBossesRun(applicationPool, userId, randomUUID(), 50_000);
+    }
+    await observer.query(`UPDATE game_submission_receipts
+        SET submitted_at = UTC_TIMESTAMP(6) - INTERVAL 25 HOUR`);
+    const partial = await cleanupSubmissionReceipts(applicationPool, { batchSize: 1, maxBatches: 1 });
+    assert.equal(partial.deletedReceipts, 1);
+    assert.equal(partial.status, 'backlog');
+    assert.equal(partial.backlog, true);
+    const completed = await cleanupSubmissionReceipts(applicationPool);
+    assert.equal(completed.deletedReceipts, 2);
+    assert.equal(completed.status, 'completed');
+    assert.equal(await countRows('game_submission_receipts'), 0);
+    assert.equal(await countRows('game_personal_bests'), 3);
+});
+
+test('cleanup and a concurrent replay serialize without duplicate receipts or lost bests', {
+    timeout: 15_000,
+}, async () => {
+    const runId = randomUUID();
+    await submitThreeBossesRun(applicationPool, 1, runId, 50_000);
+    await observer.query(`UPDATE game_submission_receipts
+        SET submitted_at = UTC_TIMESTAMP(6) - INTERVAL 25 HOUR`);
+    const [beforeBests] = await observer.query('SELECT * FROM game_personal_bests');
+    const database = withFirstQueryBarrier(applicationPool, 2);
+    const [submission, cleanup] = await Promise.all([
+        submitThreeBossesRun(database, 1, runId, 50_000),
+        cleanupSubmissionReceipts(database),
+    ]);
+    assert.equal(submission.kind, 'accepted');
+    if (submission.kind !== 'accepted') assert.fail('expected accepted submission');
+    assert.equal(submission.personalBest, submission.replayed);
+    assert.equal(cleanup.deletedReceipts, 1);
+    assert.equal(await countRows('game_submission_receipts'), submission.replayed ? 0 : 1);
+    const [afterBests] = await observer.query('SELECT * FROM game_personal_bests');
+    assert.deepEqual(afterBests, beforeBests);
 });
 
 test('ten new runs consume the shared window while exact replay consumes no slot', async () => {
@@ -403,7 +477,7 @@ test('ten new runs consume the shared window while exact replay consumes no slot
         await submitThreeBossesRun(applicationPool, 1, randomUUID(), 49_000),
         { kind: 'rate-limited' }
     );
-    assert.equal(await countRows('game_runs'), 10);
+    assert.equal(await countRows('game_submission_receipts'), 10);
 });
 
 test('concurrent exact retries create one row and return one original plus one replay', {
@@ -420,7 +494,7 @@ test('concurrent exact retries create one row and return one original plus one r
     const accepted = outcomes.filter((result) => result.kind === 'accepted');
     assert.equal(accepted.filter(({ replayed }) => replayed).length, 1);
     assert.equal(accepted.filter(({ replayed }) => !replayed).length, 1);
-    assert.equal(await countRows('game_runs'), 1);
+    assert.equal(await countRows('game_submission_receipts'), 1);
     assert.equal(await countRows('game_personal_bests'), 1);
 });
 
@@ -444,7 +518,7 @@ test('concurrent distinct runs serialize personal bests and preserve replay outc
         WHERE game_id = 'three-bosses' AND rules_version = 1 AND user_id = 1
     `);
     assert.deepEqual(personalBests, [{ completionTimeMs: 50_000 }]);
-    assert.equal(await countRows('game_runs'), 2);
+    assert.equal(await countRows('game_submission_receipts'), 2);
 
     for (const [index, input] of [
         { runId: slowRunId, completionTimeMs: 60_000 },
@@ -475,7 +549,7 @@ test('concurrent first submissions for different users avoid cross-user range lo
     ]);
 
     assert.equal(outcomes.every(({ kind }) => kind === 'accepted'), true);
-    assert.equal(await countRows('game_runs'), 2);
+    assert.equal(await countRows('game_submission_receipts'), 2);
     assert.equal(await countRows('game_personal_bests'), 2);
     assert.deepEqual(await readThreeBossesLeaderboard(applicationPool), [
         { userName: 'player-2', score: 200_000, completionTimeMs: 50_000 },
@@ -503,10 +577,10 @@ test('concurrent rate admission allows only the tenth new run', {
     ]);
     assert.equal(outcomes.filter(({ kind }) => kind === 'accepted').length, 1);
     assert.equal(outcomes.filter(({ kind }) => kind === 'rate-limited').length, 1);
-    assert.equal(await countRows('game_runs'), 10);
+    assert.equal(await countRows('game_submission_receipts'), 10);
 });
 
-test('a personal-best write failure rolls the preceding ledger insert back', async () => {
+test('a personal-best write failure rolls the preceding receipt insert back', async () => {
     const forcedFailure = new Error('forced personal-best failure');
     const database = withRejectedPersonalBestWrite(applicationPool, forcedFailure);
 
@@ -514,7 +588,7 @@ test('a personal-best write failure rolls the preceding ledger insert back', asy
         () => submitThreeBossesRun(database, 1, randomUUID(), 50_000),
         forcedFailure
     );
-    assert.equal(await countRows('game_runs'), 0);
+    assert.equal(await countRows('game_submission_receipts'), 0);
     assert.equal(await countRows('game_personal_bests'), 0);
 });
 
@@ -523,7 +597,7 @@ test('a valid token for a deleted user is rejected without creating history', as
         await submitThreeBossesRun(applicationPool, 999, randomUUID(), 50_000),
         { kind: 'user-not-found' }
     );
-    assert.equal(await countRows('game_runs'), 0);
+    assert.equal(await countRows('game_submission_receipts'), 0);
     assert.equal(await countRows('game_personal_bests'), 0);
 });
 
@@ -631,7 +705,7 @@ test('signed-in HTTP ticket, submission, replay, and leaderboard form one round 
                 rank: 'S',
             }],
         });
-        assert.equal(await countRows('game_runs'), 1);
+        assert.equal(await countRows('game_submission_receipts'), 1);
         assert.equal(await countRows('game_personal_bests'), 1);
     } finally {
         await new Promise<void>((resolve, reject) => {

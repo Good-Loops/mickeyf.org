@@ -271,6 +271,68 @@ const LEADERBOARD_TABLES: Readonly<Record<LeaderboardTableName, ExpectedTable>> 
         }),
     });
 
+export type LeaderboardSchemaStage = 'original' | 'detached' | 'receipts';
+
+const DETACHED_PERSONAL_BESTS: ExpectedTable = Object.freeze({
+    ...LEADERBOARD_TABLES.game_personal_bests,
+    columns: LEADERBOARD_TABLES.game_personal_bests.columns.filter(
+        ({ name }) => name !== 'source_game_run_id'
+    ),
+    indexes: LEADERBOARD_TABLES.game_personal_bests.indexes.filter(
+        ({ name }) => name !== 'idx_game_personal_bests_source_game_run'
+    ),
+    foreignKeys: LEADERBOARD_TABLES.game_personal_bests.foreignKeys.filter(
+        ({ name }) => name !== 'fk_game_personal_bests_source_game_run'
+    ),
+});
+
+const SUBMISSION_RECEIPTS: ExpectedTable = Object.freeze({
+    ...LEADERBOARD_TABLES.game_runs,
+    columns: LEADERBOARD_TABLES.game_runs.columns.map((item) =>
+        item.name === 'personal_best' ? { ...item, name: 'improved_personal_best' } : item
+    ),
+    indexes: [
+        ...LEADERBOARD_TABLES.game_runs.indexes.filter(
+            ({ name }) => name !== 'uq_game_runs_source_identity'
+        ),
+        index('idx_game_submission_receipts_expiry', false, [
+            ['submitted_at', 'A'], ['game_run_id', 'A'], ['user_id', 'A'],
+        ]),
+    ],
+    checks: LEADERBOARD_TABLES.game_runs.checks.map((item) =>
+        item.name === 'chk_game_runs_personal_best_boolean'
+            ? {
+                ...item,
+                name: 'chk_game_submission_receipts_improved_best_boolean',
+                normalizedClause: 'improved_personal_bestin0,1',
+            }
+            : item
+    ).sort((left, right) => left.name.localeCompare(right.name)),
+});
+
+export async function personalBestSourceExists(connection: MigrationConnection): Promise<boolean> {
+    const rows = await queryRows<{ columnCount: number }>(connection, `
+        SELECT COUNT(*) AS columnCount FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'game_personal_bests'
+          AND COLUMN_NAME = 'source_game_run_id'
+    `);
+    return Number(rows[0]?.columnCount) === 1;
+}
+
+export async function verifyLeaderboardStage(
+    connection: MigrationConnection,
+    tableName: LeaderboardTableName,
+    stage: LeaderboardSchemaStage
+): Promise<void> {
+    if (tableName === 'game_personal_bests' && stage !== 'original') {
+        await verifyTable(connection, tableName, DETACHED_PERSONAL_BESTS);
+    } else if (tableName === 'game_runs' && stage === 'receipts') {
+        await verifyTable(connection, 'game_submission_receipts', SUBMISSION_RECEIPTS);
+    } else {
+        await verifyLeaderboardTable(connection, tableName);
+    }
+}
+
 function column(
     name: string,
     type: string,

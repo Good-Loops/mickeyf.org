@@ -4,7 +4,7 @@ import path from 'node:path';
 
 export type LeaderboardTableName = 'game_runs' | 'game_personal_bests';
 
-export type MigrationEffectKind = 'create-table' | 'drop-column';
+export type MigrationEffectKind = 'create-table' | 'drop-column' | 'detach-best-source' | 'retain-receipts';
 
 type MigrationMetadata = Readonly<{
     version: string;
@@ -23,6 +23,8 @@ export type MigrationDefinition = MigrationMetadata & Readonly<
         tableName: 'users';
         columnName: 'p4_score';
     }
+    | { effect: 'detach-best-source'; tableName: 'game_personal_bests' }
+    | { effect: 'retain-receipts'; tableName: 'game_runs' }
 >;
 
 const MIGRATION_SPECS = Object.freeze([
@@ -41,6 +43,16 @@ const MIGRATION_SPECS = Object.freeze([
         effect: 'drop-column' as const,
         tableName: 'users' as const,
         columnName: 'p4_score' as const,
+    }),
+    Object.freeze({
+        fileName: '0004_detach_personal_best_sources.sql',
+        effect: 'detach-best-source' as const,
+        tableName: 'game_personal_bests' as const,
+    }),
+    Object.freeze({
+        fileName: '0005_retain_submission_receipts.sql',
+        effect: 'retain-receipts' as const,
+        tableName: 'game_runs' as const,
     }),
 ]);
 
@@ -90,20 +102,7 @@ function readMigration(
         sql,
         checksum: createHash('sha256').update(rawSql).digest(),
     };
-    if (spec.effect === 'drop-column') {
-        return Object.freeze({
-            ...migrationMetadata,
-            effect: spec.effect,
-            tableName: spec.tableName,
-            columnName: spec.columnName,
-        });
-    }
-
-    return Object.freeze({
-        ...migrationMetadata,
-        effect: spec.effect,
-        tableName: spec.tableName,
-    });
+    return Object.freeze({ ...migrationMetadata, ...spec });
 }
 
 export function loadMigrationManifest(

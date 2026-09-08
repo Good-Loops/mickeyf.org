@@ -4,6 +4,28 @@ This tracked roadmap records the active continuation of the broader migration
 and game plan. Detailed implementation decisions remain subject to review at
 each phase boundary.
 
+Current storage checkpoint (2026-09-08): the receipt-based backend is implemented
+locally on `feature/three-bosses-polish`. Permanent `game_personal_bests` are
+independent of short-lived `game_submission_receipts`; Three Bosses retry and
+rate-limit receipts have a minimum 24-hour retention with an hourly bounded
+cleanup job. Historical paragraphs below describing the immutable `game_runs`
+ledger remain deployment history, not the new design. See
+[`backend/RECEIPT_RETENTION.md`](backend/RECEIPT_RETENTION.md) for the storage
+contract, guarded migration/recovery workflow and scoped security disposition.
+
+Next unfinished checkpoint: review and separately approve the production
+receipt cutover (freeze/drain writers, preserve bests, migrate, replace grants,
+deploy the compatible backend), then activate the separately credentialed
+cleanup job only after alerts and manual verification. No live schema, grants,
+credentials, scheduler or deployment were changed by this implementation.
+Verification: 171 unit/security tests on isolated locked dependencies, 49 local
+MySQL integration tests, TypeScript, production API/cleanup bundles, five job/
+image contract tests and the single docs rebuild passed. The running local
+dependency install still has stale `qs` 6.15.3 rather than locked 6.16.0; refresh
+it during a deliberate dev-stack stop, not by weakening its four security tests.
+After that, finish the existing release/security gates, then proceed to p4-Vega
+pause/touch-page-scrolling improvements and the incremental Clean Code sweep.
+
 Status snapshot (2026-09-04): Alpha 0.6.0 and the site redesign are published
 from `main`. Active work continues on `feature/three-bosses-polish`, with mobile
 gameplay still gated from production until its physical-device acceptance pass

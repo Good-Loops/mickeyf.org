@@ -23,12 +23,19 @@ test('migration manifest preserves lexical order and hashes exact LF bytes', () 
             '0001_create_game_runs',
             '0002_create_game_personal_bests',
             '0003_drop_users_p4_score',
+            '0004_detach_personal_best_sources',
+            '0005_retain_submission_receipts',
         ]
     );
     assert.deepEqual(
         migrations.map(({ effect }) => effect),
-        ['create-table', 'create-table', 'drop-column']
+        ['create-table', 'create-table', 'drop-column', 'detach-best-source', 'retain-receipts']
     );
+    assert.deepEqual(migrations.slice(0, 3).map(({ checksum }) => checksum.toString('hex')), [
+        '9a797edd514dfc946783cf66cf80ee8dfa774210a0d100946c3a9a822596ca00',
+        '01eade4cfc8e1131be79df43881a9bc7a538aaf0e1e1d3f470deb6c21eaaed3a',
+        'bc4c89691d9d2f729977446e1bde8f168c5ee83c95349e80c3a6deec598a2951',
+    ], 'historical migration bytes must remain immutable');
     for (const migration of migrations) {
         const rawSql = readFileSync(path.join(migrationDirectory, migration.fileName));
         assert.equal(rawSql.includes(0x0d), false);
@@ -41,6 +48,9 @@ test('migration manifest preserves lexical order and hashes exact LF bytes', () 
         migrations[2].sql,
         'ALTER TABLE users DROP COLUMN p4_score, ALGORITHM=INSTANT;\n'
     );
+    assert.match(migrations[4].sql, /DROP CHECK chk_game_runs_personal_best_boolean/u);
+    assert.match(migrations[4].sql,
+        /ADD CONSTRAINT chk_game_submission_receipts_improved_best_boolean\s+CHECK \(improved_personal_best IN \(0, 1\)\)/u);
 });
 
 test('migration manifest refuses unreviewed SQL files', () => {

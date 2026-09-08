@@ -38,12 +38,12 @@ export type ThreeBossesRunResult = Readonly<{
     kind: 'user-not-found';
 }>;
 
-type ExistingRunRow = RowDataPacket & {
+type SubmissionReceiptRow = RowDataPacket & {
     rulesVersion: number;
     score: number;
     completionTimeMs: number;
     payloadFingerprint: Buffer;
-    personalBest: number;
+    improvedPersonalBest: number;
 };
 
 type PersonalBestRow = RowDataPacket & {
@@ -122,7 +122,7 @@ export async function readThreeBossesLeaderboard(
 }
 
 function replayResult(
-    row: ExistingRunRow,
+    row: SubmissionReceiptRow,
     fingerprint: Buffer,
     runId: string,
     completionTimeMs: number,
@@ -136,14 +136,14 @@ function replayResult(
         && row.score === score;
 
     if (!exactReplay) return { kind: 'idempotency-conflict' };
-    if (row.personalBest !== 0 && row.personalBest !== 1) {
-        throw new Error('Stored Three Bosses run has an invalid personal-best outcome.');
+    if (row.improvedPersonalBest !== 0 && row.improvedPersonalBest !== 1) {
+        throw new Error('Stored Three Bosses receipt has an invalid personal-best outcome.');
     }
 
     return {
         kind: 'accepted',
         replayed: true,
-        personalBest: row.personalBest === 1,
+        personalBest: row.improvedPersonalBest === 1,
         runId,
         score: row.score,
         completionTimeMs: row.completionTimeMs,
@@ -151,8 +151,10 @@ function replayResult(
 }
 
 /**
- * Accepts one immutable run through a user-serialized transaction. Replays are
- * resolved before the shared accepted-run count so they never consume a slot.
+ * Stores a best score and a temporary submission receipt in one transaction.
+ * Retained receipts preserve the original outcome, even after a later best.
+ * Cleanup uses the same user lock; it cannot remove a receipt mid-submission.
+ * Replays are resolved before rate admission and never consume another slot.
  */
 export async function submitThreeBossesRun(
     database: ThreeBossesWriteDatabase,
@@ -177,7 +179,7 @@ export async function submitThreeBossesRun(
                 transactionStarted = true;
 
                 // The shared application lock serializes replay checks, rate
-                // admission, ledger inserts, and personal bests for this user.
+                // admission, receipt inserts/cleanup, and bests for this user.
                 const [users] = await connection.query<RowDataPacket[]>(
                     {
                         sql: `SELECT user_id
@@ -194,15 +196,15 @@ export async function submitThreeBossesRun(
                     return { kind: 'user-not-found' };
                 }
 
-                const [existingRuns] = await connection.query<ExistingRunRow[]>(
+                const [receipts] = await connection.query<SubmissionReceiptRow[]>(
                     {
                         sql: `SELECT
                                 rules_version AS rulesVersion,
                                 score,
                                 completion_time_ms AS completionTimeMs,
                                 payload_fingerprint AS payloadFingerprint,
-                                personal_best AS personalBest
-                            FROM game_runs
+                                improved_personal_best AS improvedPersonalBest
+                            FROM game_submission_receipts
                             WHERE game_id = ?
                               AND user_id = ?
                               AND run_id = ?
@@ -211,9 +213,9 @@ export async function submitThreeBossesRun(
                     },
                     [THREE_BOSSES.gameId, userId, runId]
                 );
-                if (existingRuns.length > 0) {
+                if (receipts.length > 0) {
                     const result = replayResult(
-                        existingRuns[0],
+                        receipts[0],
                         fingerprint,
                         runId,
                         completionTimeMs,
@@ -229,7 +231,7 @@ export async function submitThreeBossesRun(
                 }>>(
                     {
                         sql: `SELECT COUNT(*) AS acceptedRunCount
-                            FROM game_runs
+                            FROM game_submission_receipts
                             WHERE game_id = ?
                               AND user_id = ?
                               AND submitted_at > UTC_TIMESTAMP(6) - INTERVAL 15 MINUTE`,
@@ -264,9 +266,9 @@ export async function submitThreeBossesRun(
                 const personalBest = !currentBest
                     || completionTimeMs < currentBest.completionTimeMs;
 
-                const [insertResult] = await connection.query<ResultSetHeader>(
+                await connection.query<ResultSetHeader>(
                     {
-                        sql: `INSERT INTO game_runs (
+                        sql: `INSERT INTO game_submission_receipts (
                                 game_id,
                                 rules_version,
                                 user_id,
@@ -274,7 +276,7 @@ export async function submitThreeBossesRun(
                                 score,
                                 completion_time_ms,
                                 payload_fingerprint,
-                                personal_best,
+                                improved_personal_best,
                                 submitted_at
                             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(6))`,
                         timeout: DATABASE_QUERY_TIMEOUT_MS,
@@ -298,8 +300,7 @@ export async function submitThreeBossesRun(
                                 sql: `UPDATE game_personal_bests
                                     SET score = ?,
                                         completion_time_ms = ?,
-                                        recorded_at = UTC_TIMESTAMP(6),
-                                        source_game_run_id = ?
+                                        recorded_at = UTC_TIMESTAMP(6)
                                     WHERE game_id = ?
                                       AND rules_version = ?
                                       AND user_id = ?`,
@@ -308,7 +309,6 @@ export async function submitThreeBossesRun(
                             [
                                 score,
                                 completionTimeMs,
-                                insertResult.insertId,
                                 THREE_BOSSES.gameId,
                                 THREE_BOSSES.rulesVersion,
                                 userId,
@@ -323,9 +323,8 @@ export async function submitThreeBossesRun(
                                         user_id,
                                         score,
                                         completion_time_ms,
-                                        recorded_at,
-                                        source_game_run_id
-                                    ) VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP(6), ?)`,
+                                        recorded_at
+                                    ) VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP(6))`,
                                 timeout: DATABASE_QUERY_TIMEOUT_MS,
                             },
                             [
@@ -334,7 +333,6 @@ export async function submitThreeBossesRun(
                                 userId,
                                 score,
                                 completionTimeMs,
-                                insertResult.insertId,
                             ]
                         );
                     }

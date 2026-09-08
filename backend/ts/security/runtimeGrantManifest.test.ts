@@ -15,7 +15,7 @@ test('defines only the three runtime tables and required DML', () => {
     });
     assert.deepEqual(
         RUNTIME_GRANT_MANIFEST.map(({ table }) => table),
-        ['users', 'game_runs', 'game_personal_bests']
+        ['users', 'game_submission_receipts', 'game_personal_bests']
     );
     assert.equal(
         RUNTIME_GRANT_MANIFEST.some(({ table }) =>
@@ -29,7 +29,7 @@ test('defines only the three runtime tables and required DML', () => {
     );
     assert.equal(
         runtimeColumnPrivilegeInventory().some(({ tableName, privilegeType }) =>
-            tableName === 'game_runs' && privilegeType === 'UPDATE'),
+            tableName === 'game_submission_receipts' && privilegeType === 'UPDATE'),
         false
     );
 });
@@ -42,8 +42,8 @@ test('renders the exact production grant statements without applying them', () =
         ),
         [
             "GRANT SELECT (`user_id`, `user_name`, `email`, `user_password`), INSERT (`user_name`, `email`, `user_password`) ON `cms`.`users` TO 'cms_mickeyf'@'%';",
-            "GRANT SELECT (`game_id`, `rules_version`, `user_id`, `run_id`, `score`, `completion_time_ms`, `payload_fingerprint`, `personal_best`, `submitted_at`), INSERT (`game_id`, `rules_version`, `user_id`, `run_id`, `score`, `completion_time_ms`, `payload_fingerprint`, `personal_best`, `submitted_at`) ON `cms`.`game_runs` TO 'cms_mickeyf'@'%';",
-            "GRANT SELECT (`game_id`, `rules_version`, `user_id`, `score`, `completion_time_ms`, `recorded_at`), INSERT (`game_id`, `rules_version`, `user_id`, `score`, `completion_time_ms`, `recorded_at`, `source_game_run_id`), UPDATE (`score`, `completion_time_ms`, `recorded_at`, `source_game_run_id`) ON `cms`.`game_personal_bests` TO 'cms_mickeyf'@'%';",
+            "GRANT SELECT (`game_id`, `rules_version`, `user_id`, `run_id`, `score`, `completion_time_ms`, `payload_fingerprint`, `improved_personal_best`, `submitted_at`), INSERT (`game_id`, `rules_version`, `user_id`, `run_id`, `score`, `completion_time_ms`, `payload_fingerprint`, `improved_personal_best`, `submitted_at`) ON `cms`.`game_submission_receipts` TO 'cms_mickeyf'@'%';",
+            "GRANT SELECT (`game_id`, `rules_version`, `user_id`, `score`, `completion_time_ms`, `recorded_at`), INSERT (`game_id`, `rules_version`, `user_id`, `score`, `completion_time_ms`, `recorded_at`), UPDATE (`score`, `completion_time_ms`, `recorded_at`) ON `cms`.`game_personal_bests` TO 'cms_mickeyf'@'%';",
         ]
     );
 });

@@ -1,5 +1,12 @@
 # Multi-game leaderboard design
 
+**Current local storage design (2026-09-08):** permanent personal bests plus
+bounded submission receipts now supersede the permanent run-ledger design.
+See [Personal bests and bounded submission receipts](RECEIPT_RETENTION.md) for
+the authoritative contract, migration 0004/0005, retry semantics and production
+activation gates. The dated production passages below remain historical
+evidence; this local implementation has not changed live storage or traffic.
+
 Status: Phase 13.1 contract approved by Mike on 2026-08-24. The sanitized live
 schema preflight completed on the same date. On 2026-08-25, Mike approved the
 end state in which p4-Vega uses the generic leaderboard storage and the legacy

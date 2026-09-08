@@ -74,6 +74,7 @@ async function createSchema(): Promise<void> {
             DROP TABLE IF EXISTS
                 game_personal_bests,
                 game_runs,
+                game_submission_receipts,
                 schema_migrations,
                 users
         `);
@@ -93,6 +94,12 @@ async function createSchema(): Promise<void> {
           COLLATE = utf8mb4_unicode_ci
     `);
     await applyMigrations(asMigrationConnection(administrator), migrations, config);
+    await applyMigrations(asMigrationConnection(administrator), migrations, config, {
+        allowedEffectKinds: ['drop-column'],
+    });
+    await applyMigrations(asMigrationConnection(administrator), migrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
 }
 
 async function dropFixtureAccounts(): Promise<void> {

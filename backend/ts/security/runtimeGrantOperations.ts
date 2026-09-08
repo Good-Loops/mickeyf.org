@@ -441,7 +441,9 @@ export async function inspectRuntimeGrantState(
         `SELECT TABLE_NAME AS tableName, COLUMN_NAME AS columnName
          FROM information_schema.COLUMNS
          WHERE TABLE_SCHEMA = ?
-           AND TABLE_NAME IN ('users', 'game_runs', 'game_personal_bests')
+           AND TABLE_NAME IN (
+               'users', 'game_runs', 'game_submission_receipts', 'game_personal_bests'
+           )
          /* runtime-grants:columns */`,
         [database],
         'Runtime table-column inspection'
@@ -752,6 +754,13 @@ function blockersFor(
     const missingColumns = missingExpectedColumns(snapshot, expected);
     if (missingColumns.length > 0) {
         blockers.push(`required runtime columns are missing: ${missingColumns.join(', ')}`);
+    }
+    if (snapshot.availableColumns.some(({ tableName, columnName }) =>
+        tableName === 'game_runs'
+        || (tableName === 'game_personal_bests' && columnName === 'source_game_run_id')
+        || (tableName === 'game_submission_receipts' && columnName === 'personal_best')
+    )) {
+        blockers.push('submission receipt schema cutover is incomplete; legacy run storage remains');
     }
     if (snapshot.mandatoryRoles.trim() !== '') {
         blockers.push('mandatory_roles is not empty and cannot be removed per account');
