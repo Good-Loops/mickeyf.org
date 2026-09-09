@@ -365,7 +365,14 @@
         top: 50%;
         right: 2rem;
         display: block;
+        width: 10.4rem;
+        height: 10.4rem;
         transform: translateY(-50%);
+
+        .p4-vega__joystick-thumb {
+            width: 4.2rem;
+            height: 4.2rem;
+        }
     }
 
     .p4-vega[data-joystick-side='left']
