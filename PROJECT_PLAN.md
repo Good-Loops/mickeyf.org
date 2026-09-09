@@ -91,12 +91,16 @@ scoped table definitions; production generation 132 and deployment automation
 remain unchanged. No application rebuild or new disposable account was needed.
 A natural hourly tick is not yet verified; the first is due around
 `2026-09-09T01:00:00Z`. Same-task follow-up `verify-first-hourly-receipt-cleanup`
-is scheduled for 22:05 local to observe that execution and then pause itself.
+is scheduled once for 22:05 local to observe that execution, record the result
+and delete its own saved automation entry. Keep the conversation and evidence;
+the hourly cloud cleanup is not a temporary artifact.
 
-Next: close the natural-tick observation, then return to the remaining release
-checklist. Do not repeat the completed migration, acceptance or score promotion;
-do not use a pre-receipt backend for rollback. No main merge, website deployment
-or stalled package-script audit is authorized by this cleanup checkpoint.
+Next: continue the temporary-artifact cleanup below while the natural-tick
+observation waits; there is no dependency requiring idle time. Do not repeat
+the completed migration, acceptance or score promotion; do not use a pre-receipt
+backend for rollback. No main merge or website deployment is authorized by this
+cleanup checkpoint. The owner has separately re-added a bounded package-script
+audit to cleanup; do not resume the earlier open-ended audit.
 
 Image review completed with user approval (2026-09-08): Cloud Build
 `12ec9e8e-ff4a-493c-be8c-025423e5110c` successfully built exact source
@@ -1353,6 +1357,47 @@ policy: `%TEMP%/mickeyf-score-acceptance-20260907` still contains the stopped
 harness, cache, and disposable credential state. Filesystem cleanup is pending;
 do not report full temporary-environment cleanup or reuse those credentials.
 
+#### Temporary-artifact cleanup — current scope (2026-09-08)
+
+The owner reaffirmed cleanup of obsolete one-off artifacts and added the
+project's `package.json` scripts to this pre-release cleanup, rather than waiting
+for the later whole-project Clean Code sweep. The previous stalled audit is not
+to be resumed as an open-ended investigation.
+
+1. Reverify the named external acceptance harnesses, preview/cache directories
+   and disposable install/build copies before touching them. Resolve exact
+   paths, ownership, reparse points, active processes and retained evidence.
+   Remove only confirmed disposable artifacts; preserve intentional recovery
+   archives, test evidence and normal workspace dependencies/services. Never
+   equate an old roadmap entry with proof that a directory still exists.
+2. Retire completed one-off scheduled follow-ups after saving their result.
+   `verify-first-hourly-receipt-cleanup` is limited to one occurrence and must
+   delete only its own automation entry after recording success or failure.
+   A failed deletion must be reported and the entry paused, not silently called
+   removed. Keep the chat/evidence and production hourly cleanup/alerts.
+3. Audit every tracked first-party `package.json`, excluding dependencies,
+   generated output and vendored packages. First inventory its script names,
+   commands and purpose. Trace nested npm calls, lifecycle hooks, CI workflows,
+   Git hooks, VS Code tasks, documentation and supported manual workflows.
+   Classify each script as keep, remove, consolidate or needs confirmation,
+   with evidence; lack of a text reference or infrequent use alone does not
+   prove a script is unused. Preserve required migration/recovery/release tools.
+4. End that first audit pass with a concise proposed change list and unresolved
+   questions. Then remove only confirmed obsolete scripts and update affected
+   callers/docs in reviewable batches, validating the changed paths. Do not
+   install dependencies, run every script, rebuild Unity, restart servers or
+   expand into dependency upgrades/general refactoring merely for this audit.
+
+Metadata-only inventory at `2026-09-09T00:46Z`: the historical
+`mickeyf-score-acceptance-20260907` directory is already absent (not deleted by
+this check). The three named Firebase fast-uri, backend qs and frontend xmldom
+disposable copies below still exist. Their roots/immediate children have no
+reparse points and no readable active command line referenced their exact paths.
+Ownership, unique changes, retained evidence, deeper links and open handles
+remain unverified; this is not a deletion-safety sign-off. Nothing was deleted.
+No package scripts have been removed or certified unused. The natural Scheduler
+check can complete independently.
+
 #### Remaining release checks — consolidated checkpoint (2026-09-07)
 
 The owner requested all remaining release checks after confirming the desktop
@@ -1404,9 +1449,9 @@ Execution order clarified with the owner on 2026-09-07 to avoid circular work:
 5. After explicit publish approval, release and verify delivery. Keep cleanup
    blockers visible; do not call retained external temporary folders removed.
 6. Then move to p4-Vega pause/touch-scroll/game polish (Phase 15), followed by
-   incremental Clean Code work (Phase 16). The previously stalled package-script
-   audit is paused and must not resume automatically; it needs a newly agreed,
-   bounded scope if requested again.
+   incremental Clean Code work (Phase 16). The owner re-added the package-script
+   audit to pre-release cleanup on 2026-09-08 under the bounded scope above;
+   do not resume the previous stalled/open-ended audit.
 
 - **Passed:** frontend TypeScript, 110 frontend tests, Vite production build,
   and 110 release-utility fixture tests (build 20, package 41, server 27,
@@ -1887,13 +1932,10 @@ each subsystem change reviewable and run its complete relevant checks before
 moving to the next one. The user-provided PDF is a local reference only and must
 not be copied into the repository.
 
-Include a focused script audit of every first-party `package.json` (requested
-2026-09-06). Identify obsolete, redundant, or unnecessary scripts, and trace
-their use in developer workflows, CI, Git hooks, documentation, and other
-scripts before proposing removal. Distinguish retained operational or migration
-utilities from genuinely unused commands; update affected callers and docs,
-and verify the remaining commands after any cleanup. Do not remove scripts
-merely because they are infrequently used.
+The focused first-party `package.json` script audit (originally requested
+2026-09-06) was moved into the bounded pre-release temporary-artifact cleanup
+above by the owner on 2026-09-08. Do not duplicate that audit in this later phase
+unless relevant changes or new evidence warrant it.
 
 ## Deferred tooling follow-up
 

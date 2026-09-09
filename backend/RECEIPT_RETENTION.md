@@ -1183,9 +1183,13 @@ only with its own baseline; it is not compared with earlier hash formats.
 
 The first natural hourly tick is due around `2026-09-09T01:00:00Z` and remains
 separately unverified. Same-task follow-up `verify-first-hourly-receipt-cleanup`
-is scheduled for 22:05 local: observe, record and sync that result, then pause
-itself. The forced dispatch above does not close the natural-tick gate. This
-local Codex follow-up needs the app/computer running; Cloud Scheduler cleanup
+is scheduled once for 22:05 local: observe, record and sync that result, then
+delete only its saved automation entry as requested by the owner. Preserve
+the conversation/evidence and production hourly job. If verification fails,
+record/report the blocker before removing the one-off follow-up; if removal
+fails, pause it and report the remaining artifact. The forced dispatch above
+does not close the natural-tick gate. This local Codex follow-up needs the
+app/computer running; Cloud Scheduler cleanup
 itself does not depend on the developer computer.
 
 Scope/security disposition:
