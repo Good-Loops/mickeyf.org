@@ -4,14 +4,15 @@ This tracked roadmap records the active continuation of the broader migration
 and game plan. Detailed implementation decisions remain subject to review at
 each phase boundary.
 
-Current release gates (reconciled 2026-09-08 local): see the
+Current release state (published 2026-09-09 local): see the
 [cumulative release/security ledger](RELEASE_READINESS.md). It supersedes stale
 pending claims in the dated history below. Named cleanup and the bounded script
-audit are complete. The scoped Firebase dependency patch `3ea379fe` passed the
-complete non-deploying CI run `34301221560`; the remaining gates are eventual
-PR/CodeQL merge checks and guarded hosted delivery. The owner has approved
-publication and public mobile enablement; preserve the continuing polish branch
-and leave the already-deployed backend unchanged. The combined
+audit are complete. Owner-approved PR #322 passed its required checks and CodeQL,
+merged as `c94c5de5`, and Firebase run `34305326963` successfully published the
+tested Three Bosses package with public mobile gameplay enabled. Hosted
+runtime/header checks, gzip negotiation and mobile-emulated Chromium startup
+passed; the temporary Hosting preview was deleted. The continuing polish branch
+is preserved and synchronized; the already-deployed backend is unchanged. The combined
 fresh-load/landscape phone observation is complete: the owner reported about
 10 seconds to load and correct Fire/fullscreen-exit behavior on the local
 release-candidate preview. This is not a production CDN timing measurement.
@@ -1752,8 +1753,9 @@ Execution order clarified with the owner on 2026-09-07 to avoid circular work:
   follow-up change removes the 14 trailing spaces; normalized text comparison
   confirms no scene content change. Prior successful suites were not rerun for
   archiving, whitespace normalization or checkpointing. No push or deployment.
-- **Remaining scope, superseded by the current ledger:** PR/release approval.
-  The combined mobile load/touch observation is now owner-accepted (see R2).
+- **Remaining scope, superseded by the current ledger:** release completed by
+  PR #322 and Firebase run `34305326963`; retained maintenance/deferred work is
+  listed in the ledger. The combined mobile load/touch observation is now owner-accepted (see R2).
   Generic login/submission
   replay and exhaustive weapon/audio coverage are no longer release blockers. Existing
   accepted owner gameplay and visual checks stay closed. Read-only catalog
