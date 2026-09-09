@@ -5,6 +5,7 @@ $three-bosses-violet: hsl(274, 88%, 68%);
 $three-bosses-frame-padding: .45rem;
 $three-bosses-frame-border: .1rem;
 $three-bosses-frame-inset: $three-bosses-frame-padding + $three-bosses-frame-border;
+$three-bosses-fullscreen-button-size: 3.4rem;
 
 .three-bosses {
     display: grid;
@@ -419,8 +420,8 @@ $three-bosses-frame-inset: $three-bosses-frame-padding + $three-bosses-frame-bor
     & &__fullscreen-btn {
         right: .8rem;
         bottom: .8rem;
-        width: 3.4rem;
-        height: 3.4rem;
+        width: $three-bosses-fullscreen-button-size;
+        height: $three-bosses-fullscreen-button-size;
         padding: .5rem;
         border: .1rem solid rgba($white, .13);
         border-radius: .65rem;
@@ -478,13 +479,23 @@ $three-bosses-frame-inset: $three-bosses-frame-padding + $three-bosses-frame-bor
     &__canvas-wrapper:fullscreen &__canvas,
     &__canvas-wrapper:-webkit-full-screen &__canvas,
     &__canvas-wrapper[data-canvas-fullscreen='fallback'] &__canvas {
-        width: min(100vw, calc(100vh * 16 / 9)) !important;
-        width: min(100vw, calc(100dvh * 16 / 9)) !important;
-        height: min(100vh, calc(100vw * 9 / 16)) !important;
-        height: min(100dvh, calc(100vw * 9 / 16)) !important;
+        --three-bosses-fullscreen-width: 100vw;
+        width: min(var(--three-bosses-fullscreen-width), calc(100vh * 16 / 9)) !important;
+        width: min(var(--three-bosses-fullscreen-width), calc(100dvh * 16 / 9)) !important;
+        height: min(100vh, calc(var(--three-bosses-fullscreen-width) * 9 / 16)) !important;
+        height: min(100dvh, calc(var(--three-bosses-fullscreen-width) * 9 / 16)) !important;
         aspect-ratio: 16 / 9;
         flex: 0 0 auto;
         border-radius: 0;
+
+        @media only screen and (orientation: landscape) and (max-height: 26.75em) {
+            // Short 16:9 screens have no spare corner: Fire's invisible touch
+            // padding can reach the exit. Reserve a symmetric gutter so the
+            // exit stays outside the canvas; already wider letterboxes stay put.
+            --three-bosses-fullscreen-width: calc(
+                100vw - 2 * (#{$three-bosses-fullscreen-button-size} + max(.4rem, env(safe-area-inset-right)) + .2rem)
+            );
+        }
     }
 }
 

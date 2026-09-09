@@ -11,7 +11,7 @@ the scoped dependency patch `3ea379fe` passed the complete non-deploying CI run
 `34301221560`. The later ledger update is documentation-only; the tested source
 is identified explicitly below. No PR, deployment or production mutation was
 performed. CI success does not transfer an image-specific risk acceptance or
-replace the outstanding real-device, browser-cookie and merge/release gates.
+replace the remaining mobile-specific observations and merge/release approval.
 
 ## Current dispositions
 
@@ -29,12 +29,12 @@ replace the outstanding real-device, browser-cookie and merge/release gates.
 | S10 | Fixed controls; limited scan coverage | Main ruleset requires PR/thread resolution, strict Web/Unity checks and CodeQL errors/high-or-higher protection, with no bypass actors. Zero open code/secret-scanning alerts were observed; main CodeQL evidence covers `2bffc0db`, not this branch. Push protection is enabled; non-provider patterns and validity checks are disabled. Zero alerts is not proof that no secret exists. |
 | S11 | Deferred; local maintenance | Active backend install still has `qs` 6.15.3 versus locked 6.16.0. Isolated locked tests already passed. Refresh only during a deliberate development-stack stop; do not use the stale install as release evidence or modify running dependencies silently. |
 | S12 | Fixed; deployment-only dependency patch | `3ea379fe` updates exactly four lock entries: `js-yaml` 4.3.2, `hono` 4.13.7, `morgan` 1.12.0 and Firebase-scoped `csv-parse` 7.0.2. Firebase stays 15.28.1. Fresh locked install, full production dependency-tree validation, CLI version check, eight offline CSV tests and twelve smoke-tool tests pass. Audit now has zero high/critical and only the two previously accepted stream-json/parent moderate entries. No unrelated finding was waived or threshold lowered. |
-| R1 | Fixed; certified local candidate | Package `2e660337…a7fe7` remains the certified 996-file Unity candidate from `8eaa6615`. Unity source and frontend runtime have not changed since that source checkpoint. Candidate packaging/hash checks, local header simulation and signed-out Chrome startup passed previously. No source-driven rebuild is required by this reconciliation. |
-| R2 | Blocked; candidate browser/device evidence | Still missing: current-candidate HTTPS browser-cookie login/submission/exact retry/PB/leaderboard round trip; uncached physical Safari loading; exact-16:9 Fire invisible-hit-area clearance; exhaustive ten-weapon/21-clip evidence. Backend HTTP acceptance and warm-cache/normal-route checks do not certify these narrower cases. |
-| R3 | Fixed; accepted owner checks | Keep closed: Android/iPhone normal routes and recorded defeat/retry/menu checks; touch controls; mute persistence; automatic/combined pause; complete outcome-centering audit; accepted fullscreen-button placement and Safari toolbar limitation; recovered desktop FPS incident. No blanket replay of these checks. |
+| R1 | Fixed; certified local candidate | Package `2e660337…a7fe7` remains the certified 996-file Unity candidate from `8eaa6615`. Unity source is unchanged. The later host-only short-landscape CSS correction and its focused checks are recorded below; it requires no Unity rebuild. Candidate packaging/hash checks, local header simulation and signed-out Chrome startup remain the existing evidence. |
+| R2 | Pending; mobile-specific observation | Before enabling public mobile, combine one uncached physical Safari load with a short-landscape exit/Fire touch spot-check. The source-confirmed overlap is corrected and checked in a Chromium layout fixture below; native-device event behavior is not newly claimed. These are not reasons to block desktop release preparation while mobile remains disabled. Generic login/submission retesting and exhaustive clip listening are no longer release blockers. |
+| R3 | Fixed; accepted owner checks | Keep closed: owner-confirmed published-site login/submission; Android/iPhone normal routes and recorded defeat/retry/menu checks; touch controls; mute persistence; automatic/combined pause; complete outcome-centering audit; accepted fullscreen-button placement and Safari toolbar limitation; recovered desktop FPS incident. Carry acceptance forward unless relevant code/origin/configuration changes or a concrete regression invalidate it. A brief post-publication smoke check is not a new pre-release authentication campaign. |
 | R4 | Blocked; publication decisions | Public mobile gameplay remains disabled outside the DEV-only preview. Backend score-write activation did not change that gate. Main merge, publishing, mobile enablement and any hosted candidate preview require their own scoped approval; verify actual new-package CDN bytes/headers/compression after approved delivery. |
 | M1 | Fixed; named scope | Named temporary-artifact cleanup and the 57-script bounded audit are complete. Recycled copies remain recoverable; intentional verification/recovery archives remain. Do not reopen an unlimited package/filesystem audit. |
-| M2 | Deferred; explicit follow-ups | Shared-shell device checks (landscape nav/dropdowns with browser bars; Dancing Circles aspect/color) remain distinct from Three Bosses gameplay. Also retain the large-chunk warning, Unity CLI/Pipeline compatibility follow-up and unmeasured DB instrumentation overhead. p4-Vega polish and the incremental Clean Code sweep follow this release phase. |
+| M2 | Deferred; explicit follow-ups | Exhaustive per-weapon/per-clip listening and game-feel coverage is optional follow-up absent a specific defect or relevant change; the bounded source review below found no missing weapon/audio reference. Shared-shell device checks (landscape nav/dropdowns with browser bars; Dancing Circles aspect/color) remain distinct from Three Bosses gameplay. Also retain the large-chunk warning, Unity CLI/Pipeline compatibility follow-up and unmeasured DB instrumentation overhead. p4-Vega polish and the incremental Clean Code sweep follow this release phase. |
 
 ## Exact dependency interpretation
 
@@ -244,13 +244,49 @@ Prior owner-confirmed failure emails remain the delivery evidence; no deliberate
 two-hour outage or separate watchdog inbox test is claimed. S5 is closed; do not
 repeat this check absent a relevant change or failure.
 
+## Bounded Three Bosses preparation: 2026-09-08 local
+
+The owner challenged repeated login/submission verification and approved focused
+preparation without circular testing. Preserve the published-site confirmation
+and existing backend receipt/retry acceptance. No authentication, session-cookie
+or submission-bridge code changed in this preparation; no test score was created.
+
+The short-16:9 concern was concrete: at 640x360 with zero insets and 10px rem,
+Fire's padded hit rectangle intersected the 34px fullscreen exit by 27x6px,
+even though the visible Fire artwork did not overlap. A host-only CSS rule now
+reserves a symmetric exit-width/safe-inset gutter below 429px landscape height.
+Both canvas dimensions use the same available width, preserving 16:9. The exit
+button retains its size and screen-corner position; no Unity asset changed.
+
+An isolated Chromium fixture using the real compiled before/after styles
+reproduced that overlap, then measured a 560x315 canvas at (40,22.5) with no
+intersection. At the previously accepted 852x393 size, canvas and exit bounds
+were identical before/after. This intentionally trades a little game area for
+separate controls on short 16:9 screens, not on already wider letterboxed phones.
+The inspected screenshot is a labelled layout fixture, not a gameplay screenshot
+or proof of native Safari touch behavior. All five focused style tests pass,
+including the added regression which failed before the correction. No full
+frontend/backend/Unity suite or build was rerun. The in-app browser connection
+was unavailable; no tool repair, dependency install or server restart was made.
+Evidence: `release-checks-20260907/three-bosses-short-landscape-20260908.json`
+and its labelled PNG, outside Git.
+
+One bounded source/asset pass found ten weapon definitions in the crate pool,
+their projectile implementations, and the 21 expected nonempty audio files:
+ten fire, nine impact, and Phase Anchor loop/end. Lightning's separate impact
+clip is intentionally absent in its fire-only implementation. Controller and
+Phase Anchor playback references resolve; no concrete missing reference was
+identified. This does not certify that every clip was heard or subjective game
+feel was reviewed. Keep the accepted Android full run/mute checks closed and
+defer exhaustive listening rather than imposing another release prerequisite.
+
 ## Next execution order and authority
 
-1. Arrange only R2's missing candidate checks on an approved HTTPS test route;
-   scope any disposable account/score lifecycle separately. Keep accepted R3
-   checks closed. A development-only mobile preview is not proof of an enabled
-   production mobile route. Keep S5 closed and the approved S8 disposition
-   closed unless its expiry or an earlier reassessment trigger applies.
+1. Prepare the release PR and its required checks without rebuilding unchanged
+   Unity source or repeating accepted gameplay/authentication checks. Public
+   mobile remains disabled unless separately approved; complete R2's one combined
+   mobile observation before enabling it. Do not create another account/score
+   campaign. Keep S5 closed and S8 closed until expiry or a reassessment trigger.
 2. Resolve or explicitly disposition all remaining gates before requesting
    publication/mobile approval, then verify hosted delivery. A PR and current
    CodeQL/required checks remain necessary for its eventual merge head; the

@@ -47,13 +47,16 @@ and unchanged on desktop.
 
 ## Play Mode verification
 
-Before publishing gameplay changes, traverse the complete enabled route and
-confirm:
+For gameplay changes, use this checklist for the affected features. Preserve
+recorded full-route, touch, pause, navigation and mute acceptance when their code
+is unchanged; host CSS/tooling work does not require a new complete playthrough.
+Exhaustive per-weapon/per-clip listening is additional manual coverage, not a
+blanket release gate absent a relevant change or concrete defect. Check:
 
 - horizontal movement, double jump, dash, player damage, and player death;
 - crate spawning and pickup behavior;
-- all ten weapons, including fire and impact behavior;
-- all 21 weapon-related audio clips, including the Phase Anchor loop and end;
+- changed weapons, including fire and impact behavior (ten definitions total);
+- changed audio, including Phase Anchor loop/end when affected (21 clips total);
 - boss health, phase changes, death, both illustrated boss transitions, and the
   final result flow;
 - each boss-specific defeat screen, Try Again and Back to Menu navigation,

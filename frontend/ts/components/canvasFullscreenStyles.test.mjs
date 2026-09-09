@@ -54,3 +54,22 @@ test('compact Three Bosses fullscreen keeps the exit control at the safe screen 
     assert.ok(cornerRule.includes('bottom: max(0.4rem, env(safe-area-inset-bottom))'));
     assert.doesNotMatch(cornerRule, /calc\(|\b(?:width|height): (?!48\.75em|31\.25em)/);
 });
+
+test('short landscape Three Bosses reserves an exit gutter without changing the canvas ratio', () => {
+    const gameCss = compileString("@use 'pages/three-bosses';", {
+        loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],
+    }).css;
+    const [gutterRule] = [...gameCss.matchAll(/@media[^\{]+\{([\s\S]*?)\n\}/g)]
+        .map(([rule]) => rule)
+        .filter(rule => rule.includes('--three-bosses-fullscreen-width: calc('));
+
+    assert.ok(gutterRule, 'reserve space only in the short-landscape fullscreen rule');
+    assert.match(gutterRule, /orientation: landscape\) and \(max-height: 26\.75em\)/);
+    for (const mode of [':fullscreen', ':-webkit-full-screen', '[data-canvas-fullscreen=fallback]']) {
+        assert.ok(gutterRule.includes(`__canvas-wrapper${mode} .three-bosses__canvas`));
+    }
+    assert.match(gutterRule, /3\.4rem \+ max\(0?\.4rem, env\(safe-area-inset-right\)\) \+ 0?\.2rem/);
+    assert.ok(gameCss.includes('width: min(var(--three-bosses-fullscreen-width),'));
+    assert.ok(gameCss.includes('height: min(100dvh, var(--three-bosses-fullscreen-width) * 9 / 16)'));
+    assert.ok(gameCss.includes('--three-bosses-fullscreen-width: 100vw;'));
+});
