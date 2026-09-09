@@ -141,11 +141,9 @@ const P4Vega: React.FC = () => {
                             className="p4-vega__pause-menu"
                             role="dialog"
                             aria-labelledby="p4-pause-heading"
-                            aria-describedby="p4-pause-description"
                         >
                             <span className="p4-vega__pause-eyebrow">p4-Vega</span>
                             <h2 id="p4-pause-heading">Paused</h2>
-                            <p id="p4-pause-description">Your run is on hold.</p>
                             <button
                                 type="button"
                                 ref={resumeButtonRef}

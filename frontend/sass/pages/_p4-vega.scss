@@ -84,7 +84,6 @@
         color: rgba($white, .92);
 
         h2 { margin: 0; font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.1; }
-        p { margin: 0; font-size: 1.1rem; color: rgba($white, .72); }
     }
 
     &__pause-eyebrow {
@@ -359,9 +358,21 @@
             text-align: center;
         }
 
-        &__fullscreen-btn {
+        &__fullscreen-btn,
+        &__pause-btn {
             width: 2.75rem;
             height: 2.75rem;
+        }
+
+        &__pause-btn,
+        &__resume-btn {
+            svg { width: 1.5rem; height: 1.5rem; }
+        }
+
+        &__resume-btn {
+            min-height: 3.2rem;
+            padding: .4rem 1.1rem;
+            font-size: 1.05rem;
         }
     }
 }
