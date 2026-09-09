@@ -7,8 +7,9 @@ receipt-compatible image now serves normal traffic with both score flags
 controlled production execution; hourly scheduling and the missing-success
 watchdog are now enabled after separate approval. Both failure-alert emails are
 owner-confirmed; restricted credentials are provisioned. The first natural
-hourly tick passed; only the limited fresh alert-policy readback remains open
-for this subsystem. The [cumulative release/security ledger](../RELEASE_READINESS.md)
+hourly tick passed; the final three-policy/channel readback also passed at
+2026-09-09 02:12:46 UTC. No receipt-cleanup configuration gate remains open.
+The [cumulative release/security ledger](../RELEASE_READINESS.md)
 records the bounded current-image OpenSSL exception and remaining release gates.
 Historical migrations 0001–0003 are unchanged. Dated preparation entries below
 are historical; the final section records the current scheduling checkpoint.
@@ -296,8 +297,9 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   Ready. Existing deployment automation remains paused.
 - **Resolved cleanup activation:** separately approved credentials/IAM, alert
   routing, manual cleanup/retry validation, hourly activation and first natural
-  execution are complete, as recorded in the final checkpoint. Only the limited
-  fresh policy comparison remains open; no new dispatch or provisioning is needed.
+  execution are complete, as recorded in the final checkpoint. The final
+  three-policy/channel comparison also passed; no new dispatch or provisioning
+  is needed.
 - **Accepted bounded release disposition:** on 2026-09-08 local, the owner
   explicitly approved the current receipt image's exact-digest embedded-OpenSSL
   exception through 2026-10-07, subject to earlier reassessment triggers. See
@@ -1216,7 +1218,8 @@ generation/observed generation 132 and intended/observed 100% traffic to
 dispatched no additional run and did not reread SQL, secrets, IAM or the full
 production template; it does not claim a new database preservation snapshot.
 
-Alert recheck limitation: Cloud Console freshly shows missing-success policy
+Historical alert recheck limitation (resolved by the readback below):
+Cloud Console freshly showed missing-success policy
 `3453175835959381685` enabled, Error severity, a below-one threshold over two
 hours and the existing owner-email channel. Its full filter/channel-ID JSON
 and failure policies `15588823733398199471` / `17739991777076766134` were not
@@ -1249,7 +1252,7 @@ are stated above):
   Already expired receipts require a separately reviewed backup restore, not
   an application rollback. Best scores remain independent and permanent.
 - Natural-tick evidence is complete; the limited fresh alert-policy readback
-  above remains open due to unavailable tooling. Forced Scheduler dispatch
+  is now closed by the read-only API comparison below. Forced Scheduler dispatch
   and its exact successful cleanup execution are also verified.
   The completed migration, disposable-account replay test and score promotion
   are not repeated. Final whole-project release/security review is separate.
@@ -1271,3 +1274,24 @@ application or Unity build, broad test rerun, website deployment or main merge.
 Natural-tick validation: native Scheduler/Job/execution/log reads, scoped
 production readback, one policy's UI state, saved JSON comparisons and
 `git diff --check`; no builds or tests were required for this docs-only checkpoint.
+
+## Final alert-policy readback (2026-09-08 local)
+
+At `2026-09-09T02:12:46.4962511Z`, four read-only Cloud Monitoring API GETs
+retrieved policies `17739991777076766134`, `15588823733398199471`,
+`3453175835959381685` and channel `9138709485205441101`. The existing Google
+Cloud login sufficed; no CLI component, permission or browser repair was needed.
+All selected policy configuration fields matched the retained activation
+snapshots exactly, including filters, aggregation, thresholds/durations,
+missing-data behavior, alert strategies and channel IDs. All policies remain
+enabled with Error severity; the enabled email channel matches the approved
+recipient. The cumulative ledger records the exact comparison scope.
+
+Non-secret evidence is retained outside Git in
+`release-checks-20260907/alerts-readback-20260908.json` under the Codex
+visualization folder. No token or recipient address was saved in that record.
+No cloud resource, database or local server changed; no cleanup or test alert
+was dispatched. This closes the limited configuration readback, not a new
+inbox-delivery test or the separate whole-project release/security gates.
+Validation: three structural baseline comparisons, channel checks, evidence
+JSON parsing and `git diff --check`; no application builds/tests were needed.

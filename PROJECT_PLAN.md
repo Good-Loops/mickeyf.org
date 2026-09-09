@@ -8,9 +8,10 @@ Current release gates (reconciled 2026-09-08 local): see the
 [cumulative release/security ledger](RELEASE_READINESS.md). It supersedes stale
 pending claims in the dated history below. Named cleanup and the bounded script
 audit are complete. The scoped Firebase dependency patch `3ea379fe` passed the
-complete non-deploying CI run `34301221560`; the remaining gates are
-limited alert readback, narrow candidate/browser
-checks, eventual PR/CodeQL merge checks and explicit publication/mobile approval.
+complete non-deploying CI run `34301221560`; the remaining gates are narrow
+candidate/browser checks, eventual PR/CodeQL merge checks and explicit
+publication/mobile approval. S5's exact three-policy/channel readback passed
+at 2026-09-09 02:12:46 UTC without cloud changes; it is closed.
 No accepted gameplay check is reopened by this reconciliation.
 The owner approved S8's exact receipt-image OpenSSL exception through 2026-10-07,
 subject to the ledger's earlier reassessment triggers. This is bounded risk
@@ -110,10 +111,12 @@ receipts and no errors/backlog. Its pinned native v1 template and Cloud SQL/
 secret annotations match the accepted execution and current generation-7 Job.
 The enabled hourly configuration and production generation 132 with 100% traffic
 to the accepted revision are unchanged. No extra run or fresh SQL check occurred.
-The missing-success alert was freshly observed enabled; the two failure alerts
-remain verified only by the activation snapshots because the installed CLI lacks
-the alert-policy command and browser reconnection failed. This limited alert
-recheck remains open; it does not invalidate the successful natural execution.
+The limited alert recheck initially lacked complete CLI/browser evidence.
+It is now closed: read-only Monitoring API GETs at 2026-09-09 02:12:46 UTC
+matched all three policies' filters, thresholds, aggregation, missing-data
+behavior, alert strategies and channel IDs to the activation snapshots.
+The enabled email channel matches the approved recipient. No test alert or
+cleanup run was dispatched; prior owner-confirmed delivery remains the evidence.
 One-time follow-up `verify-first-hourly-receipt-cleanup` was deleted after the
 checkpoint was synced; removal is verified. Conversation and non-secret JSON
 evidence are preserved; the hourly cloud cleanup is not a temporary artifact.
@@ -1522,8 +1525,8 @@ whole-filesystem sweep or release/security approval. External evidence is
 visualization folder. Validation used filesystem/reference/process checks,
 source comparisons, recovery hashes and `git diff --check`; no installs,
 application builds/tests, server restarts, database writes or cloud changes.
-Next: reconcile the cumulative release/security gates, including the limited
-alert-policy readback above; do not repeat completed cleanup or gameplay checks.
+Next: follow the cumulative release/security gates above. The limited
+alert-policy readback is now closed; do not repeat completed cleanup or gameplay checks.
 
 #### Remaining release checks — consolidated checkpoint (2026-09-07)
 

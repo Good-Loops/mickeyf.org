@@ -21,7 +21,7 @@ replace the outstanding real-device, browser-cookie and merge/release gates.
 | S2 | Fixed; scoped live readback | Cloud Run remains generation/observed generation 132, with 100% intended/observed traffic to `mickeyf-org-scores-9ec1bd83-0908` and receipt image `9ec1bd83…c3c3`. Its DB/session references remain numeric versions 1/2, not plaintext values. Runtime and cleanup workers have only Cloud SQL Client in the inspected project bindings; the scheduler caller has no project binding. Each inspected secret policy grants its accessor only to the intended worker; the cleanup Job grants Invoker only to its scheduler caller. Ancestor/organization policies and SQL grants were not freshly enumerated. |
 | S3 | Fixed; source and live control checks | Backend build contexts exclude local environment/dependency/generated files; Docker remains pinned, multistage and non-root. All four existing global backend build/deploy triggers are disabled; none are configured in `us-central1`. Reviewed frozen deployment/traffic guards remain. Do not re-enable triggers or route traffic as part of verification. |
 | S4 | Fixed; operational acceptance | Manual cleanup/retry acceptance, hourly activation and exact first natural execution `zjpfg` succeeded. One-off follow-up was deleted. Permanent bests remain independent of receipt deletion. No extra cleanup dispatch is needed. |
-| S5 | Blocked; limited verification | Complete fresh readback of three alert policies is still unavailable. Prior activation snapshots establish their configuration; only missing-success basic UI fields were refreshed during the natural-tick check. Browser retry still fails before navigation with a missing kernel-assets path. No alert failure or schedule failure is inferred. |
+| S5 | Fixed; scoped live readback | At 2026-09-09 02:12:46 UTC, read-only Monitoring API requests verified all three enabled ERROR policies, their exact filters/conditions/alert strategies and sole approved channel against the activation snapshots. The email channel is enabled and its recipient matches the owner's choice. The API resolved the readback blocker without installations or permission changes; browser/CLI repair is not claimed. This is configuration evidence, not a new incident or email-delivery test. |
 | S6 | Fixed in branch; not merged | At the initial reconciliation, 13 of 14 open default-branch dependency alerts mapped to fixes already in branch locks: eight `fast-uri` alerts (3.1.7), two `qs` alerts (6.16.0), three `xmldom` alerts (0.8.15 / 0.9.12). This alert-to-lock comparison is distinct from the subsequent CI audit findings in S12. |
 | S7 | Accepted; bounded and expiring | Deployment-only `stream-json` 1.9.1, GHSA-528h-pc64-c93x, remains under the owner's static-Hosting-only exception through 2026-10-07 or earlier reassessment triggers. Firebase 15.28.1, locked install, high audit gate and eight-minute deployment timeout remain. No import/framework pipeline expansion or major override is accepted. |
 | S8 | Accepted; bounded and expiring | On 2026-09-08 local (2026-09-09 UTC), the owner explicitly approved the exact receipt-image exception recorded below through 2026-10-07, subject to earlier reassessment triggers. Verified OCI manifests/configurations share the Node base layers; no affected call chain was identified in the examined API/cleanup source. This is risk acceptance, not an OpenSSL fix, transfer of an earlier exception, or approval for a replacement image/deployment. Clean OS/NPM/SECRET scans still do not certify the embedded component. |
@@ -210,17 +210,48 @@ in `release-checks-20260907/receipt-openssl-review-20260908.json`. No image laye
 were pulled or executed; no production requests, secret payload reads, rebuild,
 scan, deployment or complete image-wide native inventory were performed.
 
+## Receipt-cleanup alert readback: 2026-09-09 02:12:46 UTC
+
+Four read-only Monitoring API GETs used the existing Google Cloud login:
+three exact policies and their single notification channel. No alpha CLI
+component, browser repair, new permission or credential installation was needed.
+[Policy GET](https://docs.cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.alertPolicies/get)
+and [channel GET](https://docs.cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.notificationChannels/get).
+
+All three policies are enabled, Error severity, OR combiner, and scoped to
+project `noted-reef-387021`, region `us-central1`, resource `cloud_run_job` and
+job `mickeyf-submission-receipt-cleanup`. Each uses only channel
+`9138709485205441101`; the enabled email channel matches the approved recipient.
+
+| Policy | Verified condition | Strategy |
+| --- | --- | --- |
+| `17739991777076766134` | Exact cleanup-component logs with severity >= ERROR, backlog=true or status=failed | Notification limit 300s; auto-close 1800s |
+| `15588823733398199471` | Completed-execution metric, result=failed, five-minute summed series/reduction > 0; no retest delay; trigger count 1 | Auto-close 1800s |
+| `3453175835959381685` | Completed-execution metric, result=succeeded, five-minute summed series/reduction < 1 for 7200s; missing data active; trigger count 1 | Auto-close 86400s |
+
+An exact structural comparison of the selected configuration fields passed
+for all three policies against `alerts-before.json` and `watchdog-enabled.json`
+in the retained activation evidence. Object key order was ignored; arrays were
+preserved. Documentation and creation/mutation metadata were not compared.
+The absent failure threshold is its default zero; omitted validity/channel
+verification fields are not interpreted as a fresh delivery guarantee.
+
+Non-secret readback/comparison evidence is retained outside Git in
+`release-checks-20260907/alerts-readback-20260908.json`. The recipient is recorded
+only as a match boolean. No token was saved or printed. No incident was induced,
+cleanup dispatched, resource modified, secret payload read or database queried.
+Prior owner-confirmed failure emails remain the delivery evidence; no deliberate
+two-hour outage or separate watchdog inbox test is claimed. S5 is closed; do not
+repeat this check absent a relevant change or failure.
+
 ## Next execution order and authority
 
-1. Retry only the bounded S5 policy readback when the existing browser/tool
-   connection works; no SDK installation or permissions expansion is needed
-   merely to repeat a failed verification. Keep the approved S8 disposition
-   closed unless its expiry or an earlier reassessment trigger applies.
-2. Arrange only R2's missing candidate checks on an approved HTTPS test route;
+1. Arrange only R2's missing candidate checks on an approved HTTPS test route;
    scope any disposable account/score lifecycle separately. Keep accepted R3
    checks closed. A development-only mobile preview is not proof of an enabled
-   production mobile route.
-3. Resolve or explicitly disposition all remaining gates before requesting
+   production mobile route. Keep S5 closed and the approved S8 disposition
+   closed unless its expiry or an earlier reassessment trigger applies.
+2. Resolve or explicitly disposition all remaining gates before requesting
    publication/mobile approval, then verify hosted delivery. A PR and current
    CodeQL/required checks remain necessary for its eventual merge head; the
    completed standalone CI is not merge approval. No main merge, deployment,
