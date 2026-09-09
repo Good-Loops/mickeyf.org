@@ -7,7 +7,9 @@ receipt-compatible image now serves normal traffic with both score flags
 controlled production execution; hourly scheduling and the missing-success
 watchdog are now enabled after separate approval. Both failure-alert emails are
 owner-confirmed; restricted credentials are provisioned. The first natural
-hourly tick remains an observation gate, not another implementation task.
+hourly tick passed; only the limited fresh alert-policy readback remains open
+for this subsystem. The [cumulative release/security ledger](../RELEASE_READINESS.md)
+records separate release gates, including current-image embedded-OpenSSL disposition.
 Historical migrations 0001–0003 are unchanged. Dated preparation entries below
 are historical; the final section records the current scheduling checkpoint.
 
@@ -292,11 +294,15 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   Generation 132 passed all 36 live rollout assertions. IAM, ingress and other
   runtime settings are unchanged; the receipt-compatible frozen rollback is
   Ready. Existing deployment automation remains paused.
-- **Blocked pending explicit rollout approval:** cleanup credentials/IAM, alert
-  routing, manual cleanup validation and scheduler activation. The completed
-  migration/acceptance/promotion does not authorize these remaining actions.
-- **Deferred to release closeout:** the cumulative whole-project security pass
-  and the remaining release/device checks in `PROJECT_PLAN.md`.
+- **Resolved cleanup activation:** separately approved credentials/IAM, alert
+  routing, manual cleanup/retry validation, hourly activation and first natural
+  execution are complete, as recorded in the final checkpoint. Only the limited
+  fresh policy comparison remains open; no new dispatch or provisioning is needed.
+- **Blocked release disposition:** the current receipt image has no recorded
+  exact-digest embedded-OpenSSL exception; earlier image-specific acceptance is
+  not automatically transferable. See `RELEASE_READINESS.md` for this gap and
+  the remaining CI/browser/device/publication gates. This is not a new finding
+  that the receipt migration or cleanup behavior is defective.
 - **Resolved fixture race:** server-side teardown is now observed explicitly
   before the integration test asserts drainage; all 50 MySQL tests pass without
   weakening production checks. The active dev install still retains four known

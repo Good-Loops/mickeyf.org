@@ -4,6 +4,14 @@ This tracked roadmap records the active continuation of the broader migration
 and game plan. Detailed implementation decisions remain subject to review at
 each phase boundary.
 
+Current release gates (reconciled 2026-09-08 local): see the
+[cumulative release/security ledger](RELEASE_READINESS.md). It supersedes stale
+pending claims in the dated history below. Named cleanup and the bounded script
+audit are complete; the remaining gates are current-branch CI, current-image
+embedded-OpenSSL disposition, limited alert readback, narrow candidate/browser
+checks and explicit publication/mobile approval. No accepted gameplay check is
+reopened by this reconciliation.
+
 Current storage checkpoint (2026-09-08): the receipt-based backend is implemented
 on `feature/three-bosses-polish` and its production schema/grant cutover is
 complete. The accepted receipt-compatible image now serves normal traffic with
@@ -101,15 +109,15 @@ The missing-success alert was freshly observed enabled; the two failure alerts
 remain verified only by the activation snapshots because the installed CLI lacks
 the alert-policy command and browser reconnection failed. This limited alert
 recheck remains open; it does not invalidate the successful natural execution.
-Retire one-time follow-up `verify-first-hourly-receipt-cleanup` after recording
-this outcome. Preserve the conversation and non-secret JSON evidence; the hourly
-cloud cleanup is not a temporary artifact.
+One-time follow-up `verify-first-hourly-receipt-cleanup` was deleted after the
+checkpoint was synced; removal is verified. Conversation and non-secret JSON
+evidence are preserved; the hourly cloud cleanup is not a temporary artifact.
 
-Next: continue the temporary-artifact cleanup below. Do not repeat
+Next: follow the current release/security ledger above. Do not repeat
 the completed migration, acceptance or score promotion; do not use a pre-receipt
 backend for rollback. No main merge or website deployment is authorized by this
-cleanup checkpoint. The owner has separately re-added a bounded package-script
-audit to cleanup; do not resume the earlier open-ended audit.
+cleanup checkpoint. The re-added bounded package-script audit is now complete;
+do not resume the earlier open-ended audit.
 
 Image review completed with user approval (2026-09-08): Cloud Build
 `12ec9e8e-ff4a-493c-be8c-025423e5110c` successfully built exact source
@@ -1757,9 +1765,10 @@ The deployment qs follow-up changes only its manifest override, single lock
 entry, and this roadmap. All 14 other dirty files match their pre-turn hashes.
 It reuses the already-retained Firebase verification directory, creates no new
 temporary install, and does not retry the previously rejected deletion.
-The subsequent stream-json assessment changes only this roadmap and its external
+The subsequent stream-json assessment changed only this roadmap and its external
 evidence report. All 18 snapshotted source/dependency/workflow/config files remain
-unchanged. Proposed risk disposition is explicitly pending, not a silent waiver.
+unchanged in that checkpoint. Its initially pending disposition was subsequently
+explicitly accepted by the owner under the dated static-Hosting exception above.
 
 The design must include:
 
