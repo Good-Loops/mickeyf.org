@@ -9,7 +9,9 @@ Current release gates (reconciled 2026-09-08 local): see the
 pending claims in the dated history below. Named cleanup and the bounded script
 audit are complete. The scoped Firebase dependency patch `3ea379fe` passed the
 complete non-deploying CI run `34301221560`; the remaining gates are eventual
-PR/CodeQL merge checks and explicit publication/mobile approval. The combined
+PR/CodeQL merge checks and guarded hosted delivery. The owner has approved
+publication and public mobile enablement; preserve the continuing polish branch
+and leave the already-deployed backend unchanged. The combined
 fresh-load/landscape phone observation is complete: the owner reported about
 10 seconds to load and correct Fire/fullscreen-exit behavior on the local
 release-candidate preview. This is not a production CDN timing measurement.

@@ -48,7 +48,7 @@ test('enables touch controls only for touch-capable mobile browsers', () => {
     }), true);
 });
 
-test('blocks mobile browsers without mistaking desktop touch devices for phones', () => {
+test('identifies mobile browsers without mistaking desktop touch devices for phones', () => {
     assert.equal(isThreeBossesMobileBrowser({
         maxTouchPoints: 0,
         userAgent: 'Mozilla/5.0 (Linux; Android 10)',
@@ -78,7 +78,7 @@ test('blocks mobile browsers without mistaking desktop touch devices for phones'
     }), false);
 });
 
-test('allows an explicit preview without changing real touch-device detection', () => {
+test('allows mobile release or preview access without changing real touch-device detection', () => {
     const android = {
         maxTouchPoints: 5,
         userAgent: 'Mozilla/5.0 (Linux; Android 15)',

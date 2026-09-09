@@ -20,6 +20,7 @@ import { ThreeBossesAvailabilityGate } from "@/pages/games/ThreeBosses";
 import { isThreeBossesAvailableInCurrentBrowser } from '@/games/three-bosses/unityVisibility';
 import {
 	isThreeBossesEnabled,
+	isThreeBossesReleaseEnabled,
 	THREE_BOSSES_ROUTE,
 } from '@/config/featureFlags';
 
@@ -34,7 +35,7 @@ const App: React.FC = () => {
 	const shellRef = useRef<HTMLDivElement>(null);
 	useSafariBackgroundEdges(shellRef);
 	const threeBossesAvailable = isThreeBossesEnabled
-		&& isThreeBossesAvailableInCurrentBrowser();
+		&& isThreeBossesAvailableInCurrentBrowser(undefined, isThreeBossesReleaseEnabled);
 
 	return (
 	<div className="app-shell" ref={shellRef}>

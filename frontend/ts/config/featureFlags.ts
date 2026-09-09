@@ -13,7 +13,7 @@ export const isThreeBossesEnabled =
 const THREE_BOSSES_MOBILE_PREVIEW_PARAMETER = 'three-bosses-mobile-preview';
 
 /**
- * Allows a physical mobile browser to exercise the unreleased touch HUD
+ * Allows a physical mobile browser to exercise the touch HUD
  * through the local development server. The existing local feature gate is
  * authoritative, so the query parameter can never unlock production.
  */

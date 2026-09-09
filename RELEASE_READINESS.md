@@ -6,7 +6,10 @@ dated entries in [PROJECT_PLAN.md](PROJECT_PLAN.md) and
 [RECEIPT_RETENTION.md](backend/RECEIPT_RETENTION.md) remain supporting history.
 Update this ledger instead of treating superseded historical blockers as new work.
 
-**Release is not yet approved.** After the initial Firebase audit failure,
+**Publication and public mobile enablement are owner-approved**, subject to
+the required PR/merge checks and guarded Firebase preview-to-live workflow.
+Approval does not authorize bypassing checks, deleting the continuing polish
+branch, or changing the backend deployment. After the initial Firebase audit failure,
 the scoped dependency patch `3ea379fe` passed the complete non-deploying CI run
 `34301221560`. Subsequent focused host-CSS checks and owner phone acceptance
 are recorded below; each tested source is identified explicitly. No PR,
@@ -32,7 +35,7 @@ an image-specific risk acceptance or replace merge/release approval.
 | R1 | Fixed; certified local candidate | Package `2e660337…a7fe7` remains the certified 996-file Unity candidate from `8eaa6615`. Unity source is unchanged. The later host-only short-landscape CSS correction and its focused checks are recorded below; it requires no Unity rebuild. Candidate packaging/hash checks, local header simulation and signed-out Chrome startup remain the existing evidence. |
 | R2 | Fixed; owner phone acceptance | After opening the release-candidate mobile preview for the requested fresh-load/landscape touch check, the owner reported about 10 seconds to load and confirmed Fire/fullscreen-exit buttons behave properly. This closes the combined observation. The timing is owner-observed local Safari delivery, not an instrumented cache-miss measurement or production CDN benchmark; the exact 640x360 geometry remains covered by the earlier layout fixture. No repeat login/submission or exhaustive clip-listening pass is required. |
 | R3 | Fixed; accepted owner checks | Keep closed: owner-confirmed published-site login/submission; Android/iPhone normal routes and recorded defeat/retry/menu checks; touch controls; mute persistence; automatic/combined pause; complete outcome-centering audit; accepted fullscreen-button placement and Safari toolbar limitation; recovered desktop FPS incident. Carry acceptance forward unless relevant code/origin/configuration changes or a concrete regression invalidate it. A brief post-publication smoke check is not a new pre-release authentication campaign. |
-| R4 | Blocked; publication decisions | Public mobile gameplay remains disabled outside the DEV-only preview. Backend score-write activation did not change that gate. Main merge, publishing, mobile enablement and any hosted candidate preview require their own scoped approval; verify actual new-package CDN bytes/headers/compression after approved delivery. |
+| R4 | Approved; delivery pending | The owner approved publication and public mobile enablement after R2 acceptance. Release builds now allow the mobile Games card/direct route while preserving the DEV-only local preview switch. Merge through the required PR checks and existing Firebase preview-to-live verification, then record hosted package/header results. Preserve `feature/three-bosses-polish`; backend deployments, flags, grants and data remain unchanged. |
 | M1 | Fixed; named scope | Named temporary-artifact cleanup and the 57-script bounded audit are complete. Recycled copies remain recoverable; intentional verification/recovery archives remain. Do not reopen an unlimited package/filesystem audit. |
 | M2 | Deferred; explicit follow-ups | Exhaustive per-weapon/per-clip listening and game-feel coverage is optional follow-up absent a specific defect or relevant change; the bounded source review below found no missing weapon/audio reference. Shared-shell device checks (landscape nav/dropdowns with browser bars; Dancing Circles aspect/color) remain distinct from Three Bosses gameplay. Also retain the large-chunk warning, Unity CLI/Pipeline compatibility follow-up and unmeasured DB instrumentation overhead. p4-Vega polish and the incremental Clean Code sweep follow this release phase. |
 
@@ -300,16 +303,17 @@ authentication and score-submission acceptance remains closed.
 
 ## Next execution order and authority
 
-1. Prepare the release PR and its required checks without rebuilding unchanged
-   Unity source or repeating accepted gameplay/authentication checks. Public
-   mobile remains disabled unless separately approved; R2's combined phone
-   observation is complete. Do not create another account/score
+1. Complete the approved release PR and its required checks without rebuilding
+   unchanged Unity source or repeating accepted gameplay/authentication checks.
+   Public mobile enablement is approved; R2's combined phone observation is
+   complete. Do not create another account/score
    campaign. Keep S5 closed and S8 closed until expiry or a reassessment trigger.
-2. Resolve or explicitly disposition all remaining gates before requesting
-   publication/mobile approval, then verify hosted delivery. A PR and current
+2. Resolve or explicitly disposition all remaining gates, merge the approved
+   release and verify hosted delivery. A PR and current
    CodeQL/required checks remain necessary for its eventual merge head; the
-   completed standalone CI is not merge approval. No main merge, deployment,
-   dependency refresh or cloud mutation is implied by this ledger.
+   completed standalone CI is not a substitute for those checks. The owner's
+   approval covers this frontend publication/mobile enablement, not a backend
+   redeployment, dependency refresh or unrelated cloud mutation.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

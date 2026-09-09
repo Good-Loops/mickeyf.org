@@ -207,9 +207,10 @@ node --test scripts/watch-docs.test.mjs
 
 Three Bosses is available locally when the development feature flag is
 explicitly enabled. Its Alpha release uses a separate, certified same-origin
-package. The playable route is desktop-only for Alpha 0.6.0; recognized mobile
-browsers receive the desktop-only notice without instantiating Unity, while the
-Three Bosses leaderboard remains available.
+package. Release builds enable both desktop and mobile gameplay, including the
+Games card and direct route. Touch-first mobile browsers receive the touch HUD;
+desktop keyboard controls are unchanged. Local mobile testing still requires
+`?three-bosses-mobile-preview=1` in addition to the development feature flag.
 
 1. Build the Unity project to the external, ignored location documented in
    [`unity/three-bosses/README.md`](unity/three-bosses/README.md).

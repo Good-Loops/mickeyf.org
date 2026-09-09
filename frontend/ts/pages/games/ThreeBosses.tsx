@@ -4,6 +4,7 @@ import ScoreSubmissionNotice from '@/components/ScoreSubmissionNotice';
 import {
     isThreeBossesLocalEnabled,
     isThreeBossesMobilePreviewRequested,
+    isThreeBossesReleaseEnabled,
 } from '@/config/featureFlags';
 import { useAuth } from '@/context/AuthContext';
 import { isThreeBossesAvailableInCurrentBrowser } from '@/games/three-bosses/unityVisibility';
@@ -348,7 +349,7 @@ export const ThreeBossesDesktopOnly: React.FC = () => (
 export const ThreeBossesAvailabilityGate: React.FC = () => (
     isThreeBossesAvailableInCurrentBrowser(
         undefined,
-        isThreeBossesMobilePreviewRequested(),
+        isThreeBossesReleaseEnabled || isThreeBossesMobilePreviewRequested(),
     )
         ? <ThreeBosses />
         : <ThreeBossesDesktopOnly />
