@@ -19,6 +19,7 @@ import { BlackHole } from './BlackHole';
 import { P4 } from './P4';
 
 import { Container, ContainerChild, AnimatedSprite } from 'pixi.js';
+import type { Context } from 'tone';
 
 /**
  * Water entity for P4-Vega.
@@ -35,7 +36,7 @@ export class Water extends Entity<AnimatedSprite> {
     private startY = CANVAS_HEIGHT * .5;
     private collectibleEnabled = true;
 
-    private noteSelector = new GameplayNoteSelector();
+    private noteSelector: GameplayNoteSelector;
 
     /**
      * @param stage - Container that will own the water sprite in the scene graph.
@@ -43,9 +44,11 @@ export class Water extends Entity<AnimatedSprite> {
      */
     constructor(
         stage: Container<ContainerChild>,
-        public waterAnim: AnimatedSprite
+        public waterAnim: AnimatedSprite,
+        audioContext?: Context,
     ) {
         super(waterAnim);
+        this.noteSelector = new GameplayNoteSelector(audioContext);
         stage.addChild(waterAnim);
 
         waterAnim.x = this.startX - waterAnim.width;
@@ -104,6 +107,7 @@ export class Water extends Entity<AnimatedSprite> {
 
     /** Destroys the water sprite. Caller is responsible for removing it from the stage if needed. */
     destroy() {
+        this.noteSelector.dispose();
         this.waterAnim.destroy();
     }
 }

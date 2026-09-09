@@ -70,30 +70,42 @@ const createBackgroundForText = (texts: Text[], padding: number, color: number, 
  * - Allocates `Text` and `Graphics` objects but does not add them to a stage.
  *
  * Cleanup:
- * - This module does not register event listeners or timers.
+ * - An optional abort listener is released when loading finishes or the session ends.
  * - The caller owns removing/destroying any returned display objects when appropriate.
  *
  * Return value:
  * - A promise resolving to display objects (background first) for the caller to add to the stage.
- * - Note: if called with `gameLive === true`, the promise does not resolve (by construction).
+ * - Active or cancelled runs resolve without allocating an overlay.
  */
-export function gameOver(gameLive: boolean, p4: P4): Promise<ContainerChild[]> {
+export function gameOver(gameLive: boolean, p4: P4, signal?: AbortSignal): Promise<ContainerChild[]> {
     return new Promise((resolve) => {
-        if (!gameLive) {
-            WebFont.load({
-                google: {
-                    families: ['Space Grotesk']
-                },
-                active: () => {
-                    const gameOverText = centeredSpaceGrotesk('GAME OVER', 63, 0xC80000, -20);
-                    const totalWaterText = centeredSpaceGrotesk(`Total Water:  ${p4.totalWater}`, 40, 0xFFFFFF, 50);
-                    const retryText = centeredSpaceGrotesk('Press space or tap to try again', 40, 0xFFFFFF, 100);
-                    const texts = [gameOverText, totalWaterText, retryText];
-                    const background = createBackgroundForText(texts, 10, 0xFFFFFF, 0.5, 10);
-
-                    resolve([background, ...texts]);
-                }
-            });
+        if (gameLive || signal?.aborted) {
+            resolve([]);
+            return;
         }
+        let settled = false;
+        const cancel = (): void => {
+            if (settled) return;
+            settled = true;
+            signal?.removeEventListener('abort', cancel);
+            resolve([]);
+        };
+        const finish = (): void => {
+            if (settled) return;
+            settled = true;
+            signal?.removeEventListener('abort', cancel);
+            const gameOverText = centeredSpaceGrotesk('GAME OVER', 63, 0xC80000, -20);
+            const totalWaterText = centeredSpaceGrotesk(`Total Water:  ${p4.totalWater}`, 40, 0xFFFFFF, 50);
+            const retryText = centeredSpaceGrotesk('Press space or tap to try again', 40, 0xFFFFFF, 100);
+            const texts = [gameOverText, totalWaterText, retryText];
+            const background = createBackgroundForText(texts, 10, 0xFFFFFF, 0.5, 10);
+            resolve([background, ...texts]);
+        };
+        signal?.addEventListener('abort', cancel, { once: true });
+        WebFont.load({
+            google: { families: ['Space Grotesk'] },
+            active: finish,
+            inactive: finish,
+        });
     });
 }

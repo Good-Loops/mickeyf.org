@@ -2070,17 +2070,47 @@ remain explicitly deferred, not passed, and do not block starting p4-Vega work.
 Branch policy: use descriptive `feature/`, `improvement/` or `fix/` prefixes,
 not `codex/`. Keep local `main` and the active development branch; retire completed
 branches only after verifying their work is safely retained. Keep remote branches
-only while useful: the current Dependabot PRs #321, #323, #324 and #325 contain
-unapplied dependency updates and remain open for review, rather than being
-discarded as stale branches. Commit and sync to the active branch; merging to
-`main` and deployment remain separate decisions.
+only while useful. After each branch creation or development handoff, post the
+dated single-paragraph development log to Slack `#dev-log` (channel
+`C0A4J46RSP7`) and confirm delivery; writing it only in chat is not sufficient.
+Commit and sync to the active branch; merging to `main` and deployment remain
+separate decisions.
 
-Next implementation slice: an icon Pause/Resume button and a small menu available
-inline and in fullscreen. Pause the runner's ticker, sprite animations, movement
-input and audio without resetting the run, score, frames or music position; clear
-held keys/joystick state to prevent stuck movement. Keep loading/game-over rules,
-score submission, keyboard controls and the new canvas scroll policy intact.
-No pause implementation, builds or tests were performed during this branch handoff.
+Dependency closeout (2026-09-09): at the owner's request, the exact updates from
+Dependabot PRs #321, #323, #324 and #325 were consolidated into dependency-only
+PR #326. Combined web audit/test/build, documentation, Unity integrity and CodeQL
+checks passed; protected merge `78295368` brought the updates into `main`, then
+merge `92cf0d87` synced them into the active p4-Vega branch. Original proposals
+were closed as superseded and their branches pruned; the temporary
+`fix/dependency-updates` branch and worktree were removed. Only `main` and the
+active feature branch remain. The separate existing deployment-tooling
+`stream-json` advisory is not resolved by these four updates. Both missing
+branch-transition logs and the latest public-release feature summary were posted
+to Slack `#dev-log`. Firebase Hosting run `34309113940` completed successfully
+for `78295368`; no p4-Vega pause or newer inline-scrolling source was published.
+
+Pause implementation (2026-09-09, development branch only): an icon Pause/Resume
+button and a compact glass menu are available inline and in fullscreen. Explicit
+loading/running/paused/game-over transitions stop the private ticker, only the
+currently playing sprites, and the game-owned audio context without resetting
+the run, score, frames or music position. Held keys and joystick captures are
+cleared; Space still activates focused controls and restarts a finished run.
+Slow score requests no longer block the end screen/retry, and late responses
+cannot display a personal-best popup over a newer run. Aborted route loads and
+navigation dispose the owned renderer, listeners, sprites and audio context.
+
+The 21 focused pause/input/restart tests and TypeScript checks passed with the
+updated frontend dependencies. Vite production build passed with the existing
+large-chunk warning, and generated documentation was refreshed successfully.
+The root locked install initially hit a Windows certificate-chain error; rerunning
+with Node's `--use-system-ca` resolved it without disabling TLS verification.
+Isolated Chrome verified a pixel-stable paused canvas,
+stopped/resumed audio clock, keyboard Resume, portrait/landscape menu fit,
+fullscreen presence and route teardown without browser errors. This is not a
+physical-device or listening test; owner-deferred phone checks remain pending.
+Next implementation slice: a concise p4-Vega controls/onboarding guide explaining
+movement, collecting water, avoiding black holes and pausing, without changing
+score rules or reopening completed Three Bosses acceptance.
 
 Site-wide canvas scrolling (2026-09-09, implemented locally): the owner chose to retain
 inline Three Bosses gameplay, reserving gestures that start on its actual UI
@@ -2099,7 +2129,7 @@ The existing VS Code Front terminal now serves that local build on LAN port 5173
 backend and Docs were not restarted. Physical iPhone/Android confirmation of this
 new scroll behavior is deferred by the owner, not claimed. Temporary browser and
 Editor-transport helpers were removed. This is not a public deployment.
-The next game feature remains p4-Vega pause.
+The pause implementation above builds on this unreleased scrolling behavior.
 
 Tooling follow-up discovered here: installed Unity CLI 1.0.0-beta.8 rejects
 parameterized commands against the project's older Pipeline command parser.
@@ -2111,15 +2141,16 @@ Begin this phase after the current Three Bosses polish milestone is stable.
 Preserve p4-Vega's existing score rules and keyboard behavior while improving
 the game incrementally:
 
-- add a real pause button and a simple pause menu with explicit, testable pause
-  state transitions;
-- stop the canvas from swallowing ordinary vertical touch-scroll gestures, so a
+- [x] Add a real pause button and a simple pause menu with explicit, testable pause
+  state transitions (physical-device acceptance deferred).
+- [x] Stop the canvas from swallowing ordinary vertical touch-scroll gestures, so a
   visitor can scroll the page even when the gesture begins over the canvas,
-  while preserving deliberate interactions with actual game controls;
-- audit and prioritize further upgrades to game feel, onboarding, controls,
+  while preserving deliberate interactions with actual game controls
+  (physical-device acceptance deferred).
+- [ ] Audit and prioritize further upgrades to game feel, onboarding, controls,
   visual and audio feedback, performance, responsive/fullscreen behavior, and
   score/leaderboard UX rather than committing to speculative rewrites; and
-- verify keyboard behavior plus real Android and iOS touch, orientation,
+- [ ] Verify keyboard behavior plus real Android and iOS touch, orientation,
   scrolling, and fullscreen behavior before release.
 
 ## Phase 16 — Whole-project Clean Code sweep

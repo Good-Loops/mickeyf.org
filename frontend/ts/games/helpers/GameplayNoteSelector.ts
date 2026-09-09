@@ -2,7 +2,7 @@ import { scales } from '@/utils/scales';
 import { keys } from '@/utils/keys';
 import { transpose } from '@/utils/transpose';
 
-import { now, MembraneSynth } from 'tone';
+import { MembraneSynth, type Context } from 'tone';
 
 /**
  * Represents a musical scale definition.
@@ -28,7 +28,11 @@ type Scale = {
  * @category Games — Core
  */
 export class GameplayNoteSelector {
-    private synth = new MembraneSynth().toDestination();
+    private synth: MembraneSynth;
+
+    constructor(context?: Context) {
+        this.synth = new MembraneSynth(context ? { context } : {}).toDestination();
+    }
 
     private selectedKey = 'C';
     private lastKey = 'C';
@@ -264,6 +268,10 @@ export class GameplayNoteSelector {
         const note = this.getNote(this.lastPlayedNote, isFirstNote) as number;
         this.lastPlayedNote = note;
 
-        this.synth?.triggerAttackRelease(note, 0.8, now());
+        this.synth.triggerAttackRelease(note, 0.8, this.synth.now());
+    }
+
+    dispose(): void {
+        this.synth.dispose();
     }
 }
