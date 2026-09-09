@@ -2056,6 +2056,31 @@ an accepted risk before this item is closed.
 
 ## Phase 15 — p4-Vega improvement and mobile polish
 
+Site-wide canvas scrolling (2026-09-09, implemented locally): the owner chose to retain
+inline Three Bosses gameplay, reserving gestures that start on its actual UI
+controls and allowing other vertical drags to scroll. PIXI canvases now allow
+native vertical pan/pinch gestures; fullscreen retains gesture capture. p4-Vega
+restart requires a tap, not a drag or cancelled scroll. Three Bosses loading/error
+surfaces also allow native scrolling; the running game forwards non-control drags
+through a small Unity/browser bridge, without moving the page in fullscreen or
+escaping the existing viewport lock. Frontend type checking, 128 tests, a Vite
+build, and Chromium touch/fullscreen checks passed. Unity compilation and all ten
+focused gesture tests passed; guarded build `build_e494f313e54a` succeeded with
+zero actionable warnings and restored its guarded settings. In mobile-emulated
+Chromium, 70px/35px open-canvas drags produced matching scroll distances, menu
+audio/joystick/Fire drags produced no page movement, and fullscreen stayed fixed.
+The existing VS Code Front terminal now serves that local build on LAN port 5173;
+backend and Docs were not restarted. Physical iPhone/Android confirmation of this
+new scroll behavior remains recommended, not claimed. Temporary browser and
+Editor-transport helpers were removed. This is not a public deployment.
+The next game feature remains p4-Vega pause.
+
+Tooling follow-up discovered here: installed Unity CLI 1.0.0-beta.8 rejects
+parameterized commands against the project's older Pipeline command parser.
+This build used the same Editor's authenticated structured API through the
+existing guarded builder's injected transport; no package/version was changed.
+Resolve that CLI/Pipeline compatibility in a bounded tooling maintenance task.
+
 Begin this phase after the current Three Bosses polish milestone is stable.
 Preserve p4-Vega's existing score rules and keyboard behavior while improving
 the game incrementally:

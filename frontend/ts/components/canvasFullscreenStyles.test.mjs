@@ -36,6 +36,14 @@ test('larger desktop fullscreen keeps its existing width-driven enlargement', ()
     assert.doesNotMatch(desktopCss, /flex: 0 0 auto;/);
 });
 
+test('all fullscreen modes override embedded canvas page gestures', () => {
+    for (const mode of [':fullscreen', ':-webkit-full-screen', '[data-canvas-fullscreen=fallback]']) {
+        const rule = css.split('}').find(part => part.includes(`__canvas-wrapper${mode} .fixture__canvas`)
+            && part.includes('touch-action: none !important;'));
+        assert.ok(rule, mode);
+    }
+});
+
 test('compact Three Bosses fullscreen keeps the exit control at the safe screen corner', () => {
     const gameCss = compileString("@use 'pages/three-bosses';", {
         loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],

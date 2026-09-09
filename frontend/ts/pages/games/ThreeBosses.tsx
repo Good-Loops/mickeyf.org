@@ -321,6 +321,10 @@ const ThreeBosses: React.FC = () => {
                     </div>
                 )}
 
+                {loadState.kind === 'loading' && hasUnityCanvasControl && (
+                    <div className="three-bosses__startup-gestures" aria-hidden="true" />
+                )}
+
                 <FullscreenButton
                     targetRef={frameRef}
                     focusRef={canvasRef}

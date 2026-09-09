@@ -9,6 +9,7 @@
  * - Ensure disposal is deterministic: detach ticker, remove canvas, and destroy PIXI resources.
  */
 import { Application, Ticker } from "pixi.js";
+import { enableCanvasPageGestures } from '@/utils/canvasPageGestures';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
 import type { FractalAnimationConstructor } from "./interfaces/FractalAnimation";
 import type { FractalAnimation } from "./interfaces/FractalAnimation";
@@ -44,6 +45,7 @@ export async function createFractalHost(container: HTMLElement): Promise<Fractal
 
     container.append(app.canvas);
     app.canvas.classList.add('dancing-fractals__canvas');
+    enableCanvasPageGestures(app.canvas, app.renderer.events);
     app.canvas.setAttribute('role', 'img');
     app.canvas.setAttribute('aria-label', 'Dancing Fractals animation');
 

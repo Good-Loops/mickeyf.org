@@ -14,8 +14,10 @@
  *   module decides when to invoke them and owns adding/removing the returned display objects.
  */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
+import { enableCanvasPageGestures } from '@/utils/canvasPageGestures';
 import { getRandomInt } from '@/utils/random';
 import { gameOver } from './utils/gameOver';
+import { bindP4RestartTap } from './p4RestartTap';
 
 import { API_BASE } from '@/config/apiConfig';
 
@@ -81,6 +83,7 @@ export async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth): Promis
     const canvas = renderer.view.canvas as HTMLCanvasElement;
     canvas.className = 'p4-vega__canvas';
     canvas.id = 'p4-canvas';
+    enableCanvasPageGestures(canvas, renderer.events);
     container?.appendChild(canvas);
 
     const stage = new Container();
@@ -461,15 +464,7 @@ export async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth): Promis
         ?.querySelectorAll<HTMLElement>('[data-p4-joystick]')
         .forEach(attachJoystick);
 
-    const handleCanvasPointerUp = (): void => {
-        if (!gameLive) void restart();
-    };
-    canvas.addEventListener('pointerup', handleCanvasPointerUp);
-    registeredListeners.push({
-        element: canvas,
-        event: 'pointerup',
-        handler: handleCanvasPointerUp,
-    });
+    const disposeRestartTap = bindP4RestartTap(canvas, () => !gameLive, () => { void restart(); });
 
     return () => {
         /**
@@ -483,6 +478,7 @@ export async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth): Promis
          */
         ticker.stop();
         ticker.destroy();
+        disposeRestartTap();
 
         if (p4MusicPlayer) {
             p4MusicPlayer.stop();
