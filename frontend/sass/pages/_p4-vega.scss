@@ -109,6 +109,8 @@
     }
 
     &__ui {
+        // Raise this grid item's glass layer so menus clear the sibling joystick panels.
+        z-index: 1;
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: .7rem;
