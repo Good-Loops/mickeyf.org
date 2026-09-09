@@ -1479,6 +1479,39 @@ candidates in the bounded audit are resolved. Do not restart that audit without
 new evidence. Remaining artifact dispositions and release/security gates are
 separate work.
 
+Named temporary-artifact dispositions completed (2026-09-08 local):
+
+- Both historical Safari folders (`mickeyf-safari-edge-check-20260906` and
+  `mickeyf-iphone-vite-dQirRt`) are already absent; this batch did not delete them.
+  No listeners remain on 5175/5176/8082 and no tracked Safari experiment route or
+  diagnostic flag remains. Accepted background/fullscreen implementation stays.
+- Removed empty root `Logs` and `NVIDIA Corporation/umdlogs` (then its empty
+  parent) with non-recursive, empty-only operations after exact-path/no-link
+  checks. No files were inside; these directories can be recreated if needed.
+- Recycled the additional isolated backend `mickeyf-receipt-locked-unit-075698753cb44a21b0ca7065edbbcc52`
+  and root `mickeyf-root-qs-verified-c6949cf50c76471d870f9eb834acd5bb` copies from
+  `%TEMP%`: 11,228 files / 109,000,123 bytes. Source/history review found only
+  reproducible dependencies, generated bundles and superseded integration-test
+  drafts, not unique recovery work or separate evidence. Deep metadata checks
+  found no reparse points; no other readable process command line referenced
+  either exact path (163 were unavailable, so this is not an all-handles claim).
+  Both original paths are absent and their original Temp locations are verified
+  in the Recycle Bin. Restore there if needed; space is not reclaimed yet.
+- The one-off natural-tick automation is already deleted; hourly cloud cleanup,
+  alerts and non-secret evidence remain. Normal 5173/8080/4174/3306 listeners
+  retain their process IDs. Release report and all six recovery/archive files
+  retain their SHA-256 hashes. Normal installs, generated working outputs and
+  intentionally retained verification/recovery material were not cleanup targets.
+
+This closes the named artifact list and bounded package-script audit, not a
+whole-filesystem sweep or release/security approval. External evidence is
+`release-checks-20260907/temp-artifact-disposition-20260908.json` under the Codex
+visualization folder. Validation used filesystem/reference/process checks,
+source comparisons, recovery hashes and `git diff --check`; no installs,
+application builds/tests, server restarts, database writes or cloud changes.
+Next: reconcile the cumulative release/security gates, including the limited
+alert-policy readback above; do not repeat completed cleanup or gameplay checks.
+
 #### Remaining release checks — consolidated checkpoint (2026-09-07)
 
 The owner requested all remaining release checks after confirming the desktop
@@ -1933,6 +1966,11 @@ Pending shared-shell follow-ups from the 2026-09-06 physical-device review:
   receiving the owner's geometry screenshot; no diagnostic button or alert remains
   in that hook. External preview/cache cleanup remains outstanding.
   Complete this explicit cleanup before closing the background task.
+  Superseded by the 2026-09-08 artifact disposition above: both exact external
+  folders are now absent, no preview listeners or active runtime diagnostic
+  flags remain (historical roadmap references are intentionally preserved),
+  and accepted production background/fullscreen code is preserved. This closes
+  the Safari experiment cleanup, not unrelated physical-device checks.
 
 The Dancing Circles visual pass was implemented and browser-verified on
 2026-08-29. It removes the visible page title, preserves the PIXI/audio logic,

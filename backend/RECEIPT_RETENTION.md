@@ -328,10 +328,14 @@ flag. Permanent best rows must never be deleted as part of that rollback.
 - `npm run docs`: passed once with the overlapping watcher paused; generated
   docs have no tracked diff. `git diff --check` passed.
 
-Temporary validation files remain outside version control because filesystem
-deletion was blocked. They are not deployable release artifacts. No dependency
-versions, feature flags, Unity assets or production resources changed in that
-receipt-implementation checkpoint.
+Temporary validation files initially remained outside version control because
+filesystem deletion was blocked. They are not deployable release artifacts.
+The later approved artifact cleanup recycled the isolated backend copy
+`mickeyf-receipt-locked-unit-075698753cb44a21b0ca7065edbbcc52` from `%TEMP%` after
+source/provenance and no-link/process checks; its original path is absent and
+recovery is available through the Recycle Bin. Verification results and recovery
+evidence are retained. The receipt-implementation checkpoint changed no
+dependency versions, feature flags, Unity assets or production resources.
 
 The subsequent local rollout-preparation checkpoint updates the root tooling
 lockfile's `qs` from 6.15.3 to 6.16.0. An isolated root dependency audit reported
@@ -346,11 +350,14 @@ wiring passed using the existing Node YAML parser; system Python has no PyYAML.
 Independent scoped review found no remaining P1/P2 findings. Cloud API response
 normalization and a real approved zero-traffic deployment remain unverified.
 
-Removal of the isolated root verification directory was blocked by filesystem
-policy. It remains outside the repository at
-`C:\Users\User\AppData\Local\Temp\mickeyf-root-qs-verified-c6949cf50c76471d870f9eb834acd5bb`;
-it contains reproducible test dependencies, not release assets or credentials.
-No deletion workaround was attempted.
+Removal of the isolated root verification directory was initially blocked by
+filesystem policy. It contained reproducible test dependencies, not release
+assets or credentials. The later approved artifact cleanup recycled exact path
+`C:\Users\User\AppData\Local\Temp\mickeyf-root-qs-verified-c6949cf50c76471d870f9eb834acd5bb`
+after manifest/history and no-link/process checks. The original path is absent;
+restore through the Recycle Bin if needed. See the named artifact dispositions
+in `PROJECT_PLAN.md`; neither the active install nor verification evidence was
+removed. No permanent-deletion fallback was used.
 No live build, CI trigger, deployment, traffic, schema, grants or cleanup
 activation is authorized by these local preparation changes.
 
