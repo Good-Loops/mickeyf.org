@@ -4,6 +4,297 @@ This tracked roadmap records the active continuation of the broader migration
 and game plan. Detailed implementation decisions remain subject to review at
 each phase boundary.
 
+Current release gates (reconciled 2026-09-08 local): see the
+[cumulative release/security ledger](RELEASE_READINESS.md). It supersedes stale
+pending claims in the dated history below. Named cleanup and the bounded script
+audit are complete. The scoped Firebase dependency patch `3ea379fe` passed the
+complete non-deploying CI run `34301221560`; the remaining gates are eventual
+PR/CodeQL merge checks and guarded hosted delivery. The owner has approved
+publication and public mobile enablement; preserve the continuing polish branch
+and leave the already-deployed backend unchanged. The combined
+fresh-load/landscape phone observation is complete: the owner reported about
+10 seconds to load and correct Fire/fullscreen-exit behavior on the local
+release-candidate preview. This is not a production CDN timing measurement.
+S5's exact three-policy/channel readback passed
+at 2026-09-09 02:12:46 UTC without cloud changes; it is closed.
+No accepted gameplay check is reopened by this reconciliation.
+The owner approved S8's exact receipt-image OpenSSL exception through 2026-10-07,
+subject to the ledger's earlier reassessment triggers. This is bounded risk
+acceptance, not remediation or authorization for a new image/deployment. Do not
+repeat the unchanged source/component review without a trigger or expiry.
+
+Focused Three Bosses preparation (2026-09-08): the redundant generic
+login/submission blocker is removed; preserve the owner's published-site
+confirmation and existing backend receipt/retry acceptance. The short-16:9
+exit/Fire hit-area overlap was confirmed and corrected in host CSS, with five
+focused style tests and two before/after Chromium layout sizes, not a full
+gameplay replay. Unity source/package is unchanged. Ten weapon definitions and
+all 21 expected audio references resolve; exhaustive listening/game-feel coverage
+is deferred, not represented as manually verified. See the ledger for measured
+layout tradeoffs. In the subsequent owner phone check, the existing Front
+terminal was restarted with the certified candidate and LAN access; backend
+and Docs stayed running. The owner accepted the fresh-load/touch spot-check.
+No public mobile gate, account, score or deployment changed.
+
+Current storage checkpoint (2026-09-08): the receipt-based backend is implemented
+on `feature/three-bosses-polish` and its production schema/grant cutover is
+complete. The accepted receipt-compatible image now serves normal traffic with
+both score-submission flags true after the approved production promotion.
+Permanent `game_personal_bests` are
+independent of short-lived `game_submission_receipts`; Three Bosses retry and
+rate-limit receipts have a minimum 24-hour retention. The bounded cleanup job
+passed its controlled production run; hourly scheduling and the missing-success
+watchdog are now enabled. The final scheduling checkpoint is recorded below.
+Historical paragraphs below describing the immutable `game_runs`
+ledger remain deployment history, not the new design. See
+[`backend/RECEIPT_RETENTION.md`](backend/RECEIPT_RETENTION.md) for the storage
+contract, guarded migration/recovery workflow and scoped security disposition.
+
+Approved cutover completed at `2026-09-08T19:26:19.570Z`: fresh successful
+backup `1788894880118`, verified writer drain, and guarded migrations 0004/0005
+preserved all seven personal bests and five receipts with identical canonical
+hashes. All five migrations are recorded; none are pending or recoverable.
+The runtime has exactly the reviewed column-level privileges (no DELETE), and
+the operator's existing DML rights moved from `game_runs` to
+`game_submission_receipts`. Public ingress is restored, Cloud Run generation
+130 retains the same frozen image/revision and 100% traffic, and IAM is unchanged.
+Both temporary accounts are removed. The original VS Code `back` workload is
+running again; frontend, WebGL and SQL proxy listeners were preserved. Public
+and local read/frozen-gate checks passed, with identical public board hashes.
+Enabled backend acceptance completed at `2026-09-08T19:49:40.355Z` under separate
+user approval. A private, temporary Cloud Run service used the same verified
+image with both submission flags enabled and one disposable website account.
+All 64 HTTP assertions passed: signed-cookie login, real server run tickets,
+canonical submissions, exact retries, payload conflict, worse/better scores,
+the ten-new-runs database limit, and both leaderboard readbacks. Three Bosses
+created ten receipts and one best; p4-Vega kept one best without receipts.
+The service was deleted, then only that account's ten receipts, two bests and
+user row were removed under the shared user lock and a transaction. The original
+seven bests/five receipts, public board responses and production config/IAM
+matched their baselines. No browser/gameplay or Safari-cookie test is claimed.
+Temporary execution helpers were removed; non-secret evidence is outside the
+repository. That acceptance batch left normal traffic frozen at generation 130.
+
+Approved production promotion completed at `2026-09-08T20:01:05.143Z`:
+`mickeyf-org-scores-9ec1bd83-0908` uses the same verified image and serves 100%
+of intended and observed traffic at generation 132. Generation 131 first staged
+it with zero traffic; only the two submission flags and required revision name
+changed. All 36 live rollout assertions passed across both public backend
+origins, including enabled/authentication gates, leaderboard reads and trusted
+website CORS. Public board hashes were unchanged during these checks. No new
+synthetic writes, credentials, SQL/schema/grant changes or frontend/Unity builds
+were needed. IAM, ingress and other runtime settings are unchanged, deployment
+automation is still paused, and the receipt-compatible frozen revision remains
+Ready for rollback. The temporary promotion helper was removed; only non-secret
+evidence remains outside the repository.
+
+Receipt-cleanup manual acceptance completed (2026-09-08 local;
+`2026-09-09T00:03:00.282Z` closeout). The owner confirmed both alert emails.
+The dedicated proxy-only SQL account has exactly three-column SELECT plus
+DELETE on receipts, with no roles or access to personal bests. Its pinned secret
+is accessible to the cleanup identity, which has only Cloud SQL Client at the
+project level. The temporary provisioning account was removed; existing SQL
+accounts' grants are unchanged.
+
+Execution `mickeyf-submission-receipt-cleanup-k2skb` succeeded and deleted all
+five expired receipts, preserving the recent test receipt and all personal
+bests. Authenticated retries passed before and after deletion. The disposable
+account and its one best/receipt were then removed; the original seven bests
+retain their exact baseline hash, with zero remaining receipts/expired rows.
+An earlier safety-canceled attempt changed no existing data; it exposed a v2
+execution-response mount omission, verified through the same execution's v1
+Cloud SQL annotation before retrying. The post-run helper's unrelated row-key
+assertion was reconciled read-only, without another cleanup execution.
+That manual checkpoint left the job disabled at generation 6, with no hourly
+schedule or scheduler identity and the no-success watchdog unarmed. Production
+generation 132, traffic, score flags, schema and paused deployment automation
+were unchanged. The subsequent approved activation below supersedes this state.
+
+Hourly activation completed at `2026-09-09T00:27:08.024Z` (2026-09-08 local):
+cleanup generation 7 is enabled, the UTC-hourly Scheduler is enabled, and the
+two-hour missing-success watchdog is armed alongside the delivered failure
+alerts. Its separate caller has Run Invoker on this job only, with no SQL,
+secret or project-level role. The Google-managed Scheduler service agent keeps
+its required service-agent role. The forced Scheduler-to-Job acceptance passed:
+`mickeyf-submission-receipt-cleanup-v27kx` completed successfully at
+`2026-09-09T00:32:57.235029Z`, deleting zero rows with no backlog. Before/after
+read-only snapshots preserve all seven bests, zero receipts, user count and
+scoped table definitions; production generation 132 and deployment automation
+remain unchanged. No application rebuild or new disposable account was needed.
+The first natural hourly tick is now verified (2026-09-08 local): Scheduler's
+`2026-09-09T01:00:19.548160Z` attempt returned HTTP 200 and created distinct
+execution `mickeyf-submission-receipt-cleanup-zjpfg` through the exact approved
+caller. It completed at `01:01:22.324316Z`, with one successful task, zero deleted
+receipts and no errors/backlog. Its pinned native v1 template and Cloud SQL/
+secret annotations match the accepted execution and current generation-7 Job.
+The enabled hourly configuration and production generation 132 with 100% traffic
+to the accepted revision are unchanged. No extra run or fresh SQL check occurred.
+The limited alert recheck initially lacked complete CLI/browser evidence.
+It is now closed: read-only Monitoring API GETs at 2026-09-09 02:12:46 UTC
+matched all three policies' filters, thresholds, aggregation, missing-data
+behavior, alert strategies and channel IDs to the activation snapshots.
+The enabled email channel matches the approved recipient. No test alert or
+cleanup run was dispatched; prior owner-confirmed delivery remains the evidence.
+One-time follow-up `verify-first-hourly-receipt-cleanup` was deleted after the
+checkpoint was synced; removal is verified. Conversation and non-secret JSON
+evidence are preserved; the hourly cloud cleanup is not a temporary artifact.
+
+Next: follow the current release/security ledger above. Do not repeat
+the completed migration, acceptance or score promotion; do not use a pre-receipt
+backend for rollback. No main merge or website deployment is authorized by this
+cleanup checkpoint. The re-added bounded package-script audit is now complete;
+do not resume the earlier open-ended audit.
+
+Image review completed with user approval (2026-09-08): Cloud Build
+`12ec9e8e-ff4a-493c-be8c-025423e5110c` successfully built exact source
+`d1d5dbf6fcc1bedd596827a540779f437fe3501f`. Immutable image digest:
+`sha256:9ec1bd83ea73a283ad36961b2dcd3022b9b0a40cbf16bd725398ff562015c3c3`.
+Source/approval/provenance binding checks passed. Artifact Analysis completed
+with active continuous analysis including OS, NPM and SECRET; complete direct
+queries returned zero vulnerability and zero secret occurrences. This is a
+dated scan result, not a promise about future advisories. The image build did
+not change Cloud Run generation 126 or its existing 100% traffic allocation.
+
+Frozen zero-traffic deployment completed with separate user approval
+(2026-09-08): build `4e24e8ec-6254-4262-a068-832699ba92ba` succeeded with all
+seven steps passing. Revision
+`mickeyf-org-freeze-12ec9e8eff4a493cbe8c025423e5110c` is Ready with both
+submission flags false. Service generation 127 keeps the original revision at
+100% normal traffic and adds only the frozen candidate's zero-traffic test tag.
+Runtime, provenance/scan, anonymous authentication, public leaderboard SQL reads
+and frozen submission-response checks passed. Canonical Stage A/B were paused
+only for deployment, then restored exactly; the manual source trigger is
+unchanged and the dedicated frozen-deployment trigger is now disabled.
+
+Existing-account backend acceptance passed at `2026-09-08T18:06:15.6709583Z`:
+the operator completed login on the exact frozen HTTPS tag, the helper checked
+the Secure/HttpOnly signed cookie and matching authenticated `/auth/verify-token`
+response, and service generation/tag mapping remained unchanged. This accepts
+the retained frozen backend rollback candidate on the existing schema; it is
+not a browser cross-site cookie test. Credentials and session cookies were not
+recorded in the evidence files.
+
+Automation pause and read-only traffic planning completed with user approval
+(2026-09-08): all four backend Cloud Build triggers in `global` are disabled;
+`us-central1` has none. Full trigger configurations are unchanged apart from the
+disabled flags, and no pending/queued/working builds remain. The reviewed plan
+was generated at `18:13:03.959Z` against service generation 127. It proposes
+100% traffic to the accepted frozen revision and removal of its sole test tag.
+No traffic patch was sent in that planning checkpoint. The subsequent approved
+traffic-only cutover completed on 2026-09-08: fresh plan
+`53ce1331052791c90f4a7462235302ae9f2747e8cf9429044438a6d6ddfc6283`
+changed generation 127 to 128, routing 100% to the accepted frozen revision and
+removing its sole tag. Both public score-submission paths are now frozen.
+Runtime/image configuration is unchanged; backend deployment triggers remain
+paused. GitHub/Firebase frontend workflows were not changed.
+
+Delayed request-drain checks at `18:26:18.852Z` and `18:26:42.707Z` were both
+beyond the 300-second retiring-request limit. All eight non-target revisions
+remained retired, with no post-settlement requests found in the fully paginated
+log queries. Three samples passed 30 public HTTP checks total; both leaderboard
+response hashes stayed identical. This closes the traffic/request checks, not
+the database drain gate below.
+
+Database visibility maintenance **completed with separate user approval** on
+2026-09-08. Cloud SQL operation `3dc62fba-1eea-4604-8562-4c7600000032` enabled
+`performance_schema=on` and restarted the instance; settings version changed
+863 to 864, with every other setting preserved and no resize. The temporary
+bootstrap administrator was removed before the restart. The inspector had only
+PROCESS plus SELECT on the four approved performance-schema tables, no roles,
+and was removed afterward. Permanent account grant fingerprints were unchanged
+by provisioning; the original three-account inventory was restored.
+
+Two post-restart samples at `18:52:59.580Z` and `18:53:04.750Z` verified enabled
+metadata/global instrumentation, zero lost records, zero active transactions
+and zero pending metadata locks. All 14 before/after public checks passed with
+identical leaderboard hashes. Cloud Run generation 128, frozen score gates and
+paused backend triggers are unchanged. No migration, application-data write,
+runtime-grant cutover, cleanup activation or write re-enablement occurred.
+
+At that instrumentation checkpoint, migration remained **separately gated**:
+five other client sessions were present
+and exclusive writer control was not established. Before DDL, approve the
+migration principal/rights and write-free window, exclude external writers,
+and obtain the fresh guarded plan/drain evidence. Do not repeat instrumentation
+setup or reopen resolved test failures. Preserve bests, migrate, replace grants
+and verify final schema/read paths; write enablement and cleanup activation
+still require their own acceptance/approval. Instrumentation memory overhead
+and actual outage duration were not measured by this bounded maintenance run.
+
+Cutover preparation (2026-09-08): the existing operator's read-only consistent
+snapshot at `19:00:17.660Z` contains seven personal bests (five p4-Vega, two
+Three Bosses) and five Three Bosses submission records. Counts and canonical
+preservation hashes are recorded in the [cutover proposal](backend/RECEIPT_RETENTION.md#consolidated-cutover-proposal-awaiting-approval).
+That snapshot was not the final migration plan: the operator cannot inspect
+migration history or establish complete dependency/writer visibility. No access was
+elevated or live configuration/data changed during preparation. The subsequent
+approval covered the temporary backend ingress barrier, local backend/operator
+drain, temporary
+bootstrap/admin and scoped migration access, fresh backup/final guarded plan,
+exact 0004/0005 transition, runtime/operator grant update and verified restoration
+of frozen service.
+Login/signup/leaderboard reads will be interrupted during that window; static
+content, frontend, WebGL and the local SQL proxy stay available. Preserve the
+existing score freeze and leave receipt cleanup disabled.
+
+Local drain-guard hardening completed (2026-09-08): receipt apply now refuses
+disabled/inaccessible instrumentation, missing effective PROCESS, malformed
+inspection results, lost lock/thread records, active transactions and pending
+metadata locks before transition DDL. Empty lock tables alone cannot pass.
+The [maintenance record](backend/RECEIPT_RETENTION.md#approved-instrumentation-maintenance-completed-2026-09-08)
+contains the executed scope and cleanup evidence. The local CLI guard did not
+require a new API image.
+
+Latest code verification: 27 focused guard tests, all 50 disposable MySQL
+integration tests, 12 focused runtime-grant unit tests, TypeScript and diff
+checks passed. The session-drain fixture race is fixed: mysql2 resolves end()
+before the server processes COM_QUIT, so the fixture observes removal of its
+exact connection with a strict deadline. Production checks remain unchanged.
+The full active-install unit run retains four known `qs` 6.15.3 versus locked
+6.16.0 failures (194/198); no active dependencies were replaced. These remain
+explicit release limits, not a reason to repeat the completed maintenance.
+
+The local preparation adds `scripts/render-frozen-backend-deploy.mjs` (offline,
+hash-pinned canonical derivation with strict feature-source/image provenance and
+scan checks, both submission flags false, and a separate approval-required
+source-less trigger; no traffic promotion/notifier) and
+`scripts/frozen-backend-traffic.mjs` (fresh read-only plan, separately authorized
+etag-bound traffic-only apply to the exact frozen revision, all tags removed).
+Traffic pins include independently resolved offline deployment-step evidence;
+copying live build steps is not an approval substitute. Authenticated Google
+provenance binding is checked, not independent signature verification. The
+latest completed run passed 57 frozen-rollout checks plus three existing
+candidate-image and two cleanup-template contracts (62 total). Independent
+review found no remaining P1/P2 findings in this change. Source/provenance checks
+now pass against the actual image build after narrow URL-safe signature encoding
+and exact Git/builder dependency validation corrections. The frozen deployment
+also passed live, and its successful steps exactly match the independently
+resolved offline fingerprint. Authenticated backend candidate acceptance also
+passed; traffic cutover was complete, but database drain was still blocked at
+that checkpoint. The approved database cutover above subsequently resolved it.
+PR CI now invokes all these checks.
+The Windows traffic CLI now explicitly invokes the installed `gcloud.cmd`
+wrapper rather than the execution-policy-blocked PowerShell wrapper; no
+execution policy was changed. Live read-only planning passed with system CA
+trust enabled, without disabling TLS verification.
+The root tooling lockfile's narrow `qs` update to 6.16.0 has an isolated audit
+with zero vulnerabilities; this is not new backend-image scan evidence.
+
+Receipt-implementation verification already recorded: 171 unit/security tests
+on isolated locked dependencies, 49 local
+MySQL integration tests, TypeScript, production API/cleanup bundles, five job/
+image contract tests and the single docs rebuild passed. The running local
+dependency install still has stale `qs` 6.15.3 rather than locked 6.16.0; refresh
+it during a deliberate dev-stack stop, not by weakening its four security tests.
+After that, finish the existing release/security gates, then proceed to p4-Vega
+pause/touch-page-scrolling improvements and the incremental Clean Code sweep.
+
+Status snapshot (2026-09-04): Alpha 0.6.0 and the site redesign are published
+from `main`. Active work continues on `feature/three-bosses-polish`, with mobile
+gameplay still gated from production until its physical-device acceptance pass
+is complete. Dated deployment and migration passages below are retained as
+historical evidence; current operational state must be verified directly.
+
 ## Phase 12 — Three Bosses local game flow
 
 - Steps 12.1–12.9: implemented on the phase branch and undergoing gameplay and
@@ -13,9 +304,9 @@ each phase boundary.
   `01:00` is S; `01:00.000` through `01:20.000` is A; `01:20.001` through
   `01:40.000` is B; `01:40.001` through `02:00.000` is C; and anything slower
   is D. The reported `01:22` warm-up is B and remains excluded from the ten
-  measured calibration runs. These bands may be refined before public write
-  activation; changing them after activation requires an explicit historical
-  reclassification or rules-version decision.
+  measured calibration runs. These bands remain provisional; changing them
+  after write activation requires an explicit historical reclassification or
+  rules-version decision.
 - Step 12.11 — edge cases and presentation polish:
   - Step 12.11A — rename permanent Unity Editor utilities: **completed** in
     commit `46c3c775`.
@@ -44,23 +335,23 @@ each phase boundary.
     countdown regression coverage passed 19 EditMode and 20 PlayMode tests in
     commits `7da148d7` and `5062c6b5`. Mike confirmed audible mute/unmute
     behavior on 2026-08-24. His continuous hands-on combat-feel, weapon,
-    pickup, and full normal-route check remains before release.
+    pickup, and full normal-route check remains before the next Three Bosses
+    release.
 
 Phase 12 release acceptance still requires the remaining hands-on gameplay
 check, passing Unity compilation and automated tests, clean asset/meta integrity,
 and a verified complete normal route. The provisional rank implementation is
-complete. The Alpha score-submission candidate is now implemented behind the
-fail-closed release gate; live production remains disabled until the packaged
-player and authenticated production preview are explicitly approved.
+complete. Production currently advertises p4-Vega through its legacy submission
+path and Three Bosses as enabled, but each new release candidate still requires
+the local/live flag and signed-in end-to-end verification recorded under Phase
+13.
 
 ## Phase 13 — Website and leaderboard integration
 
 The local Three Bosses result flow is stable enough for integration work.
-Phase 13 completed on `feature/new-leaderboard` on 2026-08-26. This does not
-authorize a merge or push to `main`: rotate from its final commit into the next
-broad feature branch and retire the old branch instead. Keep `main` deferred
-until the Phase 14 site-wide responsive, information-architecture, and
-literal-dark redesign is complete and separately approved.
+Phase 13 completed on `feature/new-leaderboard` on 2026-08-26 and was later
+released through Alpha 0.6.0. Current Three Bosses polish remains isolated on
+`feature/three-bosses-polish` until its next reviewed release checkpoint.
 
 ### Step 13.1 — multi-game contract and migration design
 
@@ -156,6 +447,21 @@ fresh positive and negative SQL probes passed, public and local leaderboard
 reads remained healthy, no temporary database user or revision remained, and
 Cloud SQL reported no pending operation. This closes the runtime
 least-privilege blocker for the reviewed transitional manifest.
+
+Personal database inspection/maintenance follow-up (2026-09-07): the owner
+approved a separate `michel_operator@cloudsqlproxy~%` account for TablePlus.
+It has only `SELECT`, `INSERT`, `UPDATE`, and `DELETE` on the three application
+tables (`cms.users`, `cms.game_runs`, `cms.game_personal_bests`), with no schema-
+changing, migration-history, grant-option, or role privileges. Fresh logins
+through the existing authenticated loopback proxy verified all-column reads
+using `LIMIT 0`; permission inspection verified row-edit grants without writing
+player data. Runtime `cms_mickeyf` grants were identical before/after. The
+short-lived provisioning identity was removed and a fresh operator login
+passed afterward. The password is stored only in a current-user DPAPI-encrypted
+file outside the repository, with current-user/SYSTEM filesystem access; no
+runtime environment or application connection was changed. The owner must
+finish the separate TablePlus login. Sanitized verification is in the external
+Codex `release-checks-20260907/tableplus-operator-verification.json` record.
 
 The approved Phase 13 storage end state is for both the existing p4-Vega API
 operations and the generic leaderboard read to use `game_personal_bests` as
@@ -385,21 +691,22 @@ are removed; migration history and post-drop API checks passed. The multi-game
 frontend is recorded below.
 
 The additive backend catalog and per-game routes were implemented and verified
-on 2026-08-26. The catalog is projected from server-owned definitions;
-the generic p4-Vega response adds only version metadata and one-based positions
-to existing rows. Three Bosses reads now query real current-rule personal bests
-in deterministic completion-time order even while writes are disabled. Its
-authenticated run endpoint is complete behind the exact fail-closed
+on 2026-08-26. At that checkpoint, the catalog was projected from server-owned
+definitions; the generic p4-Vega response added only version metadata and
+one-based positions to existing rows. Three Bosses reads queried real
+current-rule personal bests in deterministic completion-time order while writes
+were disabled. Its authenticated run endpoint was complete behind the exact
+fail-closed
 `THREE_BOSSES_RUN_SUBMISSIONS_ENABLED=true` opt-in: strict JSON/version/UUID/time
 validation, explicit cookie-origin protection, server-derived score, immutable
 idempotent run history, transactional strict personal bests, and per-user and
 per-IP limits are covered by unit, security, rollback, concurrency, and
-isolated-MySQL tests. The server now derives the provisional S–D rank and
-arcade-scale score from the same canonical integer millisecond result. These routes have not been
-enabled for Three Bosses production writes: the routes are present in the
-serving p4-enabled generic-only revision, but
-`THREE_BOSSES_RUN_SUBMISSIONS_ENABLED=false` remains enforced. They do not
-replace the remaining submission-enablement gate.
+isolated-MySQL tests. The server derived the provisional S–D rank and
+arcade-scale score from the same canonical integer millisecond result. At that
+checkpoint, these routes had not been enabled for Three Bosses production
+writes: the routes were present in the serving p4-enabled generic-only revision,
+but `THREE_BOSSES_RUN_SUBMISSIONS_ENABLED=false` was enforced. Later activation
+and current verification are recorded in the status section below.
 
 The credential-safe browser submission client and Unity host bridge were
 committed at `c4349f7c`; the Unity caller, receiver, canonical millisecond
@@ -536,25 +843,27 @@ passed its historical two-hour source-freshness gate before
 
 ### Step 13.2 — Three Bosses WebGL integration and production preparation
 
-Status: In progress. The development-only Games card, route, external asset
-server, Unity loader, and first live browser launch/re-entry/fullscreen checks
-were implemented on 2026-08-25. The production path now uses a same-origin,
+Status: Desktop Alpha released; mobile polish and acceptance in progress. The
+Games card, route, external development asset server, Unity loader, and first
+live browser launch/re-entry/fullscreen checks were implemented on 2026-08-25.
+The production path now uses a same-origin,
 content-addressed Firebase Hosting release plus a no-store stable manifest,
 Firebase-managed transport compression, exact MIME/cache headers, a
 source-bound release certificate, and
 offline plus hosted-byte validation. A fresh production candidate was built,
 packaged, validated through the Firebase Hosting emulator, and started in a
-real Chrome canvas on 2026-08-29. The full three-level hands-on browser matrix
-below remains a release gate; no WebGL build or route has been published. On
+real Chrome canvas on 2026-08-29, and the desktop WebGL route was subsequently
+published with Alpha 0.6.0. The full three-level hands-on browser matrix below
+remains a gate for the next Three Bosses release. On
 2026-08-31, the Alpha score path gained a server-issued, user/run/version-bound
 30-minute ticket, a 10-second minimum completion bound, exact-replay safety,
 and one authenticated HTTP/MySQL integration covering ticket issuance,
 submission, replay, personal best, and leaderboard readback.
 
-Three Bosses is present on the feature branch and locally playable at
-`/games/three-bosses`. Before public release, complete the remaining hands-on
-gameplay matrix and a signed-in canonical submission check. Do not merge to
-`main` or publish until Mike separately approves release.
+Three Bosses is published for desktop and locally playable at
+`/games/three-bosses`. Before the next release, complete the remaining hands-on
+gameplay matrix, mobile-device acceptance, and a signed-in canonical submission
+check. Merge and publish only after Mike separately approves that release.
 
 Keep `/games/three-bosses` as the stable browser-facing local URL. Updating the
 game replaces the build at the same external location, so it normally does not
@@ -583,8 +892,9 @@ must:
   second running instance during development remounts;
 - provide an appropriately sized game frame plus clear focus and fullscreen
   controls without trapping normal website navigation;
-- display the provisional S–D ranks and arcade-scale score while keeping
-  server writes fail-closed until the independent runtime opt-in is approved;
+- display the provisional S–D ranks and arcade-scale score while keeping the
+  server's default fail-closed and verifying the separately deployed runtime
+  opt-ins before every release;
 - keep development WebGL output outside the repository; create production
   output only with `three-bosses:webgl:release:build`, then package the
   certified bytes into one content-addressed release plus the stable manifest
@@ -604,11 +914,15 @@ message is not an acceptable clean-console result. Use the local browser to
 inspect the new Games entry and game page at desktop, narrow/mobile, and
 ultrawide sizes. Narrow/mobile acceptance covers the responsive website shell;
 the 2026-08-29 shell audit added gesture isolation to the canvas and removed
-page-only glass framing from fullscreen. True mobile gameplay is a separate
-Unity Input System slice: retain the fixed 1280 × 720 internal world, route
-movement, jump, dash, aim, and fire through shared actions, and reuse one native
-touch HUD across all three boss scenes. Until that slice passes real Android
-multitouch, rotation, safe-area, and scene-transition checks, gameplay
+page-only glass framing from fullscreen. The internal gameplay reference remains
+intentionally fixed at 1280 × 720 after the 2026-09-04 resolution audit. A
+1920 × 1080 Pixel Perfect reference would expose 50% more world at the existing
+32 pixels per unit and change gameplay; future sharpness work must stay
+render-only unless a world-framing redesign is explicitly approved.
+Movement, jump, dash, aim, and fire now route through shared actions, and one
+native touch HUD is reused across all three boss scenes on the polish branch.
+Until that slice passes real Android and iOS multitouch, rotation, safe-area,
+fullscreen, performance, and scene-transition checks, production gameplay
 acceptance remains desktop.
 Verify direct navigation and refresh, loading and error states,
 canvas scaling, focus recovery, keyboard controls, fullscreen enter/exit,
@@ -622,28 +936,235 @@ The Alpha 0.6.0 pre-release pause slice is implemented in all three battle
 scenes: a compact pause-icon button opens a simple Resume/Main Menu overlay. User
 pause and browser-visibility pause compose safely, gameplay input is gated,
 and gameplay, active-combat timing, and audio restore only after every active
-pause reason is released. Further visual polish remains part of the later
-Three Bosses polish phase.
+pause reason is released. The pause button, panel, and actions received the same
+procedural translucent-glass design as the mobile HUD in commit `c7b9973f`.
+
+Three Bosses desktop onboarding now includes a concise glass keybindings strip
+below the game on desktop-sized layouts only. It documents the primary movement,
+aiming, jump, dash, fire, and pause bindings without obstructing the canvas, and
+its regression test checks those labels against the Unity Input System asset so
+the guide cannot silently drift from the game. The polish branch now supplies
+mobile guidance through its icon-based touch HUD.
+
+Inter-boss split presentation was completed on 2026-09-04. The Bee and Cyborg
+transition screens now show the cumulative active-combat time recorded at that
+boss defeat, using the same canonical timer formatting and each scene's accent
+color. The completion screen's existing total time remains the final Kraken
+split, so this presentation change does not alter timing, scoring, ranks, or
+submission behavior.
+
+Three Bosses portrait outcome layout is implemented. The browser now reports
+the real outer-viewport orientation to Unity, because the embedded player keeps
+rendering at 16:9 even when the phone is upright. Defeat times retain their
+painted-readout alignment (including the Cyborg/Kraken offsets documented below),
+while the two transition split labels form a compact centered row in
+the clear space between the baked logo and result heading; returning to
+landscape restores every authored desktop transform exactly. The Bee defeat
+screen is verified on a physical Android device and all five scenes have
+automated portrait/desktop restoration coverage. Complete the remaining
+hands-on scene pass on Android and iOS before enabling public mobile gameplay.
+
+A 2026-09-04 local WebGL browser review confirmed both inter-boss transitions
+and the completion screen at 396 x 1216, plus completion-screen resizing to
+1440 x 900 and back without displacement or page overflow. The existing layout
+fix already covers these screens; no additional positioning changes were needed.
+This was a controlled UI-only run with score writes blocked, not gameplay,
+ranking calibration, or physical-device acceptance.
 
 For Alpha 0.6.0, playable Three Bosses is desktop-only. Recognized Android and
 iOS browsers do not receive the Games card, and direct mobile navigation shows
 an explicit desktop-only message without instantiating Unity. The Three Bosses
 leaderboard remains available on mobile. Narrow desktop windows and Windows
-touch laptops remain supported; full mobile gameplay waits for the later
-physical-device polish and acceptance pass.
+touch laptops remain supported. The local preview now has verified Android
+joystick, action-button, and pause interactions, but public mobile gameplay still
+waits for the complete Android/iOS, all-scenes physical-device acceptance pass.
 
-Fix the battle-scene player spawn so the character begins grounded instead of
-falling a small distance and incorrectly playing the landing VFX at startup.
-Keep the correction deterministic across all three battle scenes and verify it
-does not change countdown timing or legitimate landing feedback.
+On 2026-09-06, Mike reported that the requested Android simultaneous-control
+gameplay checks passed and confirmed the corrected menu audio icon is centered
+on the physical phone. Record this as owner-reported acceptance, not as a new
+automated all-scenes run. An iPhone is available for the remaining Safari
+gameplay checks; those checks remain pending, not waived for lack of a Mac.
+Basic browser gameplay testing does not require macOS. Public mobile gates stay
+unchanged until the remaining acceptance and release decisions are complete.
 
-Future Three Bosses presentation polish: replace the functional WebGL loading
-surface with a more distinctive, on-theme loading screen. Keep the displayed
-progress tied to real loader progress, preserve useful failure states, and keep
-the artwork lightweight enough that it does not delay the game it introduces.
-As a prerequisite, fix the current handoff so the React loading surface releases
-before Unity's `Made with Unity` splash is shown; the two loading layers must not
-sit on top of one another.
+Android normal-route acceptance (2026-09-07): **owner-confirmed passed**. In
+response to the requested complete three-boss run using touch controls and
+pickups, checking controls and audio through both transitions and the final
+result, Mike confirmed it is working on Android. This closes that full-run
+check, not exhaustive coverage of every weapon/audio clip or separate
+Cyborg/Kraken defeat, Try Again, and Back to Menu flows. Public mobile and
+submission gates are unchanged; no new automated test run is implied.
+
+Android Cyborg defeat navigation (2026-09-07): **owner-confirmed passed**.
+Mike completed the requested Try Again check with restored playable gameplay
+and Back to Menu check. This closes Cyborg's Android defeat navigation. No
+additional visual check, automated test run, or release activation is implied.
+
+Android Kraken defeat navigation (2026-09-07): **owner-confirmed passed**.
+Mike completed the requested Try Again check with restored playable gameplay
+and Back to Menu check. This closes Kraken's Android defeat navigation. Visual
+alignment stays closed, and public mobile/submission gates remain unchanged.
+
+iPhone Kraken defeat navigation (2026-09-07): **owner-confirmed passed**.
+Mike completed the requested Try Again check with restored playable gameplay
+and Back to Menu check. This closes the remaining recorded Kraken phone
+navigation check. It does not reopen visual alignment or establish exhaustive
+weapon/audio, cold-start, or production submission acceptance.
+
+Mute persistence (2026-09-07): **owner-confirmed passed**. In response to the
+requested mute-through-gameplay/transitions/retry and menu-unmute check, Mike
+reported that mute is working. This is owner-reported acceptance, not a new
+automated test or exhaustive weapon/audio verification.
+
+Desktop performance incident (2026-09-07): **recovered after Chrome restart**.
+The original report and diagnostic sequence follow; the owner-confirmed recovery
+below supersedes their provisional open status. Mike
+reports very low FPS that was not occurring before and asks to investigate
+later. Mike clarified that this occurs on desktop, including the current public
+website; this is not limited to the mobile preview. Mike subsequently identified
+Chrome and said the slowdown starts immediately. Hardware and exact affected
+profile settings remain unconfirmed. Prioritize reproducing the public desktop
+regression and measuring frame times, then compare with the local build and a
+previous working build. Inspect rendering resolution/DPR, fullscreen state,
+and recent changes without assuming a mobile-only cause. Resolve the regression
+before mobile release approval. Preserve the 720p gameplay reference; do not lower quality
+or change performance settings without evidence. Investigation is deferred at
+the owner's request until the following read-only checkpoint; public
+mobile/submission gates remain unchanged.
+
+Desktop FPS diagnostic checkpoint (2026-09-07): the requested next-task pass
+compared the public release and local build in isolated, signed-out, headed
+Chrome at 1600x1000 with device pixel ratios 1 and 2. Unity's own metrics gave
+approximately 60 median FPS in the menu and opening Bee gameplay in all four
+cases; sampled browser rAF median was 16.7ms, with gameplay p95 of 16.9-17.5ms.
+Mike also confirmed the fresh window runs well. This narrows investigation to
+differences in the affected Chrome profile/session, but does not establish a
+specific extension, acceleration setting, or resource-contention cause. The
+short samples do not certify all bosses, sustained firing, or fullscreen.
+Public Unity build `22c75f55...45fa` remains bound to source `ea9e858c`, so the
+latest local alignment edits cannot explain its reported slowdown. No game
+code/settings, browser preferences, servers, or submission gates were changed;
+API writes were blocked in the test browser, which was closed afterward.
+Evidence, the diagnostic script, exact commands, and scope limits are retained
+outside the repository in `desktop-fps-20260907` under the Codex visualization
+folder. The reported regression remains open.
+
+Chrome Incognito comparison (2026-09-07): **owner-confirmed still slow**.
+The public game was opened in a maximized Incognito window of Mike's usual
+Chrome without changing settings or existing tabs. This does not eliminate
+browser-wide configuration or process state: Incognito inherits regular
+settings, while the isolated Playwright launch also differs in its background
+throttling/occlusion flags. Do not attribute the issue to an extension or claim
+the game is fixed. Mike's subsequent manual graphics-status report is recorded
+below; browser configuration is the next checkpoint.
+No game-quality changes or additional builds are justified by these results.
+
+Chrome software-rendering finding (2026-09-07): **owner-provided diagnostic
+evidence**. WebGL and Canvas report "Software only, hardware acceleration
+unavailable"; Compositing and Rasterization report hardware acceleration
+disabled, and OpenGL is disabled. No separate WebGL2 line was supplied. This
+strongly explains low FPS in the affected normal/Incognito browser, while the
+isolated Chrome test remains smooth. Mike confirmed Chrome's System graphics-
+acceleration setting is already enabled, so an off toggle is not the cause.
+The owner's subsequent screenshots show D3D11 device loss (`0x887A0005`),
+WebGL context loss, a GPU-process crash, and later software-GL errors. After a
+full Chrome restart, the owner supplied a screenshot showing hardware-accelerated
+WebGL/Canvas/compositing with the RTX 3090 active and confirmed public gameplay
+is smooth again. This closes the reported desktop slowdown as recovered, not a
+confirmed game-code regression. The initiating GPU-crash cause remains unknown;
+investigate driver/browser crash evidence only if it recurs. No browser settings,
+GPU safety overrides, drivers, or game-quality settings were changed by Codex.
+
+On 2026-09-07, Mike confirmed Three Bosses touch controls and pause/resume work
+on the physical iPhone. This is owner-reported acceptance of those interactions,
+not completion of the all-scenes mobile matrix. A small fullscreen exit-button
+overlap with Fire was reported: the compact fullscreen control now anchors to
+the safe screen corner rather than the letterboxed canvas corner, preserving
+normal-page and larger-desktop placement. Mike subsequently approved the new
+fullscreen-button placement on the physical iPhone; public mobile gates are
+unchanged. Mike also confirmed that first-boss defeat, portrait/landscape result
+and button-label alignment, Try Again with working gameplay controls, and Back
+to Menu all pass on the physical iPhone. Mike then confirmed one normal complete
+three-boss run, both inter-boss transitions, continued controls, split times, and
+final-results readability in portrait/landscape. These are owner-reported device
+checks, not automated evidence or acceptance of every remaining mobile scenario.
+The final screen initially showed submission locked. The later isolated
+cookie-authenticated iPhone submission and readback below passed; normal-backend
+and production HTTPS acceptance remain separate.
+Five Chromium viewport checks preserve the canvas, aspect ratio, and restored
+normal-page button placement. At 393x695, 852x393, and 852x300 the exit control
+sits outside the game canvas. All 110 frontend tests and the build pass (existing
+large-chunk warning only). Exact 16:9 phones have no letterbox margin; Fire's
+expanded invisible hit area still needs a separate physical clearance check.
+
+The 2026-09-06 iPhone review exposed a WebKit canvas-sizing discrepancy: at
+390 x 844 / DPR 3, the embedded canvas was 355.59 x 211.13 CSS pixels instead
+of 355.59 x 200.13. Its percentage height included the glass frame inset,
+changing Unity's menu coordinate scaling and shifting PLAY/audio against the
+artwork. The canvas now owns its 1672:941 CSS aspect ratio with automatic height;
+no Unity offsets, control sizes, gameplay code, or build assets changed.
+WebKit and Chromium geometry checks pass, including fullscreen restoration.
+Windows WebKit also renders blank after viewport resizing with both the old
+and corrected CSS; this remains a test-engine finding to check on the physical
+iPhone, not a confirmed iOS regression or a completed gameplay acceptance pass.
+The owner subsequently confirmed that PLAY and the audio icon are centered in
+ordinary Safari on an iPhone 14 Pro running iOS 26.6.1. Preserve that accepted
+alignment while addressing the separate loading and browser-edge concerns.
+
+The site now requests edge-to-edge viewport coverage, keeps interactive content
+inside safe-area insets, and matches browser/installed-app background colors to
+the space theme. Home, Games, and Login passed simulated landscape-inset checks;
+actual iPhone edge coverage still requires owner confirmation. Native fullscreen
+remains preferred where supported. An ordinary iPhone Safari tab uses the
+viewport fallback and cannot have its address bar hidden by that CSS mode.
+Ordinary Safari is the acceptance target: Home Screen installation is not an
+acceptable workaround for this site's visitors. The owner's screenshot shows
+solid bands behind Safari's status and address controls, rather than uncovered
+space inside the page. A root-gradient/mobile absolute-background experiment
+made no visible improvement in the owner's physical-phone check and was removed.
+Do not mark browser-edge coverage as fixed from Windows WebKit simulation alone.
+
+The local WebGL server now serves gzip for validated uncompressed build files,
+reducing the measured current-build transfer from 94,332,664 to 46,812,192 bytes
+through the LAN preview. Existing compressed files are not compressed again.
+Compressed payloads are prepared once per current build in memory and sent with
+an exact Content-Length; without that header, the generated Unity loader falsely
+jumps to 90% before downloading is complete. Conditional HTTP caching revalidates
+only after the build-identity/file guards; manifests and errors remain uncached.
+The 27 server tests and 76 frontend tests
+pass, and the frontend production build succeeds. Windows WebKit cold/warm loads
+both reached the main menu without page errors; only the small JavaScript files
+were reused on the observed warm reload, while data/Wasm downloaded again.
+The owner initially reported roughly five-minute loads and a 90% stall, then
+confirmed that the game loads fast. Temporary local phone diagnostics recorded
+a 19.7-second warm load: about 15 seconds before the development page started
+Unity, cached transfers for all four Unity assets, then normal startup. This
+confirms real Safari cache reuse; it does not establish a fresh-install/cold-load
+timing. A subsequent direct/proxy A/B reproduced a concrete local transfer stall:
+forced-close connections stopped with 58,636 compressed data bytes still missing,
+while the identical keep-alive request completed in 0.23 seconds. The Vite local
+Unity proxy now uses a keep-alive agent. All six repeated data/Wasm transfers
+completed in 0.30-0.39 seconds, and a fresh Windows WebKit context reached the menu
+in 7.7 seconds. These are PC measurements, not physical iPhone cold-load timings.
+The regression suite checks concurrent, multi-megabyte gzip transfers through
+completion. Temporary phone instrumentation has been removed. Keep uncached
+Safari timing in the remaining physical-device acceptance checks.
+This changes local preview delivery, not the deployed production package or
+Unity gameplay, and public mobile availability remains unchanged.
+
+The battle-scene spawn correction was completed in commit `c0bd6d35`: all
+three scenes now begin at the grounded position, and `PlayerMotor` baselines its
+grounded state before evaluating landing feedback. The fresh external WebGL
+build was loaded and browser-verified on 2026-09-01; countdown timing and
+legitimate airborne-to-ground landing feedback remain covered by regression
+tests.
+
+Three Bosses loading presentation polish was completed on 2026-09-01. The
+lightweight, CSS-only glass surface uses the three encounter colors, geometric
+signals, and Unity's real loading progress without adding a duplicate image
+download. Errors retain a dedicated alert surface, reduced-motion users keep a
+static presentation, and the React layer releases before Unity's `Made with
+Unity` splash so the two layers never overlap.
 
 Website presentation polish: **completed and browser-verified on 2026-08-25**.
 At a 1920 × 1080 desktop viewport, the Three Bosses frame now matches the
@@ -657,23 +1178,625 @@ Redesign `/leaderboards` as a multi-game experience rather than extending the
 current p4-Vega-only list in place.
 
 Frontend hub, generic reads, and the fail-closed submission transport:
-**implemented locally on 2026-08-26 and connected to Unity on 2026-08-29**. The plural route contains catalog-driven
+**implemented on 2026-08-26, connected to Unity on 2026-08-29, and published
+with Alpha 0.6.0**. The plural route contains catalog-driven
 leaderboard cards, each linking to its own direct detail route. These are
 leaderboard destinations, not playable game cards; game launching remains
 under `/games`. The p4-Vega detail now uses the generic GET API, while Three
-Bosses reads typed real rows and derives S–D ranks while submissions remain
-disabled by default. The browser transport, lifecycle-safe Unity bridge,
+Bosses reads typed real rows and derives S–D ranks while the backend retains a
+fail-closed default. The browser transport, lifecycle-safe Unity bridge,
 Unity caller/receiver, and end-screen submission state machine are connected.
 The 2026-08-31 release candidate adds a server-signed run-start ticket kept only
 in browser memory, binds it to the authenticated run, and rejects impossible or
 expired completion claims before persistence.
-Transport tests, production
-build, and desktop plus narrow browser checks pass. A disposable loopback API
-verified the populated p4-Vega table without applying approval-gated database
-migrations. Production storage, generic backend reads, and the frozen writer are
-now migrated and verified. Public frontend release remains deferred with the
-feature branch; the site-wide responsive/mobile pass and Unity submission
-activation remain separate pending work.
+Transport tests, production build, and desktop plus narrow browser checks pass.
+Production storage, generic backend reads, and both submission paths are
+deployed. A 2026-09-04 read-only live check found Three Bosses advertised as
+enabled, authenticated boundaries reachable for both games, and database-backed
+rows on both leaderboards. The later owner-confirmed published-site submission
+and backend receipt/retry acceptance supersede the blanket per-candidate retest
+requirement; reopen it only for relevant changes or a concrete regression.
+
+#### Leaderboard submission status verification
+
+Before declaring either game submission path healthy for a release, verify one
+fresh matrix rather than inferring deployed state from source configuration:
+
+- record the local `P4_VEGA_SCORE_SUBMISSIONS_ENABLED` and
+  `THREE_BOSSES_RUN_SUBMISSIONS_ENABLED` values and confirm the matching catalog
+  and endpoint behavior;
+- inspect the traffic-serving Cloud Run revision and its actual runtime values;
+- verify signed-out rejection, then perform signed-in p4-Vega submission and
+  Three Bosses ticket, submission, exact replay, personal-best, and leaderboard
+  readback checks; and
+- reconcile the observed state with `cloudbuild.deploy.yaml`. A tracked `true`
+  value is a deployment intention, not proof of the currently serving revision.
+
+Verification snapshot (2026-09-06): the local backend returned
+`SUBMISSIONS_FROZEN` (503) for p4-Vega and `SUBMISSION_DISABLED` (403) for both
+Three Bosses mutation endpoints; the two opt-in variables are absent from the
+local root `.env`. This is distinct from production: the traffic-serving
+`mickeyf-org-build-3db9219129ee44e88daba01bcdcf9c3d` revision had both flags set
+to `true` and served 100% of traffic. Its Three Bosses catalog advertised
+submissions enabled. Signed-out requests to all three mutation endpoints
+returned 401 with `no-store`, no new cookie, and no redirect; both leaderboard
+reads returned 200 (five p4-Vega entries and one Three Bosses entry).
+
+Backend type-checking, 141 unit/security tests, frontend type-checking and 76
+tests, and the complete isolated MySQL integration suite passed. The isolated
+Three Bosses HTTP test covered ticket issuance, submission, identical replay,
+and leaderboard readback without duplicate persistence; its disposable
+container and network were removed afterward. No live score was written, and
+no local or production submission flag was changed. The remaining end-to-end
+check is a real browser-cookie-authenticated run: sign in before starting a new
+normal run, complete it, submit, and confirm the result and leaderboard readback.
+The isolated test's test-only bearer token does not replace that check.
+
+On 2026-09-07, the owner completed the iPhone mobile-preview gameplay run and
+reported submission locked. Fresh read-only GETs to the local backend catalog
+and the LAN Vite-proxied catalog both returned HTTP 200 with Three Bosses
+`submissionState: disabled`. The catalog derives that value directly from the
+backend runtime submission gate, so the preview is explicitly write-disabled,
+not a demonstrated score-submit failure. No flags, authentication state, or
+scores were changed; this local finding does not establish production health.
+
+Isolated browser-cookie acceptance setup (2026-09-07): a disposable harness at
+`%TEMP%/mickeyf-score-acceptance-20260907` is running in VS Code's `score-test`
+terminal. Its LAN preview uses port 5176, its API is loopback-only on 8082, and
+its Docker Compose project is `mickeyf-score-acceptance-20260907`. The existing
+pinned MySQL test image runs on a verified ephemeral loopback port, with tmpfs
+storage, an empty test schema initialized from the versioned leaderboard tables,
+and the production column-grant manifest applied to a separate test runtime user.
+No production database data or credentials were imported. Existing frontend,
+backend, and WebGL services on 5173/8080/4174 were preserved.
+
+The harness injects the real authentication/submission handlers with a fresh
+test session secret and exact LAN-preview Origin allowlist. It intentionally does
+not import `app.ts`, the root `.env`, or the global database pool. Both `/api`
+and `/auth` proxy exclusively to the disposable API; there is no fallback to the
+normal Cloud SQL-backed backend. This is isolated handler/browser acceptance,
+not verification of the normal backend bootstrap: the standard development
+Origin allowlist remains localhost-only, and its Vite config lacks `/auth`
+proxying. Production HTTPS cookie behavior still requires a separate check.
+
+A Chromium browser test through the real login form confirmed a signed,
+HttpOnly, SameSite=Lax session cookie with no bearer header; authentication
+verification, signed-out and untrusted-Origin rejection (401), ticket issuance
+(201), submission (201), exact replay (200), and one persisted run/personal-best
+with leaderboard readback. The generated smoke accounts and scores were removed
+from this disposable database; the separate `iphone-test` account remains for
+the owner's fresh run. Its temporary password is stored only in the external
+harness state, not in this repository. The proxied Unity build ID is
+`ca711c131c5e6e88a4ab09416b4a20787fffb76891830cf84c5568e8b5a15f2b`;
+its menu started without browser runtime errors. The ordinary backend catalog
+still reports Three Bosses disabled. No public mobile gate or live score changed.
+
+Physical iPhone acceptance (2026-09-07): the owner completed and submitted a
+normal run. Read-only verification against the identified disposable database
+confirmed exactly one run and one linked personal best: 92,155 ms (1:32.155),
+108,513 points, rank B, matching the isolated leaderboard. No duplicate run IDs
+or repeated score/time groups were found. The normal backend remains disabled;
+production HTTPS submission and public mobile activation are not verified by
+this isolated pass. The owner also reported the final rank letter sitting left
+of the baked RANK caption. The value field was centered at source-art x=1135,
+but the caption is centered at x=1153; the saved End scene and its generator now
+share the corrected x=998 left edge for the existing 310-pixel-wide field.
+Font, size, scoring, submissions, and other controls are unchanged.
+
+Rank alignment verification (2026-09-07): both `PortraitOutcomeLayoutTests`
+passed, including S/A/B/C/D/UNRANKED under host portrait flags 0/1/0. That test
+checks the authored artwork contract, not a real device resize. The Unity static
+check and guarded local WebGL build also passed; temporary settings were restored
+and no actionable build warnings remained. The local artifact ID is
+`70d6a3085fa681aa630943687be437d8ad3c25e45ecffeef418e7ddb3bc5a9af`.
+A separate non-submitting Chromium visual fixture inspected the rebuilt End
+screen at 1280x590, 393x695, and 1600x1000, with no JavaScript or Unity runtime
+errors. It uses synthetic boss completion and a display-only B rank, blocks API
+POSTs, and is not gameplay, rank-calibration, or submission evidence. Screenshots
+are in the external harness directory (`rank-landscape.png`, `rank-portrait.png`,
+`rank-desktop.png`). Mike subsequently confirmed that the corrected rank is
+centered on the physical iPhone. This closes that visual check; the owner's
+genuine accepted submission above remains separate from the synthetic fixture.
+
+Fullscreen scope decision (2026-09-07): after the additional Apple/WebKit
+research, Mike accepted treating occasional address-bar-free iPhone Safari
+presentation as browser toolbar state and asked to move on. Keep the existing
+native-first request and viewport-filling fallback; do not add forced scrolling,
+video conversion, experimental-flag dependencies, or further toolbar diagnostics.
+This is an accepted browser limitation, not verified native element fullscreen
+support on iPhone, and does not itself authorize public mobile activation.
+
+Automatic background/return pause on iPhone Safari: **owner-confirmed passed
+on 2026-09-07**. Mike reported that switching away during active combat and
+returning passed the requested audio-suspension, active-combat-time exclusion,
+and working movement/fire checks. This is physical-device owner acceptance,
+not a new automated test run.
+
+Combined manual/background pause on iPhone Safari: **owner-confirmed passed
+on 2026-09-07**. Mike completed the requested manually-pause, switch-away, return,
+and Resume check. The pause menu, stopped timer, and silent gameplay audio remain
+until Resume, after which controls work. This records owner acceptance of the
+combined pause reasons, not a new automated result.
+
+Cyborg (second-boss) player-defeat check on iPhone: **owner-confirmed passed
+on 2026-09-07**. Mike first confirmed the buttons work but rejected the time/button
+label alignment. After the corrections below and reopening the current mobile
+preview on port 5173, he confirmed everything is correctly centered. Navigation
+and visual alignment are now accepted. Bee defeat is already accepted;
+Kraken's subsequent iPhone navigation acceptance is recorded above.
+
+Cyborg alignment correction is implemented in the builder and saved scene.
+An artwork-coordinate regression reproduced the old 26-source-pixel time offset;
+all three outcome-layout PlayMode tests pass after correction. Guarded local
+WebGL build `build_50a564dbb2b9` succeeded and Chrome synthetic captures at
+393x695, 1280x590, and 1600x1000 show the corrected time/button mapping with
+round-trip portrait/landscape state; no page errors were reported. API writes
+were blocked during that visual fixture. This is browser evidence, not a new
+human playthrough or iPhone Safari acceptance. The separate owner confirmation
+above closes the subsequent physical-device visual check.
+
+Readout follow-up (2026-09-07): Mike also requested centering both TIME SURVIVED
+and its result within the panel itself. Its inner side rims center at artwork
+x=856, whereas the old baked caption centered at x=839. Cyborg now uses a native,
+non-interactive caption over a small opaque backing that covers the baked text;
+caption and result share x=856 (+20 portrait offset). The source PNG and button
+positions are unchanged. All three outcome-layout PlayMode tests pass; guarded
+WebGL build `build_65fd8396576a` succeeded with no actionable warnings. Synthetic
+Chrome captures at portrait, landscape, and desktop sizes show the centered pair
+without duplicate lettering or an obvious cover seam; no page errors or API
+writes. Mike subsequently confirmed the updated readout and button labels are
+correctly centered on iPhone; this records owner acceptance, not another test run.
+
+Kraken and remaining outcome alignment audit (2026-09-07): implemented and
+browser-verified. Mike requested centering TIME SURVIVED, its result, and Back
+to Menu, and delegated the remaining visual checks rather than repeating them
+on his phone. Kraken's measured readout center is artwork x=855, not the image
+center x=836 or Cyborg's x=856. A native caption and result now share x=855 in
+both host orientations (+19 portrait offset). Both button labels were aligned
+to Kraken's own inner rims: Try Again (624,795), Back to Menu (1051.5,795).
+The accepted Cyborg arrangement and source PNGs are unchanged.
+
+The wider audit also corrected the victory TIME and SCORE values beneath their
+baked captions (x=535 and x=833). Accepted RANK alignment is preserved. The main
+menu, all three defeat screens, both transitions, and victory were visually
+reviewed in the local WebGL player at 393x695, 1280x590, and 1600x1000; no further
+material alignment defects were found. Four focused outcome-layout PlayMode
+tests pass, including portrait/landscape restoration and artwork-coordinate
+regressions. Guarded build `build_45d9432ed4bd` succeeded with zero actionable
+warnings and restored its temporary Unity settings. The initial synthetic
+victory capture was invalid because its sub-10-second run violated the score
+calculator's minimum; the corrected valid-duration fixture rendered victory
+with no JavaScript or Unity console errors and API writes blocked.
+
+This closes the delegated visual-alignment audit, not a new physical-device
+gameplay or release acceptance claim. No further owner centering checks are
+requested. Public mobile/submission gates remain unchanged. The subsequent
+acceptance review is complete, and Android's normal route has since passed as
+recorded above. Phone defeat/retry/menu checks are now accepted as recorded.
+Mute persistence is now owner-confirmed as recorded above. The desktop FPS
+incident is recovered after a Chrome restart, with hardware acceleration and
+smooth public gameplay owner-confirmed as recorded above. Do not reopen accepted
+visual checks. Exact commands and screenshots are retained outside
+the repository in the Codex visualization folder `kraken-alignment-20260907`.
+
+Cookies are not port-scoped, so a private tab avoids overwriting the regular
+development site's session. Keep the harness for the remaining visual check.
+After acceptance, stop the
+`score-test` terminal with Ctrl+C (which removes its verified Docker project),
+then explicitly remove the external harness/cache/credential files. Forced
+termination or a failed startup can leave the disposable container behind;
+verify project/container identity before cleanup. Do not declare this temporary
+environment cleaned up while the owner still needs it for the device check.
+
+Acceptance teardown (2026-09-07): after the owner confirmed rank centering and
+asked to move on, Ctrl+C was sent to the identified `score-test` terminal. The
+test process and listeners on 5176/8082 stopped; the exact Compose-labeled
+container and network were removed. Its database used tmpfs and had no mounted
+volumes, so the disposable account/run data is gone, not a deleted live score.
+The normal 5173/8080/4174 listeners retained their original process IDs. The
+three final rank screenshots and sanitized `verification.json` were copied,
+with matching SHA-256 hashes, to the external Codex visualization directory
+`three-bosses-acceptance-20260907`. File deletion was blocked by the execution
+policy: `%TEMP%/mickeyf-score-acceptance-20260907` still contains the stopped
+harness, cache, and disposable credential state. Filesystem cleanup is pending;
+do not report full temporary-environment cleanup or reuse those credentials.
+
+#### Temporary-artifact cleanup — current scope (2026-09-08)
+
+The owner reaffirmed cleanup of obsolete one-off artifacts and added the
+project's `package.json` scripts to this pre-release cleanup, rather than waiting
+for the later whole-project Clean Code sweep. The previous stalled audit is not
+to be resumed as an open-ended investigation.
+
+1. Reverify the named external acceptance harnesses, preview/cache directories
+   and disposable install/build copies before touching them. Resolve exact
+   paths, ownership, reparse points, active processes and retained evidence.
+   Remove only confirmed disposable artifacts; preserve intentional recovery
+   archives, test evidence and normal workspace dependencies/services. Never
+   equate an old roadmap entry with proof that a directory still exists.
+2. Retire completed one-off scheduled follow-ups after saving their result.
+   `verify-first-hourly-receipt-cleanup` is limited to one occurrence and must
+   delete only its own automation entry after recording success or failure.
+   A failed deletion must be reported and the entry paused, not silently called
+   removed. Keep the chat/evidence and production hourly cleanup/alerts.
+3. Audit every tracked first-party `package.json`, excluding dependencies,
+   generated output and vendored packages. First inventory its script names,
+   commands and purpose. Trace nested npm calls, lifecycle hooks, CI workflows,
+   Git hooks, VS Code tasks, documentation and supported manual workflows.
+   Classify each script as keep, remove, consolidate or needs confirmation,
+   with evidence; lack of a text reference or infrequent use alone does not
+   prove a script is unused. Preserve required migration/recovery/release tools.
+4. End that first audit pass with a concise proposed change list and unresolved
+   questions. Then remove only confirmed obsolete scripts and update affected
+   callers/docs in reviewable batches, validating the changed paths. Do not
+   install dependencies, run every script, rebuild Unity, restart servers or
+   expand into dependency upgrades/general refactoring merely for this audit.
+
+Metadata-only inventory at `2026-09-09T00:46Z`: the historical
+`mickeyf-score-acceptance-20260907` directory is already absent (not deleted by
+this check). The three named Firebase fast-uri, backend qs and frontend xmldom
+disposable copies below still exist. Their roots/immediate children have no
+reparse points and no readable active command line referenced their exact paths.
+Ownership, unique changes, retained evidence, deeper links and open handles
+remain unverified; this is not a deletion-safety sign-off. Nothing was deleted.
+No package scripts have been removed or certified unused. The natural Scheduler
+check can complete independently.
+
+Cleanup completion and bounded script-audit checkpoint (2026-09-08):
+
+- The three documented disposable install copies were moved to the Windows
+  Recycle Bin after exact-path/parent checks, ownership/provenance review, a
+  bounded deep metadata inventory with zero reparse points, and a fresh readable
+  process-command-line check with no matching paths. All three original paths
+  are now absent. Inventory: Firebase fast-uri 19,664 files / 200,335,028 bytes;
+  backend qs 5,863 files / 57,004,173 bytes; frontend xmldom 15,055 files /
+  206,013,447 bytes (40,582 files / 463,352,648 bytes total). Recover through the
+  Windows Recycle Bin if needed; space is not reclaimed until it is emptied.
+  Process inspection cannot rule out every open handle: 156 processes did not
+  expose a command line. No process was stopped, and normal workspace installs,
+  servers, retained verification evidence and the Unity recovery archive were
+  outside the deletion targets. Each recycled directory was independently found
+  in the Recycle Bin with its original Temp location; SHA-256 checks confirm the
+  retained release report and all six recovery/archive files are unchanged.
+  The acceptance harness was already absent.
+- First static script pass is complete: all four tracked first-party manifests,
+  61 scripts, 56 keep, two proposed documentation-alias consolidations, three
+  needing a manual-workflow/overlap decision, and zero unconditional removals.
+  See [the bounded inventory and proposed changes](PACKAGE_SCRIPT_AUDIT.md).
+  No scripts/lockfiles changed and no package commands/builds/tests were run.
+  Do not repeat the inventory as an open-ended audit; the next batch should
+  resolve those named candidates only.
+- Two additional root-folder candidates were reported by the owner and checked
+  read-only: `Logs` is empty; `NVIDIA Corporation` contains only an empty
+  `umdlogs` directory. Neither is tracked or referenced in tracked project files.
+  No creator process was established from metadata. They remain untouched;
+  these are not evidence that the website needs either directory.
+
+Documentation-alias consolidation completed (2026-09-08): removed only
+`frontend/package.json` and `backend/package.json`'s local `docs:json` aliases.
+The existing root package-specific/aggregate documentation commands, TypeDoc
+configurations and public entrypoints are unchanged. Focused CI/editor/hook/docs
+checks found no callers to migrate; README now documents the root commands and
+the distinction between `docs:dev` and `docs:dev:fresh`. All four manifests parse,
+structural checks confirm no other manifest changes, and Git diff checks pass.
+There are now 59 scripts. No dependencies, lockfiles, generated docs, watcher
+behavior or receipt-cleanup commands changed; no installs/builds/application
+tests or server restarts were required. The remaining bounded decisions are the
+two manual receipt-cleanup aliases and the documentation watcher's overlapping
+rebuilds, not another full script audit.
+
+Documentation watcher overlap corrected (2026-09-08): `docs:watch` now runs a
+small Node controller over the existing Chokidar CLI's documented event stream.
+The same watched inputs and debounce remain, but only one documentation build
+can run per watcher; changes during it coalesce into one follow-up. Build failures
+are reported without retrying unchanged input; stopping drops queued work and
+awaits the file-watcher and active build processes. No new dependencies, npm
+commands or lock artifacts were introduced. All 13 focused scheduling/process
+tests pass and are wired into PR CI; syntax, YAML, manifest and diff checks pass.
+Tests use fake child processes/timers, not real docs
+builds. Existing watcher/server processes were not restarted. README documents
+that the Docs terminal must be restarted to use the new controller, and that a
+second watcher or separate manual build is not protected by this per-process
+queue. Only the two receipt-cleanup command aliases remain undecided in this
+bounded script audit.
+
+Receipt-cleanup alias retirement completed (2026-09-08): removed only backend
+`receipts:cleanup` and `receipts:cleanup:local`. Neither had a tracked caller;
+the deployed Job invokes the compiled entrypoint directly, independent of npm.
+The source shortcut did not guarantee a disposable database, even with a
+loopback endpoint. The runbook now makes the pinned Job/checklist the approved
+manual path. Cleanup implementation, build entry, safety guards, unit tests,
+cloud templates, dependencies and lockfiles are preserved. Manifest parsing,
+exact-change/lock-metadata assertions, the two existing template tests and Git
+diff checks pass. No cleanup command, build, install or cloud/database mutation
+was performed. There are 57 scripts across the four manifests; all five named
+candidates in the bounded audit are resolved. Do not restart that audit without
+new evidence. Remaining artifact dispositions and release/security gates are
+separate work.
+
+Named temporary-artifact dispositions completed (2026-09-08 local):
+
+- Both historical Safari folders (`mickeyf-safari-edge-check-20260906` and
+  `mickeyf-iphone-vite-dQirRt`) are already absent; this batch did not delete them.
+  No listeners remain on 5175/5176/8082 and no tracked Safari experiment route or
+  diagnostic flag remains. Accepted background/fullscreen implementation stays.
+- Removed empty root `Logs` and `NVIDIA Corporation/umdlogs` (then its empty
+  parent) with non-recursive, empty-only operations after exact-path/no-link
+  checks. No files were inside; these directories can be recreated if needed.
+- Recycled the additional isolated backend `mickeyf-receipt-locked-unit-075698753cb44a21b0ca7065edbbcc52`
+  and root `mickeyf-root-qs-verified-c6949cf50c76471d870f9eb834acd5bb` copies from
+  `%TEMP%`: 11,228 files / 109,000,123 bytes. Source/history review found only
+  reproducible dependencies, generated bundles and superseded integration-test
+  drafts, not unique recovery work or separate evidence. Deep metadata checks
+  found no reparse points; no other readable process command line referenced
+  either exact path (163 were unavailable, so this is not an all-handles claim).
+  Both original paths are absent and their original Temp locations are verified
+  in the Recycle Bin. Restore there if needed; space is not reclaimed yet.
+- The one-off natural-tick automation is already deleted; hourly cloud cleanup,
+  alerts and non-secret evidence remain. Normal 5173/8080/4174/3306 listeners
+  retain their process IDs. Release report and all six recovery/archive files
+  retain their SHA-256 hashes. Normal installs, generated working outputs and
+  intentionally retained verification/recovery material were not cleanup targets.
+
+This closes the named artifact list and bounded package-script audit, not a
+whole-filesystem sweep or release/security approval. External evidence is
+`release-checks-20260907/temp-artifact-disposition-20260908.json` under the Codex
+visualization folder. Validation used filesystem/reference/process checks,
+source comparisons, recovery hashes and `git diff --check`; no installs,
+application builds/tests, server restarts, database writes or cloud changes.
+Next: follow the cumulative release/security gates above. The limited
+alert-policy readback is now closed; do not repeat completed cleanup or gameplay checks.
+
+#### Remaining release checks — consolidated checkpoint (2026-09-07)
+
+The owner requested all remaining release checks after confirming the desktop
+FPS recovery. **Frontend/backend, browser, and Unity checks pass after fixing
+the input-test lifecycle. Release remains blocked by the other gates below.**
+This checkpoint does not authorize a merge, deployment, dependency upgrade,
+production score write, or public mobile enablement.
+
+Execution order clarified with the owner on 2026-09-07 to avoid circular work:
+
+1. The remaining Firebase `stream-json` assessment is complete: the owner
+   approved a static-Hosting-only exception on 2026-09-07 through 2026-10-07,
+   subject to the earlier reassessment triggers below. Do not repeat the
+   assessment absent an upstream release or deployment/configuration scope
+   change. Backend/frontend dependency fixes and the
+   Unity input-test lifecycle fix remain closed unless relevant code changes
+   or new evidence invalidate them; do not rerun their suites for deployment-only
+   edits. The deployment package is an independent install, not the backend.
+2. Source/recovery review is complete with no actionable source regressions.
+   The owner approved the local source checkpoint on 2026-09-07. All five
+   recovery files are archived outside Unity source with matching SHA-256
+   hashes; only the saved transition scene's 14 trailing-whitespace lines were
+   normalized. The initial checkpoint excluded local `.vscode/settings.json`
+   and was local-only. The owner subsequently requested commit-and-sync:
+   `8eaa6615` is now on `origin/feature/three-bosses-polish`. Machine-local
+   terminal options were moved to VS Code User settings, leaving workspace
+   settings unchanged. This does not authorize deployment or a main merge.
+3. Fresh certified WebGL candidate completed on 2026-09-07 from `8eaa6615`:
+   package `2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7`
+   replaces the stale generated release in `frontend/public/unity/three-bosses`.
+   The guarded Unity build restored source/index state and certified 996 Unity
+   source files. An isolated production-config frontend build, four-asset
+   SHA-256/size/provenance validation, local Firebase-header simulation and a
+   fresh signed-out Chrome startup smoke all passed. The screenshot visibly
+   shows the Main Menu; the packaged manifest is byte-identical to the tested
+   candidate. The old generated package remains recoverable from Git.
+   This is local candidate evidence, not Firebase CDN, physical-device, FPS or
+   authenticated submission acceptance; no live score writes were performed.
+   Installed Unity CLI `1.0.0-beta.8` command execution is incompatible with the
+   pinned Pipeline `0.5.0-exp.1` command parser. An external MCP transport adapter
+   invoked the existing build guard without changing its checks or upgrading
+   project dependencies. Standard CLI command compatibility remains separate
+   tooling follow-up. Evidence and exact commands are in the external Codex
+   `release-checks-20260907` report. Accepted gameplay/visual checks and completed
+   dependency assessments are not reopened by this artifact refresh.
+4. Follow the current release ledger: preserve accepted login/submission checks,
+   finish only the combined loading/layout observation before mobile enablement,
+   and resolve or explicitly disposition the remaining cumulative security risks.
+5. After explicit publish approval, release and verify delivery. Keep cleanup
+   blockers visible; do not call retained external temporary folders removed.
+6. Then move to p4-Vega pause/touch-scroll/game polish (Phase 15), followed by
+   incremental Clean Code work (Phase 16). The owner re-added the package-script
+   audit to pre-release cleanup on 2026-09-08 under the bounded scope above;
+   do not resume the previous stalled/open-ended audit.
+
+- **Passed:** frontend TypeScript, 110 frontend tests, Vite production build,
+  and 110 release-utility fixture tests (build 20, package 41, server 27,
+  hosting 10, smoke 12). Vite retains its large-main-chunk warning.
+- **Passed:** backend TypeScript, 42 focused contract/security/HTTP tests, and
+  38 real-MySQL integration tests. The latter used an existing pinned image,
+  unique loopback/tmpfs database, and verified teardown to zero test-owned
+  containers, networks, and volumes. No production scores were written.
+- **Passed:** isolated headed Chrome startup, reload, fullscreen round-trip,
+  route exit/re-entry, and horizontal canvas containment at compact/landscape/
+  ultrawide widths for both the current local and public builds. Main Menu was
+  visually verified; there were no page errors or failed HTTP responses.
+  The emulated public iPhone route still shows the desktop-only gate and loads
+  no Unity runtime. This is not a new physical-phone gameplay run.
+- **Passed for the existing public package only:** all four assets match their
+  manifest hashes and byte lengths; MIME/CSP/cache headers pass. Separate data
+  and Wasm requests negotiated both Brotli and gzip, with decoded hashes and
+  lengths matching. Fresh candidate delivery must be checked again after build.
+- **Passed:** all 451 tracked Assets content files and 66 asset directories have
+  matching metadata; 517 tracked metadata GUIDs are valid/unique, with no missing
+  assets, orphan metadata, or non-normal source-index flags.
+- **Passed — Unity EditMode:** after the owner saved `Transition_BeeToCyborg`,
+  the fresh full first-party EditMode assembly passed 42/42 cases through the
+  existing Unity MCP transport, without upgrading Pipeline or the Editor.
+- **Fixed and verified — Unity input-test lifecycle:** the initial full PlayMode
+  run failed 22/52 cases, starting with Fire and cascading through UI tests.
+  Fire and all 17 UI tests passed separately; TouchControls alone reproduced
+  2 passed / 5 failed. Removing manual `InputTestFixture.Setup/TearDown` from
+  the scene integration tests stopped global input-state resets beneath live UI
+  actions. Fire now queues state on its owned, device-restricted Gamepad and
+  cleans up owned resources; joystick assertions still verify natural pairing
+  and gameplay delivery. A new repeated-scene/input regression and release-event
+  assertion preserve and strengthen coverage. Fresh checks: TouchControls 8/8,
+  EditMode 42/42, full PlayMode 53/53; zero failed, skipped, or inconclusive.
+  No log suppression, gameplay changes, package upgrades, or WebGL rebuild.
+- **Preserved after tests:** all 995 tracked Unity files outside the intentionally
+  edited `TouchControlsTests.cs` match the pre-fix byte fingerprint. Unity's
+  temporary test scene was automatically removed; the owner's saved transition
+  scene is open again with no unsaved changes. Its saved diff includes a URP
+  camera component and 14 trailing-space lines, left intact for source review/
+  normalization before committing. Both edited files pass scoped whitespace
+  checks; the whole-worktree check still flags those saved scene lines.
+- **Blocked — provenance/package:** Unity outcome edits are uncommitted, five
+  ignored `_Recovery` files remain under Assets, and packaged source `ea9e858c`
+  predates even committed HEAD `4372a0b8`. Preserve/review the recovery scenes,
+  checkpoint the intended source, then create and validate a fresh certified
+  release. Do not weaken provenance checks or release the stale package.
+- **Fixed — Firebase high-severity dependency finding:** the approved narrow
+  follow-up changes only `fast-uri` 3.1.5 → 3.1.7 in the deployment lockfile.
+  Version 3.1.7 also covers the subsequent port/bracket security fixes, unlike
+  3.1.6. AJV 8.20.0 accepts it within its existing `^3.0.1` range; Firebase CLI
+  stays pinned to 15.28.1, with no manifest, override, or workflow changes.
+  A disposable locked install, `npm ls --omit=dev`, actual CLI version check,
+  all 12 smoke-unit cases, and seven URI/AJV/scope checks pass. Lockfile and
+  installed production audits pass the unchanged high threshold: 0 high/critical,
+  5 moderate vulnerable packages. Workspace node_modules was not updated.
+- **Fixed — backend qs dependency finding:** an exact backend-only `qs: 6.16.0`
+  override replaces 6.15.3 without upgrading Express 4.22.2 or body-parser 1.20.6.
+  Both parents currently restrict qs to `~6.15.1`; remove/reassess the override
+  when compatible parent releases include the security fixes in their ranges.
+  Only the qs version/tarball/integrity fields change in the lockfile. Six new
+  request-parsing tests are registered in `test:unit`: four advisory regressions
+  fail on old qs, then all six pass after a clean isolated install. Full backend
+  unit/HTTP tests pass 147/147, TypeScript and production webpack build pass,
+  and installed production audit reports 0 findings. Default query/JSON behavior
+  and runtime code are unchanged; no proven app exploit path is claimed.
+- **Fixed — backend build-tooling dependency gate:** the separate approved
+  follow-up patches development-only `fast-uri` 3.1.5 → 3.1.7 in the backend
+  lockfile. AJV 8.20.0 already accepts it; no new override or manifest change.
+  Only its version/tarball/integrity fields change from the prior qs checkpoint.
+  Reused the verified isolated backend copy for a clean install; full installed
+  audit at CI's unchanged low threshold reports 0 vulnerabilities, including
+  development packages. All 147 unit/HTTP cases, TypeScript, webpack production
+  build, full dependency-tree validation and an AJV/URI compatibility probe pass.
+  Earlier production-only audits had omitted this finding. The qs override/tests,
+  working node_modules, normal servers and other dirty source files are unchanged.
+- **Fixed — frontend XML dependency gate:** lock-only `@xmldom/xmldom` patches
+  0.8.14 → 0.8.15 (Pixi runtime) and 0.9.11 → 0.9.12 (plist/Capacitor tooling)
+  fit their existing parent ranges. Exactly two version/tarball/integrity entries
+  change; no override, manifest, application source, or other package updates.
+  A clean isolated install passes the full low-threshold audit with 0 findings,
+  all 110 frontend tests and TypeScript, production compilation, and dependency
+  validation. Seven XML/entity/SVG/bitmap-font/plist checks pass; four security
+  cases fail as expected on the old installed versions. The existing large-chunk
+  warning remains. This is not a certified WebGL package or physical-device test;
+  working node_modules/dist and normal servers remain unchanged. No current app
+  exploit is claimed; well-formed serialization must still be explicitly enabled
+  to reject a manually mutated invalid entity name.
+- **Fixed — Firebase deployment qs finding:** the approved follow-up adds only
+  a deployment-package exact `qs: 6.16.0` override and changes its single lock
+  entry's version/tarball/integrity. Firebase 15.28.1 and fast-uri 3.1.7 stay
+  unchanged. Express 4/body-parser 1 restrict qs to `~6.15.1`; reassess/remove
+  the override once compatible parents accept the patched range. The other four
+  direct consumers already accept 6.16.0. Reused the existing credential-free
+  isolated install: all 18 advisory/consumer checks and 12 smoke-unit cases pass,
+  including actual query/form parsers, exegesis deepObject and mocked Google API
+  serialization. Before patching, 12 advisory cases fail as expected. Installed
+  audit falls from 5 to 2 moderate vulnerable packages, with no high/critical;
+  the unchanged high CI threshold passes. CLI version/tree and exact-delta checks
+  pass. No frontend/backend/Unity suites or live deployment were rerun.
+- **Accepted, time-limited — stream-json (owner approval 2026-09-07):** the
+  unchanged Firebase lock still has stream-json 1.9.1 and its parent as the two
+  moderate entries from the previous audit. Official registry metadata shows
+  no patched 1.x backport; even latest Firebase 15.29.0 retains `^1.7.3`.
+  Fixed stream-json 3.5.0+ changes exports, case-sensitive filenames and APIs:
+  Firebase's legacy `filters/Pick`, `filters/Filter` and streamer imports would
+  no longer resolve. Do not force a major override, downgrade Firebase, or
+  silently introduce a maintained fork just to clear an audit count.
+  Source review locates affected processing in Auth JSON import, Realtime
+  Database import and Next.js dependency analysis. Current deployment uses
+  `hosting:channel:deploy`, prebuilt `frontend/dist`, no hosting.source, no
+  function/run rewrite, and no import commands. Firebase's framework preparation
+  skips configurations without source. The dependency is absent from root,
+  frontend and backend lockfiles. These findings support a limited deployment
+  exposure assessment, not proof that every Firebase command is safe.
+  **Owner-approved exception:** allow GHSA-528h-pc64-c93x only for
+  the current static-Hosting pipeline through 2026-10-07 or earlier compatible
+  upstream remediation; reassess immediately if enabling imports, framework
+  builds, untrusted JSON inputs, or changing the CLI/config/workflow scope.
+  Keep the high audit gate, exact pin, locked install and existing timeout intact;
+  keep both moderate entries visible. This accepts the bounded risk, not a
+  dependency fix or release approval. No dependency/source patch, threshold
+  change, new install, build, suite rerun or deployment occurred in this
+  acceptance/source-review pass.
+- **Reviewed — source checkpoint preparation (2026-09-07):** independent Unity
+  review found the Cyborg/Kraken/End scene values consistent with the builder
+  and alignment contracts; the touch-test lifecycle changes preserve the shared
+  input runtime and remove only their injected device. The alignment tests
+  exercise authored reference dimensions and mode switching, not actual browser
+  resizing. Existing physical-device approvals stay closed; no suites rerun.
+  The owner's saved Bee-to-Cyborg transition contains Editor serialization
+  changes, not changed layout or transition-controller values; preserve these.
+  Its 14 trailing-whitespace findings are the only `git diff --check` failures.
+  `_Recovery/0.unity` and `0 (1).unity` are byte-identical test-runner scenes,
+  with no gameplay objects, no build-list entry, and no tracked GUID references.
+  Preserve both scenes, their metadata and `_Recovery.meta` in an approved
+  external archive before removing them from Unity's source roots; ignored
+  imported files correctly block certified provenance. Do not weaken that guard.
+  Leave the local terminal MCP additions in `.vscode/settings.json` out of the
+  release checkpoint. The reviewed security package fixes, backend parser test,
+  frontend fullscreen positioning and Unity changes are the intended checkpoint
+  scope. The packaged manifest still names source `ea9e858c`, so a fresh
+  certified build is required after checkpointing. All source/recovery files
+  remained untouched during that review. In the owner-approved checkpoint
+  follow-up, all five recovery files were moved intact to the external Codex
+  release evidence folder `release-checks-20260907/unity-recovery-archive-20260907`.
+  Each archive hash matches its reviewed original; both recovery source paths
+  are absent, and the files remain recoverable. The saved transition's only
+  follow-up change removes the 14 trailing spaces; normalized text comparison
+  confirms no scene content change. Prior successful suites were not rerun for
+  archiving, whitespace normalization or checkpointing. No push or deployment.
+- **Remaining scope, superseded by the current ledger:** PR/release approval.
+  The combined mobile load/touch observation is now owner-accepted (see R2).
+  Generic login/submission
+  replay and exhaustive weapon/audio coverage are no longer release blockers. Existing
+  accepted owner gameplay and visual checks stay closed. Read-only catalog
+  probes show local Three Bosses submissions disabled and the configured Cloud
+  Run production API enabled; both leaderboard reads return 200.
+- **Cleanup pending:** previously documented external acceptance/preview
+  folders remain; the last listener check found none on 5175/5176/8082. The
+  reviewed Unity recovery scenes are now intentionally preserved in the archive
+  above, not discarded. Disposable credential contents were not read or deleted.
+  This checkpoint does not
+  claim full temporary-environment cleanup or full-project security closeout.
+  The new credential-free `mickeyf-firebase-fast-uri-238b5de4909d4a79a7152f4cbe1153c6`
+  disposable install also remains under `%TEMP%`: policy rejected its scoped
+  removal. It runs no service; exact path and audit evidence are in the report.
+  The subsequent credential-free `mickeyf-backend-qs-57a8ce3ea78e467598cc4112825683c7`
+  install/build directory also remains after the same scoped-cleanup rejection.
+  Test servers closed; normal workspace dependencies/services were not replaced.
+  The credential-free frontend XML verification copy also remains in
+  `mickeyf-frontend-xmldom-e78a13f330034ba89a71fdb54029e096` under `%TEMP%` after
+  scoped removal was rejected. No verification service remains running;
+  exact commands, before/after audits and compatibility evidence are retained.
+
+Exact commands, scope limits, browser evidence, and the cumulative scoped risk
+ledger are retained outside the repository in `release-checks-20260907` under
+the Codex visualization directory. The Unity follow-up changed only this roadmap
+and `TouchControlsTests.cs`; the subsequent Firebase security fix changes this
+roadmap and `.github/firebase-deploy/package-lock.json`. All pre-existing
+source/scene/settings changes were preserved. No commits, pushes, deployment,
+production writes, or public-mobile activation were performed.
+The subsequent backend qs follow-up adds its manifest override/test registration,
+single lock-entry update, `ts/security/requestParsing.test.ts`, and roadmap notes.
+The backend fast-uri follow-up changes only its lock entry and this roadmap;
+exact commands and before/after audits are retained in the same external report.
+The frontend xmldom follow-up changes only its two lock entries and this roadmap;
+all 14 other pre-existing changed files were verified byte-for-byte unchanged.
+The deployment qs follow-up changes only its manifest override, single lock
+entry, and this roadmap. All 14 other dirty files match their pre-turn hashes.
+It reuses the already-retained Firebase verification directory, creates no new
+temporary install, and does not retry the previously rejected deletion.
+The subsequent stream-json assessment changed only this roadmap and its external
+evidence report. All 18 snapshotted source/dependency/workflow/config files remain
+unchanged in that checkpoint. Its initially pending disposition was subsequently
+explicitly accepted by the owner under the dated static-Hosting exception above.
 
 The design must include:
 
@@ -693,11 +1816,12 @@ ranked together.
 
 ## Phase 14 — Site information architecture, feedback, responsiveness, and literal-dark redesign
 
-**Active on `feature/site-redesign`.** Preserve the existing Sass architecture,
-sparse compositions, generous whitespace, Space Mono/Space Grotesk typography,
-and quiet outlined interactions. Use deep navy/black as the new foundation and
-retain the existing light blue, green, and cyan palette as restrained stars,
-nebulas, borders, and interaction highlights.
+**Core redesign completed and published with Alpha 0.6.0.** Preserve the
+existing Sass architecture, sparse compositions, generous whitespace, Space
+Mono/Space Grotesk typography, and quiet outlined interactions. Use deep
+navy/black as the foundation and retain the existing light blue, green, and
+cyan palette as restrained stars, nebulas, borders, and interaction highlights.
+Broader physical-device acceptance and the deferred enhancements below remain.
 
 Work in this order:
 
@@ -732,8 +1856,9 @@ The header's information architecture must:
 - replace **Social** with one **Connect** destination that combines the existing
   external-profile links with a clearly separated user-feedback form; handle
   the existing route deliberately when that page is redesigned;
-- give the Connect feedback form server-side validation, abuse/rate limiting,
-  and an explicit privacy and retention policy; and
+- keep the current provider-neutral email composer unless direct server-side
+  submission is later approved; that replacement would require validation,
+  abuse/rate limiting, and an explicit privacy and retention policy; and
 - after the navigation and content structure are settled, redesign the full
   website with a more professional, responsive, literally dark visual theme.
   "Dark" here means a deliberate dark color palette with readable contrast,
@@ -746,6 +1871,143 @@ dismissal, focus restoration, a reduced-motion-safe slide, and authenticated
 Account content in place of the old corner label. The final responsive phase
 still owns full mobile-device navigation acceptance, but the compact glass
 header is now visible and browser-verified on the existing vertical web layout.
+
+Pending shared-shell follow-ups from the 2026-09-06 physical-device review:
+
+- **Safari background integration:** the owner selected the non-scrolling
+  treatment and physically confirmed the preview's rotation, address-bar keyboard
+  recovery, flash-free loading/rotation, zoom boundaries, and zoomed-refresh fixes.
+  The accepted behavior is now in the shared application shell, scoped to ordinary
+  iPhone Safari 26+; Android, desktop, older Safari, and standalone/native views
+  keep their existing shell. Pinch zoom remains enabled. Short routes lock at the
+  painted inset; tall content can scroll within its real bounds, input focus
+  releases alignment, and native/CSS-fallback fullscreen owns scrolling until exit.
+  Home -> Connect -> Home on the normal development site was confirmed by the
+  owner on iPhone. Nineteen controller regressions and the full 95-test frontend
+  suite pass, as does the production frontend build. Chromium with an iPhone
+  identity passed navigation, forms, tall content, fullscreen and history checks;
+  it is not an iOS rendering substitute. Windows WebKit emulation did not activate
+  the computed CSS inset, so that run is not counted as a pass. The owner confirmed
+  integrated Log in keyboard show/dismiss preserves both painted bars, but reported
+  unwanted field focus zoom and black bands after Dancing Circles fullscreen exit.
+  Compact Log in/Sign up fields now have a 16px minimum font, with pinch zoom still
+  enabled. Safari-edge fullscreen now locks only the root while keeping body
+  overflow visible, preserving the existing document scroll container. A Chromium
+  fallback check confirmed unchanged inset, visible body overflow and root lock
+  before/during/after fullscreen, and realignment to shell top on exit. This does
+  not prove Safari toolbar painting: the owner confirmed field auto-zoom is fixed,
+  but fullscreen exit still restores black bands. Fullscreen recovery remains open;
+  do not count the CSS-only change or Chromium geometry pass as an iPhone fix.
+  A subsequent failure-path reproduction showed that deferred scroll alignment on
+  fullscreen exit permanently disposed the controller, so later Home navigation
+  could not recover. Position verification now keeps the inset/controller mounted
+  and permits two delayed retries, then yields to browser events without looping.
+  Three regressions cover delayed exit, exhausted retries with later recovery, and
+  position movement immediately after locking. Chromium fault injection recovered
+  after an 800ms ignored-alignment window. The owner still observed black bars
+  after fullscreen exit with this newer fix, so recovery remains unresolved.
+  A one-shot DEV-only diagnostic on the existing route, enabled solely by
+  `fullscreen-debug=1`, reports phase/inset/viewport/overflow/fullscreen state in
+  an on-device popup. The owner screenshot confirmed a healthy locked controller:
+  inset/scroll/visual page top 695px, shell top 0, scale 1, root overflow hidden,
+  body overflow visible, and neither fullscreen mode active. Both browser bars
+  instead retained the fullscreen canvas's solid blue. The diagnostic has now
+  been removed from development source after capturing this evidence.
+  WebKit's `Page::updateFixedContainerEdges` retains the last sampled fixed
+  element's color while it remains visible, even after it stops being fixed.
+  A neutral `backdrop-filter: saturate(1)` candidate passed Chromium geometry,
+  color and native/fallback checks, but the owner reported black bands on the
+  first iPhone enter/exit. That unsuccessful filter has been removed, not retained
+  as extra compositor work. Source evidence at WebKit commit
+  `a09cbd759c1a2625ac0e34ddf8a488dc154fe582`, `Source/WebCore/page/Page.cpp`
+  (`updateFixedContainerEdges`) and `LayoutTests/fast/page-color-sampling/`
+  `color-sampling-ignores-backdrop-filters.html`; this does not establish the
+  behavior of the owner's deployed Safari version.
+  The accepted recovery uses the retained-color code's hidden-renderer check:
+  after an explicit Safari CSS-fallback exit, temporarily hide only the exiting
+  wrapper across two animation callbacks, then restore its original visibility.
+  The canvas remains mounted, with no new scroll/zoom adjustments or game restart.
+  A 150ms deadline and tab-visibility cleanup bound the operation; re-entry and
+  unmount restore it immediately. Both click and Escape await restoration before
+  focus returns, with stale async completions ignored. Native fullscreen and
+  non-Safari exits bypass this pulse. The owner subsequently confirmed on the
+  physical iPhone that fullscreen enter/exit no longer restores the black bands.
+  Preserve this accepted recovery while adjusting fullscreen canvas sizing.
+  Eleven deterministic fullscreen lifecycle regressions cover restoration,
+  cancellation, timeout, ownership and browser scope; the complete frontend suite
+  passes 106 tests. `npm test && npm run build` and `git diff --check` pass (the
+  existing large-chunk build warning remains). Chromium repeated click/Escape
+  cycles restore focus and retain the same canvas node, including landscape;
+  native fullscreen and desktop fallback never receive the visibility pulse.
+  Automated checks establish lifecycle safety; the owner's physical confirmation
+  establishes acceptance of the browser-bar recovery on that tested iPhone.
+  Separately, the Dancing Circles fullscreen black canvas was traced to the shared
+  fullscreen selector outranking its blue page override and hiding the breathing
+  layer. The page selector now matches that scope and keeps the existing layer
+  edge-to-edge. Native/fallback browser checks preserve breathing blue and custom
+  colors; 95 frontend tests and the build pass. Physical iPhone color confirmation
+  remains pending.
+  The bottom browser fade remains accepted, unresolved polish. No deployment
+  or release is implied by this local integration.
+- **Compact fullscreen aspect ratio (2026-09-07):** reproduced the landscape
+  distortion at 852x300: a 1920x1080 canvas was stretched to 852x300 because
+  fullscreen forced full width while independently clamping height. The shared
+  fullscreen mixin now uses intrinsic auto sizing, percentage content-box bounds,
+  and no flex shrink only within the existing named compact-viewport mixin.
+  The same canvas now fits at approximately 533x300; backing dimensions and
+  animation/game state remain unchanged. Portrait, short landscape, native and
+  fallback Circles checks pass; Fractals and P4 Vega also preserve their ratio.
+  Larger desktop sizing, including enlargement to 2560x1440, is unchanged.
+  Three compiled-Sass regressions were added; `npm --prefix frontend test`
+  passes 109 tests and `npm --prefix frontend run build` passes with the existing
+  large-chunk warning. Eight Chromium scenarios retain canvas identity, exit
+  focus and button containment, with breathing colors still changing. Physical
+  iPhone verification of round circles and retained exit recovery is pending.
+  Ordinary iPhone Safari's address bar and cached toolbar tint are browser-owned;
+  native video fullscreen is not an interactive-canvas replacement. Do not add
+  continuous repaint/scroll tricks or promise animated toolbar colors. Larger
+  landscape tablets outside the compact breakpoints retain the previous sizing.
+  On 2026-09-07 the owner accepted the visible Safari address bar and static
+  toolbar tint as limitations not worth further work. Do not pursue a video
+  streaming workaround. Resume Three Bosses physical iPhone gameplay acceptance;
+  this decision does not mark the pending Circles device check or temporary
+  Safari experiment cleanup as completed.
+- **Mobile landscape navigation:** the owner supplied an iPhone Safari
+  screenshot where the glass navigation rail collapses to a thin strip and its
+  labels extend outside it, and reports the same issue on Android. Cause: the
+  width-only compact breakpoint stopped applying after rotation, restoring a
+  fixed 5svh header that was shorter than its links. A shared compact-viewport
+  Sass mixin now also covers landscape height <= the named 500px token, applying
+  intrinsic shell/header sizing and the existing compact navigation together.
+  The owner's follow-up screenshot showed insufficient canvas separation; compact
+  main content now has a minimum 1.6rem top inset. Chromium verified 844x390,
+  932x430, 915x412 and both sides of the 780px width boundary, dropdown containment,
+  Tab/Escape focus recovery and rotation with a dropdown open. Desktop header
+  geometry at 1440x900 is unchanged; ordinary taller desktop sizing is out of scope.
+  The canvas gap measured 16px at short landscape sizes without resizing the canvas.
+  Frontend tests and build pass. Still verify the spacing and both dropdowns with
+  expanded/collapsed browser bars on physical iPhone and Android before closing.
+- **Safari experiment cleanup:** after the background comparison is finished,
+  remove all disposable test/preview pages and instrumentation, stop only the
+  isolated preview, and remove its temporary cache. Confirm no experiment files
+  remain in the project; preserve the normal development stack and only retain
+  an explicitly accepted production implementation.
+  Integration is now implemented, but the combined stop/delete command was
+  rejected by the execution policy on 2026-09-06. Cleanup is therefore unfinished:
+  the disposable files remain outside the repository in
+  `%TEMP%/mickeyf-safari-edge-check-20260906` and
+  `%TEMP%/mickeyf-iphone-vite-dQirRt`. A read-only check on 2026-09-07 found no
+  port-5175 listener; the directories still exist. No preview routes were copied
+  into the project. The temporary
+  `fullscreen-debug` effect in `useSafariBackgroundEdges.ts` was removed after
+  receiving the owner's geometry screenshot; no diagnostic button or alert remains
+  in that hook. External preview/cache cleanup remains outstanding.
+  Complete this explicit cleanup before closing the background task.
+  Superseded by the 2026-09-08 artifact disposition above: both exact external
+  folders are now absent, no preview listeners or active runtime diagnostic
+  flags remain (historical roadmap references are intentionally preserved),
+  and accepted production background/fullscreen code is preserved. This closes
+  the Safari experiment cleanup, not unrelated physical-device checks.
 
 The Dancing Circles visual pass was implemented and browser-verified on
 2026-08-29. It removes the visible page title, preserves the PIXI/audio logic,
@@ -789,6 +2051,47 @@ sessions may use a server-controlled thirty-day JWT and signed HTTP-only cookie
 without storing passwords or preferences in browser-readable storage. The
 stateless token's lack of per-session revocation must be tested and recorded as
 an accepted risk before this item is closed.
+
+## Phase 15 — p4-Vega improvement and mobile polish
+
+Begin this phase after the current Three Bosses polish milestone is stable.
+Preserve p4-Vega's existing score rules and keyboard behavior while improving
+the game incrementally:
+
+- add a real pause button and a simple pause menu with explicit, testable pause
+  state transitions;
+- stop the canvas from swallowing ordinary vertical touch-scroll gestures, so a
+  visitor can scroll the page even when the gesture begins over the canvas,
+  while preserving deliberate interactions with actual game controls;
+- audit and prioritize further upgrades to game feel, onboarding, controls,
+  visual and audio feedback, performance, responsive/fullscreen behavior, and
+  score/leaderboard UX rather than committing to speculative rewrites; and
+- verify keyboard behavior plus real Android and iOS touch, orientation,
+  scrolling, and fullscreen behavior before release.
+
+## Phase 16 — Whole-project Clean Code sweep
+
+After Three Bosses and the p4-Vega improvement phase are stable, inspect every
+tracked first-party source, test, configuration, and documentation area using
+Robert C. Martin's *Clean Code: A Handbook of Agile Software Craftsmanship* as
+a review reference. The user-provided local copy is
+`C:\Users\User\Desktop\Pastas\Books\CleanCode.pdf`. Inventory generated,
+vendored, and third-party files, but do not refactor them as if they were owned
+source.
+
+This is an evidence-led, subsystem-by-subsystem cleanup, not a blanket rewrite.
+Preserve behavior, public APIs, database schemas, migration history, and release
+contracts; identify dead, duplicated, over-specific, or misplaced code; improve
+names, function and class responsibilities, dependency boundaries, error
+handling, comments, formatting, and tests where the evidence supports it. Keep
+each subsystem change reviewable and run its complete relevant checks before
+moving to the next one. The user-provided PDF is a local reference only and must
+not be copied into the repository.
+
+The focused first-party `package.json` script audit (originally requested
+2026-09-06) was moved into the bounded pre-release temporary-artifact cleanup
+above by the owner on 2026-09-08. Do not duplicate that audit in this later phase
+unless relevant changes or new evidence warrant it.
 
 ## Deferred tooling follow-up
 

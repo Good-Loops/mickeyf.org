@@ -11,7 +11,7 @@ export type RuntimeColumnGrant = Readonly<{
 }>;
 
 export type RuntimeTableGrant = Readonly<{
-    table: 'users' | 'game_runs' | 'game_personal_bests';
+    table: 'users' | 'game_submission_receipts' | 'game_personal_bests';
     grants: readonly RuntimeColumnGrant[];
 }>;
 
@@ -61,7 +61,7 @@ export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freez
         ]),
     }),
     Object.freeze({
-        table: 'game_runs' as const,
+        table: 'game_submission_receipts' as const,
         grants: Object.freeze([
             Object.freeze({
                 privilege: 'SELECT' as const,
@@ -73,7 +73,7 @@ export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freez
                     'score',
                     'completion_time_ms',
                     'payload_fingerprint',
-                    'personal_best',
+                    'improved_personal_best',
                     'submitted_at',
                 ]),
             }),
@@ -87,7 +87,7 @@ export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freez
                     'score',
                     'completion_time_ms',
                     'payload_fingerprint',
-                    'personal_best',
+                    'improved_personal_best',
                     'submitted_at',
                 ]),
             }),
@@ -116,7 +116,6 @@ export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freez
                     'score',
                     'completion_time_ms',
                     'recorded_at',
-                    'source_game_run_id',
                 ]),
             }),
             Object.freeze({
@@ -125,7 +124,6 @@ export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freez
                     'score',
                     'completion_time_ms',
                     'recorded_at',
-                    'source_game_run_id',
                 ]),
             }),
         ]),
@@ -133,7 +131,7 @@ export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freez
 ]);
 
 const SAFE_IDENTIFIER = /^[A-Za-z0-9_]{1,64}$/u;
-const SAFE_ACCOUNT_PART = /^[A-Za-z0-9_.%\-]{1,255}$/u;
+const SAFE_ACCOUNT_PART = /^[A-Za-z0-9_.%~\-]{1,255}$/u;
 
 function quoteIdentifier(value: string, label: string): string {
     if (!SAFE_IDENTIFIER.test(value)) {

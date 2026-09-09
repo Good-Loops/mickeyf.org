@@ -1,0 +1,243 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { test } from 'node:test';
+import {
+    PROJECT, REGION, SERVICE, IMAGE, REVISION_TYPE, fingerprint, revisionName,
+    deploymentStepsFingerprint, validatePins, validateDeployment, validateFrozenRevision,
+    validateService, planFrozenTraffic, applyFrozenTraffic, createCloudProvider, main,
+} from './frozen-backend-traffic.mjs';
+
+const copy = structuredClone;
+const now = Date.parse('2026-09-08T12:00:00Z');
+const steps = [{ id: 'Verify frozen candidate', name: 'pinned-sdk@sha256:example', entrypoint: 'python3', args: ['-c', 'reviewed code'] }];
+const pins = {
+    sourceBuildId: '11111111-1111-4111-8111-111111111111', sourceCommit: 'a'.repeat(40),
+    imageDigest: `sha256:${'b'.repeat(64)}`, deploymentBuildId: '22222222-2222-4222-8222-222222222222',
+    deploymentTriggerId: '33333333-3333-4333-8333-333333333333', deploymentStepsSha256: deploymentStepsFingerprint(steps),
+};
+
+test('Windows token command selects the installed cmd wrapper without changing execution policy', async () => {
+    const source = await readFile(new URL('./frozen-backend-traffic.mjs', import.meta.url), 'utf8');
+    const tokenHelper = source.slice(source.indexOf('function accessToken()'), source.indexOf('async function readJson('));
+    assert.ok(tokenHelper.includes("execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', 'gcloud.cmd auth print-access-token'], { encoding: 'utf8', timeout: 30_000, stdio: ['ignore', 'pipe', 'pipe'] }).trim()"));
+    assert.ok(!tokenHelper.includes('ExecutionPolicy'));
+    assert.ok(tokenHelper.includes("catch { fail('Could not obtain a short-lived gcloud access token'); }"));
+});
+
+function fixture() {
+    const revision = {
+        name: `${SERVICE}/revisions/${revisionName(pins)}`, service: 'mickeyf-org', uid: 'revision-uid',
+        conditions: [{ type: 'Ready', state: 'CONDITION_SUCCEEDED' }],
+        labels: { 'source-build-id': pins.sourceBuildId, 'source-commit': pins.sourceCommit },
+        serviceAccount: `mickeyf-runtime@${PROJECT}.iam.gserviceaccount.com`,
+        maxInstanceRequestConcurrency: 80, timeout: '300s', scaling: { maxInstanceCount: 10 },
+        containers: [{ image: `${IMAGE}@${pins.imageDigest}`, ports: [{ containerPort: 8080, name: 'http1' }],
+            resources: { limits: { cpu: '1', memory: '512Mi' }, startupCpuBoost: true },
+            startupProbe: { timeoutSeconds: 240, periodSeconds: 240, failureThreshold: 1, tcpSocket: { port: 8080 } },
+            env: Object.entries({ NODE_ENV: 'production', CLOUD_SQL_CONNECTION_NAME: `${PROJECT}:${REGION}:cms-mickeyf`,
+                DB_USER: 'cms_mickeyf', DB_NAME: 'cms', P4_VEGA_SCORE_SUBMISSIONS_ENABLED: 'false', THREE_BOSSES_RUN_SUBMISSIONS_ENABLED: 'false' })
+                .map(([name, value]) => ({ name, value }))
+                .concat(['DB_PASS', 'SESSION_SECRET'].map((name, index) => ({ name, valueSource: { secretKeyRef: { secret: name, version: String(index + 1) } } }))),
+            volumeMounts: [{ name: 'cloudsql', mountPath: '/cloudsql' }],
+        }],
+        volumes: [{ name: 'cloudsql', cloudSqlInstance: { instances: [`${PROJECT}:${REGION}:cms-mickeyf`] } }],
+    };
+    const traffic = [
+        { type: REVISION_TYPE, revision: 'mickeyf-org-old-enabled', percent: 100 },
+        { type: REVISION_TYPE, revision: revisionName(pins), tag: 'frozen-candidate' },
+        { type: REVISION_TYPE, revision: 'mickeyf-org-old-enabled', tag: 'old-enabled-tag' },
+    ];
+    const service = {
+        name: SERVICE, uid: 'service-uid', generation: '126', observedGeneration: '126', etag: 'etag-before',
+        terminalCondition: { type: 'Ready', state: 'CONDITION_SUCCEEDED' }, reconciling: false,
+        template: { revision: revisionName(pins), containers: copy(revision.containers) },
+        latestReadyRevision: revisionName(pins), latestCreatedRevision: revisionName(pins),
+        ingress: 'INGRESS_TRAFFIC_ALL', traffic, trafficStatuses: traffic.map(t => ({ ...t, uri: 'https://example.run.app' })),
+    };
+    const build = {
+        id: pins.deploymentBuildId, projectId: PROJECT, buildTriggerId: pins.deploymentTriggerId,
+        serviceAccount: `projects/${PROJECT}/serviceAccounts/mickeyf-backend-deploy@${PROJECT}.iam.gserviceaccount.com`,
+        status: 'SUCCESS', approval: { config: { approvalRequired: true }, state: 'APPROVED', result: { decision: 'APPROVED' } },
+        options: { logging: 'CLOUD_LOGGING_ONLY' }, timeout: '2400s',
+        substitutions: { _DEPLOY_TRIGGER_ID: pins.deploymentTriggerId,
+            _APPROVAL: `freeze-zero-traffic:${pins.sourceCommit}:${pins.sourceBuildId}:${pins.imageDigest}` },
+        steps: steps.map(step => ({ ...copy(step), status: 'SUCCESS', exitCode: 0, timing: {} })),
+    };
+    let patches = 0;
+    const provider = {
+        getService: async () => copy(service), getRevision: async () => copy(revision), getDeployment: async () => copy(build),
+        assertAutomationPaused: async () => {},
+        patchTraffic: async body => {
+            patches++;
+            assert.deepEqual(Object.keys(body).sort(), ['etag', 'name', 'traffic']);
+            assert.equal(body.name, SERVICE);
+            assert.equal(body.etag, 'etag-before');
+            service.traffic = copy(body.traffic);
+            service.trafficStatuses = copy(body.traffic);
+            service.generation = service.observedGeneration = '127';
+            service.etag = 'etag-after';
+        },
+        waitForService: async () => copy(service),
+    };
+    return { revision, service, build, provider, patches: () => patches };
+}
+
+test('read-only plan includes every tag; one explicit etag PATCH freezes all traffic', async () => {
+    const f = fixture();
+    const plan = await planFrozenTraffic(f.provider, pins, now);
+    assert.equal(f.patches(), 0);
+    assert.deepEqual(plan.removeTags, ['frozen-candidate', 'old-enabled-tag']);
+    const result = await applyFrozenTraffic(f.provider, plan, fingerprint(plan), now + 1000);
+    assert.deepEqual(result, { revision: revisionName(pins), percent: 100, tags: [], submissions: 'frozen', generation: '127' });
+    assert.equal(f.patches(), 1);
+});
+
+test('fresh plan supports frozen service rollback, not an old enabled revision', async () => {
+    const f = fixture();
+    f.service.traffic = [{ type: REVISION_TYPE, revision: 'mickeyf-org-new-enabled', percent: 100 }];
+    f.service.trafficStatuses = copy(f.service.traffic);
+    const plan = await planFrozenTraffic(f.provider, pins, now);
+    await applyFrozenTraffic(f.provider, plan, fingerprint(plan), now);
+    assert.equal(f.patches(), 1);
+    f.revision.containers[0].env.find(e => e.name === 'THREE_BOSSES_RUN_SUBMISSIONS_ENABLED').value = 'true';
+    await assert.rejects(planFrozenTraffic(f.provider, pins, now), /Frozen environment differs/);
+});
+
+for (const [label, mutate] of Object.entries({
+    'p4 writes enabled': r => { r.containers[0].env.find(e => e.name === 'P4_VEGA_SCORE_SUBMISSIONS_ENABLED').value = 'true'; },
+    'Three Bosses writes enabled': r => { r.containers[0].env.find(e => e.name === 'THREE_BOSSES_RUN_SUBMISSIONS_ENABLED').value = 'true'; },
+    'missing flag': r => r.containers[0].env.pop(),
+    'duplicate flag': r => { r.containers[0].env[0] = r.containers[0].env[1]; },
+    'mutable image tag': r => { r.containers[0].image = `${IMAGE}:latest`; },
+    'foreign commit': r => { r.labels['source-commit'] = 'c'.repeat(40); },
+    'foreign revision': r => { r.name += '-other'; },
+    'wrong runtime identity': r => { r.serviceAccount = 'owner@example.com'; },
+    'command override': r => { r.containers[0].command = ['sh']; },
+    'args override': r => { r.containers[0].args = ['--enable']; },
+    'secret latest': r => { r.containers[0].env[6].valueSource.secretKeyRef.version = 'latest'; },
+    'different database': r => { r.volumes[0].cloudSqlInstance.instances = ['other']; },
+    'not Ready': r => { r.conditions[0].state = 'CONDITION_FAILED'; },
+    'sidecar': r => r.containers.push(copy(r.containers[0])),
+})) test(`rejects ${label} before traffic mutation`, async () => {
+    const f = fixture(); mutate(f.revision);
+    await assert.rejects(planFrozenTraffic(f.provider, pins, now));
+    assert.equal(f.patches(), 0);
+});
+
+for (const [label, mutate] of Object.entries({
+    'LATEST': s => { s.traffic[0].type = 'TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST'; },
+    'unresolved': s => { s.trafficStatuses[0].percent = 99; },
+    'missing etag': s => { delete s.etag; },
+    'pending generation': s => { s.observedGeneration = '125'; },
+    'reconciling': s => { s.reconciling = true; },
+    'duplicate tag': s => { s.traffic[2].tag = 'frozen-candidate'; },
+    'unknown traffic property': s => { s.traffic[0].surprise = true; },
+})) test(`rejects service ${label}`, () => {
+    const f = fixture(); mutate(f.service); assert.throws(() => validateService(f.service));
+});
+
+for (const [label, mutate] of Object.entries({
+    'approval absent': b => { delete b.approval; },
+    'approval rejected': b => { b.approval.result.decision = 'REJECTED'; },
+    'wrong trigger': b => { b.buildTriggerId = pins.sourceBuildId; },
+    'wrong source approval': b => { b.substitutions._APPROVAL = 'INVALID'; },
+    'wrong trigger approval': b => { b.substitutions._DEPLOY_TRIGGER_ID = pins.sourceBuildId; },
+    'source present': b => { b.source = { gitSource: {} }; },
+    'global environment override': b => { b.options.env = ['PYTHONPATH=/malicious']; },
+    'global volume override': b => { b.options.volumes = [{ name: 'v', path: '/workspace' }]; },
+    'private pool override': b => { b.options.pool = { name: 'foreign-pool' }; },
+    'prefetched dependencies': b => { b.dependencies = [{ custom: 'code' }]; },
+    'secret override': b => { b.availableSecrets = { secretManager: [{ env: 'PYTHONPATH' }] }; },
+    'step added': b => b.steps.push(copy(b.steps[0])),
+    'step modified': b => { b.steps[0].args = ['evil']; },
+    'step unsuccessful': b => { b.steps[0].status = 'FAILURE'; },
+    'allowed failure': b => { b.steps[0].allowFailure = true; },
+})) test(`rejects deployment ${label}`, () => {
+    const f = fixture(); mutate(f.build); assert.throws(() => validateDeployment(f.build, pins));
+});
+
+test('stale/future plans, incorrect confirmations and changed service never patch', async () => {
+    for (const time of [now - 1, now + 300001]) {
+        const f = fixture(); const plan = await planFrozenTraffic(f.provider, pins, now);
+        await assert.rejects(applyFrozenTraffic(f.provider, plan, fingerprint(plan), time), /stale or future/);
+        assert.equal(f.patches(), 0);
+    }
+    const f = fixture(); const plan = await planFrozenTraffic(f.provider, pins, now);
+    await assert.rejects(applyFrozenTraffic(f.provider, plan, '0'.repeat(64), now), /confirmation/);
+    f.service.template.extra = true;
+    await assert.rejects(applyFrozenTraffic(f.provider, plan, fingerprint(plan), now), /drift/);
+    assert.equal(f.patches(), 0);
+});
+
+test('changed revision or automation state invalidates a reviewed plan', async () => {
+    const f = fixture(); const plan = await planFrozenTraffic(f.provider, pins, now);
+    f.revision.uid = 'recreated-revision';
+    await assert.rejects(applyFrozenTraffic(f.provider, plan, fingerprint(plan), now), /drift/);
+    f.provider.assertAutomationPaused = async () => { throw new Error('automation enabled'); };
+    await assert.rejects(applyFrozenTraffic(f.provider, plan, fingerprint(plan), now), /automation enabled/);
+    assert.equal(f.patches(), 0);
+});
+
+test('etag conflict or ambiguous PATCH fails without retry or automatic rollback', async () => {
+    for (const message of ['HTTP 409', 'network timeout']) {
+        const f = fixture(); let attempts = 0;
+        const plan = await planFrozenTraffic(f.provider, pins, now);
+        f.provider.patchTraffic = async () => { attempts++; throw new Error(message); };
+        await assert.rejects(applyFrozenTraffic(f.provider, plan, fingerprint(plan), now), /do not retry or migrate/);
+        assert.equal(attempts, 1);
+    }
+});
+
+test('post-PATCH foreign state is reported as indeterminate, never success', async () => {
+    const f = fixture(); const plan = await planFrozenTraffic(f.provider, pins, now);
+    f.provider.waitForService = async () => { const result = copy(f.service); result.template.changed = true; return result; };
+    await assert.rejects(applyFrozenTraffic(f.provider, plan, fingerprint(plan), now), /Unexpected state/);
+    assert.equal(f.patches(), 1);
+});
+
+test('pins and CLI reject unknown fields, missing mode and missing explicit apply authority before network', async () => {
+    assert.throws(() => validatePins({ ...pins, enabled: true }));
+    assert.throws(() => validatePins({ ...pins, sourceBuildId: '../foreign' }));
+    assert.throws(() => validatePins({ ...pins, sourceBuildId: [pins.sourceBuildId] }), /must be strings/);
+    await assert.rejects(main([]), /No default mutation/);
+    await assert.rejects(main(['apply', '--plan', 'missing.json']), /unexpected fields/);
+    await assert.rejects(main(['plan', '--pins', 'missing.json', '--pins', 'second.json']), /duplicate/);
+});
+
+test('REST adapter only sends exact traffic updateMask with etag; no other write capability', async () => {
+    const calls = [];
+    const provider = createCloudProvider('not-a-real-token-1234567890', async (url, options) => {
+        calls.push({ url, options });
+        return new Response(JSON.stringify({ name: `projects/${PROJECT}/locations/${REGION}/operations/example` }), { status: 200 });
+    });
+    const body = { name: SERVICE, etag: 'etag', traffic: [{ type: REVISION_TYPE, revision: revisionName(pins), percent: 100 }] };
+    await provider.patchTraffic(body);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, `https://run.googleapis.com/v2/${SERVICE}?updateMask=traffic`);
+    assert.equal(calls[0].options.method, 'PATCH');
+    assert.equal(calls[0].options.redirect, 'error');
+    assert.deepEqual(JSON.parse(calls[0].options.body), body);
+    await assert.rejects(provider.patchTraffic({ ...body, template: {} }));
+    await assert.rejects(provider.patchTraffic({ ...body, traffic: [{ ...body.traffic[0], tag: 'keep-old-route' }] }));
+    assert.equal(calls.length, 1);
+});
+
+test('automation inventory is paginated, requires both canonical triggers, rejects any enabled trigger or active build', async () => {
+    const ids = ['ef5a2981-95be-4f4d-af91-f997fde73356', 'd71109da-8350-4f2f-a3be-2053bb6ccd45'];
+    for (const bad of ['', 'enabled', 'active', 'missing', 'repeat-token']) {
+        let pages = 0;
+        const provider = createCloudProvider('not-a-real-token-1234567890', async url => {
+            let result = {};
+            if (url.includes('/global/triggers')) {
+                pages++;
+                result = url.includes('pageToken=next') ? { triggers: bad === 'missing' ? [] : [{ id: ids[1], disabled: true }] }
+                    : { triggers: [{ id: ids[0], disabled: bad !== 'enabled' }], nextPageToken: 'next' };
+                if (bad === 'repeat-token') result.nextPageToken = 'next';
+            }
+            if (url.includes('/global/builds') && bad === 'active') result = { builds: [{ status: 'WORKING' }] };
+            return new Response(JSON.stringify(result), { status: 200 });
+        });
+        if (bad) await assert.rejects(provider.assertAutomationPaused());
+        else { await provider.assertAutomationPaused(); assert.equal(pages, 2); }
+    }
+});

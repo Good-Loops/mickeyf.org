@@ -1,39 +1,39 @@
 {
   "version": 2,
-  "buildId": "22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa",
-  "certifiedBuildId": "0ed2852bbd6ced8e4fd917846b5e3d47b689f9c7e721fc9911a29dc0d961c775",
-  "sourceCommit": "ea9e858ccce20af2bb3f0dbd0e25900d8e08b09d",
-  "unitySourceDigest": "6157567be87b059c3a7ebfff9dda21223bcf21aa82aa8fb26aa353ba2aee4560",
-  "unitySourceFileCount": 986,
+  "buildId": "2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7",
+  "certifiedBuildId": "3477618bc7c41449af9114e3adc45035f59ab2530f4dfccc83719c00a4daecca",
+  "sourceCommit": "8eaa6615a437f88ccb5d44e3dad13cfde42da3aa",
+  "unitySourceDigest": "621406cb29076648fabf2fc8f46c0727b27190610fc485f41675ad705a6cbf60",
+  "unitySourceFileCount": 996,
   "unityEditorVersion": "6000.3.8f1",
-  "loaderUrl": "releases/22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa/Build/three-bosses-webgl.loader.js",
-  "dataUrl": "releases/22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa/Build/three-bosses-webgl.data",
-  "frameworkUrl": "releases/22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa/Build/three-bosses-webgl.framework.js",
-  "codeUrl": "releases/22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa/Build/three-bosses-webgl.wasm",
-  "streamingAssetsUrl": "releases/22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa/StreamingAssets",
+  "loaderUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.loader.js",
+  "dataUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.data",
+  "frameworkUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.framework.js",
+  "codeUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.wasm",
+  "streamingAssetsUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/StreamingAssets",
   "companyName": "DefaultCompany",
   "productName": "Three Bosses",
   "productVersion": "1.0",
   "assets": [
     {
-      "path": "releases/22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa/Build/three-bosses-webgl.data",
-      "sha256": "e6a87b2459f6ce0c45460967fc5a4b822348c8c48f7fb2b3c7a256356ac09ad3",
-      "size": 41803309
+      "path": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.data",
+      "sha256": "61230388c7a56ee4b517c32ead76ac80a441f3534db3360a17ed6e90a17e0db1",
+      "size": 41817687
     },
     {
-      "path": "releases/22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa/Build/three-bosses-webgl.framework.js",
-      "sha256": "22a4b73ab6f64979e6f6f587f60c40150cb95dfdbbb38375a437205efe57036b",
-      "size": 462614
+      "path": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.framework.js",
+      "sha256": "630adf65ae687ec7d0e5735ffbc6b48470c331a79f6c41b24e8564673c44e365",
+      "size": 463316
     },
     {
-      "path": "releases/22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa/Build/three-bosses-webgl.loader.js",
-      "sha256": "77f9cf6a3e89a5e4fa08dc602b001c1a9d9d89cb0e5811ed8ea209b0e9266c22",
+      "path": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.loader.js",
+      "sha256": "5a3e5343789ff6edc60949474392621cdec7d6dcf96d8714f259302ee0e12fd2",
       "size": 26982
     },
     {
-      "path": "releases/22c75f55381c82d08b8ffda173163d87ea227b10776ff184135e2a64153c45fa/Build/three-bosses-webgl.wasm",
-      "sha256": "8cbd31ce302c6d83ab5c36e52c957b357d0c5f65fb1f1240fac8d1a63f55032d",
-      "size": 51998098
+      "path": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.wasm",
+      "sha256": "2cecc479452bf86d70108109a36bf30191580c09e4e4e29578a4e213e12261a4",
+      "size": 52026572
     }
   ]
 }

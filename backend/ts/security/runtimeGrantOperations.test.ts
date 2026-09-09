@@ -107,6 +107,26 @@ test('the plan digest binds the non-secret account credential-expiry state', () 
     assert.notEqual(currentPlan.sha256, expiredPlan.sha256);
 });
 
+test('legacy or mixed schemas refuse receipt grants before any mutation', () => {
+    const current = exactSnapshot();
+    const legacy = current.availableColumns.map(({ tableName, columnName }) => ({
+        tableName: tableName === 'game_submission_receipts' ? 'game_runs' : tableName,
+        columnName: columnName === 'improved_personal_best' ? 'personal_best' : columnName,
+    }));
+    for (const availableColumns of [
+        legacy,
+        [...current.availableColumns, { tableName: 'game_runs', columnName: 'game_run_id' }],
+        [...current.availableColumns, { tableName: 'game_personal_bests', columnName: 'source_game_run_id' }],
+    ]) {
+        const plan = createRuntimeGrantPlan({ ...current, availableColumns }, SETTINGS, RUNTIME_ACCOUNT);
+        assert.equal(plan.state, 'blocked');
+        assert.match(plan.blockers.join(' '), /schema cutover is incomplete/u);
+        assert.deepEqual(plan.operations, {
+            ensureRequiredPrivileges: [], clearDefaultRoles: [], removeApprovedRole: null,
+        });
+    }
+});
+
 test('the plan digest rejects malformed account credential-expiry metadata', () => {
     const malformedSnapshot = {
         ...exactSnapshot(),

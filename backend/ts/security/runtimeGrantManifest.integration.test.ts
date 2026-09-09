@@ -16,6 +16,7 @@ import {
     submitThreeBossesRun,
 } from '../leaderboards/threeBossesRunRepository';
 import type { MigrationConnection } from '../migrations/leaderboardSchema';
+import { cleanupSubmissionReceipts } from '../leaderboards/submissionReceiptCleanup';
 import { loadMigrationManifest } from '../migrations/migrationManifest';
 import { applyMigrations } from '../migrations/migrationRunner';
 import {
@@ -24,6 +25,7 @@ import {
     type RuntimeColumnPrivilege,
     type RuntimeDatabaseAccount,
 } from './runtimeGrantManifest';
+import { renderReceiptCleanupGrantStatements, verifyReceiptCleanupConnection } from './receiptCleanupGrantManifest';
 
 const migrationTestPort = Number(process.env.MIGRATION_TEST_PORT);
 const EXPECTED_TEST_TARGET = Object.freeze({
@@ -38,6 +40,9 @@ const TEST_RUNTIME_ACCOUNT: RuntimeDatabaseAccount = Object.freeze({
 });
 const TEST_RUNTIME_PASSWORD = 'runtime-grant-test-only';
 const TEST_RUNTIME_GRANTEE = "'runtime_grant_test'@'%'";
+const TEST_CLEANUP_ACCOUNT = Object.freeze({ user: 'receipt_cleanup_grant_test', host: '%' });
+const TEST_CLEANUP_GRANTEE = "'receipt_cleanup_grant_test'@'%'";
+const TEST_CLEANUP_PASSWORD = 'receipt-cleanup-grant-test-only';
 const DENIED_PRIVILEGE_ERROR_CODES = new Set([
     'ER_ACCESS_DENIED_ERROR',
     'ER_COLUMNACCESS_DENIED_ERROR',
@@ -51,6 +56,7 @@ const migrations = loadMigrationManifest();
 let administrator: Connection;
 let root: Connection;
 let runtimePool: Pool;
+let cleanupPool: Pool;
 
 type MysqlError = Error & { code?: string };
 
@@ -101,6 +107,7 @@ async function createSchema(): Promise<void> {
             DROP TABLE IF EXISTS
                 game_personal_bests,
                 game_runs,
+                game_submission_receipts,
                 schema_migrations,
                 users
         `);
@@ -121,13 +128,19 @@ async function createSchema(): Promise<void> {
           COLLATE = utf8mb4_unicode_ci
     `);
     await applyMigrations(asMigrationConnection(administrator), migrations, config);
+    await applyMigrations(asMigrationConnection(administrator), migrations, config, {
+        allowedEffectKinds: ['drop-column'],
+    });
+    await applyMigrations(asMigrationConnection(administrator), migrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
 }
 
 async function resetData(): Promise<void> {
     await administrator.query('SET FOREIGN_KEY_CHECKS = 0');
     try {
         await administrator.query('TRUNCATE TABLE game_personal_bests');
-        await administrator.query('TRUNCATE TABLE game_runs');
+        await administrator.query('TRUNCATE TABLE game_submission_receipts');
         await administrator.query('TRUNCATE TABLE users');
     } finally {
         await administrator.query('SET FOREIGN_KEY_CHECKS = 1');
@@ -188,6 +201,21 @@ before(async () => {
     )) {
         await root.query(statement);
     }
+    await root.query(`DROP USER IF EXISTS ${TEST_CLEANUP_GRANTEE}`);
+    await root.query(`CREATE USER ${TEST_CLEANUP_GRANTEE} IDENTIFIED BY ?`, [TEST_CLEANUP_PASSWORD]);
+    for (const statement of renderReceiptCleanupGrantStatements(config.database, TEST_CLEANUP_ACCOUNT)) {
+        await root.query(statement);
+    }
+    cleanupPool = mysql.createPool({
+        host: config.host,
+        port: config.port,
+        user: TEST_CLEANUP_ACCOUNT.user,
+        password: TEST_CLEANUP_PASSWORD,
+        database: config.database,
+        dateStrings: true,
+        multipleStatements: false,
+        connectionLimit: 1,
+    });
 
     runtimePool = mysql.createPool({
         host: config.host,
@@ -206,8 +234,10 @@ beforeEach(resetData);
 
 after(async () => {
     if (runtimePool) await runtimePool.end();
+    if (cleanupPool) await cleanupPool.end();
     if (root) {
         await root.query("DROP USER IF EXISTS 'runtime_grant_test'@'%'");
+        await root.query(`DROP USER IF EXISTS ${TEST_CLEANUP_GRANTEE}`);
         await root.end();
     }
     if (administrator) await administrator.end();
@@ -325,19 +355,21 @@ test('supports every current auth and leaderboard SQL path', async () => {
     }]);
 });
 
-test('denies migration history, ledger mutation, destructive DML, and DDL', async () => {
+test('denies migration history, receipt mutation, destructive DML, and DDL', async () => {
     await assertPrivilegeDenied(() =>
         runtimePool.query('SELECT version FROM schema_migrations LIMIT 1'));
     await assertPrivilegeDenied(() =>
-        runtimePool.query('SELECT source_game_run_id FROM game_personal_bests LIMIT 1'));
+        runtimePool.query('SELECT game_run_id FROM game_submission_receipts LIMIT 1'));
     await assertPrivilegeDenied(() =>
         runtimePool.query('UPDATE users SET email = email WHERE user_id = 1'));
     await assertPrivilegeDenied(() =>
         runtimePool.query('SELECT user_id FROM users WHERE user_id = 1 FOR UPDATE'));
     await assertPrivilegeDenied(() =>
-        runtimePool.query('UPDATE game_runs SET score = score WHERE 1 = 0'));
+        runtimePool.query('UPDATE game_submission_receipts SET score = score WHERE 1 = 0'));
     await assertPrivilegeDenied(() =>
-        runtimePool.query('DELETE FROM game_runs WHERE 1 = 0'));
+        runtimePool.query('DELETE FROM game_submission_receipts WHERE 1 = 0'));
+    await assertPrivilegeDenied(() =>
+        runtimePool.query('DELETE FROM game_personal_bests WHERE 1 = 0'));
     await assertPrivilegeDenied(() =>
         runtimePool.query('ALTER TABLE users ADD COLUMN forbidden INT NULL'));
     await assertPrivilegeDenied(() =>
@@ -346,4 +378,73 @@ test('denies migration history, ledger mutation, destructive DML, and DDL', asyn
         runtimePool.query(
             "GRANT SELECT ON mickeyf_migration_test.users TO 'runtime_grant_test'@'%'"
         ));
+});
+
+test('cleanup identity deletes receipts without reading gameplay or changing permanent bests', async () => {
+    const [serverRows] = await root.query<RowDataPacket[]>('SELECT @@GLOBAL.server_uuid AS serverUuid');
+    const cleanupSession = await cleanupPool.getConnection();
+    try {
+        await verifyReceiptCleanupConnection(cleanupSession, config.database, TEST_CLEANUP_ACCOUNT, String(serverRows[0].serverUuid));
+    } finally {
+        cleanupSession.release();
+    }
+    await submitThreeBossesRun(runtimePool, 1, randomUUID(), 60_000);
+    const [beforeBest] = await administrator.query<RowDataPacket[]>('SELECT * FROM game_personal_bests');
+    const [candidates] = await cleanupPool.query<RowDataPacket[]>(
+        'SELECT game_run_id, user_id, submitted_at FROM game_submission_receipts ORDER BY submitted_at, game_run_id LIMIT 100'
+    );
+    assert.equal(candidates.length, 1);
+    await administrator.query(`UPDATE game_submission_receipts
+        SET submitted_at = UTC_TIMESTAMP(6) - INTERVAL 25 HOUR`);
+    const summary = await cleanupSubmissionReceipts(cleanupPool, {
+        verifyConnection: (connection) => verifyReceiptCleanupConnection(
+            connection, config.database, TEST_CLEANUP_ACCOUNT, String(serverRows[0].serverUuid)
+        ),
+    });
+    assert.equal(summary.deletedReceipts, 1);
+    assert.equal(summary.status, 'completed');
+    const [afterBest] = await administrator.query<RowDataPacket[]>('SELECT * FROM game_personal_bests');
+    assert.deepEqual(afterBest, beforeBest);
+    const [remaining] = await administrator.query<RowDataPacket[]>('SELECT game_run_id FROM game_submission_receipts');
+    assert.deepEqual(remaining, []);
+
+    for (const sql of [
+        'SELECT user_password FROM users LIMIT 1',
+        'SELECT score FROM game_personal_bests LIMIT 1',
+        'SELECT version FROM schema_migrations LIMIT 1',
+        'SELECT score FROM game_submission_receipts LIMIT 1',
+        'SELECT payload_fingerprint FROM game_submission_receipts LIMIT 1',
+        'DELETE FROM users WHERE 1 = 0',
+        'DELETE FROM game_personal_bests WHERE 1 = 0',
+        'UPDATE game_personal_bests SET score = 0 WHERE 1 = 0',
+        'UPDATE game_submission_receipts SET submitted_at = NOW() WHERE 1 = 0',
+        'INSERT INTO game_submission_receipts (user_id) VALUES (1)',
+        'ALTER TABLE game_submission_receipts ADD COLUMN forbidden INT NULL',
+        'DROP TABLE game_submission_receipts',
+    ]) {
+        await assertPrivilegeDenied(() => cleanupPool.query(sql));
+    }
+
+    const [tableGrants] = await root.query<RowDataPacket[]>(
+        `SELECT TABLE_SCHEMA AS schemaName, TABLE_NAME AS tableName, PRIVILEGE_TYPE AS privilegeType,
+                IS_GRANTABLE AS isGrantable
+         FROM information_schema.TABLE_PRIVILEGES WHERE GRANTEE = ?`,
+        [TEST_CLEANUP_GRANTEE]
+    );
+    assert.deepEqual(tableGrants, [{
+        schemaName: config.database, tableName: 'game_submission_receipts',
+        privilegeType: 'DELETE', isGrantable: 'NO',
+    }]);
+    const [columnGrants] = await root.query<RowDataPacket[]>(
+        `SELECT TABLE_SCHEMA AS schemaName, TABLE_NAME AS tableName, COLUMN_NAME AS columnName,
+                PRIVILEGE_TYPE AS privilegeType, IS_GRANTABLE AS isGrantable
+         FROM information_schema.COLUMN_PRIVILEGES WHERE GRANTEE = ? ORDER BY COLUMN_NAME`,
+        [TEST_CLEANUP_GRANTEE]
+    );
+    assert.deepEqual(columnGrants, ['game_run_id', 'submitted_at', 'user_id'].map((columnName) => ({
+        schemaName: config.database, tableName: 'game_submission_receipts', columnName,
+        privilegeType: 'SELECT', isGrantable: 'NO',
+    })));
+    const [roles] = await cleanupPool.query<RowDataPacket[]>('SELECT CURRENT_ROLE() AS currentRole');
+    assert.equal(roles[0].currentRole, 'NONE');
 });

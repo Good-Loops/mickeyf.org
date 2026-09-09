@@ -8,6 +8,9 @@ import {
     verifyLegacyP4ScoreColumnAbsent,
     verifyLegacyP4ScoreColumnPresent,
     verifyLeaderboardTable,
+    personalBestSourceExists,
+    verifyLeaderboardStage,
+    type LeaderboardSchemaStage,
 } from './leaderboardSchema';
 import type {
     MigrationDefinition,
@@ -40,7 +43,43 @@ export type MigrationPlan = Readonly<{
 
 export type ApplyMigrationOptions = Readonly<{
     allowedEffectKinds?: readonly MigrationEffectKind[];
+    beforeApply?: (plan: MigrationPlan) => Promise<void>;
+    afterApply?: (plan: MigrationPlan) => Promise<void>;
 }>;
+
+const DETACH_VERSION = '0004_detach_personal_best_sources';
+const RECEIPTS_VERSION = '0005_retain_submission_receipts';
+const LEGACY_VERSIONS = [
+    '0001_create_game_runs', '0002_create_game_personal_bests', '0003_drop_users_p4_score',
+];
+
+async function inspectLeaderboardStage(
+    connection: MigrationConnection,
+    migrations: readonly MigrationDefinition[],
+    applied: ReadonlyMap<string, AppliedMigrationRow>
+): Promise<LeaderboardSchemaStage> {
+    if (!migrations.some(({ effect }) => effect === 'detach-best-source')) return 'original';
+    const hasReceipts = await tableExists(connection, 'game_submission_receipts');
+    const hasRuns = await tableExists(connection, 'game_runs');
+    const hasBests = await tableExists(connection, 'game_personal_bests');
+    if (hasReceipts && hasRuns) throw new Error('Ambiguous receipt transition: both run tables exist');
+    const detached = hasBests && !(await personalBestSourceExists(connection));
+    if (hasReceipts || detached || applied.has(DETACH_VERSION) || applied.has(RECEIPTS_VERSION)) {
+        if (!LEGACY_VERSIONS.every((version) => applied.has(version))) {
+            throw new Error('Receipt transition requires all historical migrations to be recorded first');
+        }
+        if (!hasBests || !detached || (!hasRuns && !hasReceipts)) {
+            throw new Error('Receipt transition schema disagrees with recorded history');
+        }
+        if (hasReceipts && !applied.has(DETACH_VERSION)) {
+            throw new Error('Receipt rename requires recorded personal-best detachment');
+        }
+        if (applied.has(RECEIPTS_VERSION) && !hasReceipts) {
+            throw new Error('Recorded receipt migration is missing game_submission_receipts');
+        }
+    }
+    return hasReceipts ? 'receipts' : detached ? 'detached' : 'original';
+}
 
 const CREATE_HISTORY_TABLE_SQL = `
     CREATE TABLE schema_migrations (
@@ -170,18 +209,28 @@ async function inspectMigrationState(
 ): Promise<MigrationPlan> {
     const appliedRows = historyExists ? await readAppliedMigrations(connection) : [];
     const appliedByVersion = validateHistory(migrations, appliedRows);
+    const stage = await inspectLeaderboardStage(connection, migrations, appliedByVersion);
     const applied: string[] = [];
     const pending: string[] = [];
     const recoverable: string[] = [];
 
     for (const migration of migrations) {
         if (appliedByVersion.has(migration.version)) {
-            await verifyMigrationPostcondition(connection, migration);
+            await verifyMigrationPostcondition(connection, migration, stage);
             applied.push(migration.version);
             continue;
         }
 
         pending.push(migration.version);
+        if (migration.effect === 'detach-best-source' || migration.effect === 'retain-receipts') {
+            const completed = migration.effect === 'detach-best-source'
+                ? stage !== 'original' : stage === 'receipts';
+            if (completed) {
+                await verifyMigrationPostcondition(connection, migration, stage);
+                recoverable.push(migration.version);
+            }
+            continue;
+        }
         if (migration.effect === 'create-table') {
             if (await tableExists(connection, migration.tableName)) {
                 await verifyLeaderboardTable(connection, migration.tableName);
@@ -209,6 +258,18 @@ async function verifyMigrationPrecondition(
     connection: MigrationConnection,
     migration: MigrationDefinition
 ): Promise<void> {
+    if (migration.effect === 'detach-best-source') {
+        await verifyLeaderboardTable(connection, 'game_personal_bests');
+        return;
+    }
+    if (migration.effect === 'retain-receipts') {
+        if (await tableExists(connection, 'game_submission_receipts')) {
+            throw new Error('Receipt rename requires game_submission_receipts to be absent');
+        }
+        await verifyLeaderboardStage(connection, 'game_personal_bests', 'detached');
+        await verifyLeaderboardTable(connection, 'game_runs');
+        return;
+    }
     if (migration.effect === 'create-table') {
         if (await tableExists(connection, migration.tableName)) {
             throw new Error(
@@ -223,15 +284,29 @@ async function verifyMigrationPrecondition(
 
 async function verifyMigrationPostcondition(
     connection: MigrationConnection,
-    migration: MigrationDefinition
+    migration: MigrationDefinition,
+    stage: LeaderboardSchemaStage = 'original'
 ): Promise<void> {
+    if (migration.effect === 'detach-best-source') {
+        await verifyLeaderboardStage(connection, 'game_personal_bests', 'detached');
+        return;
+    }
+    if (migration.effect === 'retain-receipts') {
+        if (await tableExists(connection, 'game_runs')) {
+            throw new Error('Receipt migration must remove the historical game_runs table name');
+        }
+        await verifyLeaderboardStage(connection, 'game_runs', 'receipts');
+        return;
+    }
     if (migration.effect === 'create-table') {
-        if (!(await tableExists(connection, migration.tableName))) {
+        const currentTable = migration.tableName === 'game_runs' && stage === 'receipts'
+            ? 'game_submission_receipts' : migration.tableName;
+        if (!(await tableExists(connection, currentTable))) {
             throw new Error(
                 `Applied migration ${migration.version} is missing table ${migration.tableName}`
             );
         }
-        await verifyLeaderboardTable(connection, migration.tableName);
+        await verifyLeaderboardStage(connection, migration.tableName, stage);
         return;
     }
 
@@ -263,6 +338,12 @@ export async function applyMigrations(
         const allowedEffectKinds = new Set<MigrationEffectKind>(
             options.allowedEffectKinds ?? ['create-table']
         );
+        if (allowedEffectKinds.has('detach-best-source') || allowedEffectKinds.has('retain-receipts')) {
+            if (!LEGACY_VERSIONS.every((version) => initialPlan.applied.includes(version))) {
+                throw new Error('Receipt transition requires all historical migrations to be recorded first');
+            }
+        }
+        await options.beforeApply?.(initialPlan);
 
         if (!hasHistory) await createHistoryTable(connection);
         const applied = [...initialPlan.applied];
@@ -270,6 +351,9 @@ export async function applyMigrations(
         for (const migration of migrations) {
             if (applied.includes(migration.version)) continue;
             if (!allowedEffectKinds.has(migration.effect)) continue;
+            if (migration.effect === 'retain-receipts' && !applied.includes(DETACH_VERSION)) {
+                throw new Error('Receipt rename requires recorded personal-best detachment before DDL');
+            }
 
             if (!initialPlan.recoverable.includes(migration.version)) {
                 await verifyMigrationPrecondition(connection, migration);
@@ -285,7 +369,9 @@ export async function applyMigrations(
             applied.push(migration.version);
         }
 
-        return inspectMigrationState(connection, migrations, true);
+        const finalPlan = await inspectMigrationState(connection, migrations, true);
+        await options.afterApply?.(finalPlan);
+        return finalPlan;
     });
 }
 

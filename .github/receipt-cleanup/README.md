@@ -1,0 +1,152 @@
+# Submission receipt retention job
+
+This is a separately approved **production deletion job**, not an HTTP API route
+and not part of the automatic main-branch deploy. Nothing in this directory
+creates cloud resources when the website is built or deployed. The checked-in
+job template is disabled and has intentionally invalid image/secret placeholders.
+The separately deployed production job and hourly Scheduler were enabled with
+owner approval on 2026-09-08 local. Current execution evidence and remaining
+observation gates are in `backend/RECEIPT_RETENTION.md`; this template is not a
+live-state export.
+
+## Runtime contract
+
+- The backend's existing Docker build packages
+  `dist/submission-receipt-cleanup.min.js`. The same reviewed digest may serve the
+  API and this one-task job, with separate commands, credentials and identities.
+- The job uses only `RECEIPT_CLEANUP_*` credentials. It does not load `.env`, use
+  `DB_*` fallback credentials, open a port, or enable score submissions.
+- Before querying receipts, it verifies the actual schema name, server UUID,
+  `CURRENT_USER()`, no active/mandatory roles, and the exact self-grants:
+  `SELECT(user_id, game_run_id, submitted_at)` plus `DELETE` on
+  `cms.game_submission_receipts`. No table-level SELECT, score/payload reads,
+  personal-best/user/migration writes, global grants, grant options or roles.
+- Global oldest-first indexed scans reach inactive users. Each delete acquires
+  the same database-scoped per-user lock as submission/replay, then samples
+  `UTC_TIMESTAMP(6)` in the DELETE statement. Only rows **strictly older than
+  24 hours** can be removed. Replays cannot renew `submitted_at`.
+- Each invocation allows at most 100 scans and 100 delete batches of at most
+  200 rows (20,000 deletions), a 120-second whole-operation deadline, 10-second
+  driver query timeouts, and 5-second shutdown. The Cloud Run task hard limit is
+  180 seconds; one task, parallelism 1, no automatic task retries. Independent
+  manual/duplicate invocations remain safe because they share the user locks.
+- Successful hourly runs normally retain rows for 24 to approximately 25 hours.
+  This is **not a hard upper bound during failures/backlog**. The job reports
+  backlog as a failure, never silently claims that retention is satisfied.
+- Structured stdout has `component=submission-receipt-cleanup`, counts/duration,
+  `status` and `severity`. Exit 0 means no expired rows remain; exit 2 means
+  backlog; exit 1 means configuration, identity, DB, deadline or shutdown failure.
+  No credentials, IDs, scores, queries or raw driver errors are logged.
+
+## Activation gates (operator checklist; do not skip)
+
+Cleanup has no npm convenience aliases. The deployed Job calls the compiled
+entrypoint above directly; its source, build entry and tests remain maintained.
+Approved manual executions should use that pinned Job and the verification
+checklist below, not a developer-shell shortcut. Running source on a developer
+computer is not a disposable-database guarantee: even a non-production loopback
+endpoint can be a proxy to Cloud SQL.
+
+Alert delivery can be accepted before SQL provisioning: first create the
+dedicated job identity without SQL/secret roles and a pinned-image job containing
+only `NODE_ENV=production` and `RECEIPT_CLEANUP_ENABLED=false`, with no credentials
+or Cloud SQL volume. The entrypoint rejects that flag before opening a database
+connection. Test step 5 with this configuration; complete steps 2–4 only after
+the owner confirms delivery. Never enable this deliberately incomplete job.
+
+1. Obtain explicit approval for the production schema/data and IAM changes.
+   Verify the receipt migration and the removed personal-best dependency first;
+   record that all bests and their leaderboard ordering survived the cutover.
+   Inspect incoming receipt foreign keys and DELETE triggers with an approved
+   maintenance identity whose complete FK/trigger metadata visibility is
+   verified, not the DML-only operator or cleanup runtime. A schema-name check
+   is not a structural dependency audit; empty metadata without visibility is
+   not proof of absence. Stop for review if either can affect unrelated data.
+   Keep the cleanup job disabled until the reviewed receipt-backed API is live.
+2. Create a dedicated proxy-only MySQL account `receipt_cleanup@cloudsqlproxy~%`
+   **without automatic Cloud SQL administrator roles**. Apply only the output
+   from `renderReceiptCleanupGrantStatements` in
+   `backend/ts/security/receiptCleanupGrantManifest.ts`. Independently inspect its
+   complete grants and roles. The existing runtime/operator accounts do not
+   receive any new DELETE privilege.
+3. Store a separately generated cleanup password in the named Secret Manager
+   secret; never paste it in a command, source file or log. Create the dedicated
+   job service account with Cloud SQL Client and access to **only this secret**.
+   Create a different scheduler identity with `roles/run.invoker` on **only this
+   job**, no secret/SQL roles. Keep the Google-managed Scheduler service agent's
+   required service-agent role; do not grant that role to the caller identity.
+4. Reverify the project/instance/schema/server UUID against the intended live
+   target. Render the job template outside the repository using the approved,
+   scanned full image digest and a numeric pinned secret version. Do not use
+   `latest`. First keep `RECEIPT_CLEANUP_ENABLED=false`. Review the rendered JSON
+   diff; the v1 JSON document is accepted as YAML by `gcloud run jobs replace`.
+5. Configure operator alerting **before enabling deletion**. Match Cloud Run Job
+   execution failures (not just Scheduler HTTP errors), this component's ERROR
+   logs/backlog, and absence of a successful completion for two consecutive
+   hourly schedules. Route alerts to an existing approved operator notification
+   channel; do not invent recipients. Test alert routing with the disabled job's
+   sanitized configuration failure. Scheduler receiving 2xx only proves that a
+   job execution was created, not that cleanup completed.
+6. With explicit activation approval, set the rendered job's cleanup flag to
+   `true`, replace the job, and execute it once manually. Verify completion,
+   sanitized counts, remaining-expired probe, unchanged personal bests and
+   authenticated replay behavior. Correlate the exact execution UID and parent
+   job generation. If v2 omits Cloud SQL volumes/mounts, independently verify
+   that execution's v1 `run.googleapis.com/cloudsql-instances` annotation and
+   ownership; never waive an unexplained configuration difference. If backlog
+   remains, investigate/catch up using
+   further bounded executions before enabling the schedule; do not increase
+   limits automatically.
+7. Only after the manual result and alerts pass, create the Scheduler resource
+   from `cloud-scheduler-job.template.json`: UTC hourly, authenticated POST to the
+   Jobs API using OAuth, not OIDC. It contains no execution overrides or secret.
+   Observe the first scheduled **execution result**, then record deployment
+   evidence and ownership in the release checkpoint.
+
+To stop deletion, pause the Scheduler job and cancel any running cleanup
+execution, then disable the cleanup flag. Also disable the no-success watchdog
+during intentional maintenance, preserving the two failure policies. Reconcile
+uncertain/in-flight dispatches before declaring deletion stopped. Do not drop
+personal bests or widen the runtime role as a rollback. Already expired receipts
+cannot be recreated
+without a separately reviewed backup restore, and their deletion must never
+invalidate permanent personal bests. The normal 30-minute run-ticket expiration
+does not change, and receipt deletion removes historical ID recognition.
+
+## Alert conditions and acceptance
+
+Scope every condition to `cloud_run_job`, this project, `us-central1`, and
+`mickeyf-submission-receipt-cleanup`; use the owner-approved email channel.
+
+- Native `run.googleapis.com/job/completed_execution_count`: five-minute sum of
+  the verified `result=failed` series greater than zero, with no retest delay.
+  This also catches failed executions that never emit the component JSON log.
+- Separate log-match policy: `jsonPayload.component=submission-receipt-cleanup`
+  and ERROR severity, `backlog=true`, or `status=failed`. Limit notifications to
+  once per five minutes and automatically close inactive incidents after
+  thirty minutes. An open incident is not proof the email reached the inbox.
+- Before hourly scheduling, configure the no-success watchdog: a five-minute
+  sum below one for two hours, treating missing data as failing. Verify the
+  success-result label and observe an actual positive success datapoint before
+  arming it. This detects zeros as well as missing reports; metric absence alone
+  misses zero-valued samples. The two-hour window has alignment/ingestion delay,
+  not an exact two-cron-occurrence guarantee. Do not arm it during disabled-job
+  acceptance.
+
+Correlate each intentional failure with the exact job UID, execution name,
+sanitized configuration-error log and native result metric. Save a pending
+dispatch marker before calling `:run`; reconcile an uncertain response rather
+than blindly launching another test. Confirm each policy's incident and ask the
+owner to confirm email delivery. Never claim receipt from a successful channel
+creation or absence of notification-error logs.
+
+## Official references
+
+- [Schedule Cloud Run Jobs](https://docs.cloud.google.com/run/docs/execute/jobs-on-schedule)
+- [Cloud Run Job YAML schema](https://docs.cloud.google.com/run/docs/reference/yaml/v1)
+- [Execution-template Cloud SQL annotation](https://docs.cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec)
+- [Scheduler OAuth for Google API targets](https://docs.cloud.google.com/scheduler/docs/http-target-auth)
+
+Adding or building these templates does not create any cloud resources.
+Production provisioning and activation are separate, explicitly approved
+operations recorded in the retention checkpoint.

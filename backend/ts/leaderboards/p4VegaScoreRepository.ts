@@ -128,9 +128,8 @@ export async function submitP4VegaScore(
                                     user_id,
                                     score,
                                     completion_time_ms,
-                                    recorded_at,
-                                    source_game_run_id
-                                ) VALUES (?, ?, ?, ?, NULL, UTC_TIMESTAMP(6), NULL) AS incoming
+                                    recorded_at
+                                ) VALUES (?, ?, ?, ?, NULL, UTC_TIMESTAMP(6)) AS incoming
                                 ON DUPLICATE KEY UPDATE
                                     recorded_at = IF(
                                         incoming.score > game_personal_bests.score,

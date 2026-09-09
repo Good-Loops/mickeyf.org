@@ -9,9 +9,6 @@ using UnityEngine.UI;
 public sealed class AudioToggleIcon : MaskableGraphic
 {
     private const int ArcSegments = 8;
-    private const int NarrowWebGlCanvasWidth = 900;
-    private const float NarrowWebGlHorizontalCorrection = 0.19f;
-
     [SerializeField] private bool audioEnabled = true;
 
     public bool IsAudioEnabled => audioEnabled;
@@ -34,25 +31,7 @@ public sealed class AudioToggleIcon : MaskableGraphic
         if (size <= 0f)
             return;
 
-        // Center the complete silhouette rather than only its drawing origin.
-        // A small upward optical correction keeps the downscaled WebGL icon
-        // from landing a full pixel below the button's visual center.
-        float horizontalCenterOffset = audioEnabled ? -0.03f : -0.015f;
-#if UNITY_WEBGL && !UNITY_EDITOR
-        // Chrome's downscaled WebGL canvas gives the right-hand wave strokes
-        // more visual weight than the native Editor render.
-        horizontalCenterOffset -= 0.135f;
-
-        // At narrow canvas resolutions the final browser downsampling makes
-        // that remaining imbalance read as a full CSS pixel. Keep the desktop
-        // correction unchanged and compensate only for the compact player.
-        if (Screen.width <= NarrowWebGlCanvasWidth)
-            horizontalCenterOffset -= NarrowWebGlHorizontalCorrection;
-#endif
-        const float verticalCenterOffset = 0.055f;
-        Vector2 center = pixelRect.center + new Vector2(
-            horizontalCenterOffset * size,
-            verticalCenterOffset * size);
+        Vector2 center = pixelRect.center;
         float stroke = Mathf.Max(1.5f, size * 0.075f);
         Color32 vertexColor = color;
 
@@ -88,6 +67,32 @@ public sealed class AudioToggleIcon : MaskableGraphic
                 center + new Vector2(0.42f * size, 0.25f * size),
                 stroke * 1.15f,
                 vertexColor);
+        }
+
+        CenterSilhouette(vertexHelper, center);
+    }
+
+    private static void CenterSilhouette(VertexHelper vertexHelper, Vector2 center)
+    {
+        UIVertex vertex = default;
+        vertexHelper.PopulateUIVertex(ref vertex, 0);
+        Vector2 min = vertex.position;
+        Vector2 max = vertex.position;
+        for (int index = 1; index < vertexHelper.currentVertCount; index++)
+        {
+            vertexHelper.PopulateUIVertex(ref vertex, index);
+            min = Vector2.Min(min, vertex.position);
+            max = Vector2.Max(max, vertex.position);
+        }
+
+        // Include stroke edges, which differ between waves and the mute cross.
+        // One geometry-based center stays stable through scaling and rotation.
+        Vector3 correction = center - (min + max) * 0.5f;
+        for (int index = 0; index < vertexHelper.currentVertCount; index++)
+        {
+            vertexHelper.PopulateUIVertex(ref vertex, index);
+            vertex.position += correction;
+            vertexHelper.SetUIVertex(vertex, index);
         }
     }
 

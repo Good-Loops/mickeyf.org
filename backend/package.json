@@ -8,7 +8,7 @@
     },
     "scripts": {
         "test": "tsc -p tsconfig.json --noEmit",
-        "test:unit": "node --test -r ts-node/register ts/config/migrationConfig.test.ts ts/config/runtimeConfig.test.ts ts/leaderboards/gameCatalog.test.ts ts/leaderboards/leaderboardContract.test.ts ts/leaderboards/p4VegaScoreRepository.test.ts ts/leaderboards/threeBossesRunRepository.test.ts ts/leaderboards/threeBossesRunRequest.test.ts ts/leaderboards/threeBossesRunTicket.test.ts ts/leaderboards/userSubmissionLock.test.ts ts/middleware/apiResponseSecurity.test.ts ts/middleware/errorHandling.test.ts ts/migrations/migrationManifest.test.ts ts/migrations/migrationRunner.test.ts ts/migrations/p4VegaReconciliation.test.ts ts/routers/leaderboardRouter.test.ts ts/routers/threeBossesRouter.security.test.ts ts/security/cloudSqlRuntimeRoleRemover.test.ts ts/security/mainController.security.test.ts ts/security/p4VegaScorePolicy.test.ts ts/security/requestAuthentication.test.ts ts/security/requestRateLimits.test.ts ts/security/runtimeGrantManifest.test.ts ts/security/runtimeGrantOperations.test.ts ts/security/scoreSubmissionAuthorization.test.ts ts/security/userRequestValidation.test.ts",
+        "test:unit": "node --test -r ts-node/register ts/config/migrationConfig.test.ts ts/config/runtimeConfig.test.ts ts/leaderboards/gameCatalog.test.ts ts/leaderboards/leaderboardContract.test.ts ts/leaderboards/p4VegaScoreRepository.test.ts ts/leaderboards/threeBossesRunRepository.test.ts ts/leaderboards/threeBossesRunRequest.test.ts ts/leaderboards/threeBossesRunTicket.test.ts ts/leaderboards/userSubmissionLock.test.ts ts/middleware/apiResponseSecurity.test.ts ts/middleware/errorHandling.test.ts ts/migrations/migrationManifest.test.ts ts/migrations/migrationRunner.test.ts ts/migrations/p4VegaReconciliation.test.ts ts/routers/leaderboardRouter.test.ts ts/routers/threeBossesRouter.security.test.ts ts/security/cloudSqlRuntimeRoleRemover.test.ts ts/security/mainController.security.test.ts ts/security/p4VegaScorePolicy.test.ts ts/security/requestAuthentication.test.ts ts/security/requestParsing.test.ts ts/security/requestRateLimits.test.ts ts/security/runtimeGrantManifest.test.ts ts/security/runtimeGrantOperations.test.ts ts/security/scoreSubmissionAuthorization.test.ts ts/security/userRequestValidation.test.ts ts/config/receiptMigrationConfig.test.ts ts/leaderboards/submissionReceiptCleanup.test.ts ts/security/receiptCleanupGrantManifest.test.ts ts/config/receiptCleanupConfig.test.ts ts/migrations/receiptTransition.test.ts",
         "test:migrations": "node scripts/run-migration-tests.mjs",
         "migrations:plan": "ts-node ts/migrations/runMigrations.ts plan",
         "migrations:apply": "ts-node ts/migrations/runMigrations.ts apply",
@@ -21,7 +21,9 @@
         "watch": "webpack --mode development --watch",
         "prod": "webpack --mode production",
         "dev": "nodemon dist/server.min.js",
-        "docs:json": "typedoc --options typedoc.json"
+        "migrations:receipts:plan": "ts-node ts/migrations/runMigrations.ts receipts-plan",
+        "migrations:receipts:apply": "ts-node ts/migrations/runMigrations.ts receipts-apply",
+        "migrations:receipts:verify": "ts-node ts/migrations/runMigrations.ts receipts-verify"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
@@ -33,6 +35,9 @@
         "helmet": "^8.3.0",
         "jsonwebtoken": "^9.0.2",
         "mysql2": "^3.23.3"
+    },
+    "overrides": {
+        "qs": "6.16.0"
     },
     "devDependencies": {
         "@types/bcryptjs": "^2.4.6",

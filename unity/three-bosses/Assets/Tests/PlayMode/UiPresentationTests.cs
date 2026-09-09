@@ -121,6 +121,13 @@ namespace ThreeBosses.Tests
                     FindObjectsSortMode.None)
                 .Single(button => button.gameObject.name == "Audio Button");
             Assert.That(audioButton, Is.Not.Null);
+            RectTransform audioButtonRect = audioButton.GetComponent<RectTransform>();
+            Assert.That(audioButtonRect.anchorMin, Is.EqualTo(new Vector2(0f, 1f)));
+            Assert.That(audioButtonRect.anchorMax, Is.EqualTo(new Vector2(0f, 1f)));
+            Assert.That(audioButtonRect.pivot, Is.EqualTo(new Vector2(0f, 1f)));
+            // The painted red frame in Menu.png is centered at (1543, 113).
+            Assert.That(audioButtonRect.anchoredPosition, Is.EqualTo(new Vector2(1472f, -74f)));
+            Assert.That(audioButtonRect.sizeDelta, Is.EqualTo(new Vector2(142f, 78f)));
 
             Type textType = RequireType("TMPro.TextMeshProUGUI, Unity.TextMeshPro");
             Assert.That(audioButton.GetComponentsInChildren(textType, true), Is.Empty);
@@ -128,11 +135,30 @@ namespace ThreeBosses.Tests
             Type iconType = RequireType("AudioToggleIcon, Assembly-CSharp");
             Component icon = audioButton.GetComponentInChildren(iconType, true);
             Assert.That(icon, Is.Not.Null);
+            RectTransform iconRect = icon.transform as RectTransform;
+            Assert.That(iconRect, Is.Not.Null);
+            Assert.That(iconRect.anchorMin, Is.EqualTo(Vector2.one * 0.5f));
+            Assert.That(iconRect.anchorMax, Is.EqualTo(Vector2.one * 0.5f));
+            Assert.That(iconRect.pivot, Is.EqualTo(Vector2.one * 0.5f));
+            Assert.That(iconRect.anchoredPosition, Is.EqualTo(Vector2.zero));
+            Assert.That(iconRect.sizeDelta, Is.EqualTo(new Vector2(64f, 44f)));
             Assert.That(audioButton.targetGraphic, Is.SameAs(icon));
             Assert.That(audioButton.targetGraphic.raycastTarget, Is.False);
             Assert.That(audioButton.GetComponent<Image>().raycastTarget, Is.True);
             Assert.That(audioButton.GetComponent<Image>().color, Is.EqualTo(Color.clear));
             Assert.That(audioButton.colors.selectedColor, Is.EqualTo(audioButton.colors.normalColor));
+
+            Type serviceType = RequireType("RunSessionService, Assembly-CSharp");
+            object service = serviceType.GetProperty(
+                    "Instance",
+                    BindingFlags.Public | BindingFlags.Static)
+                ?.GetValue(null);
+            Assert.That(service, Is.Not.Null);
+            MethodInfo configurePortraitLayout = serviceType.GetMethod(
+                "ConfigurePortraitUiLayout",
+                BindingFlags.Public | BindingFlags.Instance);
+            Assert.That(configurePortraitLayout, Is.Not.Null);
+            bool originalPortraitLayout = GetProperty<bool>(service, "UsePortraitUiLayout");
 
             Type controllerType = RequireType("MainMenuController, Assembly-CSharp");
             Component controller = UnityEngine.Object.FindFirstObjectByType(controllerType) as Component;
@@ -159,21 +185,80 @@ namespace ThreeBosses.Tests
 
             try
             {
+                configurePortraitLayout.Invoke(service, new object[] { "0" });
+                yield return null;
+                AssertAudioIconCentered(icon, audioButtonRect);
+
+                configurePortraitLayout.Invoke(service, new object[] { "1" });
+                yield return null;
+                AssertAudioIconCentered(icon, audioButtonRect);
+
+                configurePortraitLayout.Invoke(service, new object[] { "0" });
+                yield return null;
+                AssertAudioIconCentered(icon, audioButtonRect);
+
                 Assert.That(GetProperty<bool>(icon, "IsAudioEnabled"), Is.EqualTo(originalPreference));
 
                 audioButton.onClick.Invoke();
                 yield return null;
                 Assert.That((bool)isEnabledProperty.GetValue(null), Is.EqualTo(!originalPreference));
                 Assert.That(GetProperty<bool>(icon, "IsAudioEnabled"), Is.EqualTo(!originalPreference));
+                AssertAudioIconCentered(icon, audioButtonRect);
 
                 audioButton.onClick.Invoke();
                 yield return null;
                 Assert.That((bool)isEnabledProperty.GetValue(null), Is.EqualTo(originalPreference));
                 Assert.That(GetProperty<bool>(icon, "IsAudioEnabled"), Is.EqualTo(originalPreference));
+                AssertAudioIconCentered(icon, audioButtonRect);
+                Assert.That(audioButtonRect.sizeDelta, Is.EqualTo(new Vector2(142f, 78f)));
+                Assert.That(iconRect.sizeDelta, Is.EqualTo(new Vector2(64f, 44f)));
             }
             finally
             {
+                configurePortraitLayout.Invoke(
+                    service,
+                    new object[] { originalPortraitLayout ? "1" : "0" });
                 setEnabledMethod.Invoke(null, new object[] { originalPreference });
+            }
+        }
+
+        [TestCase(true, 64f, 44f, 0.5f, 0.5f)]
+        [TestCase(false, 64f, 44f, 0.5f, 0.5f)]
+        [TestCase(true, 16f, 12f, 0f, 0f)]
+        [TestCase(false, 16f, 12f, 0f, 0f)]
+        [TestCase(true, 24f, 96f, 1f, 1f)]
+        [TestCase(false, 24f, 96f, 1f, 1f)]
+        [TestCase(true, 128f, 88f, 0.25f, 0.75f)]
+        [TestCase(false, 128f, 88f, 0.25f, 0.75f)]
+        public void AudioIconCentersItsCompleteMeshForDifferentSizesAndPivots(
+            bool audioEnabled,
+            float width,
+            float height,
+            float pivotX,
+            float pivotY)
+        {
+            Type iconType = RequireType("AudioToggleIcon, Assembly-CSharp");
+            GameObject iconObject = new(
+                "Test Audio Icon",
+                typeof(RectTransform),
+                typeof(CanvasRenderer));
+
+            try
+            {
+                RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+                iconRect.sizeDelta = new Vector2(width, height);
+                iconRect.pivot = new Vector2(pivotX, pivotY);
+                Component icon = iconObject.AddComponent(iconType);
+                RequireMethod(iconType, "SetAudioEnabled").Invoke(
+                    icon,
+                    new object[] { audioEnabled });
+
+                AssertAudioIconCentered(icon);
+                Assert.That(iconRect.sizeDelta, Is.EqualTo(new Vector2(width, height)));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(iconObject);
             }
         }
 
@@ -220,7 +305,12 @@ namespace ThreeBosses.Tests
             Assert.That(pauseButton.gameObject.activeSelf, Is.True);
             Assert.That(
                 pauseButton.GetComponent<RectTransform>().sizeDelta,
-                Is.EqualTo(new Vector2(48f, 40f)));
+                Is.EqualTo(new Vector2(48f, 48f)));
+            MaskableGraphic pauseVisual = AssertPauseGlassVisual(
+                pauseButton.transform,
+                "PauseButton",
+                new Vector2(3f, 3f));
+            AssertGlassButtonHitArea(pauseButton, pauseVisual);
             Assert.That(
                 pauseButton.transform.Find("Label")?.GetComponent("TextMeshProUGUI"),
                 Is.Not.Null);
@@ -229,20 +319,58 @@ namespace ThreeBosses.Tests
             Assert.That(
                 pauseLabel?.GetType().GetProperty("text")?.GetValue(pauseLabel),
                 Is.EqualTo(string.Empty));
-            Image leftPauseBar = pauseButton.transform.Find("Pause Icon Left")
-                ?.GetComponent<Image>();
-            Image rightPauseBar = pauseButton.transform.Find("Pause Icon Right")
-                ?.GetComponent<Image>();
-            Assert.That(leftPauseBar, Is.Not.Null);
-            Assert.That(rightPauseBar, Is.Not.Null);
-            Assert.That(leftPauseBar.rectTransform.sizeDelta, Is.EqualTo(new Vector2(4f, 16f)));
-            Assert.That(rightPauseBar.rectTransform.sizeDelta, Is.EqualTo(new Vector2(4f, 16f)));
-            Assert.That(leftPauseBar.rectTransform.anchoredPosition, Is.EqualTo(new Vector2(-4.5f, 0f)));
-            Assert.That(rightPauseBar.rectTransform.anchoredPosition, Is.EqualTo(new Vector2(4.5f, 0f)));
-            Assert.That(leftPauseBar.raycastTarget, Is.False);
-            Assert.That(rightPauseBar.raycastTarget, Is.False);
-            Assert.That(leftPauseBar.color, Is.EqualTo(rightPauseBar.color));
             Assert.That(pauseMenu, Is.Not.Null);
+            Image dimmer = pauseMenu.transform.Find("Dimmer")?.GetComponent<Image>();
+            Assert.That(dimmer, Is.Not.Null);
+            Assert.That(dimmer.color.a, Is.EqualTo(0.34f).Within(0.01f));
+
+            Image panel = pauseMenu.transform.Find("Glass Panel")?.GetComponent<Image>();
+            Assert.That(panel, Is.Not.Null);
+            Assert.That(panel.rectTransform.sizeDelta, Is.EqualTo(new Vector2(360f, 238f)));
+            Assert.That(panel.color.a, Is.Zero);
+            Assert.That(panel.GetComponent<Outline>(), Is.Null);
+            AssertPauseGlassVisual(panel.transform, "MenuPanel");
+
+            Assert.That(
+                resumeButton.GetComponent<RectTransform>().sizeDelta,
+                Is.EqualTo(new Vector2(240f, 50f)));
+            MaskableGraphic resumeVisual = AssertPauseGlassVisual(
+                resumeButton.transform,
+                "ActionButton",
+                new Vector2(10f, 3f));
+            AssertGlassButtonHitArea(resumeButton, resumeVisual);
+            Component resumeLabel = resumeButton.transform.Find("Label")
+                ?.GetComponent("TextMeshProUGUI");
+            Assert.That(resumeLabel, Is.Not.Null);
+            Assert.That(
+                GetProperty<string>(resumeLabel, "text"),
+                Is.EqualTo("RESUME"));
+
+            Assert.That(
+                mainMenuButton.GetComponent<RectTransform>().sizeDelta,
+                Is.EqualTo(new Vector2(240f, 50f)));
+            MaskableGraphic mainMenuVisual = AssertPauseGlassVisual(
+                mainMenuButton.transform,
+                "ActionButton",
+                new Vector2(10f, 3f));
+            AssertGlassButtonHitArea(mainMenuButton, mainMenuVisual);
+            Component mainMenuLabel = mainMenuButton.transform.Find("Label")
+                ?.GetComponent("TextMeshProUGUI");
+            Assert.That(mainMenuLabel, Is.Not.Null);
+            Assert.That(
+                GetProperty<string>(mainMenuLabel, "text"),
+                Is.EqualTo("MAIN MENU"));
+
+            Type pauseGlassType = RequireType("PauseGlassGraphic, Assembly-CSharp");
+            Graphic[] pauseGlassVisuals = pauseButton.transform.parent
+                .GetComponentsInChildren(pauseGlassType, true)
+                .Cast<Graphic>()
+                .ToArray();
+            Assert.That(pauseGlassVisuals, Has.Length.EqualTo(4));
+            Assert.That(
+                pauseGlassVisuals.All(graphic => !graphic.raycastTarget),
+                Is.True,
+                "Decorative pause glass must not intercept pointer input.");
             Assert.That(playerInput, Is.Not.Null);
             Assert.That(playerInput.enabled, Is.True);
             Assert.That(pauseMenu.alpha, Is.EqualTo(0f));
@@ -255,6 +383,9 @@ namespace ThreeBosses.Tests
             Assert.That(pauseMenu.interactable, Is.True);
             Assert.That(pauseMenu.blocksRaycasts, Is.True);
             Assert.That(playerInput.enabled, Is.False);
+            Assert.That(
+                EventSystem.current?.currentSelectedGameObject,
+                Is.SameAs(resumeButton.gameObject));
 
             resumeButton.onClick.Invoke();
             yield return null;
@@ -262,6 +393,10 @@ namespace ThreeBosses.Tests
             Assert.That(GetProperty<bool>(service, "IsPausedByUser"), Is.False);
             Assert.That(pauseMenu.alpha, Is.EqualTo(0f));
             Assert.That(playerInput.enabled, Is.True);
+            Assert.That(
+                EventSystem.current?.currentSelectedGameObject,
+                Is.Null,
+                "Gameplay must not retain a selectable UI target because Enter is bound to Fire.");
 
             playerInput.enabled = false;
             pauseButton.onClick.Invoke();
@@ -282,6 +417,68 @@ namespace ThreeBosses.Tests
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("MainMenu"));
             Assert.That(Time.timeScale, Is.EqualTo(1f));
             Assert.That(GetProperty<bool>(service, "IsPausedByUser"), Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator PauseGlassPresentationIsConsistentAcrossBattleScenes()
+        {
+            string[] battleScenes =
+            {
+                "Level1_BeeBoss",
+                "Level2_CyborgBoss",
+                "Level3_Kraken",
+            };
+
+            Type pauseGlassType = RequireType("PauseGlassGraphic, Assembly-CSharp");
+
+            foreach (string sceneName in battleScenes)
+            {
+                Time.timeScale = 1f;
+                DisarmActiveCountdownRestore();
+                SceneManager.LoadScene(sceneName);
+                yield return null;
+
+                Button[] buttons = UnityEngine.Object.FindObjectsByType<Button>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None);
+                Button pauseButton = buttons.Single(
+                    button => button.gameObject.name == "Pause Button");
+                Button resumeButton = buttons.Single(
+                    button => button.gameObject.name == "Resume Button");
+                Button mainMenuButton = buttons.Single(
+                    button => button.gameObject.name == "Main Menu Button");
+
+                AssertGlassButtonHitArea(
+                    pauseButton,
+                    AssertPauseGlassVisual(
+                        pauseButton.transform,
+                        "PauseButton",
+                        new Vector2(3f, 3f)));
+                AssertGlassButtonHitArea(
+                    resumeButton,
+                    AssertPauseGlassVisual(
+                        resumeButton.transform,
+                        "ActionButton",
+                        new Vector2(10f, 3f)));
+                AssertGlassButtonHitArea(
+                    mainMenuButton,
+                    AssertPauseGlassVisual(
+                        mainMenuButton.transform,
+                        "ActionButton",
+                        new Vector2(10f, 3f)));
+
+                Transform panel = GameObject.Find("Pause Menu")
+                    ?.transform.Find("Glass Panel");
+                Assert.That(panel, Is.Not.Null, $"{sceneName} is missing its glass panel.");
+                AssertPauseGlassVisual(panel, "MenuPanel");
+
+                Component[] visuals = pauseButton.transform.parent
+                    .GetComponentsInChildren(pauseGlassType, true);
+                Assert.That(
+                    visuals,
+                    Has.Length.EqualTo(4),
+                    $"{sceneName} must contain exactly four pause glass visuals.");
+            }
         }
 
         [UnityTest]
@@ -531,6 +728,77 @@ namespace ThreeBosses.Tests
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("Level1_BeeBoss"));
         }
 
+        [UnityTest]
+        public IEnumerator BattleScenesStartGroundedWithoutPlayingLandingDust()
+        {
+            string[] battleScenes =
+            {
+                "Level1_BeeBoss",
+                "Level2_CyborgBoss",
+                "Level3_Kraken",
+            };
+
+            Type motorType = RequireType("PlayerMotor, Assembly-CSharp");
+
+            foreach (string sceneName in battleScenes)
+            {
+                Time.timeScale = 1f;
+                DisarmActiveCountdownRestore();
+                SceneManager.LoadScene(sceneName);
+                yield return null;
+
+                Component motor = UnityEngine.Object.FindFirstObjectByType(
+                    motorType,
+                    FindObjectsInactive.Include) as Component;
+                Assert.That(motor, Is.Not.Null, $"{sceneName} is missing PlayerMotor.");
+                Assert.That(
+                    GetProperty<bool>(motor, "IsGrounded"),
+                    Is.True,
+                    $"{sceneName} must start with the player grounded.");
+
+                CapsuleCollider2D playerCollider = motor.GetComponent<CapsuleCollider2D>();
+                CompositeCollider2D floorCollider = SceneManager.GetActiveScene()
+                    .GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<CompositeCollider2D>(true))
+                    .Single(collider => collider.gameObject.layer == 3);
+                ColliderDistance2D floorDistance = playerCollider.Distance(floorCollider);
+                Assert.That(floorDistance.isValid, Is.True);
+                Assert.That(
+                    Mathf.Abs(floorDistance.distance),
+                    Is.LessThanOrEqualTo(0.01f),
+                    $"{sceneName} player must begin in physical contact with the floor.");
+                Assert.That(CountLandingDustClones(), Is.Zero);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator LandingAfterStartupStillPlaysDustOnce()
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene("Level1_BeeBoss");
+            yield return null;
+
+            Type motorType = RequireType("PlayerMotor, Assembly-CSharp");
+            Component motor = UnityEngine.Object.FindFirstObjectByType(
+                motorType,
+                FindObjectsInactive.Include) as Component;
+            Assert.That(motor, Is.Not.Null);
+            Assert.That(CountLandingDustClones(), Is.Zero);
+
+            Vector3 groundedPosition = motor.transform.position;
+            motor.transform.position = groundedPosition + Vector3.up;
+            Physics2D.SyncTransforms();
+            yield return null;
+            Assert.That(GetProperty<bool>(motor, "IsGrounded"), Is.False);
+
+            motor.transform.position = groundedPosition;
+            Physics2D.SyncTransforms();
+            yield return null;
+
+            Assert.That(GetProperty<bool>(motor, "IsGrounded"), Is.True);
+            Assert.That(CountLandingDustClones(), Is.EqualTo(1));
+        }
+
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -582,6 +850,14 @@ namespace ThreeBosses.Tests
             return method;
         }
 
+        private static int CountLandingDustClones()
+        {
+            return UnityEngine.Object.FindObjectsByType<ParticleSystem>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None)
+                .Count(particleSystem => particleSystem.name == "VFX_LandDust(Clone)");
+        }
+
         private static T GetProperty<T>(object target, string name)
         {
             PropertyInfo property = target.GetType().GetProperty(
@@ -589,6 +865,91 @@ namespace ThreeBosses.Tests
                 BindingFlags.Instance | BindingFlags.Public);
             Assert.That(property, Is.Not.Null, $"Property {target.GetType().FullName}.{name} was not found.");
             return (T)property.GetValue(target);
+        }
+
+        private static void AssertAudioIconCentered(Component icon, RectTransform buttonRect = null)
+        {
+            Graphic graphic = icon as Graphic;
+            Assert.That(graphic, Is.Not.Null);
+            Bounds bounds = GetGraphicMeshBounds(graphic);
+            Vector2 expectedCenter = graphic.GetPixelAdjustedRect().center;
+            Assert.That(bounds.size.x, Is.GreaterThan(0f));
+            Assert.That(bounds.size.y, Is.GreaterThan(0f));
+            Assert.That(bounds.center.x, Is.EqualTo(expectedCenter.x).Within(0.001f));
+            Assert.That(bounds.center.y, Is.EqualTo(expectedCenter.y).Within(0.001f));
+
+            if (buttonRect == null)
+                return;
+
+            Vector3 buttonLocalCenter = buttonRect.InverseTransformPoint(
+                graphic.rectTransform.TransformPoint(bounds.center));
+            Assert.That(buttonLocalCenter.x, Is.EqualTo(buttonRect.rect.center.x).Within(0.001f));
+            Assert.That(buttonLocalCenter.y, Is.EqualTo(buttonRect.rect.center.y).Within(0.001f));
+        }
+
+        private static Bounds GetGraphicMeshBounds(Graphic graphic)
+        {
+            MethodInfo populateMesh = graphic.GetType().GetMethod(
+                "OnPopulateMesh",
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new[] { typeof(VertexHelper) },
+                null);
+            Assert.That(populateMesh, Is.Not.Null);
+            using VertexHelper vertices = new();
+            Mesh mesh = new();
+
+            try
+            {
+                populateMesh.Invoke(graphic, new object[] { vertices });
+                vertices.FillMesh(mesh);
+                mesh.RecalculateBounds();
+                return mesh.bounds;
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(mesh);
+            }
+        }
+
+        private static MaskableGraphic AssertPauseGlassVisual(
+            Transform owner,
+            string expectedStyle,
+            Vector2 expectedInset = default)
+        {
+            Type graphicType = RequireType("PauseGlassGraphic, Assembly-CSharp");
+            Transform visual = owner.Find("Visual");
+            Assert.That(visual, Is.Not.Null, owner.name);
+            Component[] glassGraphics = visual.GetComponents(graphicType);
+            Assert.That(glassGraphics, Has.Length.EqualTo(1), owner.name);
+
+            MaskableGraphic graphic = glassGraphics[0] as MaskableGraphic;
+            Assert.That(graphic, Is.Not.Null, owner.name);
+            Assert.That(graphic.gameObject.name, Is.EqualTo("Visual"), owner.name);
+            Assert.That(graphic.raycastTarget, Is.False, owner.name);
+            Assert.That(
+                GetProperty<object>(graphic, "ControlStyle").ToString(),
+                Is.EqualTo(expectedStyle),
+                owner.name);
+
+            RectTransform visualRect = graphic.rectTransform;
+            Assert.That(visualRect.anchorMin, Is.EqualTo(Vector2.zero), owner.name);
+            Assert.That(visualRect.anchorMax, Is.EqualTo(Vector2.one), owner.name);
+            Assert.That(visualRect.offsetMin, Is.EqualTo(expectedInset), owner.name);
+            Assert.That(visualRect.offsetMax, Is.EqualTo(-expectedInset), owner.name);
+            return graphic;
+        }
+
+        private static void AssertGlassButtonHitArea(
+            Button button,
+            MaskableGraphic visual)
+        {
+            Image hitArea = button.GetComponent<Image>();
+            Assert.That(hitArea, Is.Not.Null, button.name);
+            Assert.That(hitArea.color.a, Is.Zero, button.name);
+            Assert.That(hitArea.raycastTarget, Is.True, button.name);
+            Assert.That(button.GetComponent<Outline>(), Is.Null, button.name);
+            Assert.That(button.targetGraphic, Is.SameAs(visual), button.name);
         }
 
         private static void AssertColorApproximately(Color actual, Color expected)

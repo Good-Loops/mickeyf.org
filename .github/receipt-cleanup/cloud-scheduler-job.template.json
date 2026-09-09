@@ -1,0 +1,18 @@
+{
+  "name": "projects/noted-reef-387021/locations/us-central1/jobs/mickeyf-submission-receipt-cleanup-hourly",
+  "description": "Delete expired submission receipts; personal bests are never cleanup targets.",
+  "schedule": "0 * * * *",
+  "timeZone": "Etc/UTC",
+  "attemptDeadline": "30s",
+  "retryConfig": { "retryCount": 0, "maxRetryDuration": "0s" },
+  "httpTarget": {
+    "uri": "https://run.googleapis.com/v2/projects/noted-reef-387021/locations/us-central1/jobs/mickeyf-submission-receipt-cleanup:run",
+    "httpMethod": "POST",
+    "headers": { "Content-Type": "application/json" },
+    "body": "e30=",
+    "oauthToken": {
+      "serviceAccountEmail": "mickeyf-receipt-scheduler@noted-reef-387021.iam.gserviceaccount.com",
+      "scope": "https://www.googleapis.com/auth/cloud-platform"
+    }
+  }
+}

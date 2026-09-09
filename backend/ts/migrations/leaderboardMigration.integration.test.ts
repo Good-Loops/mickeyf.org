@@ -14,6 +14,11 @@ import {
     migrationLockName,
     planMigrations,
 } from './migrationRunner';
+import {
+    applyReceiptTransition,
+    planReceiptTransition,
+    type ReceiptMigrationIdentity,
+} from './receiptTransition';
 
 const migrationTestPort = Number(process.env.MIGRATION_TEST_PORT);
 const EXPECTED_TEST_TARGET = Object.freeze({
@@ -24,7 +29,11 @@ const EXPECTED_TEST_TARGET = Object.freeze({
 });
 
 const config = loadMigrationConfig();
-const migrations = loadMigrationManifest();
+const allMigrations = loadMigrationManifest();
+// These original tests deliberately preserve the historical recovery contract.
+const migrations = allMigrations.filter(({ effect }) =>
+    effect === 'create-table' || effect === 'drop-column'
+);
 const additiveMigrations = migrations.filter(({ effect }) => effect === 'create-table');
 const p4ScoreDropMigration = migrations.find(({ effect }) => effect === 'drop-column');
 if (!p4ScoreDropMigration || p4ScoreDropMigration.effect !== 'drop-column') {
@@ -107,11 +116,13 @@ function runMigrationCli(
 
 async function resetFixture(): Promise<void> {
     await connection.query('DROP VIEW IF EXISTS p4_score_dependency');
+    await connection.query('DROP VIEW IF EXISTS receipt_dependency');
     await connection.query('SET FOREIGN_KEY_CHECKS = 0');
     try {
         await connection.query(`
             DROP TABLE IF EXISTS
                 game_personal_bests,
+                game_submission_receipts,
                 game_runs,
                 schema_migrations,
                 users
@@ -601,4 +612,247 @@ test('source-run foreign key proves game, rules version, and user ownership', as
         'SELECT user_id, source_game_run_id FROM game_personal_bests'
     );
     assert.deepEqual(bestRows, [{ user_id: 1, source_game_run_id: runResult.insertId }]);
+});
+
+async function prepareReceiptTransition(): Promise<void> {
+    await applyMigrations(asMigrationConnection(connection), migrations, config, {
+        allowedEffectKinds: ['create-table', 'drop-column'],
+    });
+    await connection.query(`
+        INSERT INTO game_runs (game_id, rules_version, user_id, run_id, score,
+            completion_time_ms, payload_fingerprint, personal_best, submitted_at)
+        VALUES ('three-bosses', 1, 1, '00000000-0000-4000-8000-000000000111',
+            108513, 92155, UNHEX(SHA2('receipt-one', 256)), 1, '2026-09-07 20:00:00.123456'),
+            ('three-bosses', 1, 1, '00000000-0000-4000-8000-000000000112',
+            100000, 100000, UNHEX(SHA2('receipt-two', 256)), 0, '2026-09-08 10:00:00.654321')
+    `);
+    await connection.query(`
+        INSERT INTO game_personal_bests (game_id, rules_version, user_id, score,
+            completion_time_ms, source_game_run_id, recorded_at)
+        VALUES ('three-bosses', 1, 1, 108513, 92155, 1, '2026-09-07 20:00:00.123456'),
+            ('p4-vega', 1, 2, 990, NULL, NULL, '2026-08-26 19:14:13.111222')
+    `);
+}
+
+async function preservedBestRows(): Promise<RowDataPacket[]> {
+    return (await connection.query<RowDataPacket[]>(`
+        SELECT game_id, rules_version, user_id, score, completion_time_ms, recorded_at
+        FROM game_personal_bests ORDER BY game_id, rules_version, user_id
+    `))[0];
+}
+
+async function receiptIdentity(value: Connection = connection): Promise<ReceiptMigrationIdentity> {
+    const [identityRows] = await value.query<RowDataPacket[]>(`
+        SELECT DATABASE() AS databaseName, CURRENT_USER() AS currentUser,
+            @@GLOBAL.server_uuid AS serverUuid, @@version AS serverVersion,
+            @@version_comment AS versionComment
+    `);
+    return identityRows[0] as ReceiptMigrationIdentity;
+}
+
+test('receipt transition preserves exact best metrics and receipts, then receipts can expire independently', async () => {
+    await prepareReceiptTransition();
+    const beforeBests = await preservedBestRows();
+    const migrationConnection = asMigrationConnection(connection);
+    const identity = await receiptIdentity();
+    const before = await planReceiptTransition(migrationConnection, allMigrations, config, identity);
+    assert.equal(before.state, 'ready');
+    assert.equal(before.preservedData?.personalBests.count, 2);
+    assert.equal(before.preservedData?.receipts.count, 2);
+
+    const skipped = await applyMigrations(migrationConnection, allMigrations, config);
+    assert.deepEqual(skipped.pending, allMigrations.slice(3).map(({ version }) => version));
+    assert.equal(await tableCount('game_runs'), 1);
+    assert.equal(await columnCount('game_personal_bests', 'source_game_run_id'), 1);
+
+    const applied = await applyMigrations(migrationConnection, allMigrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
+    assert.deepEqual(applied.pending, []);
+    assert.equal(await tableCount('game_runs'), 0);
+    assert.equal(await tableCount('game_submission_receipts'), 1);
+    assert.equal(await columnCount('game_personal_bests', 'source_game_run_id'), 0);
+    assert.equal(await columnCount('game_submission_receipts', 'personal_best'), 0);
+    assert.equal(await columnCount('game_submission_receipts', 'improved_personal_best'), 1);
+    const after = await planReceiptTransition(migrationConnection, allMigrations, config, identity);
+    assert.equal(after.state, 'applied');
+    assert.deepEqual(after.preservedData, before.preservedData);
+    assert.deepEqual(await preservedBestRows(), beforeBests);
+
+    const rerun = await applyMigrations(migrationConnection, allMigrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
+    assert.deepEqual(rerun, applied);
+    const [history] = await connection.query<RowDataPacket[]>(
+        'SELECT version, checksum FROM schema_migrations ORDER BY version'
+    );
+    assert.deepEqual(history, allMigrations.map(({ version, checksum }) => ({ version, checksum })));
+    await connection.query('DELETE FROM game_submission_receipts');
+    assert.deepEqual(await preservedBestRows(), beforeBests);
+});
+
+for (const failedVersion of [3, 4]) {
+    test(`receipt transition recovers after ${allMigrations[failedVersion].version} DDL before history insert`, async () => {
+        await prepareReceiptTransition();
+        const beforeBests = await preservedBestRows();
+        let interrupted = false;
+        const failingConnection: MigrationConnection = {
+            query: async (sql, values = []) => {
+                if (!interrupted && sql.includes('INSERT INTO schema_migrations')
+                    && values[0] === allMigrations[failedVersion].version) {
+                    interrupted = true;
+                    throw new Error('synthetic history interruption');
+                }
+                return connection.query(sql, values) as Promise<[unknown, unknown]>;
+            },
+        };
+        await assert.rejects(() => applyMigrations(failingConnection, allMigrations, config, {
+            allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+        }), /synthetic history interruption/);
+        const pending = await planMigrations(asMigrationConnection(connection), allMigrations, config);
+        assert.deepEqual(pending.recoverable, [allMigrations[failedVersion].version]);
+        if (failedVersion === 3) {
+            await assert.rejects(() => applyMigrations(asMigrationConnection(connection), allMigrations, config, {
+                allowedEffectKinds: ['retain-receipts'],
+            }), /recorded personal-best detachment before DDL/);
+            assert.equal(await tableCount('game_runs'), 1);
+            assert.equal(await tableCount('game_submission_receipts'), 0);
+        }
+        const recovered = await applyMigrations(asMigrationConnection(connection), allMigrations, config, {
+            allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+        });
+        assert.deepEqual(recovered.pending, []);
+        assert.deepEqual(await preservedBestRows(), beforeBests);
+    });
+}
+
+test('receipt transition rejects incomplete history and final schema drift', async () => {
+    await applyMigrations(asMigrationConnection(connection), additiveMigrations, config);
+    await assert.rejects(() => applyMigrations(asMigrationConnection(connection), allMigrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    }), /all historical migrations/);
+    assert.equal(await columnCount('game_personal_bests', 'source_game_run_id'), 1);
+    await resetFixture();
+    await prepareReceiptTransition();
+    await applyMigrations(asMigrationConnection(connection), allMigrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
+    await connection.query('ALTER TABLE game_submission_receipts DROP INDEX idx_game_submission_receipts_expiry');
+    await assert.rejects(() => planMigrations(asMigrationConnection(connection), allMigrations, config),
+        /game_submission_receipts indexes does not match/);
+});
+
+test('receipt transition refuses a dependent view rather than leaving it broken', async () => {
+    await prepareReceiptTransition();
+    await connection.query('CREATE VIEW receipt_dependency AS SELECT game_run_id FROM game_runs');
+    const identity = await receiptIdentity();
+    await assert.rejects(() => planReceiptTransition(
+        asMigrationConnection(connection), allMigrations, config, identity
+    ), /obsolete dependencies or unreadable views/);
+    assert.equal(await columnCount('game_personal_bests', 'source_game_run_id'), 1);
+});
+
+test('receipt preservation digest pages BIGINT identifiers above JavaScript integer precision without skipping rows', async () => {
+    await prepareReceiptTransition();
+    await connection.query(`
+        INSERT INTO game_runs (game_run_id, game_id, rules_version, user_id, run_id, score,
+            completion_time_ms, payload_fingerprint, personal_best, submitted_at)
+        WITH RECURSIVE sequence_values AS (
+            SELECT 0 AS sequence_number
+            UNION ALL SELECT sequence_number + 1 FROM sequence_values WHERE sequence_number < 500
+        )
+        SELECT CAST('9007199254741000' AS UNSIGNED) + sequence_number,
+            'three-bosses', 1, 2,
+            CONCAT('00000000-0000-4000-8000-', LPAD(sequence_number + 1000, 12, '0')),
+            100000, 100000, UNHEX(SHA2(CONCAT('large-id-', sequence_number), 256)),
+            0, '2026-09-08 10:00:00.654321'
+        FROM sequence_values
+    `);
+    const identity = await receiptIdentity();
+    const migrationConnection = asMigrationConnection(connection);
+    const before = await planReceiptTransition(migrationConnection, allMigrations, config, identity);
+    assert.equal(before.preservedData?.receipts.count, 503);
+    await applyMigrations(migrationConnection, allMigrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
+    const after = await planReceiptTransition(migrationConnection, allMigrations, config, identity);
+    assert.deepEqual(after.preservedData, before.preservedData);
+});
+
+test('receipt apply refuses missing inspection privileges and disabled instrumentation before DDL', async () => {
+    await prepareReceiptTransition();
+    const identity = await receiptIdentity();
+    const plan = await planReceiptTransition(asMigrationConnection(connection), allMigrations, config, identity);
+    const confirmation = { confirmedServerUuid: identity.serverUuid, approvedPlanSha256: plan.sha256 };
+    await assert.rejects(() => applyReceiptTransition(
+        asMigrationConnection(connection), allMigrations, config, identity, confirmation
+    ), /cannot verify effective PROCESS privilege/);
+
+    // This admin connection is restricted to the disposable target verified in before().
+    const admin = await mysql.createConnection({
+        host: config.host, port: config.port, database: config.database,
+        user: process.env.MIGRATION_TEST_ROOT_USER,
+        password: process.env.MIGRATION_TEST_ROOT_PASSWORD,
+        dateStrings: true, multipleStatements: false,
+    });
+    try {
+        const adminIdentity = await receiptIdentity(admin);
+        const adminPlan = await planReceiptTransition(asMigrationConnection(admin), allMigrations, config, adminIdentity);
+        for (const [table, name] of [
+            ['setup_instruments', 'wait/lock/metadata/sql/mdl'],
+            ['setup_consumers', 'global_instrumentation'],
+        ]) {
+            const [original] = await admin.query<RowDataPacket[]>(
+                `SELECT ENABLED FROM performance_schema.${table} WHERE NAME = ?`, [name]
+            );
+            assert.equal(original.length, 1);
+            try {
+                await admin.query(`UPDATE performance_schema.${table} SET ENABLED = 'NO' WHERE NAME = ?`, [name]);
+                await assert.rejects(() => applyReceiptTransition(
+                    asMigrationConnection(admin), allMigrations, config, adminIdentity,
+                    { confirmedServerUuid: adminIdentity.serverUuid, approvedPlanSha256: adminPlan.sha256 }
+                ), /requires .* enabled/);
+            } finally {
+                await admin.query(`UPDATE performance_schema.${table} SET ENABLED = ? WHERE NAME = ?`, [original[0].ENABLED, name]);
+            }
+        }
+        assert.equal(await columnCount('game_personal_bests', 'source_game_run_id'), 1);
+        assert.equal(await tableCount('game_submission_receipts'), 0);
+        const after = await planReceiptTransition(asMigrationConnection(connection), allMigrations, config, identity);
+        assert.deepEqual(after, plan, 'Failed preflight must leave schema, history and data unchanged');
+    } finally {
+        await admin.end();
+    }
+});
+
+test('receipt apply compares the approved data digest under lock and verifies post-DDL preservation', async () => {
+    await prepareReceiptTransition();
+    // This privileged connection belongs solely to the already-verified disposable test container.
+    const admin = await mysql.createConnection({
+        host: config.host, port: config.port, database: config.database,
+        user: process.env.MIGRATION_TEST_ROOT_USER,
+        password: process.env.MIGRATION_TEST_ROOT_PASSWORD,
+        dateStrings: true, multipleStatements: false,
+    });
+    try {
+        const migrationConnection = asMigrationConnection(admin);
+        const identity = await receiptIdentity(admin);
+        const plan = await planReceiptTransition(migrationConnection, allMigrations, config, identity);
+        await assert.rejects(() => applyReceiptTransition(migrationConnection, allMigrations, config, identity, {
+            confirmedServerUuid: identity.serverUuid, approvedPlanSha256: '0'.repeat(64),
+        }), /does not match the current plan/);
+        assert.equal(await columnCount('game_personal_bests', 'source_game_run_id'), 1);
+        await connection.query('UPDATE game_personal_bests SET score = score + 1 WHERE game_id = \'p4-vega\'');
+        await assert.rejects(() => applyReceiptTransition(migrationConnection, allMigrations, config, identity, {
+            confirmedServerUuid: identity.serverUuid, approvedPlanSha256: plan.sha256,
+        }), /does not match the current plan/);
+        const freshPlan = await planReceiptTransition(migrationConnection, allMigrations, config, identity);
+        const applied = await applyReceiptTransition(migrationConnection, allMigrations, config, identity, {
+            confirmedServerUuid: identity.serverUuid, approvedPlanSha256: freshPlan.sha256,
+        });
+        assert.equal(applied.state, 'applied');
+        assert.deepEqual(applied.preservedData, freshPlan.preservedData);
+    } finally {
+        await admin.end();
+    }
 });

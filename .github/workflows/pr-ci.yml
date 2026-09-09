@@ -47,7 +47,9 @@ jobs:
           npm --prefix .github/firebase-deploy ci --ignore-scripts --no-audit --no-fund
 
       - name: Validate Firebase deploy dependency tree
-        run: npm --prefix .github/firebase-deploy ls --omit=dev
+        run: |
+          npm --prefix .github/firebase-deploy ls --omit=dev
+          node --test .github/firebase-deploy/csv-parse-compat.test.mjs
 
       - name: Audit npm dependencies
         run: |
@@ -86,7 +88,10 @@ jobs:
           npm --prefix .github/firebase-deploy run test:three-bosses-webgl-smoke
 
       - name: Validate isolated backend candidate build
-        run: npm run test:cloudbuild-candidate
+        run: |
+          npm run test:cloudbuild-candidate
+          npm run test:frozen-backend
+          npm run test:receipt-cleanup
 
       - name: Test and build backend
         run: |
@@ -94,6 +99,9 @@ jobs:
           npm --prefix backend run test:unit
           npm --prefix backend run test:migrations
           npm --prefix backend run prod
+
+      - name: Test documentation watcher scheduling
+        run: node --test scripts/watch-docs.test.mjs
 
       - name: Build documentation
         run: npm run docs

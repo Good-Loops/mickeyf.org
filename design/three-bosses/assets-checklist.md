@@ -102,8 +102,8 @@ _For each weapon: sprite + projectile + impact_
 ## UI
 
 - [✅] HP bar
-- [ ] Timer (speedrun)
-- [ ] Split time display
+- [✅] Timer (speedrun)
+- [✅] Split time display
 - [✅] Boss health bar
 
 ---

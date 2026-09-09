@@ -11,6 +11,7 @@ using UnityEngine.InputSystem.OnScreen;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 namespace ThreeBosses.Tests
 {
@@ -49,10 +50,15 @@ namespace ThreeBosses.Tests
                     visibilityControllers,
                     Has.Length.EqualTo(1),
                     $"{sceneName} must contain exactly one touch HUD.");
+                AssertTouchHudLayout(visibilityControllers[0], sceneName);
 
                 OnScreenStick[] sticks = FindInActiveScene<OnScreenStick>();
                 Assert.That(sticks, Has.Length.EqualTo(1));
                 Assert.That(sticks[0].controlPath, Is.EqualTo("<Gamepad>/leftStick"));
+                Assert.That(
+                    sticks[0].useIsolatedInputActions,
+                    Is.False,
+                    $"{sceneName} must use the EventSystem drag path supported by mobile WebGL.");
 
                 string[] buttonPaths = FindInActiveScene<OnScreenButton>()
                     .Select(button => button.controlPath)
@@ -98,6 +104,112 @@ namespace ThreeBosses.Tests
                 Assert.That(pauseMenu.interactable, Is.False);
                 Assert.That(pauseMenu.blocksRaycasts, Is.False);
                 Assert.That(playerInputField.GetValue(pauseControllers[0]), Is.SameAs(playerInput));
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator TouchStickDragReachesGameplayAndReturnsToNeutral()
+        {
+            Time.timeScale = 1f;
+            PlayerInput playerInput = null;
+            InputActionAsset playerActions = null;
+
+            try
+            {
+                // Scene UI actions must share one input runtime throughout the test.
+                // InputTestFixture resets global state beneath those live actions.
+                DisarmActiveCountdownRestore();
+                SceneManager.LoadScene(BattleScenes[0]);
+                yield return null;
+
+                Type serviceType = Type.GetType("RunSessionService, Assembly-CSharp");
+                Assert.That(serviceType, Is.Not.Null);
+                Component service = serviceType
+                    .GetProperty("Instance", BindingFlags.Static | BindingFlags.Public)
+                    ?.GetValue(null) as Component;
+                Assert.That(service, Is.Not.Null);
+                MethodInfo configureTouchControls = serviceType.GetMethod(
+                    "ConfigureTouchControls",
+                    BindingFlags.Instance | BindingFlags.Public);
+                Assert.That(configureTouchControls, Is.Not.Null);
+                configureTouchControls.Invoke(service, new object[] { "1" });
+                yield return null;
+
+                OnScreenStick stick = FindInActiveScene<OnScreenStick>().Single();
+                Assert.That(stick.useIsolatedInputActions, Is.False);
+                Assert.That(stick.control, Is.Not.Null);
+
+                playerInput = FindInActiveScene<PlayerInput>().Single();
+                // Battle scenes intentionally gate input during their countdown.
+                // This test exercises the same enabled PlayerInput state used after GO.
+                playerInput.enabled = true;
+                playerInput.ActivateInput();
+                yield return null;
+                Assert.That(
+                    playerInput.devices.Contains(stick.control.device),
+                    Is.True,
+                    "PlayerInput must pair with the touch HUD's virtual gamepad when gameplay input activates.");
+                playerActions = playerInput.actions;
+                playerActions.devices = new InputDevice[] { stick.control.device };
+                InputAction move = playerActions.FindAction("Gameplay/Move", true);
+                move.Disable();
+                move.Enable();
+                Assert.That(move.enabled, Is.True);
+                Assert.That(
+                    move.controls.Contains(stick.control),
+                    Is.True,
+                    "Gameplay/Move must resolve the touch HUD's virtual stick binding.");
+                Type motorType = Type.GetType("PlayerMotor, Assembly-CSharp");
+                Assert.That(motorType, Is.Not.Null);
+                Component motor = SceneManager.GetActiveScene()
+                    .GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren(motorType, true))
+                    .Single();
+                FieldInfo moveInputField = motorType.GetField(
+                    "moveInput",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(moveInputField, Is.Not.Null);
+
+                RectTransform handle = (RectTransform)stick.transform;
+                Vector2 restingPosition = handle.anchoredPosition;
+                Vector2 pressPosition = RectTransformUtility.WorldToScreenPoint(null, handle.position);
+                var pointer = new PointerEventData(EventSystem.current)
+                {
+                    button = PointerEventData.InputButton.Left,
+                    position = pressPosition,
+                    pressPosition = pressPosition,
+                };
+
+                stick.OnPointerDown(pointer);
+                pointer.position += Vector2.right * stick.movementRange;
+                stick.OnDrag(pointer);
+                yield return null;
+
+                Assert.That(handle.anchoredPosition.x, Is.GreaterThan(restingPosition.x));
+                Assert.That(
+                    ((Vector2)stick.control.ReadValueAsObject()).x,
+                    Is.GreaterThan(0.5f),
+                    "The UI drag must drive the virtual gamepad stick.");
+                Assert.That(move.ReadValue<Vector2>().x, Is.GreaterThan(0.5f));
+                Assert.That(
+                    ((Vector2)moveInputField.GetValue(motor)).x,
+                    Is.GreaterThan(0.5f),
+                    "The UI drag must reach PlayerMotor through PlayerInput.");
+
+                stick.OnPointerUp(pointer);
+                yield return null;
+
+                Assert.That(handle.anchoredPosition, Is.EqualTo(restingPosition));
+                Assert.That(move.ReadValue<Vector2>(), Is.EqualTo(Vector2.zero));
+                Assert.That((Vector2)moveInputField.GetValue(motor), Is.EqualTo(Vector2.zero));
+            }
+            finally
+            {
+                if (playerInput != null)
+                    playerInput.enabled = false;
+                if (playerActions != null)
+                    playerActions.devices = null;
+                DisableActiveOnScreenControls();
             }
         }
 
@@ -157,8 +269,103 @@ namespace ThreeBosses.Tests
                 Is.True,
                 "The persistent browser permission must survive scene changes.");
 
-            configureTouchControls.Invoke(service, new object[] { "invalid" });
+            configureTouchControls.Invoke(service, new object[] { "0" });
             Assert.That(nextControlsRoot.activeSelf, Is.False);
+
+            DisarmActiveCountdownRestore();
+            SceneManager.LoadScene(BattleScenes[2]);
+            yield return null;
+
+            Component finalVisibility = SceneManager.GetActiveScene()
+                .GetRootGameObjects()
+                .Select(root => root.GetComponent(visibilityType))
+                .Single(component => component != null);
+            GameObject finalControlsRoot = controlsRootField.GetValue(finalVisibility) as GameObject;
+            Assert.That(finalControlsRoot, Is.Not.Null);
+            Assert.That(
+                finalControlsRoot.activeSelf,
+                Is.False,
+                "Disabled touch permission must survive the final scene transition.");
+
+            configureTouchControls.Invoke(service, new object[] { "invalid" });
+            Assert.That(finalControlsRoot.activeSelf, Is.False);
+        }
+
+        [Test]
+        public void TouchSafeAreaNormalizesFullScreenAndAsymmetricInsets()
+        {
+            Type layoutType = Type.GetType("TouchSafeAreaLayout, Assembly-CSharp");
+            Assert.That(layoutType, Is.Not.Null);
+            MethodInfo calculateAnchors = layoutType.GetMethod(
+                "CalculateAnchors",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(calculateAnchors, Is.Not.Null);
+
+            AssertAnchors(
+                calculateAnchors,
+                new Rect(0f, 0f, 1280f, 720f),
+                new Vector2(1280f, 720f),
+                new Rect(0f, 0f, 1f, 1f));
+            AssertAnchors(
+                calculateAnchors,
+                new Rect(80f, 0f, 1200f, 720f),
+                new Vector2(1280f, 720f),
+                Rect.MinMaxRect(0.0625f, 0f, 1f, 1f));
+            AssertAnchors(
+                calculateAnchors,
+                new Rect(0f, 40f, 720f, 1240f),
+                new Vector2(720f, 1280f),
+                Rect.MinMaxRect(0f, 0.03125f, 1f, 1f));
+        }
+
+        [Test]
+        public void PauseButtonTracksTheSafeAreaTopRightCorner()
+        {
+            Type pauseControllerType = Type.GetType("GameplayPauseController, Assembly-CSharp");
+            Assert.That(pauseControllerType, Is.Not.Null);
+            MethodInfo applySafeArea = pauseControllerType.GetMethod(
+                "ApplyTopRightSafeArea",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(applySafeArea, Is.Not.Null);
+
+            var button = new GameObject("Pause Button", typeof(RectTransform));
+            try
+            {
+                RectTransform rect = button.GetComponent<RectTransform>();
+                rect.pivot = Vector2.one;
+                rect.sizeDelta = new Vector2(48f, 40f);
+                rect.anchoredPosition = new Vector2(-24f, -54f);
+                var safeArea = new Rect(0f, 0f, 1200f, 680f);
+                var screenSize = new Vector2(1280f, 720f);
+                applySafeArea.Invoke(
+                    null,
+                    new object[]
+                    {
+                        rect,
+                        safeArea,
+                        screenSize
+                    });
+
+                var expected = new Vector2(0.9375f, 0.9444444f);
+                Assert.That(rect.anchorMin.x, Is.EqualTo(expected.x).Within(0.0001f));
+                Assert.That(rect.anchorMin.y, Is.EqualTo(expected.y).Within(0.0001f));
+                Assert.That(rect.anchorMax.x, Is.EqualTo(expected.x).Within(0.0001f));
+                Assert.That(rect.anchorMax.y, Is.EqualTo(expected.y).Within(0.0001f));
+                Assert.That(rect.anchoredPosition, Is.EqualTo(new Vector2(-24f, -54f)));
+
+                Vector2 anchorPoint = Vector2.Scale(rect.anchorMin, screenSize);
+                Vector2 elementMinimum = anchorPoint + rect.anchoredPosition -
+                    Vector2.Scale(rect.pivot, rect.sizeDelta);
+                Vector2 elementMaximum = elementMinimum + rect.sizeDelta;
+                Assert.That(elementMinimum.x, Is.GreaterThanOrEqualTo(safeArea.xMin));
+                Assert.That(elementMinimum.y, Is.GreaterThanOrEqualTo(safeArea.yMin));
+                Assert.That(elementMaximum.x, Is.LessThanOrEqualTo(safeArea.xMax));
+                Assert.That(elementMaximum.y, Is.LessThanOrEqualTo(safeArea.yMax));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(button);
+            }
         }
 
         [Test]
@@ -191,53 +398,83 @@ namespace ThreeBosses.Tests
         public IEnumerator FireActionRequiresReleaseBeforeAnotherPress()
         {
             Time.timeScale = 1f;
-            DisarmActiveCountdownRestore();
-            SceneManager.LoadScene(BattleScenes[0]);
-            yield return null;
-
-            PlayerInput playerInput = FindInActiveScene<PlayerInput>().Single();
-            playerInput.enabled = false;
-            InputAction fire = playerInput.actions.FindAction("Gameplay/Fire", true);
-            Gamepad gamepad = InputSystem.AddDevice<Gamepad>();
+            InputActionAsset inputActions = null;
+            InputAction fire = null;
+            Gamepad gamepad = null;
             int performedCount = 0;
 
             void CountPerformed(InputAction.CallbackContext _) => performedCount++;
 
             try
             {
-                playerInput.actions.devices = new InputDevice[] { gamepad };
+                DisarmActiveCountdownRestore();
+                SceneManager.LoadScene(BattleScenes[0]);
+                yield return null;
+
+                PlayerInput playerInput = FindInActiveScene<PlayerInput>().Single();
+                playerInput.enabled = false;
+                inputActions = UnityEngine.Object.Instantiate(playerInput.actions);
+                fire = inputActions.FindAction("Gameplay/Fire", true);
+                gamepad = InputSystem.AddDevice<Gamepad>();
+                inputActions.devices = new InputDevice[] { gamepad };
                 fire.performed += CountPerformed;
                 fire.Enable();
 
-                InputSystem.QueueStateEvent(
-                    gamepad,
-                    new GamepadState().WithButton(GamepadButton.West));
-                InputSystem.Update();
+                InputSystem.QueueStateEvent(gamepad, new GamepadState().WithButton(GamepadButton.West));
+                yield return null;
                 Assert.That(performedCount, Is.EqualTo(1));
 
-                InputSystem.QueueStateEvent(
-                    gamepad,
-                    new GamepadState().WithButton(GamepadButton.West));
-                InputSystem.Update();
+                InputSystem.QueueStateEvent(gamepad, new GamepadState().WithButton(GamepadButton.West));
+                yield return null;
                 Assert.That(
                     performedCount,
                     Is.EqualTo(1),
                     "Holding Fire must not repeatedly dispatch presses.");
 
                 InputSystem.QueueStateEvent(gamepad, new GamepadState());
-                InputSystem.Update();
-                InputSystem.QueueStateEvent(
-                    gamepad,
-                    new GamepadState().WithButton(GamepadButton.West));
-                InputSystem.Update();
+                yield return null;
+                Assert.That(performedCount, Is.EqualTo(1), "Releasing Fire must not dispatch a press.");
+                InputSystem.QueueStateEvent(gamepad, new GamepadState().WithButton(GamepadButton.West));
+                yield return null;
                 Assert.That(performedCount, Is.EqualTo(2));
             }
             finally
             {
-                fire.performed -= CountPerformed;
-                fire.Disable();
-                if (gamepad.added)
-                    InputSystem.RemoveDevice(gamepad);
+                try
+                {
+                    if (fire != null)
+                    {
+                        fire.performed -= CountPerformed;
+                        fire.Disable();
+                    }
+                    if (inputActions != null)
+                    {
+                        inputActions.devices = null;
+                        UnityEngine.Object.DestroyImmediate(inputActions);
+                    }
+                }
+                finally
+                {
+                    if (gamepad != null && gamepad.added)
+                        InputSystem.RemoveDevice(gamepad);
+                }
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator TouchInputScenariosCanRepeatAfterSceneInputWasInitialized()
+        {
+            // Reproduce the suite order that left shared UI actions pointing at
+            // invalid input state, then verify both input scenarios can repeat.
+            yield return BattleScenesPreserveKeyboardBindingsAndShareTouchControls();
+            yield return RestoreNeutralScene();
+
+            for (int repetition = 0; repetition < 2; repetition++)
+            {
+                yield return FireActionRequiresReleaseBeforeAnotherPress();
+                yield return RestoreNeutralScene();
+                yield return TouchStickDragReachesGameplayAndReturnsToNeutral();
+                yield return RestoreNeutralScene();
             }
         }
 
@@ -269,6 +506,159 @@ namespace ThreeBosses.Tests
             object currentAim)
         {
             return resolver.Invoke(null, new[] { (object)aimUp, aimBack, aimFront, currentAim });
+        }
+
+        private static void AssertTouchHudLayout(Component visibility, string sceneName)
+        {
+            Transform controls = visibility.transform.Find("Touch HUD/Controls");
+            Assert.That(controls, Is.Not.Null, $"{sceneName} is missing the touch controls root.");
+
+            RectTransform controlsRect = controls as RectTransform;
+            Assert.That(controlsRect.anchorMin, Is.EqualTo(Vector2.zero), sceneName);
+            Assert.That(controlsRect.anchorMax, Is.EqualTo(Vector2.one), sceneName);
+
+            Type layoutType = Type.GetType("TouchSafeAreaLayout, Assembly-CSharp");
+            Assert.That(layoutType, Is.Not.Null);
+            Component layout = controls.parent.GetComponent(layoutType);
+            Assert.That(layout, Is.Not.Null, $"{sceneName} is missing safe-area layout.");
+            FieldInfo controlsRootField = layoutType.GetField(
+                "controlsRoot",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(controlsRootField, Is.Not.Null);
+            Assert.That(controlsRootField.GetValue(layout), Is.SameAs(controlsRect));
+
+            Transform movementStick = controls.Find("Movement Stick");
+            Transform handle = controls.Find("Movement Stick/Handle");
+            Assert.That(handle, Is.Not.Null, sceneName);
+            OnScreenStick stick = handle.GetComponent<OnScreenStick>();
+            Assert.That(stick, Is.Not.Null, sceneName);
+            Assert.That(stick.movementRange, Is.EqualTo(29f), sceneName);
+
+            AssertGlassControl(
+                movementStick,
+                new Vector2(96f, 96f),
+                "JoystickBase",
+                stick,
+                false,
+                Vector4.zero,
+                sceneName);
+            AssertGlassControl(
+                handle,
+                new Vector2(38f, 38f),
+                "JoystickKnob",
+                stick,
+                true,
+                new Vector4(-40f, -40f, -40f, -40f),
+                sceneName);
+
+            Transform jump = controls.Find("Jump Button");
+            Transform dash = controls.Find("Dash Button");
+            Transform fire = controls.Find("Fire Button");
+            Assert.That(jump, Is.Not.Null, sceneName);
+            Assert.That(dash, Is.Not.Null, sceneName);
+            Assert.That(fire, Is.Not.Null, sceneName);
+            Vector4 buttonHitPadding = new(-20f, -20f, -20f, -20f);
+            AssertGlassControl(
+                jump,
+                new Vector2(64f, 64f),
+                "Jump",
+                jump.GetComponent<OnScreenButton>(),
+                true,
+                buttonHitPadding,
+                sceneName);
+            AssertGlassControl(
+                dash,
+                new Vector2(64f, 64f),
+                "Dash",
+                dash.GetComponent<OnScreenButton>(),
+                true,
+                buttonHitPadding,
+                sceneName);
+            AssertGlassControl(
+                fire,
+                new Vector2(72f, 72f),
+                "Fire",
+                fire.GetComponent<OnScreenButton>(),
+                true,
+                buttonHitPadding,
+                sceneName);
+
+            Type textType = Type.GetType("TMPro.TMP_Text, Unity.TextMeshPro");
+            Assert.That(textType, Is.Not.Null);
+            Assert.That(controls.GetComponentsInChildren(textType, true), Is.Empty,
+                $"{sceneName} must use icons rather than text labels in the touch HUD.");
+            Assert.That(controls.GetComponentsInChildren<Selectable>(true), Is.Empty,
+                $"{sceneName} touch actions must not become selectable UI buttons.");
+            Type graphicType = Type.GetType("TouchControlGraphic, Assembly-CSharp");
+            Assert.That(graphicType, Is.Not.Null);
+            Assert.That(controls.GetComponentsInChildren(graphicType, true), Has.Length.EqualTo(5), sceneName);
+            Assert.That(
+                controls.GetComponentsInChildren<Graphic>(true)
+                    .Where(graphic => graphic.raycastTarget)
+                    .Select(graphic => graphic.gameObject),
+                Is.EquivalentTo(new[] { handle.gameObject, jump.gameObject, dash.gameObject, fire.gameObject }),
+                $"{sceneName} decorative glass and icons must not intercept touch input.");
+        }
+
+        private static void AssertGlassControl(
+            Transform control,
+            Vector2 visibleSize,
+            string expectedStyle,
+            OnScreenControl expectedInputSource,
+            bool acceptsRaycasts,
+            Vector4 raycastPadding,
+            string sceneName)
+        {
+            Assert.That(control, Is.Not.Null, sceneName);
+            Assert.That(((RectTransform)control).sizeDelta, Is.EqualTo(visibleSize), sceneName);
+            Assert.That(expectedInputSource, Is.Not.Null, sceneName);
+
+            Image hitArea = control.GetComponent<Image>();
+            Assert.That(hitArea, Is.Not.Null, sceneName);
+            Assert.That(hitArea.raycastTarget, Is.EqualTo(acceptsRaycasts), sceneName);
+            Assert.That(hitArea.raycastPadding, Is.EqualTo(raycastPadding), sceneName);
+            Assert.That(hitArea.color.a, Is.Zero, sceneName);
+            Assert.That(control.GetComponent<Outline>(), Is.Null, sceneName);
+            Assert.That(control.Find("Surface"), Is.Null, sceneName);
+            Assert.That(control.Find("Label"), Is.Null, sceneName);
+
+            Transform visual = control.Find("Visual");
+            Assert.That(visual, Is.Not.Null, sceneName);
+            RectTransform visualRect = visual as RectTransform;
+            Assert.That(visualRect, Is.Not.Null, sceneName);
+            Assert.That(visualRect.anchorMin, Is.EqualTo(Vector2.zero), sceneName);
+            Assert.That(visualRect.anchorMax, Is.EqualTo(Vector2.one), sceneName);
+            Assert.That(visualRect.offsetMin, Is.EqualTo(Vector2.zero), sceneName);
+            Assert.That(visualRect.offsetMax, Is.EqualTo(Vector2.zero), sceneName);
+
+            Type graphicType = Type.GetType("TouchControlGraphic, Assembly-CSharp");
+            Assert.That(graphicType, Is.Not.Null);
+            Assert.That(visual.GetComponents<Graphic>(), Has.Length.EqualTo(1), sceneName);
+            MaskableGraphic graphic = visual.GetComponent(graphicType) as MaskableGraphic;
+            Assert.That(graphic, Is.Not.Null, sceneName);
+            Assert.That(graphic.raycastTarget, Is.False, sceneName);
+            PropertyInfo style = graphicType.GetProperty("ControlStyle");
+            PropertyInfo inputSource = graphicType.GetProperty("InputSource");
+            PropertyInfo isPressed = graphicType.GetProperty("IsPressed");
+            Assert.That(style, Is.Not.Null);
+            Assert.That(inputSource, Is.Not.Null);
+            Assert.That(isPressed, Is.Not.Null);
+            Assert.That(style.GetValue(graphic).ToString(), Is.EqualTo(expectedStyle), sceneName);
+            Assert.That(inputSource.GetValue(graphic), Is.SameAs(expectedInputSource), sceneName);
+            Assert.That(isPressed.GetValue(graphic), Is.False, sceneName);
+        }
+
+        private static void AssertAnchors(
+            MethodInfo calculateAnchors,
+            Rect safeArea,
+            Vector2 screenSize,
+            Rect expected)
+        {
+            Rect actual = (Rect)calculateAnchors.Invoke(null, new object[] { safeArea, screenSize });
+            Assert.That(actual.xMin, Is.EqualTo(expected.xMin).Within(0.0001f));
+            Assert.That(actual.yMin, Is.EqualTo(expected.yMin).Within(0.0001f));
+            Assert.That(actual.xMax, Is.EqualTo(expected.xMax).Within(0.0001f));
+            Assert.That(actual.yMax, Is.EqualTo(expected.yMax).Within(0.0001f));
         }
 
         private static void AssertInputContract(InputActionAsset actions)
@@ -326,6 +716,17 @@ namespace ThreeBosses.Tests
                 .GetRootGameObjects()
                 .SelectMany(root => root.GetComponentsInChildren<T>(true))
                 .ToArray();
+        }
+
+        private static void DisableActiveOnScreenControls()
+        {
+            // Release the scene's virtual devices without resetting global input
+            // state used by the other live scene components.
+            foreach (OnScreenControl control in FindInActiveScene<OnScreenControl>())
+            {
+                if (control.isActiveAndEnabled)
+                    control.enabled = false;
+            }
         }
 
         private static void DisarmActiveCountdownRestore()

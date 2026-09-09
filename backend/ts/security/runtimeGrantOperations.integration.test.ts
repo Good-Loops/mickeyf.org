@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
+import { setTimeout as delay } from 'node:timers/promises';
 import mysql, { type Connection, type RowDataPacket } from 'mysql2/promise';
 import { loadMigrationConfig } from '../config/migrationConfig';
 import type { MigrationConnection } from '../migrations/leaderboardSchema';
@@ -74,6 +75,7 @@ async function createSchema(): Promise<void> {
             DROP TABLE IF EXISTS
                 game_personal_bests,
                 game_runs,
+                game_submission_receipts,
                 schema_migrations,
                 users
         `);
@@ -93,6 +95,12 @@ async function createSchema(): Promise<void> {
           COLLATE = utf8mb4_unicode_ci
     `);
     await applyMigrations(asMigrationConnection(administrator), migrations, config);
+    await applyMigrations(asMigrationConnection(administrator), migrations, config, {
+        allowedEffectKinds: ['drop-column'],
+    });
+    await applyMigrations(asMigrationConnection(administrator), migrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
 }
 
 async function dropFixtureAccounts(): Promise<void> {
@@ -131,6 +139,25 @@ async function createRuntimeConnection(): Promise<Connection> {
         dateStrings: true,
         multipleStatements: false,
     });
+}
+
+async function waitForFixtureSessionToClose(connectionId: number): Promise<void> {
+    // mysql2 resolves end() before MySQL processes COM_QUIT. Synchronize this
+    // fixture's teardown without adding retries to the production drain guard.
+    const deadline = performance.now() + 5_000;
+    while (true) {
+        const [rows] = await root.query<Array<RowDataPacket & { sessionCount: number }>>({
+            sql: 'SELECT COUNT(*) AS sessionCount FROM information_schema.PROCESSLIST WHERE ID = ?',
+            timeout: 1_000,
+        }, [connectionId]);
+        assert.equal(rows.length, 1);
+        if (Number(rows[0].sessionCount) === 0) return;
+        assert.ok(
+            performance.now() < deadline,
+            `Fixture MySQL session ${connectionId} remained open after end()`
+        );
+        await delay(20);
+    }
 }
 
 async function assertRoleMembership(expectedCount: number): Promise<void> {
@@ -266,6 +293,7 @@ test('active runtime sessions block role removal, then a drained rerun converges
         assert.equal(preparedPlan.operations.ensureRequiredPrivileges.length, 3);
     } finally {
         await openRuntimeConnection.end();
+        await waitForFixtureSessionToClose(openRuntimeConnection.threadId);
     }
 
     const recoveryPlan = await planRuntimeGrants(
@@ -322,6 +350,7 @@ test('active runtime sessions block role removal, then a drained rerun converges
         );
     } finally {
         await freshRuntimeConnection.end();
+        await waitForFixtureSessionToClose(freshRuntimeConnection.threadId);
     }
 
     const verified = await verifyRuntimeGrants(
@@ -457,6 +486,7 @@ test('session drain proof requires effective PROCESS on a restricted account', a
         );
         await runtimeConnection.end();
         runtimeConnectionClosed = true;
+        await waitForFixtureSessionToClose(runtimeConnection.threadId);
         await assertRuntimeSessionsDrained(
             asRuntimeGrantConnection(observer),
             RUNTIME_ACCOUNT

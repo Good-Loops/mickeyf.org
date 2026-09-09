@@ -29,10 +29,24 @@ public static class RunOutcomeSceneBuilder
     private const string BossLoaderObjectName = "Phase12_BossOutcome";
     private const string PlayerLoaderObjectName = "Phase12_PlayerOutcome";
     private const string LevelEntryObjectName = "Phase12_LevelEntry";
+    private const string TimerFontAssetPath = "Assets/Art/UI/Fonts/Oxanium-Bold Timer SDF.asset";
     private const float TransitionDisplaySeconds = 4f;
     private const float TransitionFadeDurationSeconds = 0.35f;
 
     private static readonly Vector2 ArtReferenceResolution = new(1672f, 941f);
+    // The Cyborg readout panel's inner rims are at x=564 and x=1148 (center 856).
+    private static readonly Rect CyborgTimeRect = new(571f, 592f, 570f, 74f);
+    private static readonly Rect CyborgCaptionRect = new(706f, 552f, 300f, 40f);
+    private static readonly Rect CyborgTryAgainRect = new(431.5f, 720.5f, 383f, 149f);
+    private static readonly Rect CyborgMenuRect = new(859f, 720.5f, 389f, 149f);
+    // Kraken uses different artwork: its readout inner rims center at x=855.
+    private static readonly Rect KrakenTimeRect = new(570f, 592f, 570f, 74f);
+    private static readonly Rect KrakenCaptionRect = new(705f, 552f, 300f, 40f);
+    private static readonly Rect KrakenTryAgainRect = new(432.5f, 720.5f, 383f, 149f);
+    private static readonly Rect KrakenMenuRect = new(857f, 720.5f, 389f, 149f);
+    // Keep completion values directly beneath their baked TIME / SCORE captions.
+    private static readonly Rect CompletionTimeRect = new(385f, 690f, 300f, 78f);
+    private static readonly Rect CompletionScoreRect = new(704f, 690f, 258f, 78f);
 
     [MenuItem("Three Bosses/Results/Build Transitions and Results")]
     public static void Build()
@@ -52,12 +66,16 @@ public static class RunOutcomeSceneBuilder
                 BeeTransitionPath,
                 $"{ScreenRoot}/Boss1Defeated.png",
                 BossId.Cyborg,
-                "Level2_CyborgBoss");
+                "Level2_CyborgBoss",
+                new Color(0.58f, 0.86f, 0f, 1f),
+                315f);
             BuildTransitionScene(
                 CyborgTransitionPath,
                 $"{ScreenRoot}/Boss2Defeated.png",
                 BossId.Kraken,
-                "Level3_Kraken");
+                "Level3_Kraken",
+                new Color(1f, 0.12f, 0.08f, 1f),
+                298f);
 
             BuildDefeatScene(
                 BeeDefeatPath,
@@ -71,17 +89,17 @@ public static class RunOutcomeSceneBuilder
                 CyborgDefeatPath,
                 $"{ScreenRoot}/CyborgDefeat.png",
                 BossId.Cyborg,
-                new Rect(580f, 592f, 570f, 74f),
-                new Rect(438f, 718f, 383f, 149f),
-                new Rect(850f, 718f, 389f, 149f),
+                CyborgTimeRect,
+                CyborgTryAgainRect,
+                CyborgMenuRect,
                 new Color(1f, 0.12f, 0.08f, 1f));
             BuildDefeatScene(
                 KrakenDefeatPath,
                 $"{ScreenRoot}/KrakenDefeat.png",
                 BossId.Kraken,
-                new Rect(580f, 592f, 570f, 74f),
-                new Rect(438f, 718f, 383f, 149f),
-                new Rect(850f, 718f, 389f, 149f),
+                KrakenTimeRect,
+                KrakenTryAgainRect,
+                KrakenMenuRect,
                 new Color(0.68f, 0.24f, 1f, 1f));
 
             BuildEndScene();
@@ -126,13 +144,170 @@ public static class RunOutcomeSceneBuilder
         }
     }
 
+    [MenuItem("Three Bosses/Results/Refresh Portrait Text Layout")]
+    public static void RefreshPortraitTextLayout()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new InvalidOperationException("Exit Play Mode before refreshing portrait text layout.");
+
+        Scene originalScene = SceneManager.GetActiveScene();
+        if (originalScene.isDirty)
+            throw new InvalidOperationException("Save the active scene before refreshing portrait text layout.");
+
+        string originalPath = originalScene.path;
+
+        try
+        {
+            RefreshPortraitTextLayoutScene(
+                BeeTransitionPath,
+                315f,
+                "Boss Split Caption",
+                "Boss Split Value");
+            RefreshPortraitTextLayoutScene(
+                CyborgTransitionPath,
+                298f,
+                "Boss Split Caption",
+                "Boss Split Value");
+            RefreshPortraitTextLayoutScene(BeeDefeatPath, null, "Time Survived Value");
+            RefreshPortraitTextLayoutScene(CyborgDefeatPath, null, "Time Survived Value");
+            RefreshPortraitTextLayoutScene(KrakenDefeatPath, null, "Time Survived Value");
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("Portrait text layout was refreshed in all transition and defeat scenes.");
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(originalPath))
+                EditorSceneManager.OpenScene(originalPath, OpenSceneMode.Single);
+        }
+    }
+
+    [MenuItem("Three Bosses/Results/Align Cyborg Defeat Artwork")]
+    public static void AlignCyborgDefeatArtwork()
+        => AlignSavedArtwork(CyborgDefeatPath, ConfigureCyborgDefeatArtwork);
+
+    [MenuItem("Three Bosses/Results/Align Kraken Defeat Artwork")]
+    public static void AlignKrakenDefeatArtwork()
+        => AlignSavedArtwork(KrakenDefeatPath, ConfigureKrakenDefeatArtwork);
+
+    [MenuItem("Three Bosses/Results/Align Completion Readout")]
+    public static void AlignCompletionReadout()
+        => AlignSavedArtwork(EndPath, ConfigureCompletionReadout);
+
+    private static void ConfigureCompletionReadout(RectTransform artRoot)
+    {
+        SetTopLeftRect((RectTransform)artRoot.Find("Completion Time Value"), CompletionTimeRect);
+        SetTopLeftRect((RectTransform)artRoot.Find("Score Value"), CompletionScoreRect);
+    }
+
+    private static void AlignSavedArtwork(string scenePath, Action<RectTransform> configure)
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new InvalidOperationException("Exit Play Mode before aligning outcome artwork.");
+        if (SceneManager.sceneCount != 1)
+            throw new InvalidOperationException("Open only one saved scene before aligning outcome artwork.");
+        Scene originalScene = SceneManager.GetActiveScene();
+        if (originalScene.isDirty)
+            throw new InvalidOperationException("Save the active scene before aligning outcome artwork.");
+        string originalPath = originalScene.path;
+        try
+        {
+            Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            RectTransform artRoot = scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<RectTransform>(true))
+                .Single(rect => rect.name == "Art Root");
+            configure(artRoot);
+            SaveScene(scene, scenePath);
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(originalPath))
+                EditorSceneManager.OpenScene(originalPath, OpenSceneMode.Single);
+        }
+    }
+
+    private static void ConfigureCyborgDefeatArtwork(RectTransform artRoot)
+        => ConfigureDefeatArtwork(artRoot, CyborgTimeRect, CyborgCaptionRect,
+            CyborgTryAgainRect, CyborgMenuRect);
+
+    private static void ConfigureKrakenDefeatArtwork(RectTransform artRoot)
+        => ConfigureDefeatArtwork(artRoot, KrakenTimeRect, KrakenCaptionRect,
+            KrakenTryAgainRect, KrakenMenuRect);
+
+    private static void ConfigureDefeatArtwork(
+        RectTransform artRoot, Rect timeRect, Rect captionRect, Rect tryAgainRect, Rect menuRect)
+    {
+        TMP_Text timeLabel = artRoot.Find("Time Survived Value").GetComponent<TMP_Text>();
+        SetTopLeftRect(timeLabel.rectTransform, timeRect);
+        SetTopLeftRect((RectTransform)artRoot.Find("Try Again Button"), tryAgainRect);
+        SetTopLeftRect((RectTransform)artRoot.Find("Back To Menu Button"), menuRect);
+
+        // The source PNG is flattened. Cover only its old caption so both lines can
+        // use native text coordinates without changing the surrounding artwork.
+        const string backingName = "Time Survived Caption Backing";
+        Image backing = artRoot.Find(backingName)?.GetComponent<Image>()
+            ?? CreateImage(backingName, artRoot, Color.black);
+        SetTopLeftRect(backing.rectTransform,
+            new Rect(captionRect.x, captionRect.y - 2f, captionRect.width, captionRect.height + 4f));
+        backing.color = Color.black;
+        backing.raycastTarget = false;
+        backing.transform.SetSiblingIndex(artRoot.Find("Background").GetSiblingIndex() + 1);
+
+        const string captionName = "Time Survived Caption";
+        TMP_Text caption = artRoot.Find(captionName)?.GetComponent<TMP_Text>()
+            ?? CreateText(captionName, artRoot, "TIME SURVIVED", 24f);
+        SetTopLeftRect(caption.rectTransform, captionRect);
+        caption.text = "TIME SURVIVED";
+        caption.fontSize = 24f;
+        caption.alignment = TextAlignmentOptions.Center;
+        caption.fontStyle = FontStyles.Normal;
+        caption.characterSpacing = 2f;
+        caption.color = timeLabel.color;
+        caption.raycastTarget = false;
+        caption.margin = Vector4.zero;
+        caption.textWrappingMode = TextWrappingModes.NoWrap;
+
+        PortraitTextGroupLayout layout = artRoot.GetComponent<PortraitTextGroupLayout>();
+        SetObjectReferences(layout, "textTargets", new[] { timeLabel, caption });
+        float panelOffset = timeRect.center.x - ArtReferenceResolution.x * 0.5f;
+        SetVector2Values(layout, "portraitPositions", new[]
+        {
+            new Vector2(panelOffset, -timeRect.y),
+            new Vector2(panelOffset, -captionRect.y),
+        });
+    }
+
     private static void BuildTransitionScene(
         string scenePath,
         string spritePath,
         BossId expectedPendingBoss,
-        string destinationSceneName)
+        string destinationSceneName,
+        Color accent,
+        float portraitSplitTop)
     {
-        Scene scene = CreateArtworkScene(spritePath, false, out _, out ScreenFade screenFade);
+        Scene scene = CreateArtworkScene(
+            spritePath,
+            false,
+            out RectTransform artRoot,
+            out ScreenFade screenFade);
+
+        TMP_Text splitCaption = CreateText(
+            "Boss Split Caption",
+            artRoot,
+            "SPLIT",
+            22f);
+        SetTopLeftRect(splitCaption.rectTransform, new Rect(74f, 58f, 300f, 30f));
+        ConfigureSplitCaption(splitCaption);
+
+        TMP_Text splitTimeLabel = CreateText(
+            "Boss Split Value",
+            artRoot,
+            RunUiFormatter.FormatTime(0d),
+            32f);
+        SetTopLeftRect(splitTimeLabel.rectTransform, new Rect(74f, 88f, 300f, 44f));
+        ConfigureSplitTimeText(splitTimeLabel, accent);
+        AddPortraitSplitRow(artRoot, portraitSplitTop, splitCaption, splitTimeLabel);
 
         GameObject controllerObject = new("Transition Controller");
         BossTransitionScreenController controller = controllerObject.AddComponent<BossTransitionScreenController>();
@@ -140,6 +315,7 @@ public static class RunOutcomeSceneBuilder
         SetString(controller, "destinationSceneName", destinationSceneName);
         SetFloat(controller, "displaySeconds", TransitionDisplaySeconds);
         SetFloat(controller, "fadeDurationSeconds", TransitionFadeDurationSeconds);
+        SetObjectReference(controller, "splitTimeLabel", splitTimeLabel);
         SetObjectReference(controller, "screenFade", screenFade);
 
         SaveScene(scene, scenePath);
@@ -159,9 +335,14 @@ public static class RunOutcomeSceneBuilder
         TMP_Text timeLabel = CreateText("Time Survived Value", artRoot, "00:00.000", 52f);
         SetTopLeftRect(timeLabel.rectTransform, timeRect);
         ConfigureValueText(timeLabel, accent);
+        AddPortraitTextLayout(artRoot, timeLabel);
 
         Button tryAgainButton = CreateButton("Try Again Button", artRoot, tryAgainRect, "TRY AGAIN", 32f, accent);
         Button backToMenuButton = CreateButton("Back To Menu Button", artRoot, menuRect, "BACK TO MENU", 30f, accent);
+        if (expectedBoss == BossId.Cyborg)
+            ConfigureCyborgDefeatArtwork(artRoot);
+        else if (expectedBoss == BossId.Kraken)
+            ConfigureKrakenDefeatArtwork(artRoot);
 
         GameObject controllerObject = new("Defeat Controller");
         DefeatScreenController controller = controllerObject.AddComponent<DefeatScreenController>();
@@ -184,15 +365,16 @@ public static class RunOutcomeSceneBuilder
             out ScreenFade screenFade);
 
         TMP_Text timeLabel = CreateText("Completion Time Value", artRoot, "00:00.000", 46f);
-        SetTopLeftRect(timeLabel.rectTransform, new Rect(397f, 690f, 300f, 78f));
+        SetTopLeftRect(timeLabel.rectTransform, CompletionTimeRect);
         ConfigureValueText(timeLabel, Color.white);
 
         TMP_Text scoreLabel = CreateText("Score Value", artRoot, "0", 46f);
-        SetTopLeftRect(scoreLabel.rectTransform, new Rect(710f, 690f, 258f, 78f));
+        SetTopLeftRect(scoreLabel.rectTransform, CompletionScoreRect);
         ConfigureValueText(scoreLabel, Color.white);
 
         TMP_Text rankLabel = CreateText("Rank Value", artRoot, "UNRANKED", 42f);
-        SetTopLeftRect(rankLabel.rectTransform, new Rect(980f, 690f, 310f, 78f));
+        // The baked RANK caption is centered at x=1153 in the source artwork.
+        SetTopLeftRect(rankLabel.rectTransform, new Rect(998f, 690f, 310f, 78f));
         ConfigureValueText(rankLabel, Color.white);
 
         Button tryAgainButton = CreateButton(
@@ -356,6 +538,87 @@ public static class RunOutcomeSceneBuilder
             .FirstOrDefault();
     }
 
+    private static void RefreshPortraitTextLayoutScene(
+        string scenePath,
+        float? portraitSplitTop,
+        params string[] targetNames)
+    {
+        Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+        RectTransform[] artRoots = scene.GetRootGameObjects()
+            .SelectMany(root => root.GetComponentsInChildren<RectTransform>(true))
+            .Where(rectTransform => rectTransform.name == "Art Root")
+            .ToArray();
+
+        if (artRoots.Length != 1)
+            throw new InvalidOperationException(
+                $"{scene.name} must contain exactly one Art Root; found {artRoots.Length}.");
+
+        RectTransform artRoot = artRoots[0];
+        TMP_Text[] targets = targetNames
+            .Select(targetName => artRoot.GetComponentsInChildren<TMP_Text>(true)
+                .SingleOrDefault(candidate => candidate.name == targetName)
+                ?? throw new InvalidOperationException(
+                    $"{scene.name} is missing {targetName} under Art Root."))
+            .ToArray();
+
+        PortraitTextGroupLayout[] layouts = artRoot.GetComponents<PortraitTextGroupLayout>();
+        if (layouts.Length > 1)
+            throw new InvalidOperationException(
+                $"{scene.name} contains duplicate portrait text layouts.");
+
+        PortraitTextGroupLayout layout = layouts.SingleOrDefault()
+            ?? artRoot.gameObject.AddComponent<PortraitTextGroupLayout>();
+        ConfigurePortraitTextLayout(layout, targets, portraitSplitTop);
+        if (scenePath == CyborgDefeatPath)
+            ConfigureCyborgDefeatArtwork(artRoot);
+        else if (scenePath == KrakenDefeatPath)
+            ConfigureKrakenDefeatArtwork(artRoot);
+        EditorUtility.SetDirty(layout);
+
+        SaveScene(scene, scenePath);
+    }
+
+    private static void AddPortraitTextLayout(RectTransform artRoot, params TMP_Text[] targets)
+    {
+        PortraitTextGroupLayout layout = artRoot.gameObject.AddComponent<PortraitTextGroupLayout>();
+        ConfigurePortraitTextLayout(layout, targets, null);
+    }
+
+    private static void AddPortraitSplitRow(
+        RectTransform artRoot,
+        float portraitTop,
+        params TMP_Text[] targets)
+    {
+        PortraitTextGroupLayout layout = artRoot.gameObject.AddComponent<PortraitTextGroupLayout>();
+        ConfigurePortraitTextLayout(layout, targets, portraitTop);
+    }
+
+    private static void ConfigurePortraitTextLayout(
+        PortraitTextGroupLayout layout,
+        IReadOnlyList<TMP_Text> targets,
+        float? portraitSplitTop)
+    {
+        SetObjectReferences(layout, "textTargets", targets);
+
+        Vector2[] positions = portraitSplitTop.HasValue
+            ? new[]
+            {
+                new Vector2(-150f, -portraitSplitTop.Value),
+                new Vector2(150f, -portraitSplitTop.Value),
+            }
+            : System.Array.Empty<Vector2>();
+        Vector2[] sizes = portraitSplitTop.HasValue
+            ? new[]
+            {
+                new Vector2(300f, 36f),
+                new Vector2(300f, 36f),
+            }
+            : System.Array.Empty<Vector2>();
+
+        SetVector2Values(layout, "portraitPositions", positions);
+        SetVector2Values(layout, "portraitSizes", sizes);
+    }
+
     private static GameObject FindOrCreateRoot(Scene scene, string name)
     {
         GameObject existing = scene.GetRootGameObjects().FirstOrDefault(root => root.name == name);
@@ -497,6 +760,46 @@ public static class RunOutcomeSceneBuilder
         text.fontSizeMax = text.fontSize;
     }
 
+    private static void ConfigureSplitCaption(TMP_Text text)
+    {
+        text.color = new Color(0.88f, 0.93f, 0.96f, 0.8f);
+        text.fontStyle = FontStyles.Bold;
+        text.alignment = TextAlignmentOptions.Left;
+        text.textWrappingMode = TextWrappingModes.NoWrap;
+        text.enableAutoSizing = false;
+        text.characterSpacing = 4f;
+        text.extraPadding = true;
+        text.outlineColor = new Color32(4, 6, 10, 235);
+        text.outlineWidth = 0.08f;
+    }
+
+    private static void ConfigureSplitTimeText(TMP_Text text, Color accent)
+    {
+        TMP_FontAsset font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(TimerFontAssetPath);
+        if (font == null)
+            throw new InvalidOperationException(
+                $"The timer font is missing at {TimerFontAssetPath}.");
+
+        string requiredCharacters = RunUiFormatter.FormatTime(0d);
+        if (!font.HasCharacters(requiredCharacters))
+            throw new InvalidOperationException(
+                $"The timer font is missing characters required by {requiredCharacters}.");
+
+        text.font = font;
+        text.fontSharedMaterial = font.material;
+        text.color = accent;
+        text.fontStyle = FontStyles.Normal;
+        text.alignment = TextAlignmentOptions.Left;
+        text.textWrappingMode = TextWrappingModes.NoWrap;
+        text.enableAutoSizing = true;
+        text.fontSizeMin = 20f;
+        text.fontSizeMax = text.fontSize;
+        text.characterSpacing = 2f;
+        text.extraPadding = true;
+        text.outlineColor = new Color32(4, 6, 10, 235);
+        text.outlineWidth = 0.08f;
+    }
+
     private static Image CreateImage(string name, Transform parent, Color color)
     {
         GameObject imageObject = CreateUiObject(name, parent);
@@ -552,6 +855,42 @@ public static class RunOutcomeSceneBuilder
         SerializedProperty property = serializedObject.FindProperty(propertyName)
             ?? throw new InvalidOperationException($"{target.GetType().Name} is missing {propertyName}.");
         property.objectReferenceValue = value;
+        serializedObject.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void SetObjectReferences(
+        UnityEngine.Object target,
+        string propertyName,
+        IReadOnlyList<UnityEngine.Object> values)
+    {
+        SerializedObject serializedObject = new(target);
+        SerializedProperty property = serializedObject.FindProperty(propertyName)
+            ?? throw new InvalidOperationException($"{target.GetType().Name} is missing {propertyName}.");
+        if (!property.isArray)
+            throw new InvalidOperationException($"{target.GetType().Name}.{propertyName} is not an array.");
+
+        property.arraySize = values.Count;
+        for (int index = 0; index < values.Count; index++)
+            property.GetArrayElementAtIndex(index).objectReferenceValue = values[index];
+
+        serializedObject.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void SetVector2Values(
+        UnityEngine.Object target,
+        string propertyName,
+        IReadOnlyList<Vector2> values)
+    {
+        SerializedObject serializedObject = new(target);
+        SerializedProperty property = serializedObject.FindProperty(propertyName)
+            ?? throw new InvalidOperationException($"{target.GetType().Name} is missing {propertyName}.");
+        if (!property.isArray)
+            throw new InvalidOperationException($"{target.GetType().Name}.{propertyName} is not an array.");
+
+        property.arraySize = values.Count;
+        for (int index = 0; index < values.Count; index++)
+            property.GetArrayElementAtIndex(index).vector2Value = values[index];
+
         serializedObject.ApplyModifiedPropertiesWithoutUndo();
     }
 

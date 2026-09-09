@@ -142,6 +142,7 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           npm audit --audit-level=high --omit=dev
           npm ls --omit=dev
+          node --test csv-parse-compat.test.mjs
 
           version="$(./node_modules/.bin/firebase --version)"
           if [[ "$version" != "15.28.1" ]]; then

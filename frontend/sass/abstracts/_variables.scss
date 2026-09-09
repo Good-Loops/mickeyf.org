@@ -26,6 +26,9 @@ $bp-m: 48.75em; // 780px
 $bp-s: 34.375em; // 550px
 $bp-xs: 30em; // 480px
 
+// Short landscape viewports need intrinsic header height, regardless of width.
+$bp-compact-height: 31.25em; // 500px (max-height)
+
 ///////////////////// Font Sizes //////////////////////
 $font-size-xxs: 1.3rem;
 $font-size-xs: 2rem;

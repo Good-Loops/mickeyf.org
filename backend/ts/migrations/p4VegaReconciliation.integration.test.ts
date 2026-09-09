@@ -79,6 +79,7 @@ async function resetFixture(): Promise<void> {
             DROP TABLE IF EXISTS
                 game_personal_bests,
                 game_runs,
+                game_submission_receipts,
                 schema_migrations,
                 users
         `);

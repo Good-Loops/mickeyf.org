@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
     entry: {
         server: ['./ts/app.ts'],
+        'submission-receipt-cleanup': ['./ts/leaderboards/runSubmissionReceiptCleanup.ts'],
     },
     target: 'node',
     module: {

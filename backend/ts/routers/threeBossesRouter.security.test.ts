@@ -73,7 +73,7 @@ function createReplayDatabase() {
                     if (sql.includes('FROM users')) {
                         return [[{ user_id: 42 }], []];
                     }
-                    if (sql.includes('FROM game_runs')) {
+                    if (sql.includes('FROM game_submission_receipts')) {
                         return [[{
                             rulesVersion: 1,
                             score: 200_000,
@@ -83,7 +83,7 @@ function createReplayDatabase() {
                                 runId,
                                 50_000
                             ),
-                            personalBest: 1,
+                            improvedPersonalBest: 1,
                         }], []];
                     }
                     throw new Error(`Unexpected security-test query: ${sql}`);

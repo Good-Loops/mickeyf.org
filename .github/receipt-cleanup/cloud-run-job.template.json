@@ -1,0 +1,55 @@
+{
+  "apiVersion": "run.googleapis.com/v1",
+  "kind": "Job",
+  "metadata": {
+    "name": "mickeyf-submission-receipt-cleanup",
+    "namespace": "1012884798546",
+    "labels": { "cloud.googleapis.com/location": "us-central1" }
+  },
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "run.googleapis.com/cloudsql-instances": "noted-reef-387021:us-central1:cms-mickeyf"
+        }
+      },
+      "spec": {
+        "taskCount": 1,
+        "parallelism": 1,
+        "template": {
+          "spec": {
+            "serviceAccountName": "mickeyf-receipt-cleanup@noted-reef-387021.iam.gserviceaccount.com",
+            "timeoutSeconds": "180",
+            "maxRetries": 0,
+            "containers": [
+              {
+                "image": "us-central1-docker.pkg.dev/noted-reef-387021/cloud-run-source-deploy/cloud-run-source-deploy@sha256:REVIEWED_DIGEST",
+                "command": ["node"],
+                "args": ["dist/submission-receipt-cleanup.min.js"],
+                "resources": { "limits": { "cpu": "1", "memory": "512Mi" } },
+                "env": [
+                  { "name": "NODE_ENV", "value": "production" },
+                  { "name": "RECEIPT_CLEANUP_ENABLED", "value": "false" },
+                  { "name": "RECEIPT_CLEANUP_DB_USER", "value": "receipt_cleanup" },
+                  { "name": "RECEIPT_CLEANUP_DB_NAME", "value": "cms" },
+                  { "name": "RECEIPT_CLEANUP_EXPECTED_ACCOUNT", "value": "receipt_cleanup@cloudsqlproxy~%" },
+                  { "name": "RECEIPT_CLEANUP_EXPECTED_SERVER_UUID", "value": "d1e6865c-ecad-11ee-a6b0-42010a400002" },
+                  { "name": "RECEIPT_CLEANUP_CLOUD_SQL_CONNECTION_NAME", "value": "noted-reef-387021:us-central1:cms-mickeyf" },
+                  {
+                    "name": "RECEIPT_CLEANUP_DB_PASS",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "mickeyf-receipt-cleanup-db-password",
+                        "key": "REVIEWED_SECRET_VERSION"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

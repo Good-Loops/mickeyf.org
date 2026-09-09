@@ -15,6 +15,8 @@ import {
     verifyProductionCloudSqlTarget,
 } from '../security/cloudSqlRuntimeRoleRemover';
 import type { MigrationConnection } from './leaderboardSchema';
+import { assertReceiptMigrationCommandConfirmed } from '../config/receiptMigrationConfig';
+import { applyReceiptTransition, planReceiptTransition } from './receiptTransition';
 import {
     loadMigrationManifest,
     type MigrationDefinition,
@@ -32,6 +34,9 @@ import {
 type MigrationCommand =
     | 'plan'
     | 'apply'
+    | 'receipts-plan'
+    | 'receipts-apply'
+    | 'receipts-verify'
     | 'p4-score-drop-plan'
     | 'p4-score-drop-apply'
     | 'p4-score-drop-verify';
@@ -64,6 +69,7 @@ function parseCommand(args: readonly string[]): MigrationCommand {
         throw new Error(
             'Usage: runMigrations.ts '
             + '<plan|apply|'
+            + 'receipts-plan|receipts-apply|receipts-verify|'
             + 'p4-score-drop-plan|p4-score-drop-apply|p4-score-drop-verify>'
         );
     }
@@ -71,6 +77,9 @@ function parseCommand(args: readonly string[]): MigrationCommand {
     if (
         command !== 'plan'
         && command !== 'apply'
+        && command !== 'receipts-plan'
+        && command !== 'receipts-apply'
+        && command !== 'receipts-verify'
         && command !== 'p4-score-drop-plan'
         && command !== 'p4-score-drop-apply'
         && command !== 'p4-score-drop-verify'
@@ -136,7 +145,7 @@ async function withOperationDeadline<T>(
     let timeout: NodeJS.Timeout | undefined;
     const deadline = new Promise<never>((_resolve, reject) => {
         timeout = setTimeout(() => {
-            connection.destroy();
+            disconnectImmediately(connection);
             reject(new Error(`Migration operation exceeded ${timeoutMs}ms and was disconnected`));
         }, timeoutMs);
         timeout.unref();
@@ -144,6 +153,43 @@ async function withOperationDeadline<T>(
 
     try {
         return await Promise.race([operation(), deadline]);
+    } finally {
+        if (timeout) clearTimeout(timeout);
+    }
+}
+
+function disconnectImmediately(connection: Connection): void {
+    try {
+        connection.destroy();
+    } catch {
+        // Closing an already-invalid client must not mask the original failure.
+    }
+    // mysql2's public destroy currently queues a graceful stream.end(); a
+    // stalled statement must not keep the migration process/socket alive.
+    const underlying = connection as unknown as { connection?: { stream?: { destroy(): void } } };
+    try {
+        underlying.connection?.stream?.destroy();
+    } catch {
+        // The underlying stream may already have been destroyed by the driver.
+    }
+}
+
+async function closeWithinDeadline(connection: Connection): Promise<void> {
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+        await Promise.race([
+            connection.end(),
+            new Promise<void>((resolve) => {
+                timeout = setTimeout(() => {
+                    disconnectImmediately(connection);
+                    resolve();
+                }, 2_000);
+                timeout.unref();
+            }),
+        ]);
+    } catch {
+        // A statement deadline intentionally invalidates the connection.
+        disconnectImmediately(connection);
     } finally {
         if (timeout) clearTimeout(timeout);
     }
@@ -280,6 +326,17 @@ async function executeCommand(
         return;
     }
 
+    if (command.startsWith('receipts-')) {
+        const plan = command === 'receipts-apply'
+            ? await applyReceiptTransition(migrationConnection, migrations, config, identity, confirmation)
+            : await planReceiptTransition(migrationConnection, migrations, config, identity);
+        console.log(JSON.stringify(plan, null, 2));
+        if (command === 'receipts-verify' && plan.state !== 'applied') {
+            throw new Error('Receipt verification requires migrations 0004 and 0005 applied');
+        }
+        return;
+    }
+
     if (command === 'p4-score-drop-plan') {
         printP4ScoreDropPlan(
             await createP4ScoreDropPlan(connection, migrations, config, identity)
@@ -345,6 +402,10 @@ async function main(): Promise<void> {
     if (command === 'apply') {
         // Refuse before opening a socket, not merely before the first DDL.
         assertMutationAuthorized(config);
+    } else if (command.startsWith('receipts-')) {
+        confirmation = assertReceiptMigrationCommandConfirmed(
+            command.slice('receipts-'.length) as 'plan' | 'apply' | 'verify', config
+        );
     } else if (command.startsWith('p4-score-drop-')) {
         const dropCommand = command.slice('p4-score-drop-'.length) as
             'plan' | 'apply' | 'verify';
@@ -373,25 +434,21 @@ async function main(): Promise<void> {
     });
 
     try {
-        const identity = await assertConnectedTarget(
-            connection,
-            config.database,
-            confirmedAccount
-        );
         await withOperationDeadline(
             connection,
             command === 'p4-score-drop-plan'
                 || command === 'p4-score-drop-apply'
                 ? config.p4VegaOperationTimeoutMs
                 : config.operationTimeoutMs,
-            () => executeCommand(command, connection, config, identity, confirmation)
+            async () => {
+                const identity = await assertConnectedTarget(
+                    connection, config.database, confirmedAccount
+                );
+                await executeCommand(command, connection, config, identity, confirmation);
+            }
         );
     } finally {
-        try {
-            await connection.end();
-        } catch {
-            // A deadline intentionally destroys the connection before cleanup.
-        }
+        await closeWithinDeadline(connection);
     }
 }
 

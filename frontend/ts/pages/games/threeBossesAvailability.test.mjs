@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import test, { after } from 'node:test';
 import React from 'react';
@@ -23,12 +24,17 @@ const { GamesView } = await viteServer.ssrLoadModule('/ts/pages/Games.tsx');
 const {
     readThreeBossesSubmissionGate,
     ThreeBossesAvailabilityGate,
+    ThreeBossesControlsGuide,
     ThreeBossesDesktopOnly,
+    ThreeBossesLoadingStatus,
 } = await viteServer.ssrLoadModule(
     '/ts/pages/games/ThreeBosses.tsx',
 );
 const { default: ScoreSubmissionNotice } = await viteServer.ssrLoadModule(
     '/ts/components/ScoreSubmissionNotice.tsx',
+);
+const { isThreeBossesMobilePreviewRequested } = await viteServer.ssrLoadModule(
+    '/ts/config/featureFlags.ts',
 );
 
 const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
@@ -58,24 +64,209 @@ const renderGames = (threeBossesAvailable) => renderToStaticMarkup(
     ),
 );
 
-test('the Games hub exposes Three Bosses only when the current browser supports it', () => {
-    const desktopHtml = renderGames(true);
-    const mobileHtml = renderGames(false);
+test('the Games hub exposes Three Bosses only when enabled for the current browser', () => {
+    const availableHtml = renderGames(true);
+    const unavailableHtml = renderGames(false);
 
-    assert.match(desktopHtml, /Three Bosses/);
-    assert.match(desktopHtml, /\/games\/three-bosses/);
-    assert.doesNotMatch(mobileHtml, /Three Bosses/);
-    assert.doesNotMatch(mobileHtml, /\/games\/three-bosses/);
-    assert.match(mobileHtml, /p4-Vega/);
+    assert.match(availableHtml, /Three Bosses/);
+    assert.match(availableHtml, /\/games\/three-bosses/);
+    assert.doesNotMatch(unavailableHtml, /Three Bosses/);
+    assert.doesNotMatch(unavailableHtml, /\/games\/three-bosses/);
+    assert.match(unavailableHtml, /p4-Vega/);
 });
 
-test('the mobile direct-route surface does not render a Unity canvas', () => {
+test('the unavailable mobile surface does not render a Unity canvas', () => {
     const html = renderToStaticMarkup(
         React.createElement(ThreeBossesDesktopOnly),
     );
 
     assert.match(html, /currently available on desktop only/);
     assert.doesNotMatch(html, /<canvas/);
+    assert.doesNotMatch(html, /Keyboard controls/);
+});
+
+test('the mobile preview query is exact and remains behind the local feature gate', () => {
+    assert.equal(
+        isThreeBossesMobilePreviewRequested('?three-bosses-mobile-preview=1', true),
+        true,
+    );
+    assert.equal(
+        isThreeBossesMobilePreviewRequested('?three-bosses-mobile-preview=true', true),
+        false,
+    );
+    assert.equal(
+        isThreeBossesMobilePreviewRequested('?three-bosses-mobile-preview=1', false),
+        false,
+    );
+});
+
+for (const releaseEnabled of [false, true]) {
+    test(`the production mobile hub and route ${releaseEnabled ? 'open' : 'stay gated'} with the release flag ${releaseEnabled ? 'enabled' : 'disabled'}`, async (context) => {
+        const releaseServer = await createServer({
+            root: frontendRoot,
+            configFile: `${frontendRoot}/vite.config.ts`,
+            appType: 'custom',
+            logLevel: 'silent',
+            server: { middlewareMode: true },
+            define: {
+                'import.meta.env.DEV': 'false',
+                'import.meta.env.PROD': 'true',
+                'import.meta.env.VITE_ENABLE_THREE_BOSSES_LOCAL': JSON.stringify('1'),
+                'import.meta.env.VITE_ENABLE_THREE_BOSSES_RELEASE': JSON.stringify(releaseEnabled ? '1' : '0'),
+            },
+        });
+        context.after(() => releaseServer.close());
+
+        const { ThreeBossesAvailabilityGate: ReleaseGate } = await releaseServer.ssrLoadModule(
+            '/ts/pages/games/ThreeBosses.tsx',
+        );
+        const { AuthProvider } = await releaseServer.ssrLoadModule('/ts/context/AuthContext.tsx');
+        const { isThreeBossesAvailableInCurrentBrowser } = await releaseServer.ssrLoadModule(
+            '/ts/games/three-bosses/unityVisibility.ts',
+        );
+        const releaseFlags = await releaseServer.ssrLoadModule('/ts/config/featureFlags.ts');
+        assert.equal(releaseFlags.isThreeBossesReleaseEnabled, releaseEnabled);
+        assert.equal(
+            releaseFlags.isThreeBossesMobilePreviewRequested('?three-bosses-mobile-preview=1'),
+            false,
+        );
+
+        const mobileNavigator = {
+            maxTouchPoints: 5,
+            userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)',
+        };
+        const hubHtml = withBrowserNavigator(mobileNavigator, () => renderGames(
+            releaseFlags.isThreeBossesEnabled
+            && isThreeBossesAvailableInCurrentBrowser(
+                undefined,
+                releaseFlags.isThreeBossesReleaseEnabled,
+            ),
+        ));
+        const routeHtml = withBrowserNavigator(mobileNavigator, () => renderToStaticMarkup(
+            React.createElement(
+                MemoryRouter,
+                null,
+                React.createElement(AuthProvider, null, React.createElement(ReleaseGate)),
+            ),
+        ));
+
+        if (releaseEnabled) {
+            assert.match(hubHtml, /href="\/games\/three-bosses"/);
+            assert.match(routeHtml, /id="three-bosses-unity-canvas"/);
+            assert.doesNotMatch(routeHtml, /currently available on desktop only/);
+            assert.doesNotMatch(routeHtml, /Local WebGL playability prototype/);
+        } else {
+            assert.doesNotMatch(hubHtml, /href="\/games\/three-bosses"/);
+            assert.doesNotMatch(routeHtml, /id="three-bosses-unity-canvas"/);
+        }
+    });
+}
+
+test('the branded loading surface exposes real, normalized progress without a heavy image', () => {
+    const html = renderToStaticMarkup(
+        React.createElement(ThreeBossesLoadingStatus, { progressPercent: 41.6 }),
+    );
+
+    assert.match(html, /Preparing arena/);
+    assert.match(html, /Three Bosses/);
+    assert.match(html, /aria-label="Loading Three Bosses"/);
+    assert.match(html, /aria-valuemin="0"/);
+    assert.match(html, /aria-valuemax="100"/);
+    assert.match(html, /aria-valuenow="42"/);
+    assert.match(html, /width:42%/);
+    assert.match(html, />42%<\/span>/);
+    assert.doesNotMatch(html, /<img/);
+});
+
+test('the glass frame preserves the Unity artwork ratio in its content box', async () => {
+    const stylesheet = await readFile(
+        fileURLToPath(new URL('../../../sass/pages/_three-bosses.scss', import.meta.url)),
+        'utf8',
+    );
+    const ruleStart = stylesheet.indexOf('&__canvas-wrapper {');
+    const ruleEnd = stylesheet.indexOf('&__canvas {', ruleStart);
+    const canvasWrapperRule = stylesheet.slice(ruleStart, ruleEnd);
+
+    assert.notEqual(ruleStart, -1);
+    assert.notEqual(ruleEnd, -1);
+    assert.match(canvasWrapperRule, /box-sizing: content-box;/u);
+    assert.match(canvasWrapperRule, /aspect-ratio: 1672 \/ 941;/u);
+    assert.match(
+        canvasWrapperRule,
+        /width: calc\(100% - #\{2 \* \$three-bosses-frame-inset\}\);/u,
+    );
+    assert.match(canvasWrapperRule, /> \* \{ box-sizing: border-box; \}/u);
+});
+
+test('the fullscreen control is compact only in the narrow portrait layout', async () => {
+    const stylesheet = await readFile(
+        fileURLToPath(new URL('../../../sass/pages/_three-bosses.scss', import.meta.url)),
+        'utf8',
+    );
+    const baseRuleStart = stylesheet.indexOf('& &__fullscreen-btn {');
+    const baseRuleEnd = stylesheet.indexOf(
+        '& &__canvas-wrapper:fullscreen &__fullscreen-btn',
+        baseRuleStart,
+    );
+    const portraitRuleStart = stylesheet.indexOf('@include portrait-at-most($bp-s) {');
+    const nextResponsiveRule = stylesheet.indexOf('@include viewport-at-most($bp-m) {');
+    const baseRule = stylesheet.slice(baseRuleStart, baseRuleEnd);
+    const portraitRule = stylesheet.slice(portraitRuleStart, nextResponsiveRule);
+
+    assert.match(stylesheet, /\$three-bosses-fullscreen-button-size: 3\.4rem;/u);
+    assert.match(baseRule, /width: \$three-bosses-fullscreen-button-size;/u);
+    assert.match(baseRule, /height: \$three-bosses-fullscreen-button-size;/u);
+    assert.match(portraitRule, /& &__fullscreen-btn \{/u);
+    assert.match(portraitRule, /width: 2\.75rem;/u);
+    assert.match(portraitRule, /height: 2\.75rem;/u);
+});
+
+test('the desktop keyboard guide stays aligned with the live Unity bindings', async () => {
+    const html = renderToStaticMarkup(
+        React.createElement(ThreeBossesControlsGuide),
+    );
+    const inputActions = JSON.parse(await readFile(
+        fileURLToPath(new URL(
+            '../../../../unity/three-bosses/Assets/PlayerInputActions.inputactions',
+            import.meta.url,
+        )),
+        'utf8',
+    ));
+    const pauseController = await readFile(
+        fileURLToPath(new URL(
+            '../../../../unity/three-bosses/Assets/Scripts/UI/GameplayPauseController.cs',
+            import.meta.url,
+        )),
+        'utf8',
+    );
+    const gameplayBindings = inputActions.maps
+        .find(({ name }) => name === 'Gameplay')
+        ?.bindings ?? [];
+    const hasBinding = (action, path) => gameplayBindings.some((binding) => (
+        binding.action === action && binding.path === path
+    ));
+
+    assert.match(html, /^<section[^>]*class="three-bosses__controls"/);
+    assert.match(html, /<h2[^>]*>Keyboard controls<\/h2>/);
+    assert.match(html, /Move left \/ right/);
+    assert.match(html, /Aim up \/ left \/ right/);
+    assert.match(html, /Jump \/ double jump/);
+    assert.match(html, /Dash/);
+    assert.match(html, /Fire/);
+    assert.match(html, /Pause \/ resume/);
+    assert.doesNotMatch(html, /<(?:details|summary)|role="(?:dialog|menu)"/);
+
+    assert.equal(hasBinding('Move', '<Keyboard>/a'), true);
+    assert.equal(hasBinding('Move', '<Keyboard>/d'), true);
+    assert.equal(hasBinding('Move', '<Keyboard>/leftArrow'), true);
+    assert.equal(hasBinding('Move', '<Keyboard>/rightArrow'), true);
+    assert.equal(hasBinding('AimUp', '<Keyboard>/w'), true);
+    assert.equal(hasBinding('AimBack', '<Keyboard>/a'), true);
+    assert.equal(hasBinding('AimFront', '<Keyboard>/d'), true);
+    assert.equal(hasBinding('Jump', '<Keyboard>/space'), true);
+    assert.equal(hasBinding('Dash', '<Keyboard>/leftShift'), true);
+    assert.equal(hasBinding('Fire', '<Keyboard>/enter'), true);
+    assert.match(pauseController, /Keyboard\.current\?\.escapeKey\.wasPressedThisFrame/);
 });
 
 test('signed-out players are told to authenticate before starting a ranked run', () => {
@@ -120,7 +311,7 @@ test('signed-out players are told to authenticate before starting a ranked run',
     assert.equal(loadingHtml, '');
 });
 
-test('the route gate selects the desktop-only surface from the current mobile browser identity', () => {
+test('the local route without a mobile preview selects the desktop-only surface', () => {
     const html = withBrowserNavigator({
         maxTouchPoints: 0,
         userAgent: 'Mozilla/5.0 (Linux; Android 15)',

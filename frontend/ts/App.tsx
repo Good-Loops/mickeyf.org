@@ -4,7 +4,8 @@
  * Ownership: this module wires pages and navigation only; domain logic lives in feature modules, hooks, and services.
  */
 import "pixi.js/unsafe-eval";
-import React from "react";
+import React, { useRef } from "react";
+import { useSafariBackgroundEdges } from '@/hooks/useSafariBackgroundEdges';
 import { Routes, Route } from "react-router-dom";
 import Header from "@/Header";
 import Home from "@/pages/Home";
@@ -19,6 +20,7 @@ import { ThreeBossesAvailabilityGate } from "@/pages/games/ThreeBosses";
 import { isThreeBossesAvailableInCurrentBrowser } from '@/games/three-bosses/unityVisibility';
 import {
 	isThreeBossesEnabled,
+	isThreeBossesReleaseEnabled,
 	THREE_BOSSES_ROUTE,
 } from '@/config/featureFlags';
 
@@ -30,11 +32,13 @@ import SignUp from "@/pages/SignUp";
 import NotFound from "@/pages/NotFound";
 
 const App: React.FC = () => {
+	const shellRef = useRef<HTMLDivElement>(null);
+	useSafariBackgroundEdges(shellRef);
 	const threeBossesAvailable = isThreeBossesEnabled
-		&& isThreeBossesAvailableInCurrentBrowser();
+		&& isThreeBossesAvailableInCurrentBrowser(undefined, isThreeBossesReleaseEnabled);
 
 	return (
-	<div className="app-shell">
+	<div className="app-shell" ref={shellRef}>
 		<div className="space-background" aria-hidden="true">
 			<div className="space-background__stars space-background__stars--far" />
 			<div className="space-background__stars space-background__stars--near" />

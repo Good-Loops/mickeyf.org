@@ -185,6 +185,8 @@ test('plan is read-only, configures short waits, and releases its advisory lock'
             '0001_create_game_runs',
             '0002_create_game_personal_bests',
             '0003_drop_users_p4_score',
+            '0004_detach_personal_best_sources',
+            '0005_retain_submission_receipts',
         ],
         recoverable: [],
     });

@@ -138,7 +138,8 @@ copied into Git.
    boundaries. The tracked terminal layout then starts four terminals whenever
    the repository opens:
 
-   - `front`, running the frontend Vite server with a cyan browser icon;
+   - `front`, running the frontend Vite server and local Three Bosses WebGL
+     asset server with a cyan browser icon;
    - `back`, starting the pinned Cloud SQL Auth Proxy, backend compiler/watch,
      and nodemon server together with prefixed logs and a red server icon;
    - `docs`, running the TypeDoc development server with a green book icon; and
@@ -166,7 +167,8 @@ Default local ports are:
 - Backend: `http://localhost:8080`
 - Cloud SQL Proxy: `127.0.0.1:3306`
 - TypeDoc server: `http://localhost:8081`
-- Three Bosses WebGL assets (when enabled): `http://127.0.0.1:4174`
+- Three Bosses WebGL assets (started with frontend development):
+  `http://127.0.0.1:4174`
 
 If port 8080 is occupied, identify its owning process before stopping it. The
 backend start command deliberately does not kill unrelated processes.
@@ -179,16 +181,36 @@ Run the `docs` VS Code task or:
 npm run docs:dev
 ```
 
-The command rebuilds the tracked `docs/` output before serving it. Review the
-resulting Git diff and do not commit generated changes accidentally.
+`docs:dev` watches for changes and serves the existing `docs/` output. For an
+initial build before watching/serving, use `npm run docs:dev:fresh`. Review any
+generated Git diff and do not commit it accidentally.
+
+To regenerate one package's documentation JSON, run `npm run docs:json:frontend`
+or `npm run docs:json:backend` from the repository root. These root commands own
+the shared documentation pipeline; there are no package-local `docs:json` aliases.
+
+The watcher debounces changes and runs one documentation build at a time. Changes
+received during a build become one follow-up build; failures are reported without
+retrying unchanged input. Stopping the watcher discards queued work and waits for
+its file-watcher and active build processes to exit. Run only one watcher per
+checkout, and stop it before a separate manual `npm run docs` build: the queue is
+not a cross-process lock. An already-running watcher uses its old code until the Docs terminal is
+restarted. Frontend, backend and WebGL servers do not need a restart.
+
+Test the watcher scheduling without building documentation:
+
+```powershell
+node --test scripts/watch-docs.test.mjs
+```
 
 ### Three Bosses WebGL development and Alpha packaging
 
 Three Bosses is available locally when the development feature flag is
 explicitly enabled. Its Alpha release uses a separate, certified same-origin
-package. The playable route is desktop-only for Alpha 0.6.0; recognized mobile
-browsers receive the desktop-only notice without instantiating Unity, while the
-Three Bosses leaderboard remains available.
+package. Release builds enable both desktop and mobile gameplay, including the
+Games card and direct route. Touch-first mobile browsers receive the touch HUD;
+desktop keyboard controls are unchanged. Local mobile testing still requires
+`?three-bosses-mobile-preview=1` in addition to the development feature flag.
 
 1. Build the Unity project to the external, ignored location documented in
    [`unity/three-bosses/README.md`](unity/three-bosses/README.md).
@@ -198,14 +220,18 @@ Three Bosses leaderboard remains available.
    VITE_ENABLE_THREE_BOSSES_LOCAL=1
    ```
 
-3. Start the external asset server in a separate terminal:
+3. Start the frontend development stack:
 
    ```powershell
-   npm run three-bosses:webgl:serve
+   npm --prefix frontend run dev
    ```
 
-4. Start or restart the frontend, then open
-   `http://localhost:5173/games/three-bosses`.
+   This command supervises Vite and the loopback WebGL asset server together,
+   so stopping either process stops the pair. The standalone
+   `npm run three-bosses:webgl:serve` command remains available for focused
+   server recovery and debugging.
+
+4. Open `http://localhost:5173/games/three-bosses`.
 
 In development, the frontend proxies generated assets through
 `/__local/three-bosses/`; the local build remains outside the repository and
@@ -456,8 +482,10 @@ anything, the hook intentionally stops that commit so you can review the
 result and commit again; a Unity file that is only partially staged is
 rejected instead of being modified. Unity can remain open as long as any
 edited scene is saved before you start the commit and is not saved again
-while the hook runs. See [`.githooks/README.md`](.githooks/README.md) for
-details, including the `--no-verify` bypass.
+while the hook runs. Unity's canonical `ProjectSettings.asset` whitespace is
+excluded so the Editor does not recreate formatting churn after every save.
+See [`.githooks/README.md`](.githooks/README.md) for details, including the
+`--no-verify` bypass.
 
 Test the normalizer itself with:
 

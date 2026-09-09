@@ -32,7 +32,6 @@ type StoredScoreRow = RowDataPacket & {
     genericScore: number | null;
     recordedAt: string | null;
     completionTimeMs: number | null;
-    sourceGameRunId: number | null;
 };
 
 function asMigrationConnection(value: Connection): MigrationConnection {
@@ -127,6 +126,7 @@ async function resetFixture(): Promise<void> {
         await observer.query(`
             DROP TABLE IF EXISTS
                 game_personal_bests,
+                game_submission_receipts,
                 game_runs,
                 schema_migrations,
                 users
@@ -153,6 +153,12 @@ async function resetFixture(): Promise<void> {
     );
 
     await applyMigrations(asMigrationConnection(observer), migrations, config);
+    await applyMigrations(asMigrationConnection(observer), migrations, config, {
+        allowedEffectKinds: ['drop-column'],
+    });
+    await applyMigrations(asMigrationConnection(observer), migrations, config, {
+        allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
 }
 
 async function storedScore(): Promise<StoredScoreRow> {
@@ -160,8 +166,7 @@ async function storedScore(): Promise<StoredScoreRow> {
         SELECT
             game_personal_bests.score AS genericScore,
             game_personal_bests.recorded_at AS recordedAt,
-            game_personal_bests.completion_time_ms AS completionTimeMs,
-            game_personal_bests.source_game_run_id AS sourceGameRunId
+            game_personal_bests.completion_time_ms AS completionTimeMs
         FROM users
         LEFT JOIN game_personal_bests
           ON game_personal_bests.game_id = 'p4-vega'
@@ -225,7 +230,6 @@ test('strict improvements update generic storage', async () => {
         genericScore: 900,
         recordedAt: initial.recordedAt,
         completionTimeMs: null,
-        sourceGameRunId: null,
     });
     assert.equal(typeof initial.recordedAt, 'string');
 
@@ -246,10 +250,9 @@ test('strict improvements update generic storage', async () => {
     assert.equal(improved.genericScore, 990);
     assert.notEqual(improved.recordedAt, fixedRecordedAt);
     assert.equal(improved.completionTimeMs, null);
-    assert.equal(improved.sourceGameRunId, null);
 
     const [runs] = await observer.query<Array<RowDataPacket & { count: number }>>(
-        'SELECT COUNT(*) AS count FROM game_runs'
+        'SELECT COUNT(*) AS count FROM game_submission_receipts'
     );
     assert.equal(Number(runs[0].count), 0);
 });
@@ -296,9 +299,8 @@ test('leaderboard reads only current generic p4-Vega bests in deterministic orde
                 user_id,
                 score,
                 completion_time_ms,
-                recorded_at,
-                source_game_run_id
-             ) VALUES ('p4-vega', 1, ?, ?, NULL, ?, NULL)`,
+                recorded_at
+             ) VALUES ('p4-vega', 1, ?, ?, NULL, ?)`,
             [userId, score, recordedAt]
         );
     }
@@ -310,11 +312,10 @@ test('leaderboard reads only current generic p4-Vega bests in deterministic orde
             user_id,
             score,
             completion_time_ms,
-            recorded_at,
-            source_game_run_id
+            recorded_at
          ) VALUES
-            ('p4-vega', 2, 13, 2147483647, NULL, '1999-01-01 00:00:00.000000', NULL),
-            ('three-bosses', 1, 13, 2147483646, 1, '1999-01-01 00:00:00.000000', NULL)`
+            ('p4-vega', 2, 13, 2147483647, NULL, '1999-01-01 00:00:00.000000'),
+            ('three-bosses', 1, 13, 2147483646, 1, '1999-01-01 00:00:00.000000')`
     );
 
     const expected = [
@@ -380,6 +381,5 @@ test('a failed commit rolls an executed generic write back', async () => {
         genericScore: null,
         recordedAt: null,
         completionTimeMs: null,
-        sourceGameRunId: null,
     });
 });
