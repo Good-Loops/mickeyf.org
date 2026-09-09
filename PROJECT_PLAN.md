@@ -1441,6 +1441,21 @@ tests or server restarts were required. The remaining bounded decisions are the
 two manual receipt-cleanup aliases and the documentation watcher's overlapping
 rebuilds, not another full script audit.
 
+Documentation watcher overlap corrected (2026-09-08): `docs:watch` now runs a
+small Node controller over the existing Chokidar CLI's documented event stream.
+The same watched inputs and debounce remain, but only one documentation build
+can run per watcher; changes during it coalesce into one follow-up. Build failures
+are reported without retrying unchanged input; stopping drops queued work and
+awaits the file-watcher and active build processes. No new dependencies, npm
+commands or lock artifacts were introduced. All 13 focused scheduling/process
+tests pass and are wired into PR CI; syntax, YAML, manifest and diff checks pass.
+Tests use fake child processes/timers, not real docs
+builds. Existing watcher/server processes were not restarted. README documents
+that the Docs terminal must be restarted to use the new controller, and that a
+second watcher or separate manual build is not protected by this per-process
+queue. Only the two receipt-cleanup command aliases remain undecided in this
+bounded script audit.
+
 #### Remaining release checks — consolidated checkpoint (2026-09-07)
 
 The owner requested all remaining release checks after confirming the desktop

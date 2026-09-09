@@ -21,6 +21,24 @@ and watcher-overlap decision remain open; their commands/behavior are untouched.
 Validation used JSON/structural assertions, a focused caller check and Git diff
 checks, not a documentation build, install, server restart or application test.
 
+## Watcher overlap correction — 2026-09-08
+
+Replaced only `docs:watch`'s direct Chokidar command execution with
+`scripts/watch-docs.mjs`. The existing Chokidar CLI emits file events; the
+controller preserves the same seven patterns and 400 ms debounce while allowing
+only one active documentation build and one coalesced pending rebuild. No new
+dependency, npm script, lock file or initial build was introduced. Failures are
+reported; stopping discards pending work and awaits the file-watcher and active
+build processes. Terminal interrupts can also reach the build's descendants.
+
+This resolves the watcher-overlap candidate for a single watcher. Multiple
+watchers or a separate manual build still require coordination, now documented
+in the README. Existing Docs processes were not restarted. The two manual
+receipt-cleanup aliases remain the only unresolved script-audit candidates.
+All 13 focused scheduling/process-adapter tests pass using fake children and timers, with no
+documentation/application build or filesystem fixture. PR CI now runs them.
+The 59-script count is unchanged; the first-pass tables below remain historical.
+
 ## First-pass result and proposed batch (historical)
 
 | Manifest | Scripts | Keep | Consolidate | Needs confirmation | Remove outright |

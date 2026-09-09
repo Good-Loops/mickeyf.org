@@ -98,6 +98,9 @@ jobs:
           npm --prefix backend run test:migrations
           npm --prefix backend run prod
 
+      - name: Test documentation watcher scheduling
+        run: node --test scripts/watch-docs.test.mjs
+
       - name: Build documentation
         run: npm run docs
 

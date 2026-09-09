@@ -189,6 +189,20 @@ To regenerate one package's documentation JSON, run `npm run docs:json:frontend`
 or `npm run docs:json:backend` from the repository root. These root commands own
 the shared documentation pipeline; there are no package-local `docs:json` aliases.
 
+The watcher debounces changes and runs one documentation build at a time. Changes
+received during a build become one follow-up build; failures are reported without
+retrying unchanged input. Stopping the watcher discards queued work and waits for
+its file-watcher and active build processes to exit. Run only one watcher per
+checkout, and stop it before a separate manual `npm run docs` build: the queue is
+not a cross-process lock. An already-running watcher uses its old code until the Docs terminal is
+restarted. Frontend, backend and WebGL servers do not need a restart.
+
+Test the watcher scheduling without building documentation:
+
+```powershell
+node --test scripts/watch-docs.test.mjs
+```
+
 ### Three Bosses WebGL development and Alpha packaging
 
 Three Bosses is available locally when the development feature flag is
