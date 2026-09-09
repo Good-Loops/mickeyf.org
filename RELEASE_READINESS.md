@@ -6,12 +6,12 @@ dated entries in [PROJECT_PLAN.md](PROJECT_PLAN.md) and
 [RECEIPT_RETENTION.md](backend/RECEIPT_RETENTION.md) remain supporting history.
 Update this ledger instead of treating superseded historical blockers as new work.
 
-**Release is not yet approved.** The initial reconciliation made no production
-changes and dispatched no workflow. The subsequently authorized non-deploying
-CI run on `cd347db9` failed at the Firebase dependency audit; see the checkpoint
-below. It created no PR and made no production changes. Neither checkpoint
-transfers an earlier image-specific risk acceptance or certifies the feature
-branch from default-branch scan results.
+**Release is not yet approved.** After the initial Firebase audit failure,
+the scoped dependency patch `3ea379fe` passed the complete non-deploying CI run
+`34301221560`. The later ledger update is documentation-only; the tested source
+is identified explicitly below. No PR, deployment or production mutation was
+performed. CI success does not transfer an image-specific risk acceptance or
+replace the outstanding real-device, browser-cookie and merge/release gates.
 
 ## Current dispositions
 
@@ -25,10 +25,10 @@ branch from default-branch scan results.
 | S6 | Fixed in branch; not merged | At the initial reconciliation, 13 of 14 open default-branch dependency alerts mapped to fixes already in branch locks: eight `fast-uri` alerts (3.1.7), two `qs` alerts (6.16.0), three `xmldom` alerts (0.8.15 / 0.9.12). This alert-to-lock comparison is distinct from the subsequent CI audit findings in S12. |
 | S7 | Accepted; bounded and expiring | Deployment-only `stream-json` 1.9.1, GHSA-528h-pc64-c93x, remains under the owner's static-Hosting-only exception through 2026-10-07 or earlier reassessment triggers. Firebase 15.28.1, locked install, high audit gate and eight-minute deployment timeout remain. No import/framework pipeline expansion or major override is accepted. |
 | S8 | Blocked; current-image disposition | The prior embedded-OpenSSL exception explicitly covered a different image. No corresponding exact-digest exception is recorded for the receipt image now serving traffic. Clean OS/NPM/SECRET scan evidence does not close the embedded-component boundary. See below; this is not a newly demonstrated application exploit. |
-| S9 | Blocked; CI audit failure | Authorized workflow-dispatch run `34300667096` checked exact head `cd347db9`. Unity source integrity passed. Locked installs and Firebase tree validation passed; root/frontend/backend audits each reported zero vulnerabilities. The Firebase audit failed, so all later web tests/builds were skipped. Resolve S12 and rerun; do not count planned MySQL/browser coverage as executed. A current PR/CodeQL merge gate remains separate. |
+| S9 | Fixed; tested CI checkpoint | Authorized non-deploying run `34301221560` passed both jobs on `3ea379fe`: dependency validation/audits, frontend tests/build, WebGL package/tooling checks, backend unit/MySQL integration tests/build, docs watcher tests/docs build and Unity static integrity. All reported test summaries had zero skips. This supersedes failed run `34300667096`; it is not a Unity rebuild or a browser/device test. A PR with required checks/CodeQL on its eventual merge head remains a separate gate. |
 | S10 | Fixed controls; limited scan coverage | Main ruleset requires PR/thread resolution, strict Web/Unity checks and CodeQL errors/high-or-higher protection, with no bypass actors. Zero open code/secret-scanning alerts were observed; main CodeQL evidence covers `2bffc0db`, not this branch. Push protection is enabled; non-provider patterns and validity checks are disabled. Zero alerts is not proof that no secret exists. |
 | S11 | Deferred; local maintenance | Active backend install still has `qs` 6.15.3 versus locked 6.16.0. Isolated locked tests already passed. Refresh only during a deliberate development-stack stop; do not use the stale install as release evidence or modify running dependencies silently. |
-| S12 | Blocked; Firebase tooling audit | CI reported six vulnerable package entries: one high (`js-yaml`) and five moderate (`csv-parse`, `hono`, `morgan`, `stream-json`, plus the `firebase-tools` parent). The existing stream-json exception does not accept unrelated findings. Keep the high audit gate; scope dependency remediation to the isolated deployment package, preserve Firebase workflow/runtime contracts, and do not run `npm audit fix --force`. |
+| S12 | Fixed; deployment-only dependency patch | `3ea379fe` updates exactly four lock entries: `js-yaml` 4.3.2, `hono` 4.13.7, `morgan` 1.12.0 and Firebase-scoped `csv-parse` 7.0.2. Firebase stays 15.28.1. Fresh locked install, full production dependency-tree validation, CLI version check, eight offline CSV tests and twelve smoke-tool tests pass. Audit now has zero high/critical and only the two previously accepted stream-json/parent moderate entries. No unrelated finding was waived or threshold lowered. |
 | R1 | Fixed; certified local candidate | Package `2e660337…a7fe7` remains the certified 996-file Unity candidate from `8eaa6615`. Unity source and frontend runtime have not changed since that source checkpoint. Candidate packaging/hash checks, local header simulation and signed-out Chrome startup passed previously. No source-driven rebuild is required by this reconciliation. |
 | R2 | Blocked; candidate browser/device evidence | Still missing: current-candidate HTTPS browser-cookie login/submission/exact retry/PB/leaderboard round trip; uncached physical Safari loading; exact-16:9 Fire invisible-hit-area clearance; exhaustive ten-weapon/21-clip evidence. Backend HTTP acceptance and warm-cache/normal-route checks do not certify these narrower cases. |
 | R3 | Fixed; accepted owner checks | Keep closed: Android/iPhone normal routes and recorded defeat/retry/menu checks; touch controls; mute persistence; automatic/combined pause; complete outcome-centering audit; accepted fullscreen-button placement and Safari toolbar limitation; recovered desktop FPS incident. No blanket replay of these checks. |
@@ -69,6 +69,45 @@ The additional moderate entries require their own review; the previously accepte
 stream-json risk is not a blanket waiver. No dependency changes, audit-threshold
 changes, forced fixes, local installs or production actions were made in this run.
 
+### Scoped remediation: `3ea379fe`
+
+The isolated `.github/firebase-deploy` install was refreshed using Node 22.23.2
+and npm 11.6.2 with `npm ci --ignore-scripts --no-audit --no-fund`. No separate
+temporary install copy was created; frontend/backend installs and servers were
+not changed. YAML, Hono and Morgan patches stay within their parent ranges.
+CSV's exact override is scoped to `firebase-tools@15.28.1`, not every consumer.
+Firebase 15.29.0 still requests CSV v5; no patched v5/v6 release was available.
+[CSV advisory](https://github.com/adaltas/node-csv/security/advisories/GHSA-8cw4-87c7-c6xx),
+[Firebase caller](https://github.com/firebase/firebase-tools/blob/v15.28.1/src/commands/auth-import.ts#L63),
+[CSV changelog](https://github.com/adaltas/node-csv/blob/master/packages/csv-parse/CHANGELOG.md).
+
+The permanent `csv-parse-compat.test.mjs` resolves CSV from Firebase's actual
+caller without executing `auth:import`. It covers default array-record streams,
+UTF-8/chunk boundaries, LF/CRLF, quoting, empty fields, malformed-input errors
+and duplicate-`__proto__` safety. Seven compatibility cases passed with old
+CSV 5.6.0 while the security regression failed; all eight pass with 7.0.2.
+Both PR CI and Hosting dependency validation now run these tests. They do not
+authorize or claim a live auth import. Static Hosting scope, CLI pin, audit
+threshold, timeout and existing stream-json disposition are unchanged.
+
+Local commands passed: `node --test .github/firebase-deploy/csv-parse-compat.test.mjs`,
+`npm --prefix .github/firebase-deploy run test:three-bosses-webgl-smoke`,
+`npm --prefix .github/firebase-deploy ls --omit=dev --json`,
+`npm --prefix .github/firebase-deploy audit --audit-level=high --omit=dev --json`,
+and the Firebase CLI version check. Both edited workflows parse as YAML and
+`git diff --check` passes. Existing upstream deprecation warnings for `json-ptr`,
+`node-domexception` and `glob` remain separate maintenance notes; they are not
+new findings in the passing audit or justification for a broad dependency update.
+
+[CI run 34301221560](https://github.com/Good-Loops/mickeyf.com/actions/runs/34301221560)
+completed successfully at 2026-09-09 01:59:52 UTC on
+`3ea379fe1db4e3818e61b55ad828585d9e6f7f08`. Both `Web audit, test, and build` and
+`Unity source integrity` passed. The frontend large-chunk warning remains;
+the docs-watcher test uses Node's experimental MockTimers API. Neither warning
+was suppressed or turned into additional unrelated work. Documentation-only
+recording after this run does not claim a new tested SHA or require repeating
+unchanged application checks merely to update this ledger.
+
 ## Embedded OpenSSL: no automatic carry-forward
 
 The most recent historical exception covered image
@@ -93,23 +132,20 @@ Node build or silently transfer the old exception.
 
 ## Next execution order and authority
 
-1. Remediate S12 within the isolated Firebase deployment dependency tree, then
-   rerun the existing non-deploying `pr-ci.yml` workflow on the updated branch.
-   Do not reopen the bounded package-script audit or downgrade security gates.
-   A PR is still needed for the eventual merge and current CodeQL/required-check
-   evidence. The authorized initial run is recorded above; it did not deploy.
-2. Resolve S8 through an exact-current-image component/reachability review and
+1. Resolve S8 through an exact-current-image component/reachability review and
    explicit risk disposition or a separately approved runtime remediation.
    Retry only the bounded S5 policy readback when the existing browser/tool
    connection works; no SDK installation or permissions expansion is needed
    merely to repeat a failed verification.
-3. Arrange only R2's missing candidate checks on an approved HTTPS test route;
+2. Arrange only R2's missing candidate checks on an approved HTTPS test route;
    scope any disposable account/score lifecycle separately. Keep accepted R3
    checks closed. A development-only mobile preview is not proof of an enabled
    production mobile route.
-4. Resolve or explicitly disposition all remaining gates before requesting
-   publication/mobile approval, then verify hosted delivery. No main merge,
-   deployment, dependency refresh or cloud mutation is implied by this ledger.
+3. Resolve or explicitly disposition all remaining gates before requesting
+   publication/mobile approval, then verify hosted delivery. A PR and current
+   CodeQL/required checks remain necessary for its eventual merge head; the
+   completed standalone CI is not merge approval. No main merge, deployment,
+   dependency refresh or cloud mutation is implied by this ledger.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

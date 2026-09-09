@@ -7,10 +7,11 @@ each phase boundary.
 Current release gates (reconciled 2026-09-08 local): see the
 [cumulative release/security ledger](RELEASE_READINESS.md). It supersedes stale
 pending claims in the dated history below. Named cleanup and the bounded script
-audit are complete; the remaining gates are current-branch CI, current-image
+audit are complete. The scoped Firebase dependency patch `3ea379fe` passed the
+complete non-deploying CI run `34301221560`; the remaining gates are current-image
 embedded-OpenSSL disposition, limited alert readback, narrow candidate/browser
-checks and explicit publication/mobile approval. No accepted gameplay check is
-reopened by this reconciliation.
+checks, eventual PR/CodeQL merge checks and explicit publication/mobile approval.
+No accepted gameplay check is reopened by this reconciliation.
 
 Current storage checkpoint (2026-09-08): the receipt-based backend is implemented
 on `feature/three-bosses-polish` and its production schema/grant cutover is
