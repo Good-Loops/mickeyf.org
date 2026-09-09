@@ -1398,6 +1398,36 @@ remain unverified; this is not a deletion-safety sign-off. Nothing was deleted.
 No package scripts have been removed or certified unused. The natural Scheduler
 check can complete independently.
 
+Cleanup completion and bounded script-audit checkpoint (2026-09-08):
+
+- The three documented disposable install copies were moved to the Windows
+  Recycle Bin after exact-path/parent checks, ownership/provenance review, a
+  bounded deep metadata inventory with zero reparse points, and a fresh readable
+  process-command-line check with no matching paths. All three original paths
+  are now absent. Inventory: Firebase fast-uri 19,664 files / 200,335,028 bytes;
+  backend qs 5,863 files / 57,004,173 bytes; frontend xmldom 15,055 files /
+  206,013,447 bytes (40,582 files / 463,352,648 bytes total). Recover through the
+  Windows Recycle Bin if needed; space is not reclaimed until it is emptied.
+  Process inspection cannot rule out every open handle: 156 processes did not
+  expose a command line. No process was stopped, and normal workspace installs,
+  servers, retained verification evidence and the Unity recovery archive were
+  outside the deletion targets. Each recycled directory was independently found
+  in the Recycle Bin with its original Temp location; SHA-256 checks confirm the
+  retained release report and all six recovery/archive files are unchanged.
+  The acceptance harness was already absent.
+- First static script pass is complete: all four tracked first-party manifests,
+  61 scripts, 56 keep, two proposed documentation-alias consolidations, three
+  needing a manual-workflow/overlap decision, and zero unconditional removals.
+  See [the bounded inventory and proposed changes](PACKAGE_SCRIPT_AUDIT.md).
+  No scripts/lockfiles changed and no package commands/builds/tests were run.
+  Do not repeat the inventory as an open-ended audit; the next batch should
+  resolve those named candidates only.
+- Two additional root-folder candidates were reported by the owner and checked
+  read-only: `Logs` is empty; `NVIDIA Corporation` contains only an empty
+  `umdlogs` directory. Neither is tracked or referenced in tracked project files.
+  No creator process was established from metadata. They remain untouched;
+  these are not evidence that the website needs either directory.
+
 #### Remaining release checks — consolidated checkpoint (2026-09-07)
 
 The owner requested all remaining release checks after confirming the desktop
