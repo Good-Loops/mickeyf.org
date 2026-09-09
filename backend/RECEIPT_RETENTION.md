@@ -3,12 +3,12 @@
 Current checkpoint: 2026-09-08. The storage contract below is implemented and
 **migrated in production**; exact runtime/operator grants are verified and the
 receipt-compatible image now serves normal traffic with both score flags
-**enabled** after approved acceptance and promotion. Receipt cleanup remains
-disabled. Historical migrations 0001–0003 are unchanged. Dated preparation
-entries below are historical; the final section records production activation.
-Retention-job alert acceptance is now in progress with the owner-approved
-recipient; credentials, real cleanup and scheduling remain gated on that
-acceptance. Migration and score-submission activation are complete.
+**enabled** after approved acceptance and promotion. Receipt cleanup passed a
+controlled production execution and is disabled again pending hourly scheduling.
+Both alert emails are owner-confirmed; restricted credentials are provisioned.
+The no-success watchdog and scheduling remain the next activation gate.
+Historical migrations 0001–0003 are unchanged. Dated preparation entries below
+are historical; the final section records the current manual acceptance.
 
 ## Storage contract
 
@@ -990,7 +990,7 @@ Next: the separately approved cleanup runbook, including dedicated credentials,
 least-privilege IAM, operator alerts, a reviewed manual execution and then hourly
 scheduling. Score activation alone does not enforce receipt expiry.
 
-## Receipt-cleanup alert acceptance (2026-09-08; activation still disabled)
+## Initial receipt-cleanup alert checkpoint (2026-09-08; historical)
 
 The owner approved the notification recipient. Channel
 `9138709485205441101` is enabled; its email address is stored in Cloud Monitoring,
@@ -1040,3 +1040,91 @@ helper and `git diff --check` passed; no dependencies, builds or application
 tests were needed for this cloud-configuration-only batch. The temporary
 execution helper was removed after verification; only non-secret evidence
 remains outside the repository.
+
+## Approved cleanup credentials and manual acceptance (2026-09-08 local)
+
+The owner confirmed receipt of both intentional alert emails and approved a
+disposable website account/score for the before/after retry check. This closes
+the preceding delivery gate, including the native-policy incident. The live
+manual run completed at `2026-09-09T00:01:24.986939Z`; read-only closeout completed
+at `00:03:00.282Z`. Hourly scheduling was not activated.
+
+- `receipt_cleanup@cloudsqlproxy~%` was created through SQL, avoiding automatic
+  Cloud SQL administrator roles. A separate connection verified the production
+  schema name/server UUID/account and exact `SELECT(user_id, game_run_id,
+  submitted_at)` plus `DELETE` on `cms.game_submission_receipts`. Assigned,
+  default, active and mandatory roles were empty. All original SQL accounts'
+  grants retained their baseline hashes. No existing account gained DELETE.
+- The randomly generated password went directly to
+  `mickeyf-receipt-cleanup-db-password`, numeric version **1**; no password,
+  session cookie or run ticket was written to evidence or command arguments.
+  `mickeyf-receipt-cleanup` has Cloud SQL Client at project scope and Secret
+  Accessor only on that secret, no user-managed key and no public job binding.
+  The temporary provisioning account was physically disconnected and removed;
+  its absence and unchanged unrelated project IAM were independently verified.
+- The structural preflight found no incoming receipt foreign key or receipt/
+  personal-best trigger; personal bests have no source-receipt dependency and
+  receipts have the expiry-leading index. Backup/PITR configuration was enabled.
+  No schema change was needed. The full pinned-image/secret/socket configuration
+  was staged disabled before the manual-only enablement.
+- First attempt `mickeyf-submission-receipt-cleanup-8ppht` was safety-canceled:
+  the v2 execution response omitted the Cloud SQL volumes/mounts present on its
+  verified Job. The same execution's v1 UID, owner, job generation and exact
+  `run.googleapis.com/cloudsql-instances` annotation proved the attachment.
+  Only that observed representation difference was normalized; all other
+  template fields still had to match. Twelve offline guard tests passed,
+  including rejection of wrong attachments, identities, images and secrets.
+  Fresh SQL hashes proved the canceled attempt left all seven existing bests
+  and five receipts unchanged; its disposable fixture was removed.
+- The controlled retry, `mickeyf-submission-receipt-cleanup-k2skb` (UID
+  `c46be742-d5a1-41e3-bf3a-4c8ffdd98466`), succeeded with one task and no failed,
+  canceled or retried task. Its component summary reported **5 deleted receipts**,
+  two batches and `backlog=false`. The SQL comparison independently found all
+  five expired receipts removed, the young test receipt unchanged and all eight
+  then-present bests unchanged (seven existing plus the disposable best).
+- Real signed-cookie login, server-issued ticket and authenticated submission
+  established the fixture. Exact HTTP retries returned the original result
+  both before and after cleanup. Teardown used exact ownership checks, the
+  shared user lock and a transaction to remove one test receipt, best and user.
+  The final inventory has seven bests, zero receipts and zero expired rows.
+  The bests' ordered snapshot hash is unchanged:
+  `169d9214df7f0e65f0702c930b7155d24655fcc931fe0d3abe6534ce9b0241e2`.
+  This helper's date-string serialization differs from earlier snapshot hashes;
+  comparisons use this batch's own identical before/after format.
+- After successful cleanup/replay, an auxiliary helper assertion mistakenly
+  compared the numeric receipt primary key with the client run UUID. Its
+  `finally` still disabled the job and removed the fixture. A separate read-only
+  closeout verified the exact successful execution, preservation/replay
+  evidence, absent test data, unchanged table DDL and final inventory. No extra
+  cleanup was dispatched. Separate post-replay timestamp immutability is not
+  claimed; the recent receipt was verified unchanged through cleanup.
+
+Security/activation disposition:
+
+- Verified: delivered failure alerts, exact restricted SQL/secret IAM, removed
+  provisioning/test accounts, successful bounded deletion, preserved bests and
+  young receipt, before/after authenticated replay and final SQL inventory.
+  Independent cloud closeout at `00:06:44Z` also observed a positive native
+  `result=succeeded` datapoint for this job in the `00:01–00:02Z` interval. This
+  is a job-level aggregate, not an exact per-execution count; the specific
+  execution's success is verified from its UID and terminal status separately.
+- Preserved: production service generation 132 and its full template hash,
+  both enabled score flags, intended/observed 100% traffic on the accepted
+  revision, schema, existing SQL grants and disabled backend build triggers.
+- Accepted: expired receipts were intentionally deleted; restoring them would
+  require a separately reviewed backup restore. Personal bests do not depend
+  on those receipts. This operations check adds no new browser/gameplay claim.
+- Deferred: no-success watchdog, scheduler identity and hourly scheduling.
+  The cleanup job is Ready but **disabled at generation 6**; Scheduler API
+  remains disabled. The native success signal is now verified; configure the
+  watchdog before hourly activation and observe the first scheduled execution
+  after approval.
+
+Evidence: `retry-manual-result.json`, preservation/config snapshots and review
+in `C:/Users/User/AppData/Local/Temp/mickeyf-cleanup-activation-20260908-c7d245e1/`.
+Temporary execution helpers are removed after verification; only non-secret
+operational evidence remains outside the repo. Validation used `node --check`,
+the 12 offline helper guard tests and the live operations checks above; no
+dependency install, application build, Unity build or unrelated test matrix
+was run. This is a scoped retention checkpoint, not final project security
+closeout.

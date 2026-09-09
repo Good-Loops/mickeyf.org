@@ -12,7 +12,7 @@ job is disabled and has intentionally invalid image/secret placeholders.
   API and this one-task job, with separate commands, credentials and identities.
 - The job uses only `RECEIPT_CLEANUP_*` credentials. It does not load `.env`, use
   `DB_*` fallback credentials, open a port, or enable score submissions.
-- Before querying receipts, it verifies the actual schema, server UUID,
+- Before querying receipts, it verifies the actual schema name, server UUID,
   `CURRENT_USER()`, no active/mandatory roles, and the exact self-grants:
   `SELECT(user_id, game_run_id, submitted_at)` plus `DELETE` on
   `cms.game_submission_receipts`. No table-level SELECT, score/payload reads,
@@ -46,6 +46,11 @@ the owner confirms delivery. Never enable this deliberately incomplete job.
 1. Obtain explicit approval for the production schema/data and IAM changes.
    Verify the receipt migration and the removed personal-best dependency first;
    record that all bests and their leaderboard ordering survived the cutover.
+   Inspect incoming receipt foreign keys and DELETE triggers with an approved
+   maintenance identity whose complete FK/trigger metadata visibility is
+   verified, not the DML-only operator or cleanup runtime. A schema-name check
+   is not a structural dependency audit; empty metadata without visibility is
+   not proof of absence. Stop for review if either can affect unrelated data.
    Keep the cleanup job disabled until the reviewed receipt-backed API is live.
 2. Create a dedicated proxy-only MySQL account `receipt_cleanup@cloudsqlproxy~%`
    **without automatic Cloud SQL administrator roles**. Apply only the output
@@ -74,7 +79,11 @@ the owner confirms delivery. Never enable this deliberately incomplete job.
 6. With explicit activation approval, set the rendered job's cleanup flag to
    `true`, replace the job, and execute it once manually. Verify completion,
    sanitized counts, remaining-expired probe, unchanged personal bests and
-   authenticated replay behavior. If backlog remains, investigate/catch up using
+   authenticated replay behavior. Correlate the exact execution UID and parent
+   job generation. If v2 omits Cloud SQL volumes/mounts, independently verify
+   that execution's v1 `run.googleapis.com/cloudsql-instances` annotation and
+   ownership; never waive an unexplained configuration difference. If backlog
+   remains, investigate/catch up using
    further bounded executions before enabling the schedule; do not increase
    limits automatically.
 7. Only after the manual result and alerts pass, create the Scheduler resource
@@ -121,6 +130,7 @@ creation or absence of notification-error logs.
 
 - [Schedule Cloud Run Jobs](https://docs.cloud.google.com/run/docs/execute/jobs-on-schedule)
 - [Cloud Run Job YAML schema](https://docs.cloud.google.com/run/docs/reference/yaml/v1)
+- [Execution-template Cloud SQL annotation](https://docs.cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec)
 - [Scheduler OAuth for Google API targets](https://docs.cloud.google.com/scheduler/docs/http-target-auth)
 
 No Cloud Run job, Scheduler resource, secret, service account or IAM binding has

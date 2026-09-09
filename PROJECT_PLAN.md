@@ -10,8 +10,9 @@ complete. The accepted receipt-compatible image now serves normal traffic with
 both score-submission flags true after the approved production promotion.
 Permanent `game_personal_bests` are
 independent of short-lived `game_submission_receipts`; Three Bosses retry and
-rate-limit receipts have a minimum 24-hour retention with an implemented hourly
-bounded cleanup job that is not yet activated. Historical paragraphs below describing the immutable `game_runs`
+rate-limit receipts have a minimum 24-hour retention. The bounded cleanup job
+passed its controlled production run; hourly scheduling is not yet activated.
+Historical paragraphs below describing the immutable `game_runs`
 ledger remain deployment history, not the new design. See
 [`backend/RECEIPT_RETENTION.md`](backend/RECEIPT_RETENTION.md) for the storage
 contract, guarded migration/recovery workflow and scoped security disposition.
@@ -54,21 +55,29 @@ automation is still paused, and the receipt-compatible frozen revision remains
 Ready for rollback. The temporary promotion helper was removed; only non-secret
 evidence remains outside the repository.
 
-Receipt-cleanup alert acceptance is in progress (2026-09-08). The owner selected
-an email recipient; an enabled notification channel, component ERROR/backlog
-policy and native execution-failure policy now exist. The dedicated job uses
-the reviewed image but remains
-`RECEIPT_CLEANUP_ENABLED=false`, with no database credentials, secret/socket
-mounts or direct project grants. Its first deliberate test execution failed
-with the expected sanitized configuration error before database access.
-The native failed-execution metric and log-policy incident are verified;
-the native-policy incident and owner-confirmed delivery are still being
-validated. The no-success watchdog remains unarmed until a real successful
-cleanup is observed. No cleanup SQL identity, secret or hourly schedule exists.
-Production score submissions remain enabled and unaffected.
+Receipt-cleanup manual acceptance completed (2026-09-08 local;
+`2026-09-09T00:03:00.282Z` closeout). The owner confirmed both alert emails.
+The dedicated proxy-only SQL account has exactly three-column SELECT plus
+DELETE on receipts, with no roles or access to personal bests. Its pinned secret
+is accessible to the cleanup identity, which has only Cloud SQL Client at the
+project level. The temporary provisioning account was removed; existing SQL
+accounts' grants are unchanged.
 
-Next: confirm alert delivery, then complete the separately gated cleanup
-credentials, manual validation and hourly activation. Do not repeat the
+Execution `mickeyf-submission-receipt-cleanup-k2skb` succeeded and deleted all
+five expired receipts, preserving the recent test receipt and all personal
+bests. Authenticated retries passed before and after deletion. The disposable
+account and its one best/receipt were then removed; the original seven bests
+retain their exact baseline hash, with zero remaining receipts/expired rows.
+An earlier safety-canceled attempt changed no existing data; it exposed a v2
+execution-response mount omission, verified through the same execution's v1
+Cloud SQL annotation before retrying. The post-run helper's unrelated row-key
+assertion was reconciled read-only, without another cleanup execution.
+The job is disabled again at generation 6. Production generation 132, traffic,
+score flags, schema and paused deployment automation are unchanged. No hourly
+schedule or scheduler identity exists; the no-success watchdog remains unarmed.
+
+Next: complete the no-success watchdog and separately approved hourly scheduling,
+then observe the first scheduled execution result. Do not repeat the
 completed migration, acceptance or score promotion; do not use a pre-receipt
 backend for rollback.
 
