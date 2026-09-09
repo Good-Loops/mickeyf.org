@@ -11,6 +11,7 @@
 import { AnimatedSprite, Container, ContainerChild } from 'pixi.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import { Entity } from '@/games/helpers/Entity';
+import { getP4MovementAxis } from '../p4Rules';
 
 /**
  * Controllable player entity for P4-Vega.
@@ -44,6 +45,9 @@ export class P4 extends Entity<AnimatedSprite> {
     isMovingUp = false;
     isMovingDown = false;
 
+    joystickX = 0;
+    joystickY = 0;
+
     /**
      * @param stage - Container that will own the sprite in the scene graph.
      * @param p4Anim - Player sprite owned and mutated by this entity.
@@ -64,34 +68,14 @@ export class P4 extends Entity<AnimatedSprite> {
      *
      * Side effects:
      * - Mutates `p4Anim.x/y` based on movement flags.
-     * - Applies a clamp-like correction to keep the sprite on-screen.
+     * - Combines keyboard and proportional joystick movement without normalizing diagonals.
+     * - Clamps the sprite on-screen, including fractional movement near an edge.
      */
     update(p4Anim: AnimatedSprite) {
-        if (this.isMovingRight) {
-            p4Anim.x += this.speed;
-        }
-        if (this.isMovingLeft) {
-            p4Anim.x -= this.speed;
-        }
-        if (this.isMovingUp) {
-            p4Anim.y -= this.speed;
-        }
-        if (this.isMovingDown) {
-            p4Anim.y += this.speed;
-        }
-
-        if (p4Anim.x + p4Anim.width > CANVAS_WIDTH) {
-            p4Anim.x -= this.speed;
-        }
-        if (p4Anim.x < 0) {
-            p4Anim.x += this.speed;
-        }
-        if (p4Anim.y + p4Anim.height > CANVAS_HEIGHT) {
-            p4Anim.y -= this.speed;
-        }
-        if (p4Anim.y < 0) {
-            p4Anim.y += this.speed;
-        }
+        const x = getP4MovementAxis(this.isMovingRight, this.isMovingLeft, this.joystickX);
+        const y = getP4MovementAxis(this.isMovingDown, this.isMovingUp, this.joystickY);
+        p4Anim.x = Math.max(0, Math.min(Math.max(0, CANVAS_WIDTH - p4Anim.width), p4Anim.x + x * this.speed));
+        p4Anim.y = Math.max(0, Math.min(Math.max(0, CANVAS_HEIGHT - p4Anim.height), p4Anim.y + y * this.speed));
     }
 
     /** Destroys the player sprite. Caller is responsible for removing it from the stage if needed. */

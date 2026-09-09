@@ -208,7 +208,7 @@ test('enabled score submission rejects an anonymous request before database work
     assert.equal(acquisitionCount, 0);
 });
 
-test('score submission still accepts the Bearer token fallback and authenticated identity', async () => {
+test('a completed 1000-point run accepts the Bearer fallback and improves the former 990-point maximum', async () => {
     const transactionEvents: string[] = [];
     const queryValues: Array<unknown[] | undefined> = [];
     const queryOptions: unknown[] = [];
@@ -225,7 +225,7 @@ test('score submission still accepts the Bearer token fallback and authenticated
                 return [[{ lockResult: 1 }], []];
             }
             if (sql.includes('SELECT') && sql.includes('users.user_id AS userId')) {
-                return [[{ userId: 42, score: 900 }], []];
+                return [[{ userId: 42, score: 990 }], []];
             }
             return [{ affectedRows: 2 }, []];
         },
@@ -255,7 +255,7 @@ test('score submission still accepts the Bearer token fallback and authenticated
     await controller(request({
         type: 'submit_score',
         user_name: 'player',
-        p4_score: 990,
+        p4_score: 1000,
     }, `Bearer ${token}`), response);
 
     assert.equal(state.status, 200);
@@ -272,7 +272,7 @@ test('score submission still accepts the Bearer token fallback and authenticated
     assert.deepEqual(queryValues, [
         [42, 5],
         ['p4-vega', 1, 42],
-        ['p4-vega', 1, 42, 990],
+        ['p4-vega', 1, 42, 1000],
         [42],
     ]);
     assert.equal(
@@ -280,6 +280,24 @@ test('score submission still accepts the Bearer token fallback and authenticated
             (options as { timeout?: number }).timeout === 10_000),
         true
     );
+});
+
+test('scores above the completion limit are rejected before database acquisition', async () => {
+    const database = {
+        async query() { assert.fail('invalid score must not query'); },
+        async getConnection() { assert.fail('invalid score must not acquire a connection'); },
+    } as unknown as Pick<Pool, 'getConnection' | 'query'>;
+    const controller = createTestController(database);
+    const token = jwt.sign({ user_id: 42, user_name: 'player' }, sessionSecret, {
+        algorithm: 'HS256', expiresIn: '5m',
+    });
+
+    for (const score of [1001, 1010]) {
+        const { response, state } = responseRecorder();
+        await controller(request({ type: 'submit_score', p4_score: score }, `Bearer ${token}`), response);
+        assert.equal(state.status, 400);
+        assert.deepEqual(state.body, { error: 'INVALID_SCORE' });
+    }
 });
 
 test('non-improving score preserves the exact legacy success response', async () => {

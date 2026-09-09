@@ -10,6 +10,9 @@ import FullscreenButton from "@/components/FullscreenButton";
 import ScoreSubmissionNotice from '@/components/ScoreSubmissionNotice';
 import Dropdown from '@/components/Dropdown';
 import P4VegaHelp from './P4VegaHelp';
+import P4VegaResults from './P4VegaResults';
+import type { P4RunResult } from '@/games/p4-Vega/p4RunResult';
+import { P4_WIN_SCORE } from '@/games/p4-Vega/p4Rules';
 
 type JoystickSide = 'left' | 'right';
 
@@ -32,6 +35,8 @@ const P4Vega: React.FC = () => {
     const previousStateRef = useRef<P4VegaState>('loading');
     const [gameState, setGameState] = useState<P4VegaState>('loading');
     const [gameError, setGameError] = useState(false);
+    const [score, setScore] = useState(0);
+    const [result, setResult] = useState<P4RunResult | null>(null);
     const { isAuthenticated, loading } = useAuth();
     const isAuthenticatedRef = useRef(isAuthenticated);
 
@@ -60,6 +65,8 @@ const P4Vega: React.FC = () => {
         const container = canvasWrapperRef.current;
         setGameState('loading');
         setGameError(false);
+        setScore(0);
+        setResult(null);
 
         (async () => {
             try {
@@ -68,6 +75,12 @@ const P4Vega: React.FC = () => {
                     signal: abortController.signal,
                     onStateChange: (state) => {
                         if (!abortController.signal.aborted) setGameState(state);
+                    },
+                    onScoreChange: (value) => {
+                        if (!abortController.signal.aborted) setScore(value);
+                    },
+                    onResultChange: (value) => {
+                        if (!abortController.signal.aborted) setResult(value);
                     },
                 });
                 if (abortController.signal.aborted) controller.dispose();
@@ -128,6 +141,9 @@ const P4Vega: React.FC = () => {
                 ref={canvasWrapperRef}
                 data-game-state={gameState}
             >
+                <div className="p4-vega__score" aria-label={`Score: ${score} of ${P4_WIN_SCORE}`}>
+                    <span>Score</span><strong>{score.toLocaleString()}</strong><span>/ {P4_WIN_SCORE.toLocaleString()}</span>
+                </div>
                 <FullscreenButton
                     targetRef={canvasWrapperRef}
                     className="p4-vega__fullscreen-btn"
@@ -169,6 +185,14 @@ const P4Vega: React.FC = () => {
                             </button>
                         </div>
                     </div>
+                )}
+                {result && (
+                    <P4VegaResults
+                        result={result}
+                        onRestart={() => { void controllerRef.current?.restart(); }}
+                        onRetrySubmission={() => { void controllerRef.current?.retrySubmission(); }}
+                        onHelp={openHelp}
+                    />
                 )}
                 {gameError && <p className="p4-vega__load-error" role="alert">The game could not load. Please refresh to try again.</p>}
                 <button

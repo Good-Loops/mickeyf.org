@@ -380,6 +380,13 @@ current presentation and ordering policy:
 | `p4-vega` | score, descending | not applicable | legacy operation, enabled |
 | `three-bosses` | completion time, ascending | S–D time bands | runtime-gated |
 
+The p4-Vega completion update accepts scores from 0 through 1000, inclusive,
+in increments of 10. The 100th water pickup completes the run without spawning
+another hazard; all previously valid 0–990 scores remain accepted. Deploy the
+updated backend policy before publishing the client that can submit 1000.
+This is score-range validation, not server-side gameplay verification, and
+requires no database schema or historical-score changes.
+
 Only a strict primary-metric improvement replaces a personal best. An equal
 result keeps the existing best and its original recorded timestamp. Equal
 leaderboard metrics are ordered by `recorded_at ASC`, then internal `user_id

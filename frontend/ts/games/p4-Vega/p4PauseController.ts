@@ -1,9 +1,11 @@
-export type P4VegaState = 'loading' | 'running' | 'paused' | 'game-over';
+export type P4VegaState = 'loading' | 'running' | 'paused' | 'game-over' | 'completed';
 
 export type P4VegaController = {
     dispose: () => void;
     pause: () => Promise<void>;
     resume: () => Promise<void>;
+    restart: () => Promise<void>;
+    retrySubmission: () => Promise<void>;
 };
 
 type Animation = {
@@ -91,7 +93,7 @@ export function createP4PauseController(dependencies: PauseDependencies) {
         get state(): P4VegaState { return state; },
         get disposed(): boolean { return disposed; },
         get canMove(): boolean { return !disposed && state === 'running'; },
-        get canRestart(): boolean { return !disposed && state === 'game-over' && restartReady; },
+        get canRestart(): boolean { return !disposed && (state === 'game-over' || state === 'completed') && restartReady; },
         pause,
         resume,
         completeLoad(): void {
@@ -99,20 +101,20 @@ export function createP4PauseController(dependencies: PauseDependencies) {
             setState('running');
             dependencies.ticker.start();
         },
-        endRun(): void {
+        endRun(completed = false): void {
             if (disposed || state !== 'running') return;
             transitionVersion += 1;
             restartReady = false;
             dependencies.ticker.stop();
             dependencies.clearInput();
             stopAnimations();
-            setState('game-over');
+            setState(completed ? 'completed' : 'game-over');
         },
         finishGameOver(): void {
-            if (!disposed && state === 'game-over') restartReady = true;
+            if (!disposed && (state === 'game-over' || state === 'completed')) restartReady = true;
         },
         beginRestart(): boolean {
-            if (disposed || state !== 'game-over' || !restartReady) return false;
+            if (disposed || (state !== 'game-over' && state !== 'completed') || !restartReady) return false;
             restartReady = false;
             transitionVersion += 1;
             dependencies.clearInput();

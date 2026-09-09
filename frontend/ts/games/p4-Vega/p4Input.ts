@@ -3,6 +3,8 @@ type Movement = {
     isMovingLeft: boolean;
     isMovingUp: boolean;
     isMovingDown: boolean;
+    joystickX: number;
+    joystickY: number;
 };
 
 type InputOptions = {
@@ -21,6 +23,8 @@ const directions = {
     ArrowDown: 'isMovingDown',
 } as const;
 
+const joystickDeadzone = .18;
+
 const closest = (target: EventTarget | null, selector: string): boolean => {
     const element = target as Element | null;
     return typeof element?.closest === 'function' && element.closest(selector) !== null;
@@ -31,6 +35,13 @@ export function bindP4Input(options: InputOptions) {
     const cleanups: Array<() => void> = [];
     const joystickResets: Array<() => void> = [];
 
+    const clearJoystick = (): void => {
+        const movement = options.movement();
+        if (!movement) return;
+        movement.joystickX = 0;
+        movement.joystickY = 0;
+    };
+
     const clearMovement = (): void => {
         const movement = options.movement();
         if (!movement) return;
@@ -38,6 +49,7 @@ export function bindP4Input(options: InputOptions) {
         movement.isMovingLeft = false;
         movement.isMovingUp = false;
         movement.isMovingDown = false;
+        clearJoystick();
     };
 
     const keydown = (event: KeyboardEvent): void => {
@@ -78,7 +90,7 @@ export function bindP4Input(options: InputOptions) {
         const reset = (): void => {
             const capturedPointer = pointerId;
             pointerId = null;
-            clearMovement();
+            clearJoystick();
             thumb.style.transform = 'translate(0, 0)';
             if (capturedPointer !== null && joystick.hasPointerCapture(capturedPointer)) {
                 joystick.releasePointerCapture(capturedPointer);
@@ -99,12 +111,13 @@ export function bindP4Input(options: InputOptions) {
             const scale = distance > radius ? radius / distance : 1;
             const x = offsetX * scale;
             const y = offsetY * scale;
-            const threshold = radius * .22;
             thumb.style.transform = `translate(${x}px, ${y}px)`;
-            movement.isMovingLeft = x < -threshold;
-            movement.isMovingRight = x > threshold;
-            movement.isMovingUp = y < -threshold;
-            movement.isMovingDown = y > threshold;
+            const tilt = Math.min(distance / radius, 1);
+            const strength = Math.max(0, (tilt - joystickDeadzone) / (1 - joystickDeadzone));
+            // Keep the circular thumb while preserving the game's faster diagonal movement.
+            const largestAxis = Math.max(Math.abs(x), Math.abs(y));
+            movement.joystickX = largestAxis > 0 ? x / largestAxis * strength : 0;
+            movement.joystickY = largestAxis > 0 ? y / largestAxis * strength : 0;
         };
 
         const start = (event: PointerEvent): void => {

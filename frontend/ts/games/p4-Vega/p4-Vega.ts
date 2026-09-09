@@ -5,21 +5,22 @@
  * - Bootstraps the PIXI renderer + root stage container and attaches the canvas to the provided DOM container.
  * - Creates and owns the lifetime of major game entities (e.g. `Sky`, `P4`, `Water`, `BlackHole`) and their PIXI resources.
  * - Wires the per-frame loop (update orchestration + render) and controls start/stop ordering.
- * - Orchestrates game-over handling and reset flow, delegating end-state UI to shared helpers (e.g. `gameOver`).
+ * - Publishes score/results to the React page and owns restart and submission lifetimes.
  *
  * Ownership boundaries:
  * - Entities encapsulate their internal state and per-entity PIXI objects; this module owns their creation, update order,
  *   and teardown/recreation during restart.
- * - Shared helpers (e.g. `../utils/gameOver`) encapsulate specific end-state behavior (texts/UI composition), while this
- *   module decides when to invoke them and owns adding/removing the returned display objects.
+ * - The fixed 60Hz simulation preserves the original movement speeds independently of rendering frequency.
  */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import { enableCanvasPageGestures } from '@/utils/canvasPageGestures';
 import { getRandomInt } from '@/utils/random';
-import { gameOver } from './utils/gameOver';
 import { bindP4RestartTap } from './p4RestartTap';
 import { bindP4Input } from './p4Input';
-import { finishP4GameOver } from './p4GameOverFlow';
+import { createP4RunResults, type P4RunResult } from './p4RunResult';
+import { createP4SimulationClock } from './p4SimulationClock';
+import { P4_WIN_SCORE } from './p4Rules';
+import { PickupFeedback } from './classes/PickupFeedback';
 import { createP4PauseController, type P4VegaController, type P4VegaState } from './p4PauseController';
 
 export type { P4VegaController, P4VegaState } from './p4PauseController';
@@ -45,12 +46,10 @@ import bhYellowPngURL from '@/assets/sprites/p4Vega/bhYellow.png';
 
 import bgMusicURL from '@/assets/audio/bg-sound-p4.mp3';
 
-import Swal from 'sweetalert2';
 import { Context, Player } from 'tone';
 import { 
     autoDetectRenderer, 
     Container, 
-    ContainerChild, 
     Assets, 
     AnimatedSprite, 
     Spritesheet,
@@ -60,6 +59,8 @@ import {
 export type P4VegaOptions = {
     isAuthenticated?: () => boolean;
     onStateChange?: (state: P4VegaState) => void;
+    onScoreChange?: (score: number) => void;
+    onResultChange?: (result: P4RunResult | null) => void;
     signal?: AbortSignal;
 };
 
@@ -90,6 +91,7 @@ export async function p4Vega(
 
     const stage = new Container();
     const ticker = new Ticker();
+    const simulation = createP4SimulationClock();
     const lifetime = new AbortController();
     const audioContext = new Context();
     const rawAudioContext = audioContext.rawContext as AudioContext;
@@ -103,6 +105,7 @@ export async function p4Vega(
     let spritesheets: Spritesheet[] = [];
     let input: ReturnType<typeof bindP4Input> | undefined;
     let musicPlaying = false;
+    let pickupFeedback: PickupFeedback | undefined;
 
     const session = createP4PauseController({
         ticker,
@@ -117,7 +120,10 @@ export async function p4Vega(
             resume: () => audioContext.resume(),
             setMuted: (muted) => { audioContext.destination.mute = muted; },
         },
-        onStateChange: options.onStateChange,
+        onStateChange: (state) => {
+            simulation.reset();
+            options.onStateChange?.(state);
+        },
         onAudioError: (error) => console.warn('P4-Vega audio pause/resume failed; the game remains paused.', error),
     });
 
@@ -142,7 +148,7 @@ export async function p4Vega(
 
     const updateAudioPreference = (): void => {
         synchronizeBackgroundMusic();
-        if ((session.state === 'running' || session.state === 'game-over')
+        if ((session.state === 'running' || session.state === 'game-over' || session.state === 'completed')
             && (bgMusicCheckbox?.checked || notesPlayingCheckbox?.checked)) {
             void audioContext.resume().catch((error: unknown) => {
                 if (!session.disposed) console.warn('P4-Vega audio could not start.', error);
@@ -159,6 +165,7 @@ export async function p4Vega(
         p4 = undefined;
         water = undefined;
         sky = undefined;
+        pickupFeedback = undefined;
         stage.removeChildren().forEach((child) => child.destroy({ children: true }));
         spritesheets.forEach((sheet) => sheet.destroy(false));
         spritesheets = [];
@@ -169,6 +176,7 @@ export async function p4Vega(
     };
 
     const load = async (): Promise<void> => {
+        options.onScoreChange?.(0);
         const [p4Base, waterBase, bhBlueBase, bhRedBase, bhYellowBase] = await Promise.all([
             Assets.load(p4PngURL),
             Assets.load(waterPngURL),
@@ -204,78 +212,65 @@ export async function p4Vega(
         for (let index = 0; index < 100; index++) {
             BlackHole.bHAnimArray.push(new AnimatedSprite(blackHoleFrames[getRandomInt(0, 2)]));
         }
-        if (!BlackHole.spawn(stage, p4Anim)) throw new Error('Black hole animation pool is empty');
         p4 = new P4(stage, p4Anim);
+        if (!BlackHole.spawn(stage, p4Anim)) throw new Error('Black hole animation pool is empty');
         water = new Water(stage, waterAnim, audioContext);
+        pickupFeedback = new PickupFeedback(stage);
         synchronizeBackgroundMusic();
         session.completeLoad();
     };
 
-    const submitScore = async (score: number, endedPlayer: P4): Promise<void> => {
+    const submitScore = async (score: number, signal: AbortSignal): Promise<{ personalBest: boolean }> => {
         const response = await fetch(API_BASE + '/api/users', {
             method: 'POST',
             credentials: 'include',
-            signal: lifetime.signal,
+            signal,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: 'submit_score', p4_score: score }),
         });
         if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
         const data = await response.json();
-        if (session.disposed || p4 !== endedPlayer) return;
-        if (data.error) console.error(data.error);
-        if (data.personalBest) {
-            void Swal.fire({
-                title: 'Congratulations!',
-                text: 'You have broken a new personal record, check the leaderboard to see where you stand!',
-                icon: 'success',
-            });
-        }
+        if (data?.success !== true || typeof data.personalBest !== 'boolean') throw new Error('Invalid score submission response');
+        return { personalBest: data.personalBest };
     };
 
-    const finishRun = async (endedPlayer: P4): Promise<void> => {
-        session.endRun();
+    const results = createP4RunResults({
+        submit: submitScore,
+        onChange: (result) => { if (!session.disposed) options.onResultChange?.(result); },
+    });
+
+    const finishRun = (endedPlayer: P4, completed = false): void => {
+        session.endRun(completed);
         renderer.render(stage);
-        const endedScore = endedPlayer.totalWater;
-        await finishP4GameOver({
-            submitScore: options.isAuthenticated?.()
-                ? () => submitScore(endedScore, endedPlayer)
-                : undefined,
-            showOverlay: async () => {
-                if (session.disposed) return;
-                const texts: ContainerChild[] = await gameOver(false, endedPlayer, lifetime.signal);
-                if (session.disposed) {
-                    texts.forEach((text) => text.destroy());
-                    return;
-                }
-                texts.forEach((text) => stage.addChild(text));
-                renderer.render(stage);
-            },
-            onReady: () => session.finishGameOver(),
-            onScoreError: (error) => {
-                if (!lifetime.signal.aborted) console.error('Fetch error:', error);
-            },
-            onDisplayError: (error) => {
-                if (!session.disposed) console.error('P4-Vega game-over display failed.', error);
-            },
-        });
+        void results.finish(completed ? 'completed' : 'defeat', endedPlayer.totalWater, options.isAuthenticated?.() ?? false);
+        session.finishGameOver();
     };
 
-    const update = (): void => {
-        if (!session.canMove || !sky || !p4 || !water) return;
+    const step = (): boolean => {
+        if (!session.canMove || !sky || !p4 || !water) return false;
         sky.update();
         p4.update(p4.p4Anim);
-        water.update(water.waterAnim, p4, notesPlayingCheckbox?.checked ?? false, stage);
+        pickupFeedback?.update();
+        const pickupX = water.waterAnim.x + water.waterAnim.width / 2;
+        const pickupY = water.waterAnim.y + water.waterAnim.height / 2;
+        if (water.update(water.waterAnim, p4, notesPlayingCheckbox?.checked ?? false, stage)) {
+            options.onScoreChange?.(p4.totalWater);
+            pickupFeedback?.show(pickupX, pickupY);
+            if (p4.totalWater >= P4_WIN_SCORE) { finishRun(p4, true); return false; }
+        }
         let gameLive = true;
         BlackHole.bHArray.forEach((blackHole) => { gameLive = blackHole.update(p4!, gameLive); });
-        if (!gameLive) void finishRun(p4);
+        if (!gameLive) finishRun(p4);
+        return gameLive;
     };
-    ticker.add(update);
+    ticker.add((frame) => simulation.advance(frame.elapsedMS, step));
     ticker.add(() => {
         if (!session.disposed) renderer.render(stage);
     });
 
     const restart = async (): Promise<void> => {
         if (!session.beginRestart()) return;
+        results.reset();
         destroyRun();
         p4MusicPlayer.stop();
         musicPlaying = false;
@@ -299,6 +294,7 @@ export async function p4Vega(
     const dispose = (): void => {
         if (session.disposed) return;
         session.dispose();
+        results.dispose();
         lifetime.abort();
         options.signal?.removeEventListener('abort', dispose);
         ticker.destroy();
@@ -322,5 +318,5 @@ export async function p4Vega(
         dispose();
         throw error;
     }
-    return { dispose, pause: session.pause, resume: session.resume };
+    return { dispose, pause: session.pause, resume: session.resume, restart, retrySubmission: results.retry };
 }

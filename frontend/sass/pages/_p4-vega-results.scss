@@ -1,0 +1,120 @@
+@use '../abstracts' as *;
+
+.p4-vega {
+    &__results-overlay {
+        position: absolute;
+        z-index: $front-9 + 1;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+        padding: .7rem 3.8rem;
+        background: rgba($space-background, .28);
+        pointer-events: none;
+        // Preserve page gestures away from buttons, even after a run has ended.
+        touch-action: pan-y pinch-zoom;
+    }
+
+    &__results-card {
+        pointer-events: auto;
+        display: flex;
+        flex-direction: column;
+        width: min(100%, 34rem);
+        min-width: 0;
+        max-height: 100%;
+        overflow: hidden;
+        border: .1rem solid rgba($white, .28);
+        border-radius: 1.2rem;
+        background:
+            linear-gradient(135deg, rgba($white, .14), rgba($primary, .13)),
+            rgba($space-background, .76);
+        box-shadow: inset 0 .1rem 0 rgba($white, .2), 0 .8rem 2.8rem rgba(black, .28);
+        backdrop-filter: blur(1.5rem) saturate(1.2);
+        color: rgba($white, .92);
+        text-align: center;
+
+        &[data-outcome='completed'] { border-color: rgba($primary-light, .5); }
+
+        h2 {
+            margin: 0;
+            font-size: clamp(1.8rem, 2.8vw, 2.6rem);
+            line-height: 1.1;
+        }
+    }
+
+    &__results-body {
+        display: flex;
+        flex: 0 1 auto;
+        flex-direction: column;
+        align-items: center;
+        gap: .5rem;
+        min-height: 0;
+        overflow-y: auto;
+        padding: clamp(.7rem, 1.3vw, 1.5rem);
+        scrollbar-width: thin;
+
+        > * { flex-shrink: 0; }
+    }
+
+    &__results-score {
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: .45rem;
+        margin: 0;
+        color: rgba($white, .68);
+        font-size: 1.1rem;
+        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
+
+        strong { color: $white; font-size: clamp(2.1rem, 3vw, 3rem); }
+    }
+
+    &__results-best {
+        padding: .2rem .7rem;
+        border: .1rem solid rgba($primary-light, .3);
+        border-radius: 1rem;
+        background: rgba($primary, .12);
+        color: $primary-light;
+        font-size: .95rem;
+        line-height: 1.2;
+    }
+
+    &__results-status {
+        max-width: 100%;
+        margin: 0;
+        color: rgba($white, .75);
+        font-size: 1.05rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+
+        &[data-submission='failed'] { color: #ffcfb8; }
+    }
+
+    &__results-actions {
+        display: flex;
+        flex: 0 0 auto;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: .6rem;
+        padding: .2rem .7rem .7rem;
+
+        // Keep actions visible while long status text scrolls in a short canvas.
+        .p4-vega__resume-btn,
+        .p4-vega__help-btn {
+            min-height: 3.2rem;
+            margin: 0;
+            padding: .4rem .85rem;
+            font-size: 1.05rem;
+            white-space: nowrap;
+        }
+    }
+
+    &__results-retry.p4-vega__help-btn {
+        min-height: 2.8rem;
+        padding: .3rem .8rem;
+        font-size: 1.05rem;
+    }
+}

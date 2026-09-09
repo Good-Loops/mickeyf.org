@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createP4PauseController } from './p4PauseController.ts';
-import { finishP4GameOver } from './p4GameOverFlow.ts';
 
 const deferred = () => {
     let resolve;
@@ -87,46 +86,21 @@ test('loading and unfinished game-over reject pause, resume and restart', async 
     assert.equal(f.controller.state, 'running');
 });
 
-test('an unresolved score request does not prevent the game-over screen or a new run', async () => {
+test('completion stops gameplay and can restart without allowing pause/resume to revive the won run', async () => {
     const f = fixture();
-    const request = deferred();
-    let submissionFinished = false;
-    let overlayShown = false;
     f.controller.completeLoad();
-    f.controller.endRun();
-    await finishP4GameOver({
-        submitScore: async () => { await request.promise; submissionFinished = true; },
-        showOverlay: async () => { overlayShown = true; },
-        onReady: () => f.controller.finishGameOver(),
-        onScoreError: assert.fail,
-        onDisplayError: assert.fail,
-    });
-    assert.equal(overlayShown, true);
-    assert.equal(submissionFinished, false);
+    f.controller.endRun(true);
+    f.controller.finishGameOver();
+    assert.equal(f.controller.state, 'completed');
+    assert.equal(f.ticker.running, false);
+    assert.equal(f.controller.canMove, false);
+    await f.controller.pause();
+    await f.controller.resume();
+    assert.equal(f.controller.state, 'completed');
+    assert.equal(f.controller.canRestart, true);
     assert.equal(f.controller.beginRestart(), true);
     f.controller.completeLoad();
     assert.equal(f.controller.state, 'running');
-    request.resolve();
-    await request.promise;
-    assert.equal(submissionFinished, true);
-});
-
-test('a late failed score request reports the error without blocking the finished overlay', async () => {
-    const request = deferred();
-    const errors = [];
-    let ready = false;
-    await finishP4GameOver({
-        submitScore: () => request.promise,
-        showOverlay: async () => {},
-        onReady: () => { ready = true; },
-        onScoreError: (error) => errors.push(error),
-        onDisplayError: assert.fail,
-    });
-    assert.equal(ready, true);
-    const error = new Error('score request failed');
-    request.reject(error);
-    await request.promise.catch(() => {});
-    assert.deepEqual(errors, [error]);
 });
 
 test('duplicate pause and resume calls do not duplicate ticker starts', async () => {

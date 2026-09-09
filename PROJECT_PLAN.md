@@ -2117,8 +2117,44 @@ keeps its close button visible while content scrolls on short screens. Chrome
 verified portrait/landscape fit, touch/keyboard closing, focus return and native/
 fallback fullscreen. TypeScript, 21 focused tests and the production build passed
 (existing large-chunk warning only). Score rules are unchanged.
-Next slice: prioritize one concrete game-feel or feedback upgrade;
-physical-device acceptance remains deferred until the pre-release check.
+
+Game-feel/results batch (2026-09-09, development branch only): implemented the
+owner-approved upgrades together. A bounded fixed 60Hz simulation preserves the
+original 60Hz movement feel on different refresh rates, explicitly retaining
+faster diagonals. The analog joystick supports proportional speed and keyboard
+priority per axis. A live score display and reusable +10/ripple effect make
+pickups visible. Centered 80% hitboxes and a 0.6-second non-lethal spawn pulse
+are the trial collision/readability change, pending the owner's gameplay judgment.
+Spawn selection now has a bounded fallback rather than an unbounded retry loop.
+
+The 100th pickup awards the final ten points and completes the run at **1000**,
+without requesting a 101st hazard. A responsive glass results card handles
+defeat/victory, restart, guide access, signed-out messaging, personal bests and
+submission failure/retry. Restart does not wait for networking; aborted or late
+old-run responses cannot replace current UI. Catch-up pickup notes use strictly
+increasing audio times, and optional sound errors cannot stop the simulation.
+The guide reflects these rules. Removed the replaced canvas game-over helpers,
+unused old collision helper and their now-unused webfontloader dependencies.
+
+Validation: frontend TypeScript and all 164 tests passed; the Vite production
+build passed with the existing large-chunk warning. Backend TypeScript and 31
+focused policy/auth/controller/repository tests passed. Isolated Chromium checked
+320/390px portrait results, desktop and landscape native fullscreen, a controlled
+100-pickup victory, the warning-to-collision transition, analog partial/full tilt,
+restart/pause and mocked submission failure/retry/pending-request restart. No real
+scores, accounts or database rows were written. Generated API docs were refreshed
+by the existing watcher. Physical phone feel/acceptance remains deferred, not claimed.
+
+Validation commands for this batch:
+- In `frontend`: `npm test` and `npm run build`.
+- In `backend`: `npm test` and
+  `node --test -r ts-node/register ts/security/p4VegaScorePolicy.test.ts ts/security/scoreSubmissionAuthorization.test.ts ts/security/mainController.security.test.ts ts/leaderboards/p4VegaScoreRepository.test.ts`.
+- At the repository root: `git diff --check`.
+
+Release dependency: deploy the backend's compatible 0–1000 validation policy
+**before** the frontend that submits 1000. Previous scores, ten-point increments,
+personal-best storage, authorization and database schema remain unchanged. This
+batch does not deploy either service or change leaderboard history.
 
 Site-wide canvas scrolling (2026-09-09, implemented locally): the owner chose to retain
 inline Three Bosses gameplay, reserving gestures that start on its actual UI
@@ -2146,8 +2182,8 @@ existing guarded builder's injected transport; no package/version was changed.
 Resolve that CLI/Pipeline compatibility in a bounded tooling maintenance task.
 
 Begin this phase after the current Three Bosses polish milestone is stable.
-Preserve p4-Vega's existing score rules and keyboard behavior while improving
-the game incrementally:
+Preserve p4-Vega's ten-point pickups and faster diagonal keyboard movement while
+improving the game incrementally; the owner approved extending completion to 1000:
 
 - [x] Add a real pause button and a simple pause menu with explicit, testable pause
   state transitions (physical-device acceptance deferred).
@@ -2155,9 +2191,10 @@ the game incrementally:
   visitor can scroll the page even when the gesture begins over the canvas,
   while preserving deliberate interactions with actual game controls
   (physical-device acceptance deferred).
-- [ ] Audit and prioritize further upgrades to game feel, onboarding, controls,
-  visual and audio feedback, performance, responsive/fullscreen behavior, and
-  score/leaderboard UX rather than committing to speculative rewrites; and
+- [x] Prioritize and implement the approved game-feel, analog-input, feedback,
+  results/retry and 1000-point completion batch described above.
+- [ ] Before publishing that batch, deploy the backend's 1000-point acceptance
+  policy first; do not reset previous personal bests or change the database schema.
 - [ ] Verify keyboard behavior plus real Android and iOS touch, orientation,
   scrolling, and fullscreen behavior before release.
 

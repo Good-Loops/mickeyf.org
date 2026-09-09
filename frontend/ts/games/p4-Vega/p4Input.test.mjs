@@ -31,12 +31,15 @@ const fixture = () => {
     const joystick = {
         ...eventTarget(),
         querySelector: () => thumb,
-        getBoundingClientRect: () => ({ left: 0, top: 0, width: 100 }),
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 100, height: 100 }),
         setPointerCapture: (pointer) => captures.add(pointer),
         hasPointerCapture: (pointer) => captures.has(pointer),
         releasePointerCapture: (pointer) => captures.delete(pointer),
     };
-    const movement = { isMovingRight: false, isMovingLeft: false, isMovingUp: false, isMovingDown: false };
+    const movement = {
+        isMovingRight: false, isMovingLeft: false, isMovingUp: false, isMovingDown: false,
+        joystickX: 0, joystickY: 0,
+    };
     let running = true;
     let restartReady = false;
     let restarts = 0;
@@ -101,20 +104,22 @@ test('editable fields retain arrows and Space; focused game buttons retain movem
 test('pause releases joystick capture, centers its thumb and ignores the old pointer after resume', () => {
     const f = fixture();
     f.joystick.emit('pointerdown');
-    assert.equal(f.movement.isMovingRight, true);
+    assert.equal(f.movement.joystickX, 1);
     assert.equal(f.captures.has(1), true);
     f.setRunning(false);
     f.input.clear();
     assert.equal(f.captures.size, 0);
     assert.equal(f.thumb.style.transform, 'translate(0, 0)');
     assert.equal(f.movement.isMovingRight, false);
+    assert.equal(f.movement.joystickX, 0);
+    assert.equal(f.movement.joystickY, 0);
     f.joystick.emit('pointerdown', { pointerId: 2 });
     assert.equal(f.captures.size, 0);
     f.setRunning(true);
     f.joystick.emit('pointermove');
-    assert.equal(f.movement.isMovingRight, false);
+    assert.equal(f.movement.joystickX, 0);
     f.joystick.emit('pointerdown', { pointerId: 3 });
-    assert.equal(f.movement.isMovingRight, true);
+    assert.equal(f.movement.joystickX, 1);
 });
 
 test('pointer cancellation and disposal remove input ownership', () => {
@@ -122,10 +127,73 @@ test('pointer cancellation and disposal remove input ownership', () => {
     f.joystick.emit('pointerdown');
     f.joystick.emit('pointercancel');
     assert.equal(f.movement.isMovingRight, false);
+    assert.equal(f.movement.joystickX, 0);
+    assert.equal(f.movement.joystickY, 0);
     assert.equal(f.captures.size, 0);
     f.joystick.emit('pointerdown', { pointerId: 2 });
     f.input.dispose();
     assert.equal(f.captures.size, 0);
     assert.equal(f.keyboard.listeners.size, 0);
     assert.equal(f.joystick.listeners.size, 0);
+    assert.equal(f.movement.joystickX, 0);
+    assert.equal(f.movement.joystickY, 0);
+});
+
+test('joystick uses a radial deadzone and proportional speed up to full tilt', () => {
+    const f = fixture();
+    f.joystick.emit('pointerdown', { clientX: 50, clientY: 50 });
+    assert.equal(f.movement.joystickX, 0);
+    assert.equal(f.movement.joystickY, 0);
+    f.joystick.emit('pointermove', { clientX: 55, clientY: 50 });
+    assert.equal(f.movement.joystickX, 0);
+    f.joystick.emit('pointermove', { clientX: 66, clientY: 50 });
+    assert.ok(Math.abs(f.movement.joystickX - (.5 - .18) / .82) < 1e-12);
+    assert.equal(f.movement.joystickY, 0);
+    f.joystick.emit('pointermove', { clientX: 82, clientY: 50 });
+    assert.equal(f.movement.joystickX, 1);
+    f.joystick.emit('pointermove', { clientX: 150, clientY: 50 });
+    assert.equal(f.movement.joystickX, 1);
+    assert.equal(f.thumb.style.transform, 'translate(32px, 0px)');
+});
+
+test('full diagonal tilt keeps both axes at full speed while the thumb stays circular', () => {
+    const f = fixture();
+    f.joystick.emit('pointerdown', { clientX: 100, clientY: 100 });
+    assert.equal(f.movement.joystickX, 1);
+    assert.equal(f.movement.joystickY, 1);
+    const offsets = f.thumb.style.transform.match(/translate\(([^p]+)px, ([^p]+)px\)/);
+    assert.ok(Math.abs(Math.hypot(Number(offsets[1]), Number(offsets[2])) - 32) < 1e-12);
+    f.joystick.emit('pointermove', { clientX: 0, clientY: 0 });
+    assert.equal(f.movement.joystickX, -1);
+    assert.equal(f.movement.joystickY, -1);
+});
+
+test('joystick release does not clear a held keyboard arrow, and keyup does not clear the stick', () => {
+    const f = fixture();
+    f.keyboard.emit('keydown', { code: 'ArrowLeft' });
+    f.joystick.emit('pointerdown');
+    assert.equal(f.movement.isMovingLeft, true);
+    assert.equal(f.movement.isMovingRight, false);
+    assert.equal(f.movement.joystickX, 1);
+    f.joystick.emit('pointerup');
+    assert.equal(f.movement.isMovingLeft, true);
+    assert.equal(f.movement.joystickX, 0);
+    f.joystick.emit('pointerdown', { pointerId: 2 });
+    f.keyboard.emit('keyup', { code: 'ArrowLeft' });
+    assert.equal(f.movement.isMovingLeft, false);
+    assert.equal(f.movement.joystickX, 1);
+    f.keyboard.emit('keydown', { code: 'ArrowUp' });
+    f.input.clear();
+    assert.equal(f.movement.isMovingUp, false);
+    assert.equal(f.movement.joystickX, 0);
+});
+
+test('losing pointer capture clears the analog input and centers the thumb', () => {
+    const f = fixture();
+    f.joystick.emit('pointerdown');
+    f.joystick.emit('lostpointercapture');
+    assert.equal(f.movement.joystickX, 0);
+    assert.equal(f.movement.joystickY, 0);
+    assert.equal(f.thumb.style.transform, 'translate(0, 0)');
+    assert.equal(f.captures.size, 0);
 });

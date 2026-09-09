@@ -13,10 +13,8 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import {
     getRandomBoolean,
     getRandomInt,
-    getRandomX,
-    getRandomY,
 } from '@/utils/random';
-import { isColliding } from '@/utils/isColliding';
+import { areP4BoundsColliding, chooseP4HazardSpawn, P4_SPAWN_WARNING_STEPS } from '../p4Rules';
 
 import { Entity } from '@/games/helpers/Entity';
 
@@ -24,7 +22,6 @@ import { P4 } from './P4';
 
 import { Container, ContainerChild, AnimatedSprite } from 'pixi.js';
 
-const MIN_DISTANCE = 250;
 const VELOCITY_MIN = 1.5;
 const VELOCITY_MAX = 4.5;
 
@@ -36,12 +33,13 @@ const VELOCITY_MAX = 4.5;
  * - Velocity components (`vX`, `vY`) are in pixels per update call.
  *
  * Invariants:
- * - Placement attempts to keep the black hole at least `MIN_DISTANCE` pixels away from the player's sprite.
+ * - Placement keeps a gap from the player; a short non-lethal pulse announces each spawn.
  * - Movement is axis-aligned in the current implementation (only one of `vX`/`vY` is non-zero).
  */
 export class BlackHole extends Entity<AnimatedSprite> {
     private vX = 0;
     private vY = 0;
+    private warningSteps = P4_SPAWN_WARNING_STEPS;
 
     private static addedIndexes: number[] = [];
 
@@ -55,21 +53,13 @@ export class BlackHole extends Entity<AnimatedSprite> {
     ) {
         super(blackHoleAnim);
 
-        this.anim.y = getRandomY(this.anim.height);
-        this.anim.x = getRandomX(this.anim.width);
-
         this.determineDirection();
-
         this.setPosition(p4Anim);
+        this.anim.alpha = .25;
 
         stage.addChild(this.anim);
 
         BlackHole.bHArray.push(this);
-    }
-
-    /** Returns whether an unused animation remains in the shared spawn pool. */
-    static hasSpawnCapacity(): boolean {
-        return BlackHole.addedIndexes.length < BlackHole.bHAnimArray.length;
     }
 
     /**
@@ -108,20 +98,15 @@ export class BlackHole extends Entity<AnimatedSprite> {
     }
 
     /**
-     * Chooses a random position and retries until the black hole is sufficiently far from the player.
-     *
-     * Note: this is a recursive retry; callers rely on the canvas being large enough for `MIN_DISTANCE`.
+     * Chooses a random position away from the player, with a bounded safest-corner fallback.
      */
     private setPosition(p4Anim: AnimatedSprite) {
-        this.anim.x = getRandomX(this.anim.width);
-        this.anim.y = getRandomY(this.anim.height);
-
-        if (
-            Math.abs(this.anim.x - p4Anim.x) < MIN_DISTANCE &&
-            Math.abs(this.anim.y - p4Anim.y) < MIN_DISTANCE
-        ) {
-            this.setPosition(p4Anim);
-        }
+        const position = chooseP4HazardSpawn(
+            { width: CANVAS_WIDTH, height: CANVAS_HEIGHT },
+            this.anim,
+            p4Anim.getBounds(),
+        );
+        this.anim.position.set(position.x, position.y);
     }
 
     /**
@@ -134,7 +119,14 @@ export class BlackHole extends Entity<AnimatedSprite> {
      * @returns The updated `gameLive` flag.
      */
     update(p4: P4, gameLive: boolean): boolean {
-        if (isColliding(p4.p4Anim, this.anim)) {
+        if (this.warningSteps > 0) {
+            this.warningSteps--;
+            const elapsed = 1 - this.warningSteps / P4_SPAWN_WARNING_STEPS;
+            this.anim.alpha = this.warningSteps === 0 ? 1 : .25 + .55 * Math.sin(elapsed * Math.PI * 3) ** 2;
+            return gameLive;
+        }
+
+        if (areP4BoundsColliding(p4.p4Anim.getBounds(), this.anim.getBounds())) {
             gameLive = false;
         }
 

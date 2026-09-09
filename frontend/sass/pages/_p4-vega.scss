@@ -59,6 +59,26 @@
         height: 3.8rem;
     }
 
+    &__score {
+        position: absolute;
+        z-index: 1;
+        top: max(.85rem, env(safe-area-inset-top));
+        left: max(.85rem, env(safe-area-inset-left));
+        display: flex;
+        align-items: baseline;
+        gap: .55rem;
+        padding: .5rem .85rem;
+        border: .1rem solid rgba($white, .16);
+        border-radius: .7rem;
+        background: rgba($space-background, .48);
+        backdrop-filter: blur(.8rem);
+        color: rgba($white, .75);
+        font-size: 1rem;
+        pointer-events: none;
+
+        strong { color: $white; font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+    }
+
     &__pause-overlay {
         position: absolute;
         z-index: $front-9 + 1;

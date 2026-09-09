@@ -31,15 +31,15 @@ export default function P4VegaHelp({ dialogRef }: P4VegaHelpProps) {
                 <dl>
                     <div>
                         <dt>The goal</dt>
-                        <dd>Collect water for 10 points per pickup. Each adds a moving black hole; touching one ends your run.</dd>
+                        <dd>Collect water for 10 points per pickup. Reach 1,000 to complete the run! Until then, each pickup adds a black hole. New holes pulse briefly before becoming dangerous.</dd>
                     </div>
                     <div>
                         <dt>Movement</dt>
-                        <dd>Use the <kbd>↑ ↓ ← →</kbd> arrow keys, or drag the touch joystick.</dd>
+                        <dd>Use the <kbd>↑ ↓ ← →</kbd> arrow keys, or drag the touch joystick: a small drag moves slowly, a full drag moves at full speed. Avoid the black holes.</dd>
                     </div>
                     <div>
                         <dt>Pause &amp; restart</dt>
-                        <dd>Use the pause icon, then Resume. After Game Over, press <kbd>Space</kbd> or tap/click the game to retry.</dd>
+                        <dd>Use the pause icon, then Resume. After a run, choose Try again or Play again, press <kbd>Space</kbd>, or tap the canvas outside the results card.</dd>
                     </div>
                     <div>
                         <dt>Make it musical</dt>
@@ -51,7 +51,7 @@ export default function P4VegaHelp({ dialogRef }: P4VegaHelpProps) {
                     </div>
                     <div>
                         <dt>Your best score</dt>
-                        <dd>Log in or sign up before playing. Scores submit at Game Over; the leaderboard keeps your personal best.</dd>
+                        <dd>Log in or sign up before playing. Scores submit when a run ends; the leaderboard keeps your personal best. If saving fails, use Retry score before starting another run.</dd>
                     </div>
                 </dl>
                 <p className="p4-vega__help-note">An active run stays paused after closing this guide. Choose Resume to continue.</p>
