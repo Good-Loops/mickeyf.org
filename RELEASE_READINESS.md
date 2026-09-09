@@ -24,7 +24,7 @@ replace the outstanding real-device, browser-cookie and merge/release gates.
 | S5 | Blocked; limited verification | Complete fresh readback of three alert policies is still unavailable. Prior activation snapshots establish their configuration; only missing-success basic UI fields were refreshed during the natural-tick check. Browser retry still fails before navigation with a missing kernel-assets path. No alert failure or schedule failure is inferred. |
 | S6 | Fixed in branch; not merged | At the initial reconciliation, 13 of 14 open default-branch dependency alerts mapped to fixes already in branch locks: eight `fast-uri` alerts (3.1.7), two `qs` alerts (6.16.0), three `xmldom` alerts (0.8.15 / 0.9.12). This alert-to-lock comparison is distinct from the subsequent CI audit findings in S12. |
 | S7 | Accepted; bounded and expiring | Deployment-only `stream-json` 1.9.1, GHSA-528h-pc64-c93x, remains under the owner's static-Hosting-only exception through 2026-10-07 or earlier reassessment triggers. Firebase 15.28.1, locked install, high audit gate and eight-minute deployment timeout remain. No import/framework pipeline expansion or major override is accepted. |
-| S8 | Blocked; owner disposition | Exact receipt-image/source review is now recorded below: verified OCI manifests/configurations share the Node base layers; no affected call chain was identified in the examined API/cleanup source. The image-specific risk decision remains pending. No earlier acceptance was transferred, no new exploit of this application was demonstrated, and clean OS/NPM/SECRET scans still do not certify the embedded component. |
+| S8 | Accepted; bounded and expiring | On 2026-09-08 local (2026-09-09 UTC), the owner explicitly approved the exact receipt-image exception recorded below through 2026-10-07, subject to earlier reassessment triggers. Verified OCI manifests/configurations share the Node base layers; no affected call chain was identified in the examined API/cleanup source. This is risk acceptance, not an OpenSSL fix, transfer of an earlier exception, or approval for a replacement image/deployment. Clean OS/NPM/SECRET scans still do not certify the embedded component. |
 | S9 | Fixed; tested CI checkpoint | Authorized non-deploying run `34301221560` passed both jobs on `3ea379fe`: dependency validation/audits, frontend tests/build, WebGL package/tooling checks, backend unit/MySQL integration tests/build, docs watcher tests/docs build and Unity static integrity. All reported test summaries had zero skips. This supersedes failed run `34300667096`; it is not a Unity rebuild or a browser/device test. A PR with required checks/CodeQL on its eventual merge head remains a separate gate. |
 | S10 | Fixed controls; limited scan coverage | Main ruleset requires PR/thread resolution, strict Web/Unity checks and CodeQL errors/high-or-higher protection, with no bypass actors. Zero open code/secret-scanning alerts were observed; main CodeQL evidence covers `2bffc0db`, not this branch. Push protection is enabled; non-provider patterns and validity checks are disabled. Zero alerts is not proof that no secret exists. |
 | S11 | Deferred; local maintenance | Active backend install still has `qs` 6.15.3 versus locked 6.16.0. Isolated locked tests already passed. Refresh only during a deliberate development-stack stop; do not use the stale install as release evidence or modify running dependencies silently. |
@@ -191,16 +191,19 @@ CVE-2026-75803 exposure; no application cipher/decipher caller was identified.
 Do not assume an OpenSSL-only patch fixes Node's skipped-finalization path.
 [Node CCM contract](https://nodejs.org/download/release/v22.23.2/docs/api/crypto.html#ccm-mode).
 
-**Recommendation, not yet accepted:** retain only this exact receipt image
-under a bounded exception through **2026-10-07**, with earlier reassessment when
+**Owner-approved bounded exception:** on **2026-09-08 local (2026-09-09 UTC)**,
+the owner explicitly approved retaining only receipt image
+`sha256:9ec1bd83ea73a283ad36961b2dcd3022b9b0a40cbf16bd725398ff562015c3c3`
+under an exception through **2026-10-07**, with earlier reassessment when
 a patched supported Node release is available, this image/relevant code/runtime
 dependencies/configuration change, or a relevant advisory/incident appears.
 Introducing native addons, FFI, custom providers or affected cipher/protocol
 features also invalidates the present scope. The conclusion is limited to
 "no affected call chain identified in the examined application," not "OpenSSL
-is fixed/unused". The owner must explicitly approve this disposition or choose
-a separately scoped runtime replacement. No acceptance is implied by proceeding
-with the review.
+is fixed/unused". This is a new, exact-image risk acceptance, not a transfer of
+an earlier exception. It does not authorize a replacement image, new deployment,
+traffic changes or publication. Reassessment is required by expiry or an earlier
+trigger; no unchanged source/component review is needed before then.
 
 Non-secret OCI hashes, metadata and scope limitations are retained outside Git
 in `release-checks-20260907/receipt-openssl-review-20260908.json`. No image layers
@@ -209,12 +212,10 @@ scan, deployment or complete image-wide native inventory were performed.
 
 ## Next execution order and authority
 
-1. Obtain the owner's explicit S8 disposition for the completed exact-image
-   review, or scope a separately approved runtime remediation. Do not repeat
-   the unchanged source/layer review just to ask for that decision.
-   Retry only the bounded S5 policy readback when the existing browser/tool
+1. Retry only the bounded S5 policy readback when the existing browser/tool
    connection works; no SDK installation or permissions expansion is needed
-   merely to repeat a failed verification.
+   merely to repeat a failed verification. Keep the approved S8 disposition
+   closed unless its expiry or an earlier reassessment trigger applies.
 2. Arrange only R2's missing candidate checks on an approved HTTPS test route;
    scope any disposable account/score lifecycle separately. Keep accepted R3
    checks closed. A development-only mobile preview is not proof of an enabled

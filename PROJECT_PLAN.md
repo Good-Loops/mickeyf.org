@@ -8,13 +8,14 @@ Current release gates (reconciled 2026-09-08 local): see the
 [cumulative release/security ledger](RELEASE_READINESS.md). It supersedes stale
 pending claims in the dated history below. Named cleanup and the bounded script
 audit are complete. The scoped Firebase dependency patch `3ea379fe` passed the
-complete non-deploying CI run `34301221560`; the remaining gates are current-image
-embedded-OpenSSL disposition, limited alert readback, narrow candidate/browser
+complete non-deploying CI run `34301221560`; the remaining gates are
+limited alert readback, narrow candidate/browser
 checks, eventual PR/CodeQL merge checks and explicit publication/mobile approval.
 No accepted gameplay check is reopened by this reconciliation.
-The exact receipt-image OpenSSL review is now recorded in that ledger; the
-remaining S8 action is explicit owner risk disposition, not another unchanged
-source/component review.
+The owner approved S8's exact receipt-image OpenSSL exception through 2026-10-07,
+subject to the ledger's earlier reassessment triggers. This is bounded risk
+acceptance, not remediation or authorization for a new image/deployment. Do not
+repeat the unchanged source/component review without a trigger or expiry.
 
 Current storage checkpoint (2026-09-08): the receipt-based backend is implemented
 on `feature/three-bosses-polish` and its production schema/grant cutover is

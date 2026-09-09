@@ -9,7 +9,7 @@ watchdog are now enabled after separate approval. Both failure-alert emails are
 owner-confirmed; restricted credentials are provisioned. The first natural
 hourly tick passed; only the limited fresh alert-policy readback remains open
 for this subsystem. The [cumulative release/security ledger](../RELEASE_READINESS.md)
-records separate release gates, including current-image embedded-OpenSSL disposition.
+records the bounded current-image OpenSSL exception and remaining release gates.
 Historical migrations 0001–0003 are unchanged. Dated preparation entries below
 are historical; the final section records the current scheduling checkpoint.
 
@@ -298,11 +298,12 @@ flag. Permanent best rows must never be deleted as part of that rollback.
   routing, manual cleanup/retry validation, hourly activation and first natural
   execution are complete, as recorded in the final checkpoint. Only the limited
   fresh policy comparison remains open; no new dispatch or provisioning is needed.
-- **Blocked release disposition:** the current receipt image has no recorded
-  exact-digest embedded-OpenSSL exception; earlier image-specific acceptance is
-  not automatically transferable. See `RELEASE_READINESS.md` for this gap and
-  the remaining CI/browser/device/publication gates. This is not a new finding
-  that the receipt migration or cleanup behavior is defective.
+- **Accepted bounded release disposition:** on 2026-09-08 local, the owner
+  explicitly approved the current receipt image's exact-digest embedded-OpenSSL
+  exception through 2026-10-07, subject to earlier reassessment triggers. See
+  `RELEASE_READINESS.md` for the exact digest, limitations and remaining release
+  gates. This is risk acceptance, not remediation or authorization for a new
+  image/deployment; no earlier image-specific exception was transferred.
 - **Resolved fixture race:** server-side teardown is now observed explicitly
   before the integration test asserts drainage; all 50 MySQL tests pass without
   weakening production checks. The active dev install still retains four known
