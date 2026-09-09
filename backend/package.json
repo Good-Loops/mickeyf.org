@@ -23,9 +23,7 @@
         "dev": "nodemon dist/server.min.js",
         "migrations:receipts:plan": "ts-node ts/migrations/runMigrations.ts receipts-plan",
         "migrations:receipts:apply": "ts-node ts/migrations/runMigrations.ts receipts-apply",
-        "migrations:receipts:verify": "ts-node ts/migrations/runMigrations.ts receipts-verify",
-        "receipts:cleanup": "node dist/submission-receipt-cleanup.min.js",
-        "receipts:cleanup:local": "ts-node ts/leaderboards/runSubmissionReceiptCleanup.ts"
+        "migrations:receipts:verify": "ts-node ts/migrations/runMigrations.ts receipts-verify"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",

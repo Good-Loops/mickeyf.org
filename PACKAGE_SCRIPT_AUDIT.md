@@ -14,10 +14,11 @@ TypeDoc configurations and public entrypoints are unchanged. No tracked callers
 needed repair; the README now gives the root replacements and correctly
 distinguishes `docs:dev` from the initial-build `docs:dev:fresh` variant.
 
-Current script count: **59** (root 33, frontend 5, backend 19, Firebase 2).
-The **61-script inventory below is the historical first-pass baseline**; its two
-consolidation candidates are now completed. The receipt-cleanup conveniences
-and watcher-overlap decision remain open; their commands/behavior are untouched.
+Script count after documentation consolidation: **59** (root 33, frontend 5,
+backend 19, Firebase 2); the final count is recorded below.
+The **61-script inventory below is the historical first-pass baseline**. At the
+documentation-consolidation checkpoint, its two alias candidates were complete;
+the receipt-cleanup conveniences and watcher-overlap decision remained open.
 Validation used JSON/structural assertions, a focused caller check and Git diff
 checks, not a documentation build, install, server restart or application test.
 
@@ -33,11 +34,40 @@ build processes. Terminal interrupts can also reach the build's descendants.
 
 This resolves the watcher-overlap candidate for a single watcher. Multiple
 watchers or a separate manual build still require coordination, now documented
-in the README. Existing Docs processes were not restarted. The two manual
-receipt-cleanup aliases remain the only unresolved script-audit candidates.
+in the README. Existing Docs processes were not restarted. At that checkpoint,
+the two manual receipt-cleanup aliases were the only unresolved candidates.
 All 13 focused scheduling/process-adapter tests pass using fake children and timers, with no
 documentation/application build or filesystem fixture. PR CI now runs them.
-The 59-script count is unchanged; the first-pass tables below remain historical.
+The watcher change left the 59-script count unchanged; the first-pass tables
+below remain historical.
+
+## Receipt-cleanup alias retirement — 2026-09-08
+
+Removed backend `receipts:cleanup` and `receipts:cleanup:local`; both were
+unreferenced convenience aliases, not the cleanup implementation. A focused
+tracked-caller check covers scripts, workflows, Docker, editor tasks, hooks and
+documentation. The Cloud Run template already invokes
+`node dist/submission-receipt-cleanup.min.js` directly; Webpack and Docker still
+build/package that entrypoint. The final runtime image does not include npm.
+
+The source shortcut's `:local` suffix selected TypeScript execution, not a safe
+database target. Configuration requires explicit activation and identity/grant
+verification, but a loopback proxy can still reach Cloud SQL. The maintained
+runbook now directs approved manual operations through the pinned Job and its
+verification checklist. Source, guards, cleanup tests, job/Scheduler templates,
+dependencies and lockfiles are unchanged. Neither removed command was executed.
+
+Final script count: **57** (root 33, frontend 5, backend 17, Firebase 2).
+All five named first-pass candidates are resolved: four aliases removed and
+the watcher serialized. This closes the bounded package-script audit, not the
+broader release/security review or all temporary-artifact cleanup.
+
+Validation: all four manifests parse; structural assertions confirm the backend
+manifest changed only by removing those two scripts, lock metadata still matches,
+and the other manifests are unchanged. Unchanged-file comparisons account for
+Git's Windows line-ending normalization. The two existing receipt job/Scheduler
+template tests and `git diff --check` pass. No dependency install, application
+build, real cleanup execution, cloud/database change or server restart was needed.
 
 ## First-pass result and proposed batch (historical)
 
@@ -168,7 +198,7 @@ Source: [.github/firebase-deploy/package.json](.github/firebase-deploy/package.j
 
 Both referenced files exist. Preserve the independent deployment package boundary.
 
-## Verification boundary
+## First-pass verification boundary (historical)
 
 Used tracked-file inventory, manifest/configuration reads, target existence
 checks and scoped reference searches across source, workflows, hooks, editor

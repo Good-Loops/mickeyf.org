@@ -40,6 +40,13 @@ live-state export.
 
 ## Activation gates (operator checklist; do not skip)
 
+Cleanup has no npm convenience aliases. The deployed Job calls the compiled
+entrypoint above directly; its source, build entry and tests remain maintained.
+Approved manual executions should use that pinned Job and the verification
+checklist below, not a developer-shell shortcut. Running source on a developer
+computer is not a disposable-database guarantee: even a non-production loopback
+endpoint can be a proxy to Cloud SQL.
+
 Alert delivery can be accepted before SQL provisioning: first create the
 dedicated job identity without SQL/secret roles and a pinned-image job containing
 only `NODE_ENV=production` and `RECEIPT_CLEANUP_ENABLED=false`, with no credentials

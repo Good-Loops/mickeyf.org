@@ -1465,6 +1465,20 @@ second watcher or separate manual build is not protected by this per-process
 queue. Only the two receipt-cleanup command aliases remain undecided in this
 bounded script audit.
 
+Receipt-cleanup alias retirement completed (2026-09-08): removed only backend
+`receipts:cleanup` and `receipts:cleanup:local`. Neither had a tracked caller;
+the deployed Job invokes the compiled entrypoint directly, independent of npm.
+The source shortcut did not guarantee a disposable database, even with a
+loopback endpoint. The runbook now makes the pinned Job/checklist the approved
+manual path. Cleanup implementation, build entry, safety guards, unit tests,
+cloud templates, dependencies and lockfiles are preserved. Manifest parsing,
+exact-change/lock-metadata assertions, the two existing template tests and Git
+diff checks pass. No cleanup command, build, install or cloud/database mutation
+was performed. There are 57 scripts across the four manifests; all five named
+candidates in the bounded audit are resolved. Do not restart that audit without
+new evidence. Remaining artifact dispositions and release/security gates are
+separate work.
+
 #### Remaining release checks — consolidated checkpoint (2026-09-07)
 
 The owner requested all remaining release checks after confirming the desktop
