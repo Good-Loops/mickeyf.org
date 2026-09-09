@@ -89,14 +89,23 @@ its required service-agent role. The forced Scheduler-to-Job acceptance passed:
 read-only snapshots preserve all seven bests, zero receipts, user count and
 scoped table definitions; production generation 132 and deployment automation
 remain unchanged. No application rebuild or new disposable account was needed.
-A natural hourly tick is not yet verified; the first is due around
-`2026-09-09T01:00:00Z`. Same-task follow-up `verify-first-hourly-receipt-cleanup`
-is scheduled once for 22:05 local to observe that execution, record the result
-and delete its own saved automation entry. Keep the conversation and evidence;
-the hourly cloud cleanup is not a temporary artifact.
+The first natural hourly tick is now verified (2026-09-08 local): Scheduler's
+`2026-09-09T01:00:19.548160Z` attempt returned HTTP 200 and created distinct
+execution `mickeyf-submission-receipt-cleanup-zjpfg` through the exact approved
+caller. It completed at `01:01:22.324316Z`, with one successful task, zero deleted
+receipts and no errors/backlog. Its pinned native v1 template and Cloud SQL/
+secret annotations match the accepted execution and current generation-7 Job.
+The enabled hourly configuration and production generation 132 with 100% traffic
+to the accepted revision are unchanged. No extra run or fresh SQL check occurred.
+The missing-success alert was freshly observed enabled; the two failure alerts
+remain verified only by the activation snapshots because the installed CLI lacks
+the alert-policy command and browser reconnection failed. This limited alert
+recheck remains open; it does not invalidate the successful natural execution.
+Retire one-time follow-up `verify-first-hourly-receipt-cleanup` after recording
+this outcome. Preserve the conversation and non-secret JSON evidence; the hourly
+cloud cleanup is not a temporary artifact.
 
-Next: continue the temporary-artifact cleanup below while the natural-tick
-observation waits; there is no dependency requiring idle time. Do not repeat
+Next: continue the temporary-artifact cleanup below. Do not repeat
 the completed migration, acceptance or score promotion; do not use a pre-receipt
 backend for rollback. No main merge or website deployment is authorized by this
 cleanup checkpoint. The owner has separately re-added a bounded package-script

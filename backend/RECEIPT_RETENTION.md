@@ -1181,18 +1181,47 @@ receipt hashes and the users/bests/receipts DDL hashes are identical between
 these snapshots. This batch's explicit-column/string serialization is compared
 only with its own baseline; it is not compared with earlier hash formats.
 
-The first natural hourly tick is due around `2026-09-09T01:00:00Z` and remains
-separately unverified. Same-task follow-up `verify-first-hourly-receipt-cleanup`
-is scheduled once for 22:05 local: observe, record and sync that result, then
-delete only its saved automation entry as requested by the owner. Preserve
-the conversation/evidence and production hourly job. If verification fails,
-record/report the blocker before removing the one-off follow-up; if removal
-fails, pause it and report the remaining artifact. The forced dispatch above
-does not close the natural-tick gate. This local Codex follow-up needs the
-app/computer running; Cloud Scheduler cleanup
-itself does not depend on the developer computer.
+The first natural hourly tick passed (2026-09-08 local). Scheduler logged the
+`2026-09-09T01:00:19.548160Z` scheduled attempt and HTTP 200 completion at
+`01:00:21.032957400Z`. Exact caller `mickeyf-receipt-scheduler` created execution
+`mickeyf-submission-receipt-cleanup-zjpfg` at `01:00:19.638409Z`
+(UID `6d5b9166-91bb-4269-9871-56f78936d1ca`), distinct from forced run `v27kx`.
+The parent Job UID and generation-7 label match; the execution's own generation
+is 1. Its full native v1 spec matches both the accepted prior execution and the
+current Job template, including the same image/secret pin and matching Cloud SQL,
+secret-alias and Gen2 annotations. No v1-to-v2 hash equivalence is claimed.
 
-Scope/security disposition:
+Execution completed successfully at `01:01:22.324316Z`: one successful task,
+zero failed/cancelled/retried tasks. The three returned execution log entries
+are INFO; the component completion at `01:01:16.100359Z` reports zero deletions,
+one scanned batch, 24-hour retention and no backlog, followed by `exit(0)`.
+The enabled Scheduler configuration matches activation (including unchanged
+update time); the native Job remains Ready at generation 7. Production UID,
+generation/observed generation 132 and intended/observed 100% traffic to
+`mickeyf-org-scores-9ec1bd83-0908` match the prior checkpoint. This observation
+dispatched no additional run and did not reread SQL, secrets, IAM or the full
+production template; it does not claim a new database preservation snapshot.
+
+Alert recheck limitation: Cloud Console freshly shows missing-success policy
+`3453175835959381685` enabled, Error severity, a below-one threshold over two
+hours and the existing owner-email channel. Its full filter/channel-ID JSON
+and failure policies `15588823733398199471` / `17739991777076766134` were not
+freshly compared. The installed CLI lacks the required alpha policy command;
+no component was installed. Browser reconnection then failed with
+`failed to write kernel assets: The system cannot find the path specified`.
+The activation snapshots remain the evidence for those unrefreshed fields.
+Do not widen permissions, install tooling or rerun cleanup to resolve this
+read-only verification limitation. Keep the healthy schedule unchanged; finish
+that bounded policy readback when the existing console/tool connection works.
+
+After recording and syncing this outcome, delete only one-time follow-up
+`verify-first-hourly-receipt-cleanup` as requested. Preserve this conversation,
+JSON evidence and both production cloud jobs; do not create a replacement
+follow-up. If removal fails, pause it and report the remaining artifact.
+Cloud Scheduler cleanup does not depend on the developer computer.
+
+Scope/security disposition (activation baseline; natural-tick recheck limits
+are stated above):
 
 - Verified configuration: exact target/digest/secret pins, separated invoker and
   worker permissions, three enabled scoped alerts, and no unrelated IAM drift.
@@ -1205,8 +1234,9 @@ Scope/security disposition:
   outages/backlog can extend receipt retention beyond the normal 24–25 hours.
   Already expired receipts require a separately reviewed backup restore, not
   an application rollback. Best scores remain independent and permanent.
-- Pending evidence: first natural hourly tick only; forced Scheduler dispatch
-  and its exact successful cleanup execution are verified.
+- Natural-tick evidence is complete; the limited fresh alert-policy readback
+  above remains open due to unavailable tooling. Forced Scheduler dispatch
+  and its exact successful cleanup execution are also verified.
   The completed migration, disposable-account replay test and score promotion
   are not repeated. Final whole-project release/security review is separate.
 
@@ -1219,6 +1249,11 @@ Non-secret activation evidence is outside the repository at
 It includes `dispatch-result.json`, exact execution/log/IAM/config snapshots and
 `before-snapshot.json` / `after-snapshot.json`. Temporary execution helpers are
 removed after verification; non-secret JSON evidence is retained outside Git.
-Validation: live Scheduler/Job/alert/IAM checks, read-only SQL preservation
+Natural-tick evidence is in the `natural-tick-*.json` files in that same folder;
+the component-log summary contains selected fields, not a raw full log export.
+Activation validation: live Scheduler/Job/alert/IAM checks, read-only SQL preservation
 checks, helper syntax checks and `git diff --check`. No dependency install,
 application or Unity build, broad test rerun, website deployment or main merge.
+Natural-tick validation: native Scheduler/Job/execution/log reads, scoped
+production readback, one policy's UI state, saved JSON comparisons and
+`git diff --check`; no builds or tests were required for this docs-only checkpoint.
