@@ -2056,6 +2056,21 @@ an accepted risk before this item is closed.
 
 ## Phase 15 — p4-Vega improvement and mobile polish
 
+Branch handoff (2026-09-09): active work continues on
+`codex/p4-vega-improvements`, created from the synced canvas-scrolling checkpoint
+`59db12d4`. Preserve `feature/three-bosses-polish` at that checkpoint; do not merge
+to `main`, delete it or publish as part of this handoff. The new branch includes
+the two existing commits ahead of `main`, so p4-Vega retains the shared scrolling
+fixes. The owner explicitly deferred physical phone checks until later; they
+remain pending, not passed, and do not block starting p4-Vega work.
+
+Next implementation slice: an icon Pause/Resume button and a small menu available
+inline and in fullscreen. Pause the runner's ticker, sprite animations, movement
+input and audio without resetting the run, score, frames or music position; clear
+held keys/joystick state to prevent stuck movement. Keep loading/game-over rules,
+score submission, keyboard controls and the new canvas scroll policy intact.
+No pause implementation, builds or tests were performed during this branch handoff.
+
 Site-wide canvas scrolling (2026-09-09, implemented locally): the owner chose to retain
 inline Three Bosses gameplay, reserving gestures that start on its actual UI
 controls and allowing other vertical drags to scroll. PIXI canvases now allow
@@ -2071,7 +2086,7 @@ Chromium, 70px/35px open-canvas drags produced matching scroll distances, menu
 audio/joystick/Fire drags produced no page movement, and fullscreen stayed fixed.
 The existing VS Code Front terminal now serves that local build on LAN port 5173;
 backend and Docs were not restarted. Physical iPhone/Android confirmation of this
-new scroll behavior remains recommended, not claimed. Temporary browser and
+new scroll behavior is deferred by the owner, not claimed. Temporary browser and
 Editor-transport helpers were removed. This is not a public deployment.
 The next game feature remains p4-Vega pause.
 
