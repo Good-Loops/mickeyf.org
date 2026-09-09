@@ -21,7 +21,6 @@
         "watch": "webpack --mode development --watch",
         "prod": "webpack --mode production",
         "dev": "nodemon dist/server.min.js",
-        "docs:json": "typedoc --options typedoc.json",
         "migrations:receipts:plan": "ts-node ts/migrations/runMigrations.ts receipts-plan",
         "migrations:receipts:apply": "ts-node ts/migrations/runMigrations.ts receipts-apply",
         "migrations:receipts:verify": "ts-node ts/migrations/runMigrations.ts receipts-verify",

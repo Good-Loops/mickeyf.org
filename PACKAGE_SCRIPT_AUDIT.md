@@ -5,7 +5,23 @@ Scope: all four tracked first-party `package.json` files. Dependencies, generate
 output and vendored packages are excluded. This is a static usage audit, not a
 claim that every command was executed successfully.
 
-## Result and proposed next batch
+## Applied consolidation — 2026-09-08
+
+The owner approved the next batch after the first-pass checkpoint `249d0b93`.
+Removed only the frontend and backend `docs:json` aliases. The root
+`docs:json:frontend`, `docs:json:backend` and aggregate `docs:json` commands,
+TypeDoc configurations and public entrypoints are unchanged. No tracked callers
+needed repair; the README now gives the root replacements and correctly
+distinguishes `docs:dev` from the initial-build `docs:dev:fresh` variant.
+
+Current script count: **59** (root 33, frontend 5, backend 19, Firebase 2).
+The **61-script inventory below is the historical first-pass baseline**; its two
+consolidation candidates are now completed. The receipt-cleanup conveniences
+and watcher-overlap decision remain open; their commands/behavior are untouched.
+Validation used JSON/structural assertions, a focused caller check and Git diff
+checks, not a documentation build, install, server restart or application test.
+
+## First-pass result and proposed batch (historical)
 
 | Manifest | Scripts | Keep | Consolidate | Needs confirmation | Remove outright |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -39,7 +55,7 @@ Recommended small follow-up batch:
 No script is removed by this audit. Required release, migration, recovery and
 verification commands are not disposable simply because they run infrequently.
 
-## Complete inventory
+## Complete first-pass inventory (historical)
 
 The linked manifests are the authoritative command definitions; each script is
 listed below with its purpose and disposition.

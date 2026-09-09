@@ -1428,6 +1428,19 @@ Cleanup completion and bounded script-audit checkpoint (2026-09-08):
   No creator process was established from metadata. They remain untouched;
   these are not evidence that the website needs either directory.
 
+Documentation-alias consolidation completed (2026-09-08): removed only
+`frontend/package.json` and `backend/package.json`'s local `docs:json` aliases.
+The existing root package-specific/aggregate documentation commands, TypeDoc
+configurations and public entrypoints are unchanged. Focused CI/editor/hook/docs
+checks found no callers to migrate; README now documents the root commands and
+the distinction between `docs:dev` and `docs:dev:fresh`. All four manifests parse,
+structural checks confirm no other manifest changes, and Git diff checks pass.
+There are now 59 scripts. No dependencies, lockfiles, generated docs, watcher
+behavior or receipt-cleanup commands changed; no installs/builds/application
+tests or server restarts were required. The remaining bounded decisions are the
+two manual receipt-cleanup aliases and the documentation watcher's overlapping
+rebuilds, not another full script audit.
+
 #### Remaining release checks — consolidated checkpoint (2026-09-07)
 
 The owner requested all remaining release checks after confirming the desktop

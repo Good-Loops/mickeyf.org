@@ -181,8 +181,13 @@ Run the `docs` VS Code task or:
 npm run docs:dev
 ```
 
-The command rebuilds the tracked `docs/` output before serving it. Review the
-resulting Git diff and do not commit generated changes accidentally.
+`docs:dev` watches for changes and serves the existing `docs/` output. For an
+initial build before watching/serving, use `npm run docs:dev:fresh`. Review any
+generated Git diff and do not commit it accidentally.
+
+To regenerate one package's documentation JSON, run `npm run docs:json:frontend`
+or `npm run docs:json:backend` from the repository root. These root commands own
+the shared documentation pipeline; there are no package-local `docs:json` aliases.
 
 ### Three Bosses WebGL development and Alpha packaging
 
