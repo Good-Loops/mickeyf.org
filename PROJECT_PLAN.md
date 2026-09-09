@@ -9,9 +9,11 @@ Current release gates (reconciled 2026-09-08 local): see the
 pending claims in the dated history below. Named cleanup and the bounded script
 audit are complete. The scoped Firebase dependency patch `3ea379fe` passed the
 complete non-deploying CI run `34301221560`; the remaining gates are eventual
-PR/CodeQL merge checks and explicit publication/mobile approval. A combined
-cold-load/short-landscape phone observation is required only before enabling
-public mobile, not before desktop release preparation. S5's exact three-policy/channel readback passed
+PR/CodeQL merge checks and explicit publication/mobile approval. The combined
+fresh-load/landscape phone observation is complete: the owner reported about
+10 seconds to load and correct Fire/fullscreen-exit behavior on the local
+release-candidate preview. This is not a production CDN timing measurement.
+S5's exact three-policy/channel readback passed
 at 2026-09-09 02:12:46 UTC without cloud changes; it is closed.
 No accepted gameplay check is reopened by this reconciliation.
 The owner approved S8's exact receipt-image OpenSSL exception through 2026-10-07,
@@ -27,8 +29,10 @@ focused style tests and two before/after Chromium layout sizes, not a full
 gameplay replay. Unity source/package is unchanged. Ten weapon definitions and
 all 21 expected audio references resolve; exhaustive listening/game-feel coverage
 is deferred, not represented as manually verified. See the ledger for measured
-layout tradeoffs and the remaining mobile-only observation. No public mobile
-gate, server, account, score or deployment changed.
+layout tradeoffs. In the subsequent owner phone check, the existing Front
+terminal was restarted with the certified candidate and LAN access; backend
+and Docs stayed running. The owner accepted the fresh-load/touch spot-check.
+No public mobile gate, account, score or deployment changed.
 
 Current storage checkpoint (2026-09-08): the receipt-based backend is implemented
 on `feature/three-bosses-polish` and its production schema/grant cutover is
@@ -1746,8 +1750,9 @@ Execution order clarified with the owner on 2026-09-07 to avoid circular work:
   follow-up change removes the 14 trailing spaces; normalized text comparison
   confirms no scene content change. Prior successful suites were not rerun for
   archiving, whitespace normalization or checkpointing. No push or deployment.
-- **Remaining scope, superseded by the current ledger:** PR/release approval and
-  the mobile-only cold-load/short-landscape observation. Generic login/submission
+- **Remaining scope, superseded by the current ledger:** PR/release approval.
+  The combined mobile load/touch observation is now owner-accepted (see R2).
+  Generic login/submission
   replay and exhaustive weapon/audio coverage are no longer release blockers. Existing
   accepted owner gameplay and visual checks stay closed. Read-only catalog
   probes show local Three Bosses submissions disabled and the configured Cloud

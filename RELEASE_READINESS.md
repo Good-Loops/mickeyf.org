@@ -8,10 +8,10 @@ Update this ledger instead of treating superseded historical blockers as new wor
 
 **Release is not yet approved.** After the initial Firebase audit failure,
 the scoped dependency patch `3ea379fe` passed the complete non-deploying CI run
-`34301221560`. The later ledger update is documentation-only; the tested source
-is identified explicitly below. No PR, deployment or production mutation was
-performed. CI success does not transfer an image-specific risk acceptance or
-replace the remaining mobile-specific observations and merge/release approval.
+`34301221560`. Subsequent focused host-CSS checks and owner phone acceptance
+are recorded below; each tested source is identified explicitly. No PR,
+deployment or production mutation was performed. CI success does not transfer
+an image-specific risk acceptance or replace merge/release approval.
 
 ## Current dispositions
 
@@ -30,7 +30,7 @@ replace the remaining mobile-specific observations and merge/release approval.
 | S11 | Deferred; local maintenance | Active backend install still has `qs` 6.15.3 versus locked 6.16.0. Isolated locked tests already passed. Refresh only during a deliberate development-stack stop; do not use the stale install as release evidence or modify running dependencies silently. |
 | S12 | Fixed; deployment-only dependency patch | `3ea379fe` updates exactly four lock entries: `js-yaml` 4.3.2, `hono` 4.13.7, `morgan` 1.12.0 and Firebase-scoped `csv-parse` 7.0.2. Firebase stays 15.28.1. Fresh locked install, full production dependency-tree validation, CLI version check, eight offline CSV tests and twelve smoke-tool tests pass. Audit now has zero high/critical and only the two previously accepted stream-json/parent moderate entries. No unrelated finding was waived or threshold lowered. |
 | R1 | Fixed; certified local candidate | Package `2e660337…a7fe7` remains the certified 996-file Unity candidate from `8eaa6615`. Unity source is unchanged. The later host-only short-landscape CSS correction and its focused checks are recorded below; it requires no Unity rebuild. Candidate packaging/hash checks, local header simulation and signed-out Chrome startup remain the existing evidence. |
-| R2 | Pending; mobile-specific observation | Before enabling public mobile, combine one uncached physical Safari load with a short-landscape exit/Fire touch spot-check. The source-confirmed overlap is corrected and checked in a Chromium layout fixture below; native-device event behavior is not newly claimed. These are not reasons to block desktop release preparation while mobile remains disabled. Generic login/submission retesting and exhaustive clip listening are no longer release blockers. |
+| R2 | Fixed; owner phone acceptance | After opening the release-candidate mobile preview for the requested fresh-load/landscape touch check, the owner reported about 10 seconds to load and confirmed Fire/fullscreen-exit buttons behave properly. This closes the combined observation. The timing is owner-observed local Safari delivery, not an instrumented cache-miss measurement or production CDN benchmark; the exact 640x360 geometry remains covered by the earlier layout fixture. No repeat login/submission or exhaustive clip-listening pass is required. |
 | R3 | Fixed; accepted owner checks | Keep closed: owner-confirmed published-site login/submission; Android/iPhone normal routes and recorded defeat/retry/menu checks; touch controls; mute persistence; automatic/combined pause; complete outcome-centering audit; accepted fullscreen-button placement and Safari toolbar limitation; recovered desktop FPS incident. Carry acceptance forward unless relevant code/origin/configuration changes or a concrete regression invalidate it. A brief post-publication smoke check is not a new pre-release authentication campaign. |
 | R4 | Blocked; publication decisions | Public mobile gameplay remains disabled outside the DEV-only preview. Backend score-write activation did not change that gate. Main merge, publishing, mobile enablement and any hosted candidate preview require their own scoped approval; verify actual new-package CDN bytes/headers/compression after approved delivery. |
 | M1 | Fixed; named scope | Named temporary-artifact cleanup and the 57-script bounded audit are complete. Recycled copies remain recoverable; intentional verification/recovery archives remain. Do not reopen an unlimited package/filesystem audit. |
@@ -280,12 +280,30 @@ identified. This does not certify that every clip was heard or subjective game
 feel was reviewed. Keep the accepted Android full run/mute checks closed and
 defer exhaustive listening rather than imposing another release prerequisite.
 
+### Owner iPhone spot-check: 2026-09-08 local
+
+The existing VS Code Front terminal was restarted with a process-only
+`THREE_BOSSES_WEBGL_DIR` override pointing to the retained certified candidate
+`webgl-candidate-8eaa6615`, and Vite exposed on the LAN. All four candidate
+asset hashes matched the tracked release manifest; the proxied manifest
+reported certified build `3477618b…aecca`, and the mobile-preview page
+returned HTTP 200. Backend and Docs were left running; no source edits,
+dependency installation, new preview helper or Unity rebuild was needed.
+
+For the requested fresh Safari load and landscape Fire/fullscreen-exit check,
+the owner reported: "About 10 seconds to load. The buttons behave properly."
+This is accepted physical-device feedback, not automated touch evidence or
+proof of a completely cold cache. It covers the candidate's local delivery
+and current host layout, not production CDN timing/headers. R2 is closed;
+public mobile remains disabled until separately approved. Existing gameplay,
+authentication and score-submission acceptance remains closed.
+
 ## Next execution order and authority
 
 1. Prepare the release PR and its required checks without rebuilding unchanged
    Unity source or repeating accepted gameplay/authentication checks. Public
-   mobile remains disabled unless separately approved; complete R2's one combined
-   mobile observation before enabling it. Do not create another account/score
+   mobile remains disabled unless separately approved; R2's combined phone
+   observation is complete. Do not create another account/score
    campaign. Keep S5 closed and S8 closed until expiry or a reassessment trigger.
 2. Resolve or explicitly disposition all remaining gates before requesting
    publication/mobile approval, then verify hosted delivery. A PR and current
