@@ -2057,12 +2057,23 @@ an accepted risk before this item is closed.
 ## Phase 15 — p4-Vega improvement and mobile polish
 
 Branch handoff (2026-09-09): active work continues on
-`codex/p4-vega-improvements`, created from the synced canvas-scrolling checkpoint
-`59db12d4`. Preserve `feature/three-bosses-polish` at that checkpoint; do not merge
-to `main`, delete it or publish as part of this handoff. The new branch includes
-the two existing commits ahead of `main`, so p4-Vega retains the shared scrolling
-fixes. The owner explicitly deferred physical phone checks until later; they
-remain pending, not passed, and do not block starting p4-Vega work.
+`feature/p4-vega-improvements`, created from the synced canvas-scrolling checkpoint
+`59db12d4` and renamed from the initial `codex/` name at the owner's request.
+The owner superseded the earlier instruction to preserve
+`feature/three-bosses-polish`: its release-documentation and canvas-scrolling
+commits are both retained on the active branch, so the old local/remote branch
+and superseded remote `codex/p4-vega-improvements` were deleted. Stale remote
+references were pruned, and local `main` was fast-forwarded to `origin/main`.
+No work was merged into `main` or deployed by this cleanup. Physical phone checks
+remain explicitly deferred, not passed, and do not block starting p4-Vega work.
+
+Branch policy: use descriptive `feature/`, `improvement/` or `fix/` prefixes,
+not `codex/`. Keep local `main` and the active development branch; retire completed
+branches only after verifying their work is safely retained. Keep remote branches
+only while useful: the current Dependabot PRs #321, #323, #324 and #325 contain
+unapplied dependency updates and remain open for review, rather than being
+discarded as stale branches. Commit and sync to the active branch; merging to
+`main` and deployment remain separate decisions.
 
 Next implementation slice: an icon Pause/Resume button and a small menu available
 inline and in fullscreen. Pause the runner's ticker, sprite animations, movement
