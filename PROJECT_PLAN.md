@@ -2108,9 +2108,17 @@ Isolated Chrome verified a pixel-stable paused canvas,
 stopped/resumed audio clock, keyboard Resume, portrait/landscape menu fit,
 fullscreen presence and route teardown without browser errors. This is not a
 physical-device or listening test; owner-deferred phone checks remain pending.
-Next implementation slice: a concise p4-Vega controls/onboarding guide explaining
-movement, collecting water, avoiding black holes and pausing, without changing
-score rules or reopening completed Three Bosses acceptance.
+Controls/onboarding guide (2026-09-09, development branch only): How to play opens
+a compact glass card from the controls panel or fullscreen pause menu. It explains
+movement, water/black-hole rules, pause/restart, music/key/scale options, mobile
+controls and automatic best-score submission. Opening it pauses an active run;
+closing it leaves Resume explicit. The native modal contains keyboard focus and
+keeps its close button visible while content scrolls on short screens. Chrome
+verified portrait/landscape fit, touch/keyboard closing, focus return and native/
+fallback fullscreen. TypeScript, 21 focused tests and the production build passed
+(existing large-chunk warning only). Score rules are unchanged.
+Next slice: prioritize one concrete game-feel or feedback upgrade;
+physical-device acceptance remains deferred until the pre-release check.
 
 Site-wide canvas scrolling (2026-09-09, implemented locally): the owner chose to retain
 inline Three Bosses gameplay, reserving gestures that start on its actual UI

@@ -28,7 +28,9 @@
     }
 
     &__pause-btn,
-    &__resume-btn {
+    &__resume-btn,
+    &__help-btn,
+    &__help-close {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -108,6 +110,65 @@
         font-size: 1.2rem;
     }
 
+    &__help-btn {
+        min-height: 3.2rem;
+        padding: .6rem 1.2rem;
+        font-size: 1.15rem;
+    }
+
+    &__help-card {
+        position: fixed;
+        inset: 0;
+        margin: auto;
+        width: min(43rem, calc(100vw - 3rem));
+        max-height: calc(100dvh - 3rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        overflow: hidden;
+        padding: clamp(1.5rem, 4vw, 2.4rem);
+        border: .1rem solid rgba($white, .28);
+        border-radius: 1.5rem;
+        background:
+            linear-gradient(135deg, rgba($white, .09), rgba($primary, .12)),
+            rgba($space-background, .94);
+        box-shadow: inset 0 .1rem 0 rgba($white, .2), 0 1.5rem 5rem rgba(black, .4);
+        backdrop-filter: blur(1.8rem) saturate(1.2);
+        color: rgba($white, .9);
+        font-size: 1.2rem;
+        font-weight: 400;
+        line-height: 1.5;
+        text-align: left;
+        touch-action: pan-y pinch-zoom;
+
+        &[open] { display: flex; flex-direction: column; gap: 1.2rem; }
+        &::backdrop { background: rgba($space-background, .6); }
+        h2 { margin: .3rem 0 .4rem; font-size: 2.2rem; line-height: 1.2; }
+        dl { display: grid; gap: 1rem; margin: 0 0 1.2rem; }
+        dt { color: $primary-light; font-weight: 600; }
+        dd { margin: .2rem 0 0; }
+        kbd { font-family: ui-monospace, monospace; font-size: 1em; color: $white; }
+    }
+
+    &__help-header {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    &__help-close { width: 3.2rem; height: 3.2rem; }
+
+    &__help-body {
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    &__help-note {
+        margin: 0;
+        color: rgba($white, .66);
+        font-size: 1.1rem;
+    }
+
     &__ui {
         // Raise this grid item's glass layer so menus clear the sibling joystick panels.
         z-index: 1;
@@ -121,6 +182,8 @@
         background: linear-gradient(145deg, rgba($white, .08), rgba($primary-darker, .1));
         box-shadow: inset 0 .1rem 0 rgba($white, .08), 0 .8rem 2rem rgba(black, .2);
         backdrop-filter: blur(1.4rem);
+
+        > .p4-vega__help-btn { grid-column: 1 / -1; }
 
         &--option,
         &--dropdown {

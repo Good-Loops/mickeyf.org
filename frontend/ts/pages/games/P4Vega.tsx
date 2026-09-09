@@ -9,6 +9,7 @@ import { p4Vega, type P4VegaController, type P4VegaState } from '@/games/p4-Vega
 import FullscreenButton from "@/components/FullscreenButton";
 import ScoreSubmissionNotice from '@/components/ScoreSubmissionNotice';
 import Dropdown from '@/components/Dropdown';
+import P4VegaHelp from './P4VegaHelp';
 
 type JoystickSide = 'left' | 'right';
 
@@ -27,6 +28,7 @@ const P4Vega: React.FC = () => {
     const controllerRef = useRef<P4VegaController | null>(null);
     const pauseButtonRef = useRef<HTMLButtonElement | null>(null);
     const resumeButtonRef = useRef<HTMLButtonElement | null>(null);
+    const helpDialogRef = useRef<HTMLDialogElement | null>(null);
     const previousStateRef = useRef<P4VegaState>('loading');
     const [gameState, setGameState] = useState<P4VegaState>('loading');
     const [gameError, setGameError] = useState(false);
@@ -86,9 +88,11 @@ const P4Vega: React.FC = () => {
     }, [loading]);
 
     useEffect(() => {
-        if (paused) resumeButtonRef.current?.focus({ preventScroll: true });
-        else if (previousStateRef.current === 'paused') {
-            pauseButtonRef.current?.focus({ preventScroll: true });
+        if (!helpDialogRef.current?.open) {
+            if (paused) resumeButtonRef.current?.focus({ preventScroll: true });
+            else if (previousStateRef.current === 'paused') {
+                pauseButtonRef.current?.focus({ preventScroll: true });
+            }
         }
         previousStateRef.current = gameState;
     }, [gameState, paused]);
@@ -98,6 +102,13 @@ const P4Vega: React.FC = () => {
         if (!controller || !canTogglePause) return;
         if (paused) void controller.resume();
         else void controller.pause();
+    };
+
+    const openHelp = (): void => {
+        // Also cancel an in-flight Resume before it can restart play under the guide.
+        void controllerRef.current?.pause();
+        helpDialogRef.current?.showModal();
+        helpDialogRef.current?.querySelector('.p4-vega__help-body')?.scrollTo(0, 0);
     };
 
     return (
@@ -153,6 +164,9 @@ const P4Vega: React.FC = () => {
                                 <PlaybackIcon paused />
                                 Resume
                             </button>
+                            <button type="button" className="p4-vega__help-btn" onClick={openHelp} aria-haspopup="dialog">
+                                How to play
+                            </button>
                         </div>
                     </div>
                 )}
@@ -166,9 +180,13 @@ const P4Vega: React.FC = () => {
                 >
                     <span className="p4-vega__joystick-thumb" data-p4-joystick-thumb />
                 </button>
+                <P4VegaHelp dialogRef={helpDialogRef} />
             </div>
 
             <div className='p4-vega__ui'>
+                <button type="button" className="p4-vega__help-btn" onClick={openHelp} disabled={gameState === 'loading'} aria-haspopup="dialog">
+                    How to play
+                </button>
                 <label className='p4-vega__ui--option' data-checkbox>
                     <input className='p4-vega__ui--checkbox' type='checkbox' data-bg-music-playing />
                     <span className='p4-vega__ui--option-btn'>Background Music</span>
