@@ -3,7 +3,11 @@
 This is a separately approved **production deletion job**, not an HTTP API route
 and not part of the automatic main-branch deploy. Nothing in this directory
 creates cloud resources when the website is built or deployed. The checked-in
-job is disabled and has intentionally invalid image/secret placeholders.
+job template is disabled and has intentionally invalid image/secret placeholders.
+The separately deployed production job and hourly Scheduler were enabled with
+owner approval on 2026-09-08 local. Current execution evidence and remaining
+observation gates are in `backend/RECEIPT_RETENTION.md`; this template is not a
+live-state export.
 
 ## Runtime contract
 
@@ -93,8 +97,11 @@ the owner confirms delivery. Never enable this deliberately incomplete job.
    evidence and ownership in the release checkpoint.
 
 To stop deletion, pause the Scheduler job and cancel any running cleanup
-execution, then disable the cleanup flag. Do not drop personal bests or widen
-the runtime role as a rollback. Already expired receipts cannot be recreated
+execution, then disable the cleanup flag. Also disable the no-success watchdog
+during intentional maintenance, preserving the two failure policies. Reconcile
+uncertain/in-flight dispatches before declaring deletion stopped. Do not drop
+personal bests or widen the runtime role as a rollback. Already expired receipts
+cannot be recreated
 without a separately reviewed backup restore, and their deletion must never
 invalidate permanent personal bests. The normal 30-minute run-ticket expiration
 does not change, and receipt deletion removes historical ID recognition.
@@ -133,5 +140,6 @@ creation or absence of notification-error logs.
 - [Execution-template Cloud SQL annotation](https://docs.cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs#ExecutionTemplateSpec)
 - [Scheduler OAuth for Google API targets](https://docs.cloud.google.com/scheduler/docs/http-target-auth)
 
-No Cloud Run job, Scheduler resource, secret, service account or IAM binding has
-been created by adding these templates.
+Adding or building these templates does not create any cloud resources.
+Production provisioning and activation are separate, explicitly approved
+operations recorded in the retention checkpoint.

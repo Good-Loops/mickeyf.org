@@ -11,7 +11,8 @@ both score-submission flags true after the approved production promotion.
 Permanent `game_personal_bests` are
 independent of short-lived `game_submission_receipts`; Three Bosses retry and
 rate-limit receipts have a minimum 24-hour retention. The bounded cleanup job
-passed its controlled production run; hourly scheduling is not yet activated.
+passed its controlled production run; hourly scheduling and the missing-success
+watchdog are now enabled. The final scheduling checkpoint is recorded below.
 Historical paragraphs below describing the immutable `game_runs`
 ledger remain deployment history, not the new design. See
 [`backend/RECEIPT_RETENTION.md`](backend/RECEIPT_RETENTION.md) for the storage
@@ -72,14 +73,30 @@ An earlier safety-canceled attempt changed no existing data; it exposed a v2
 execution-response mount omission, verified through the same execution's v1
 Cloud SQL annotation before retrying. The post-run helper's unrelated row-key
 assertion was reconciled read-only, without another cleanup execution.
-The job is disabled again at generation 6. Production generation 132, traffic,
-score flags, schema and paused deployment automation are unchanged. No hourly
-schedule or scheduler identity exists; the no-success watchdog remains unarmed.
+That manual checkpoint left the job disabled at generation 6, with no hourly
+schedule or scheduler identity and the no-success watchdog unarmed. Production
+generation 132, traffic, score flags, schema and paused deployment automation
+were unchanged. The subsequent approved activation below supersedes this state.
 
-Next: complete the no-success watchdog and separately approved hourly scheduling,
-then observe the first scheduled execution result. Do not repeat the
-completed migration, acceptance or score promotion; do not use a pre-receipt
-backend for rollback.
+Hourly activation completed at `2026-09-09T00:27:08.024Z` (2026-09-08 local):
+cleanup generation 7 is enabled, the UTC-hourly Scheduler is enabled, and the
+two-hour missing-success watchdog is armed alongside the delivered failure
+alerts. Its separate caller has Run Invoker on this job only, with no SQL,
+secret or project-level role. The Google-managed Scheduler service agent keeps
+its required service-agent role. The forced Scheduler-to-Job acceptance passed:
+`mickeyf-submission-receipt-cleanup-v27kx` completed successfully at
+`2026-09-09T00:32:57.235029Z`, deleting zero rows with no backlog. Before/after
+read-only snapshots preserve all seven bests, zero receipts, user count and
+scoped table definitions; production generation 132 and deployment automation
+remain unchanged. No application rebuild or new disposable account was needed.
+A natural hourly tick is not yet verified; the first is due around
+`2026-09-09T01:00:00Z`. Same-task follow-up `verify-first-hourly-receipt-cleanup`
+is scheduled for 22:05 local to observe that execution and then pause itself.
+
+Next: close the natural-tick observation, then return to the remaining release
+checklist. Do not repeat the completed migration, acceptance or score promotion;
+do not use a pre-receipt backend for rollback. No main merge, website deployment
+or stalled package-script audit is authorized by this cleanup checkpoint.
 
 Image review completed with user approval (2026-09-08): Cloud Build
 `12ec9e8e-ff4a-493c-be8c-025423e5110c` successfully built exact source

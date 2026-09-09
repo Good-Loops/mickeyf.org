@@ -4,11 +4,12 @@ Current checkpoint: 2026-09-08. The storage contract below is implemented and
 **migrated in production**; exact runtime/operator grants are verified and the
 receipt-compatible image now serves normal traffic with both score flags
 **enabled** after approved acceptance and promotion. Receipt cleanup passed a
-controlled production execution and is disabled again pending hourly scheduling.
-Both alert emails are owner-confirmed; restricted credentials are provisioned.
-The no-success watchdog and scheduling remain the next activation gate.
+controlled production execution; hourly scheduling and the missing-success
+watchdog are now enabled after separate approval. Both failure-alert emails are
+owner-confirmed; restricted credentials are provisioned. The first natural
+hourly tick remains an observation gate, not another implementation task.
 Historical migrations 0001–0003 are unchanged. Dated preparation entries below
-are historical; the final section records the current manual acceptance.
+are historical; the final section records the current scheduling checkpoint.
 
 ## Storage contract
 
@@ -1128,3 +1129,92 @@ the 12 offline helper guard tests and the live operations checks above; no
 dependency install, application build, Unity build or unrelated test matrix
 was run. This is a scoped retention checkpoint, not final project security
 closeout.
+
+## Approved hourly scheduling (2026-09-08 local)
+
+The owner approved retaining short-lived receipts, hourly cleanup and basic
+failure alerts. The protection is permanent; individual receipts expire. This
+does not reintroduce permanent game history or change p4-Vega's best-only path.
+
+Activation completed at `2026-09-09T00:27:08.024Z`:
+
+- Cleanup Job `mickeyf-submission-receipt-cleanup` is Ready at generation 7 with
+  `RECEIPT_CLEANUP_ENABLED=true`. Its previously accepted immutable image,
+  numeric secret version, SQL target, task/deadline limits and worker identity
+  are unchanged; only the cleanup flag changed from generation 6.
+- Scheduler `mickeyf-submission-receipt-cleanup-hourly` uses the checked-in
+  UTC-hourly template: authenticated OAuth POST to that Job's `:run`, empty
+  request object (no execution overrides), 30-second HTTP deadline and no
+  configured retries.
+  A successful HTTP call creates an asynchronous execution; terminal Job status
+  and component logs are checked separately.
+- `mickeyf-receipt-scheduler` has Run Invoker on this Job only, no project role,
+  secret/SQL access, delegated service-account binding or user-managed key.
+  Its UID is `104319556337535182408`. The Google-managed Scheduler service agent
+  has its required `roles/cloudscheduler.serviceAgent` role. All other project
+  bindings and the cleanup secret's accessor binding match their baseline.
+- Missing-success policy `3453175835959381685` is enabled after the accepted
+  native success signal. It watches this exact job's `result=succeeded` sum
+  below one for two hours, including missing data, with five-minute alignment.
+  It uses the same approved channel as the unchanged failure/log policies
+  `15588823733398199471` and `17739991777076766134`. Both earlier failure emails
+  were owner-confirmed. No deliberate two-hour outage or separate third-policy
+  inbox-delivery test is claimed; evaluation/ingestion can delay detection.
+
+One forced Scheduler request was accepted at `2026-09-09T00:27:32.986Z`.
+Initial project provisioning delayed dispatch, consistent with Google's
+[first-job initialization guidance](https://docs.cloud.google.com/scheduler/docs/schedule-run-cron-job).
+The request was not resent. Execution `mickeyf-submission-receipt-cleanup-v27kx`
+(UID `766c2cd7-e866-4256-b7c4-4c876217657c`) was created at `00:31:11.114040Z`
+by the exact Scheduler caller and completed at `00:32:57.235029Z`: one successful
+task, no failures/cancellations/retries, zero deleted receipts and no backlog.
+Its full execution template matches generation 7, with the same independently
+correlated v1 Cloud SQL annotation used by the manual acceptance guard.
+Scheduler's HTTP delivery and actual cleanup completion both passed.
+Independent closeout at `00:34:34Z` also observed the native `result=succeeded`
+metric in the `00:33–00:34Z` interval. This aggregate signal supplements, rather
+than replaces, the exact execution-UID and terminal-status evidence.
+
+Read-only snapshots before activation and after completion retain nine users,
+seven personal bests and zero receipts/expired receipts. Personal-best and
+receipt hashes and the users/bests/receipts DDL hashes are identical between
+these snapshots. This batch's explicit-column/string serialization is compared
+only with its own baseline; it is not compared with earlier hash formats.
+
+The first natural hourly tick is due around `2026-09-09T01:00:00Z` and remains
+separately unverified. Same-task follow-up `verify-first-hourly-receipt-cleanup`
+is scheduled for 22:05 local: observe, record and sync that result, then pause
+itself. The forced dispatch above does not close the natural-tick gate. This
+local Codex follow-up needs the app/computer running; Cloud Scheduler cleanup
+itself does not depend on the developer computer.
+
+Scope/security disposition:
+
+- Verified configuration: exact target/digest/secret pins, separated invoker and
+  worker permissions, three enabled scoped alerts, and no unrelated IAM drift.
+  The operator snapshot uses only users/bests/receipts; an unnecessary migration
+  history metadata probe was removed rather than expanding operator permissions.
+- Preserved: production service generation 132, full runtime template, enabled
+  submission flags, intended/observed traffic and disabled backend triggers.
+  This activation does not modify application code, SQL grants or schema.
+- Accepted operations: recurring cleanup has bounded cloud execution cost;
+  outages/backlog can extend receipt retention beyond the normal 24–25 hours.
+  Already expired receipts require a separately reviewed backup restore, not
+  an application rollback. Best scores remain independent and permanent.
+- Pending evidence: first natural hourly tick only; forced Scheduler dispatch
+  and its exact successful cleanup execution are verified.
+  The completed migration, disposable-account replay test and score promotion
+  are not repeated. Final whole-project release/security review is separate.
+
+To intentionally stop cleanup, pause Scheduler, reconcile/cancel in-flight
+executions, disable the cleanup flag and disable only the no-success watchdog.
+Keep the two failure policies; do not change website traffic or widen SQL roles.
+
+Non-secret activation evidence is outside the repository at
+`C:/Users/User/AppData/Local/Temp/mickeyf-cleanup-schedule-20260908-60a2c2ed/`.
+It includes `dispatch-result.json`, exact execution/log/IAM/config snapshots and
+`before-snapshot.json` / `after-snapshot.json`. Temporary execution helpers are
+removed after verification; non-secret JSON evidence is retained outside Git.
+Validation: live Scheduler/Job/alert/IAM checks, read-only SQL preservation
+checks, helper syntax checks and `git diff --check`. No dependency install,
+application or Unity build, broad test rerun, website deployment or main merge.
