@@ -24,7 +24,7 @@ replace the outstanding real-device, browser-cookie and merge/release gates.
 | S5 | Blocked; limited verification | Complete fresh readback of three alert policies is still unavailable. Prior activation snapshots establish their configuration; only missing-success basic UI fields were refreshed during the natural-tick check. Browser retry still fails before navigation with a missing kernel-assets path. No alert failure or schedule failure is inferred. |
 | S6 | Fixed in branch; not merged | At the initial reconciliation, 13 of 14 open default-branch dependency alerts mapped to fixes already in branch locks: eight `fast-uri` alerts (3.1.7), two `qs` alerts (6.16.0), three `xmldom` alerts (0.8.15 / 0.9.12). This alert-to-lock comparison is distinct from the subsequent CI audit findings in S12. |
 | S7 | Accepted; bounded and expiring | Deployment-only `stream-json` 1.9.1, GHSA-528h-pc64-c93x, remains under the owner's static-Hosting-only exception through 2026-10-07 or earlier reassessment triggers. Firebase 15.28.1, locked install, high audit gate and eight-minute deployment timeout remain. No import/framework pipeline expansion or major override is accepted. |
-| S8 | Blocked; current-image disposition | The prior embedded-OpenSSL exception explicitly covered a different image. No corresponding exact-digest exception is recorded for the receipt image now serving traffic. Clean OS/NPM/SECRET scan evidence does not close the embedded-component boundary. See below; this is not a newly demonstrated application exploit. |
+| S8 | Blocked; owner disposition | Exact receipt-image/source review is now recorded below: verified OCI manifests/configurations share the Node base layers; no affected call chain was identified in the examined API/cleanup source. The image-specific risk decision remains pending. No earlier acceptance was transferred, no new exploit of this application was demonstrated, and clean OS/NPM/SECRET scans still do not certify the embedded component. |
 | S9 | Fixed; tested CI checkpoint | Authorized non-deploying run `34301221560` passed both jobs on `3ea379fe`: dependency validation/audits, frontend tests/build, WebGL package/tooling checks, backend unit/MySQL integration tests/build, docs watcher tests/docs build and Unity static integrity. All reported test summaries had zero skips. This supersedes failed run `34300667096`; it is not a Unity rebuild or a browser/device test. A PR with required checks/CodeQL on its eventual merge head remains a separate gate. |
 | S10 | Fixed controls; limited scan coverage | Main ruleset requires PR/thread resolution, strict Web/Unity checks and CodeQL errors/high-or-higher protection, with no bypass actors. Zero open code/secret-scanning alerts were observed; main CodeQL evidence covers `2bffc0db`, not this branch. Push protection is enabled; non-provider patterns and validity checks are disabled. Zero alerts is not proof that no secret exists. |
 | S11 | Deferred; local maintenance | Active backend install still has `qs` 6.15.3 versus locked 6.16.0. Isolated locked tests already passed. Refresh only during a deliberate development-stack stop; do not use the stale install as release evidence or modify running dependencies silently. |
@@ -51,6 +51,14 @@ not two separate GitHub advisory alerts. Reassess on compatible upstream
 remediation or changes involving imports, framework builds, untrusted JSON,
 CLI/configuration/workflow scope, and no later than the exception's expiry.
 The inspected Hosting scope/configuration has not changed since acceptance.
+
+`stream-json` is Firebase CLI tooling for incremental JSON processing. Its
+installed callers handle Auth-user JSON imports, Realtime Database imports and
+Next.js framework dependency parsing. This project publishes static
+`frontend/dist` files; those processing paths are outside the reviewed Hosting
+workflow. The library is absent from the root/frontend/backend lockfiles but
+remains a declared Firebase CLI dependency, so deleting its installed files is
+not a supported remediation. [Library documentation](https://github.com/uhop/stream-json).
 
 ### Authorized CI checkpoint: 2026-09-09 01:49 UTC
 
@@ -115,9 +123,9 @@ The most recent historical exception covered image
 Current receipt image is
 `sha256:9ec1bd83ea73a283ad36961b2dcd3022b9b0a40cbf16bd725398ff562015c3c3`.
 Its Dockerfile/base pin is unchanged, but backend dependencies and code changed.
-Previous component/reachability evidence must be reconciled with this exact
-image before requesting a new explicit disposition. Do not interpret approval
-of migration/promotion as an unrecorded security waiver.
+The refreshed component/reachability evidence for this exact image follows.
+Do not interpret approval of migration/promotion or of this review as an
+unrecorded security waiver.
 
 The official release index still lists Node **22.23.2**, dated **2026-07-28**,
 with embedded OpenSSL **3.5.7** as the latest published Node 22 release.
@@ -130,10 +138,80 @@ The old note calling Node PR #65542 open is historical; its closure alone does
 not prove a new Node 22 release exists. Do not introduce an unreviewed custom
 Node build or silently transfer the old exception.
 
+### Exact receipt-image review: 2026-09-09 UTC
+
+Read-only Cloud Run inspection reconfirmed generation/observed generation 132,
+100% intended/observed traffic to the receipt revision and container HTTP port
+8080. Global Cloud Build `12ec9e8e-ff4a-493c-be8c-025423e5110c` reports SUCCESS,
+resolved Git revision `d1d5dbf6fcc1bedd596827a540779f437fe3501f` and the exact
+receipt digest above. No revision, traffic, flag, grant or data was changed.
+
+Both OCI manifest and configuration bodies were fetched through the existing
+authenticated read-only registry access and independently SHA256-verified.
+The current and prior images are Linux/amd64, declare Node 22.23.2, run as
+`node`, and share the first four compressed layer digests byte-for-byte. Their
+Node installation layer is
+`sha256:efbef6f9e333972a10ca323e700496a64e7ddcc3a6725e6afbbae52e690f4a4a`
+(the earlier roadmap abbreviated this digest incorrectly). Both exact sources
+have Dockerfile blob `2b3c60894c2a73e701230482f3b722a72e017725`; later layers
+differ. This establishes base-component identity, not a new deployed-binary
+execution or a complete native-addon inventory.
+
+Comparing prior source `e91d3b1177932614c22fbed059a42a05fcb10793` to the resolved
+receipt source found no new runtime package among 103 non-dev lock records;
+the only production version delta is `qs` 6.15.3 to 6.16.0. `fast-uri` changes
+are dev-only. New run tickets use HMAC-SHA256/HS256; the API remains an Express
+HTTP listener, and API/cleanup production database connections use a Cloud SQL
+socket rather than application-configured TLS. JWT key normalization can call
+`createPublicKey`, but key material is server-owned, not supplied by requests.
+No caller for QUIC, DTLS, RPK, CMS, CMP or cipher/decipher APIs was identified
+in the reviewed application paths. Those capabilities must not be described
+as absent from the bundled OpenSSL binary.
+
+| Reviewed family | Application prerequisite and current boundary |
+| --- | --- |
+| QUIC: CVE-2026-18798, -14456, -63075 | OpenSSL QUIC endpoints/connection processing; not identified in the HTTP API or cleanup path. |
+| DTLS: CVE-2026-54874 | DTLS handshake records; no DTLS listener/caller identified. |
+| RPK: CVE-2026-14457 | Explicit raw-public-key configuration without the corresponding certificate; no such configuration identified. |
+| CMS: CVE-2026-63072 | CMS message decryption/key unwrapping; no CMS processing identified. |
+| CMP: CVE-2026-63076, -63073, -63074 | CMP message protection/response/server-context handling; no CMP endpoint or message processing identified. |
+| AEAD: CVE-2026-75803 | Affected direct one-shot `EVP_Cipher()` finalization. Reviewed Node wrappers use Update/Final; application uses HMAC/hash rather than cipher calls. |
+
+Prerequisites: official [August 25 advisory](https://openssl-library.org/news/secadv/20260825.txt)
+and [August 13 advisory](https://openssl-library.org/news/secadv/20260813.txt).
+Pinned Node [cipher wrapper](https://github.com/nodejs/node/blob/v22.23.2/deps/ncrypto/ncrypto.cc)
+and [HMAC implementation](https://github.com/nodejs/node/blob/v22.23.2/src/crypto/crypto_hmac.cc)
+support the API distinction; it is not an upstream guarantee of non-exploitability.
+
+CCM remains a separate caveat: Node supports it and requires exactly one
+`update()` call. A synthetic probe on local Windows Node 22.23.2/OpenSSL 3.5.7
+accepted an arbitrary CCM tag when Update was omitted and rejected it when an
+empty Update was supplied. This is not a deployed-Linux-image test or proof of
+CVE-2026-75803 exposure; no application cipher/decipher caller was identified.
+Do not assume an OpenSSL-only patch fixes Node's skipped-finalization path.
+[Node CCM contract](https://nodejs.org/download/release/v22.23.2/docs/api/crypto.html#ccm-mode).
+
+**Recommendation, not yet accepted:** retain only this exact receipt image
+under a bounded exception through **2026-10-07**, with earlier reassessment when
+a patched supported Node release is available, this image/relevant code/runtime
+dependencies/configuration change, or a relevant advisory/incident appears.
+Introducing native addons, FFI, custom providers or affected cipher/protocol
+features also invalidates the present scope. The conclusion is limited to
+"no affected call chain identified in the examined application," not "OpenSSL
+is fixed/unused". The owner must explicitly approve this disposition or choose
+a separately scoped runtime replacement. No acceptance is implied by proceeding
+with the review.
+
+Non-secret OCI hashes, metadata and scope limitations are retained outside Git
+in `release-checks-20260907/receipt-openssl-review-20260908.json`. No image layers
+were pulled or executed; no production requests, secret payload reads, rebuild,
+scan, deployment or complete image-wide native inventory were performed.
+
 ## Next execution order and authority
 
-1. Resolve S8 through an exact-current-image component/reachability review and
-   explicit risk disposition or a separately approved runtime remediation.
+1. Obtain the owner's explicit S8 disposition for the completed exact-image
+   review, or scope a separately approved runtime remediation. Do not repeat
+   the unchanged source/layer review just to ask for that decision.
    Retry only the bounded S5 policy readback when the existing browser/tool
    connection works; no SDK installation or permissions expansion is needed
    merely to repeat a failed verification.

@@ -12,6 +12,9 @@ complete non-deploying CI run `34301221560`; the remaining gates are current-ima
 embedded-OpenSSL disposition, limited alert readback, narrow candidate/browser
 checks, eventual PR/CodeQL merge checks and explicit publication/mobile approval.
 No accepted gameplay check is reopened by this reconciliation.
+The exact receipt-image OpenSSL review is now recorded in that ledger; the
+remaining S8 action is explicit owner risk disposition, not another unchanged
+source/component review.
 
 Current storage checkpoint (2026-09-08): the receipt-based backend is implemented
 on `feature/three-bosses-polish` and its production schema/grant cutover is
