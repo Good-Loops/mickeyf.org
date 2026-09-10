@@ -2183,13 +2183,31 @@ owner requests it or a materially worse regression appears. The possible
 paint/geometry timing interaction remains unconfirmed. Existing Safari recovery
 and page zoom behavior are unchanged.
 
-Carry forward completed keyboard/browser checks and the owner's iPhone gameplay
-acceptance. A focused current Android touch/orientation check and explicit
-site-wide canvas scrolling acceptance remain unconfirmed, not failed. Do not
-repeat the old login/submission campaign, package-script audit or complete game
-checklist. Next is this bounded device closeout and release approval; deploy the
-compatible backend policy before publishing the frontend. No production action
-is authorized by accepting the Safari limitation.
+Release acceptance (2026-09-10): the owner subsequently reported "Done. All good.
+Approved. Proceed." for the remaining focused device/scrolling check and release.
+Carry forward that closeout, completed keyboard/browser checks and iPhone gameplay
+acceptance. Do not repeat the old login/submission campaign, package-script audit
+or complete game checklist. Release approval is separate from accepting the
+Safari limitation and does not silently extend the exact-image S8 security
+exception in `RELEASE_READINESS.md`.
+
+Backend-first release preparation (2026-09-10): backend-only PR #327 passed the
+required Web/Unity checks and CodeQL, then merged as
+`7cfe7b5c7bd24e3362c7e2c089cde81999339d99`. Cloud Build
+`397a07e2-d007-4306-be6c-9f60112a809e` successfully built that exact source as image
+`sha256:6c5a8859328daa79423b23ae8e248191f73e62db2a563e9e907cd5a92a366331`.
+No candidate deployment or production traffic change has occurred. The image
+retains the current Node/OpenSSL base; the existing receipt-image exception is
+not transferable without an explicit owner decision. Frontend publication waits
+for the compatible backend to be serving, not merely built or merged.
+
+The guarded Unity release build refreshed the unreleased canvas-scroll bridge:
+certified build `5473694d…4ba7`, packaged release `97daf31c…c098`, source
+`346491b4`, Unity 6000.3.8f1, 1004 source files. Package provenance/hash validation
+passed. The obsolete packaged release was replaced and remains recoverable from
+Git; the ordinary local WebGL server's output was not changed. This carries
+forward the owner's device acceptance, not a claim of another physical-device
+test. The Unity CLI/Pipeline compatibility follow-up below remains open.
 
 Site-wide canvas scrolling (2026-09-09, implemented locally): the owner chose to retain
 inline Three Bosses gameplay, reserving gestures that start on its actual UI
@@ -2221,19 +2239,18 @@ Preserve p4-Vega's ten-point pickups and faster diagonal keyboard movement while
 improving the game incrementally; the owner approved extending completion to 1000:
 
 - [x] Add a real pause button and a simple pause menu with explicit, testable pause
-  state transitions (physical-device acceptance deferred).
+  state transitions (owner device acceptance completed 2026-09-10).
 - [x] Stop the canvas from swallowing ordinary vertical touch-scroll gestures, so a
   visitor can scroll the page even when the gesture begins over the canvas,
   while preserving deliberate interactions with actual game controls
-  (physical-device acceptance deferred).
+  (owner device acceptance completed 2026-09-10).
 - [x] Prioritize and implement the approved game-feel, analog-input, feedback,
   results/retry and 1000-point completion batch described above.
 - [ ] Before publishing that batch, deploy the backend's 1000-point acceptance
   policy first; do not reset previous personal bests or change the database schema.
-- [ ] Verify keyboard behavior plus real Android and iOS touch, orientation,
+- [x] Verify keyboard behavior plus real Android and iOS touch, orientation,
   scrolling, and fullscreen behavior before release. Carry forward completed
-  keyboard/browser checks and the owner's 2026-09-10 iPhone gameplay acceptance;
-  only the focused Android/scrolling checks above remain unconfirmed. Rare Safari
+  keyboard/browser checks and the owner's 2026-09-10 device closeout. Rare Safari
   edge bands are accepted and are not a release blocker.
 
 ## Phase 16 — Whole-project Clean Code sweep

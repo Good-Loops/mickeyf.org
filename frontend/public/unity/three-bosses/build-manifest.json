@@ -1,39 +1,39 @@
 {
   "version": 2,
-  "buildId": "2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7",
-  "certifiedBuildId": "3477618bc7c41449af9114e3adc45035f59ab2530f4dfccc83719c00a4daecca",
-  "sourceCommit": "8eaa6615a437f88ccb5d44e3dad13cfde42da3aa",
-  "unitySourceDigest": "621406cb29076648fabf2fc8f46c0727b27190610fc485f41675ad705a6cbf60",
-  "unitySourceFileCount": 996,
+  "buildId": "97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098",
+  "certifiedBuildId": "5473694d7730f316a5e72cd67fe30d49ecc05f61f8c809c4ffd02b1b7fb14ba7",
+  "sourceCommit": "346491b4f07d3d7325813a2470ebd0819bbee6a5",
+  "unitySourceDigest": "83c9a133ca8024737af2b4e58ed52bf24fc902e65b5778dea229cb262c7c52fe",
+  "unitySourceFileCount": 1004,
   "unityEditorVersion": "6000.3.8f1",
-  "loaderUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.loader.js",
-  "dataUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.data",
-  "frameworkUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.framework.js",
-  "codeUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.wasm",
-  "streamingAssetsUrl": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/StreamingAssets",
+  "loaderUrl": "releases/97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098/Build/three-bosses-webgl-release-20260910.loader.js",
+  "dataUrl": "releases/97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098/Build/three-bosses-webgl-release-20260910.data",
+  "frameworkUrl": "releases/97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098/Build/three-bosses-webgl-release-20260910.framework.js",
+  "codeUrl": "releases/97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098/Build/three-bosses-webgl-release-20260910.wasm",
+  "streamingAssetsUrl": "releases/97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098/StreamingAssets",
   "companyName": "DefaultCompany",
   "productName": "Three Bosses",
   "productVersion": "1.0",
   "assets": [
     {
-      "path": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.data",
-      "sha256": "61230388c7a56ee4b517c32ead76ac80a441f3534db3360a17ed6e90a17e0db1",
-      "size": 41817687
+      "path": "releases/97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098/Build/three-bosses-webgl-release-20260910.data",
+      "sha256": "9aea78a8348495ab2f2d5dd0a08e2780db17b4e3748eeb5ea89979835de51943",
+      "size": 41818046
     },
     {
-      "path": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.framework.js",
-      "sha256": "630adf65ae687ec7d0e5735ffbc6b48470c331a79f6c41b24e8564673c44e365",
-      "size": 463316
+      "path": "releases/97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098/Build/three-bosses-webgl-release-20260910.framework.js",
+      "sha256": "6db9c229fa7d921b9f0528ce5e821fbbbe0749f7ab0a68f6521f073ff287c4f7",
+      "size": 464049
     },
     {
-      "path": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.loader.js",
-      "sha256": "5a3e5343789ff6edc60949474392621cdec7d6dcf96d8714f259302ee0e12fd2",
+      "path": "releases/97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098/Build/three-bosses-webgl-release-20260910.loader.js",
+      "sha256": "f724c35fdb96c400fc6cd0e790bf12b825a357b62cf0515db7bdfa52c99d3e65",
       "size": 26982
     },
     {
-      "path": "releases/2e660337df60df782451a5d00f85a0591d9a1ba595510da0d61ac382517a7fe7/Build/webgl-candidate-8eaa6615.wasm",
-      "sha256": "2cecc479452bf86d70108109a36bf30191580c09e4e4e29578a4e213e12261a4",
-      "size": 52026572
+      "path": "releases/97daf31ca0b4e854ef5e327ae68db24abe0d9f66d7259ae56df538a40ed8c098/Build/three-bosses-webgl-release-20260910.wasm",
+      "sha256": "e3c6aef2b7151043c94767f2eddad34833c7b56bc529f7e03611ada6b8adfff2",
+      "size": 52031665
     }
   ]
 }

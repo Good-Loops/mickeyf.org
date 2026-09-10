@@ -339,10 +339,11 @@ selection protection are recorded in Phase 15 of `PROJECT_PLAN.md`. The owner
 accepted the rare intermittent Safari edge bands: **accepted, not fixed**. This
 is not a reason to repeat the Safari investigation or earlier accepted tests.
 
-1. Close the distinct current Android touch/orientation and canvas-scrolling
-   check. Carry forward completed keyboard/browser and iPhone gameplay evidence;
-   do not restart a login/submission or exhaustive game checklist.
-2. Obtain release approval. Release the backend-only 0–1000 policy first, keeping
+1. Device closeout and release approval received 2026-09-10: the owner reported
+   "Done. All good. Approved. Proceed." Carry forward completed keyboard/browser,
+   iPhone and the remaining focused device/scrolling acceptance; do not restart a
+   login/submission or exhaustive game checklist.
+2. Release the backend-only 0–1000 policy first, keeping
    previous scores, ten-point increments, schema, authorization and runtime flags
    unchanged. A backend main push or zero-traffic candidate is not proof of
    production promotion: verify the exact serving revision before publishing the
@@ -361,6 +362,53 @@ Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a
 separately reviewed backup restore; traffic etags/trigger checks are not a
 distributed IAM lock. Use a controlled maintenance window for later mutations.
+
+## p4-Vega release checkpoint: 2026-09-10
+
+Backend-only PR #327 passed the required Web/Unity CI checks and CodeQL, then
+merged as `7cfe7b5c7bd24e3362c7e2c089cde81999339d99`. Cloud Build
+`397a07e2-d007-4306-be6c-9f60112a809e` built that exact resolved Git source using
+the existing build service account and VERIFIED provenance. The resulting image
+is `sha256:6c5a8859328daa79423b23ae8e248191f73e62db2a563e9e907cd5a92a366331`.
+This is a built artifact, not a deployed candidate or traffic promotion. Live
+service readback still showed generation 132 and 100% intended/observed traffic
+to `mickeyf-org-scores-9ec1bd83-0908`; triggers and runtime settings were unchanged.
+
+Artifact Registry reports automatic analysis `FINISHED_SUCCESS`, including OS,
+NPM and SECRET, with no vulnerability metadata returned by the exact-image
+`--show-package-vulnerability` read. This coverage does not certify the embedded
+OpenSSL component; S8 still requires its separate disposition.
+
+The scoped image review independently verified both OCI manifest/configuration
+hashes and confirmed identical first four base layers, Dockerfile blob, Node
+22.23.2 declaration, Linux/amd64 target and non-root user versus the live image.
+The 103 runtime lock entries contain no added/removed package; version changes
+are the previously merged express-rate-limit, ip-address, lru.min and mysql2
+updates. Application-source changes versus the live source are the score-policy
+extension and receipt-migration inspection safeguards, plus tests/documentation.
+No new application cipher/protocol call was introduced by that diff. This is a
+scoped source/component comparison, not execution of the image or a complete
+native/transitive reachability audit.
+
+The [official Node release index](https://nodejs.org/dist/index.json), checked
+2026-09-10, still lists Node 22.23.2 with embedded OpenSSL 3.5.7 as the newest
+Node 22 release. The exact-image S8 exception above has **not** been extended to
+this replacement. Obtain an explicit owner decision before deploying it; general
+release approval is not an unrecorded security waiver. The prior October 7 expiry
+and earlier-reassessment conditions must not be silently reset.
+
+The guarded Unity release builder produced certified build `5473694d…4ba7` from
+`346491b4`, with 1004-source-file provenance and restored project settings. The
+packager replaced the stale checked-in release with `97daf31c…c098`, including
+the previously accepted canvas-scroll bridge. Command
+`node scripts/package-three-bosses-webgl-release.mjs --validate-packaged` passed;
+this package is not yet published. The prior package remains recoverable in Git,
+and the local WebGL server's separate output was not replaced.
+
+Non-secret image/component evidence and temporary rollout preparation remain
+outside Git in `C:/Users/User/.codex/tmp/p4-vega-rollout-20260910`. No real-account
+login/score write, schema mutation, secret-value read, trigger activation or
+production traffic change was performed in this release-preparation checkpoint.
 
 ## Verification record
 
