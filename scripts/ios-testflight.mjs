@@ -241,7 +241,8 @@ function verifyIpa(config, signing, ipa) {
     const embedded = readProfile(join(app, 'embedded.mobileprovision'));
     requireThat(embedded.uuid === signing.profile.uuid, 'Exported IPA uses a different provisioning profile.');
     const certificatePrefix = join(config.root, 'signed-certificate-');
-    run('Inspect application signing certificate', 'codesign', ['-d', '--extract-certificates', certificatePrefix, app]);
+    // This optional argument must use '='; a separate prefix is interpreted as another app path.
+    run('Inspect application signing certificate', 'codesign', ['-d', `--extract-certificates=${certificatePrefix}`, app]);
     requireThat(new X509Certificate(readFileSync(`${certificatePrefix}0`)).fingerprint.replaceAll(':', '') === signing.fingerprint,
         'Exported IPA uses a different signing certificate.');
     return info;

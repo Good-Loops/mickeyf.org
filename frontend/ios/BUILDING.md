@@ -72,8 +72,16 @@ list `--bundle-id`. The helper now uses the already-verified IPA metadata instea
 of duplicate bundle/version command-line overrides, and Apple's documented
 `./private_keys/AuthKey_<key-id>.p8` lookup inside its owned temporary directory.
 Preflight checks the flags from the actual upload command, not a separate list.
-The corrected signed run still needs runner verification; this was not a
-certificate rejection or an Apple upload failure.
+This was not a certificate rejection or an Apple upload failure.
+
+Run `34505161671` then passed uploader preflight, locked web tests/build, native
+synchronization, signing-identity import, iPhone archive/export, IPA metadata,
+deep signature verification and embedded-profile matching. It stopped while
+extracting the signing certificate: the optional `codesign --extract-certificates`
+prefix was passed separately, making it another input path. The helper now uses
+`--extract-certificates=<prefix>` and retains the leaf-certificate comparison.
+Cleanup passed. No upload was attempted; the corrected extraction and subsequent
+Apple upload still need runner verification.
 
 The GitHub `ios-testflight` environment was created and read back on 2026-09-10:
 
