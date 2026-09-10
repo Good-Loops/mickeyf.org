@@ -19,21 +19,21 @@ history; the publication closeout records the final delivery checks.
 | ID | Status | Evidence and remaining boundary |
 | --- | --- | --- |
 | S1 | Fixed; dated production acceptance | Receipt migration, exact SQL runtime/operator grants, preservation checks, temporary-account removal, 64 enabled HTTP acceptance assertions and 36 promotion assertions are complete. Do not repeat migrations or synthetic-account acceptance. These are not browser-cookie tests. |
-| S2 | Fixed; scoped live readback | Cloud Run remains generation/observed generation 132, with 100% intended/observed traffic to `mickeyf-org-scores-9ec1bd83-0908` and receipt image `9ec1bd83…c3c3`. Its DB/session references remain numeric versions 1/2, not plaintext values. Runtime and cleanup workers have only Cloud SQL Client in the inspected project bindings; the scheduler caller has no project binding. Each inspected secret policy grants its accessor only to the intended worker; the cleanup Job grants Invoker only to its scheduler caller. Ancestor/organization policies and SQL grants were not freshly enumerated. |
+| S2 | Fixed; scoped live readback | On 2026-09-10, Cloud Run generation/observed generation135 serves 100% intended/observed traffic to `mickeyf-org-p4-1000-6c5a8859-0910`, image `6c5a8859…6331`. Complete runtime comparison preserved numeric DB/session secret references1/2, runtime identity, Cloud SQL attachment, flags and resource settings. Earlier scoped IAM/grant findings are carried forward, not re-enumerated by this image/traffic-only rollout. The receipt-compatible prior revision remains the rollback target. |
 | S3 | Fixed; source and live control checks | Backend build contexts exclude local environment/dependency/generated files; Docker remains pinned, multistage and non-root. All four existing global backend build/deploy triggers are disabled; none are configured in `us-central1`. Reviewed frozen deployment/traffic guards remain. Do not re-enable triggers or route traffic as part of verification. |
 | S4 | Fixed; operational acceptance | Manual cleanup/retry acceptance, hourly activation and exact first natural execution `zjpfg` succeeded. One-off follow-up was deleted. Permanent bests remain independent of receipt deletion. No extra cleanup dispatch is needed. |
 | S5 | Fixed; scoped live readback | At 2026-09-09 02:12:46 UTC, read-only Monitoring API requests verified all three enabled ERROR policies, their exact filters/conditions/alert strategies and sole approved channel against the activation snapshots. The email channel is enabled and its recipient matches the owner's choice. The API resolved the readback blocker without installations or permission changes; browser/CLI repair is not claimed. This is configuration evidence, not a new incident or email-delivery test. |
 | S6 | Fixed; merged | PR #322 brought the reviewed dependency fixes into main. GitHub's post-merge push report lists only the previously accepted moderate alert #287. At the initial reconciliation, 13 of 14 alerts mapped to branch fixes: eight `fast-uri`, two `qs`, and three `xmldom`. This is distinct from the subsequent CI audit findings in S12. |
 | S7 | Accepted; bounded and expiring | Deployment-only `stream-json` 1.9.1, GHSA-528h-pc64-c93x, remains under the owner's static-Hosting-only exception through 2026-10-07 or earlier reassessment triggers. Firebase 15.28.1, locked install, high audit gate and eight-minute deployment timeout remain. No import/framework pipeline expansion or major override is accepted. |
-| S8 | Accepted; bounded and expiring | On 2026-09-08 local (2026-09-09 UTC), the owner explicitly approved the exact receipt-image exception recorded below through 2026-10-07, subject to earlier reassessment triggers. Verified OCI manifests/configurations share the Node base layers; no affected call chain was identified in the examined API/cleanup source. This is risk acceptance, not an OpenSSL fix, transfer of an earlier exception, or approval for a replacement image/deployment. Clean OS/NPM/SECRET scans still do not certify the embedded component. |
+| S8 | Accepted; bounded and expiring | The owner explicitly approved the exact p4 release image `6c5a8859…6331` on 2026-09-10 through 2026-10-07 with the existing earlier-reassessment triggers retained. The historical receipt-image exception and the new exact-image evidence/approval are recorded below. This is risk acceptance, not an OpenSSL fix or blanket approval for subsequent images. Clean OS/NPM/SECRET scans do not certify the embedded component. |
 | S9 | Fixed; tested CI checkpoint | Authorized non-deploying run `34301221560` passed both jobs on `3ea379fe`: dependency validation/audits, frontend tests/build, WebGL package/tooling checks, backend unit/MySQL integration tests/build, docs watcher tests/docs build and Unity static integrity. All reported test summaries had zero skips. This supersedes failed run `34300667096`; it is not a Unity rebuild or a browser/device test. A PR with required checks/CodeQL on its eventual merge head remains a separate gate. |
 | S10 | Fixed controls; limited scan coverage | Main ruleset requires PR/thread resolution, strict Web/Unity checks and CodeQL errors/high-or-higher protection, with no bypass actors. Zero open code/secret-scanning alerts were observed; main CodeQL evidence covers `2bffc0db`, not this branch. Push protection is enabled; non-provider patterns and validity checks are disabled. Zero alerts is not proof that no secret exists. |
 | S11 | Deferred; local maintenance | Active backend install still has `qs` 6.15.3 versus locked 6.16.0. Isolated locked tests already passed. Refresh only during a deliberate development-stack stop; do not use the stale install as release evidence or modify running dependencies silently. |
 | S12 | Fixed; deployment-only dependency patch | `3ea379fe` updates exactly four lock entries: `js-yaml` 4.3.2, `hono` 4.13.7, `morgan` 1.12.0 and Firebase-scoped `csv-parse` 7.0.2. Firebase stays 15.28.1. Fresh locked install, full production dependency-tree validation, CLI version check, eight offline CSV tests and twelve smoke-tool tests pass. Audit now has zero high/critical and only the two previously accepted stream-json/parent moderate entries. No unrelated finding was waived or threshold lowered. |
-| R1 | Fixed; certified local candidate | Package `2e660337…a7fe7` remains the certified 996-file Unity candidate from `8eaa6615`. Unity source is unchanged. The later host-only short-landscape CSS correction and its focused checks are recorded below; it requires no Unity rebuild. Candidate packaging/hash checks, local header simulation and signed-out Chrome startup remain the existing evidence. |
+| R1 | Fixed; certified and published | Package `97daf31c…c098` contains the canvas-scroll bridge: certified build `5473694d…4ba7`, source `346491b4`, 1004-file provenance, Unity6000.3.8f1. Guarded build/settings restoration and packaged hash/provenance validation passed; Firebase verified preview startup and live payload delivery. Earlier game/device checks are carried forward. |
 | R2 | Fixed; owner phone acceptance | After opening the release-candidate mobile preview for the requested fresh-load/landscape touch check, the owner reported about 10 seconds to load and confirmed Fire/fullscreen-exit buttons behave properly. This closes the combined observation. The timing is owner-observed local Safari delivery, not an instrumented cache-miss measurement or production CDN benchmark; the exact 640x360 geometry remains covered by the earlier layout fixture. No repeat login/submission or exhaustive clip-listening pass is required. |
 | R3 | Fixed; accepted owner checks | Keep closed: owner-confirmed published-site login/submission; Android/iPhone normal routes and recorded defeat/retry/menu checks; touch controls; mute persistence; automatic/combined pause; complete outcome-centering audit; accepted fullscreen-button placement and Safari toolbar limitation; recovered desktop FPS incident. Carry acceptance forward unless relevant code/origin/configuration changes or a concrete regression invalidate it. A brief post-publication smoke check is not a new pre-release authentication campaign. |
-| R4 | Fixed; published | PR #322 / `c94c5de5` published successfully through Firebase run `34305326963`. Live manifest matches package `2e660337…a7fe7`; hosted bytes/headers, preview startup and live runtime verification passed. A public-URL mobile-emulated Chromium startup reached `running` without the DEV query, and a separate Wasm request confirmed gzip negotiation. This is not a new physical Safari timing measurement. `feature/three-bosses-polish` remains; backend deployments, flags, grants and data were unchanged. |
+| R4 | Fixed; published | Latest game release PR #328 / `b6888bc2` published through Firebase run `34481007522` after the compatible backend was serving. Preview/live WebGL payload checks, preview startup, promotion verification and temporary preview deletion passed. Public p4-Vega canvas/help/score delivery passed in fresh signed-out Chromium. This is not a new physical Safari timing or authenticated-persistence test. |
 | M1 | Fixed; named scope | Named temporary-artifact cleanup and the 57-script bounded audit are complete. Recycled copies remain recoverable; intentional verification/recovery archives remain. Do not reopen an unlimited package/filesystem audit. |
 | M2 | Deferred; explicit follow-ups | Exhaustive per-weapon/per-clip listening and game-feel coverage is optional follow-up absent a specific defect or relevant change; the bounded source review below found no missing weapon/audio reference. Shared-shell device checks (landscape nav/dropdowns with browser bars; Dancing Circles aspect/color) remain distinct from Three Bosses gameplay. Also retain the large-chunk warning, Unity CLI/Pipeline compatibility follow-up and unmeasured DB instrumentation overhead. p4-Vega polish and the incremental Clean Code sweep follow this release phase. |
 
@@ -332,18 +332,20 @@ explicitly deferred, not described as fixed.
 
 ## Next execution order and authority
 
-Updated 2026-09-10: p4-Vega's approved feature batch is implemented on
-`feature/p4-vega-improvements`, not published. The owner reported good gameplay
+Updated 2026-09-10: p4-Vega's approved feature batch is published through
+PR #328 / `b6888bc2`; the exact release results are below. The owner reported good gameplay
 on iPhone. Bottom-corner fullscreen joystick placement and fullscreen HUD
 selection protection are recorded in Phase 15 of `PROJECT_PLAN.md`. The owner
 accepted the rare intermittent Safari edge bands: **accepted, not fixed**. This
 is not a reason to repeat the Safari investigation or earlier accepted tests.
 
+The following release sequence is complete; it is not a fresh checklist to rerun.
+
 1. Device closeout and release approval received 2026-09-10: the owner reported
    "Done. All good. Approved. Proceed." Carry forward completed keyboard/browser,
    iPhone and the remaining focused device/scrolling acceptance; do not restart a
    login/submission or exhaustive game checklist.
-2. Release the backend-only 0–1000 policy first, keeping
+2. Released the backend-only 0–1000 policy first, keeping
    previous scores, ten-point increments, schema, authorization and runtime flags
    unchanged. A backend main push or zero-traffic candidate is not proof of
    production promotion: verify the exact serving revision before publishing the
@@ -351,12 +353,13 @@ is not a reason to repeat the Safari investigation or earlier accepted tests.
    Firebase workflow publishes relevant frontend changes from main automatically.
    Backend trigger state must be checked at release time; the older disabled
    trigger snapshot is not a fresh live-state claim.
-3. After device closeout and the backend prerequisite, publish the approved
+3. After device closeout and the backend prerequisite, published the approved
    frontend batch through the existing release flow. Keep accepted Three Bosses
    gameplay/authentication checks closed absent a relevant regression.
 4. Retain the dated S7/S8 reassessment boundaries and deferred maintenance list.
-   No backend pipeline reactivation, dependency refresh, new deployment or
-   unrelated cloud mutation is implied by this closeout.
+   No backend pipeline reactivation, dependency refresh, further deployment or
+   unrelated cloud mutation is implied by this closeout. Next is Phase16's
+   bounded first-party Clean Code inventory, not another release audit.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a
@@ -414,6 +417,41 @@ Non-secret image/component evidence and temporary rollout preparation remain
 outside Git in `C:/Users/User/.codex/tmp/p4-vega-rollout-20260910`. No real-account
 login/score write, schema mutation, secret-value read, trigger activation or
 production traffic change was performed in this release-preparation checkpoint.
+
+## Completed deployment: 2026-09-10
+
+- Stage job `89f1e424-ab53-46cd-a1f6-2c7ec6b1af3c` succeeded at generation133,
+  with the candidate Ready and old production traffic unchanged.
+- Promotion job `256b9571-c6a7-4183-9651-c8900fcf594d` applied the traffic-only
+  change to generation134. Its final comparison failed because Cloud Run combined
+  the untagged100% allocation and zero-percent tag in `trafficStatuses`. Independent
+  readback verified equivalent revision allocations/tag mappings, exact image,
+  complete service/runtime configuration and unchanged rollback revision. The
+  promotion was not blindly repeated; this was a verification representation
+  mismatch, not a failed traffic change.
+- Job `5311d0af-2c9d-4356-8b08-51ea0b1674cd` removed only the temporary candidate
+  tag and succeeded. Generation/observed generation135 is Ready with 100% intended
+  and observed traffic on `mickeyf-org-p4-1000-6c5a8859-0910`; no candidate tag
+  remains. Existing backend triggers stayed disabled. Secrets, runtime identity,
+  enabled flags, Cloud SQL attachment, resource settings, grants and schema were
+  not changed. Old revision `mickeyf-org-scores-9ec1bd83-0908` remains available;
+  after frontend publication, restore the prior frontend before using it because
+  its score policy rejects1000.
+- Read-only staged/live catalog and p4 leaderboard requests passed the current
+  DTO, CORS, no-store and no-cookie checks. No real/disposable account, login,
+  score, database migration or cleanup dispatch was used for this release.
+- PR #328 merged at `b6888bc2ebd58040b32398a7c2982daf2acfe746` after required
+  CI/CodeQL passed. [Firebase run34481007522](https://github.com/Good-Loops/mickeyf.com/actions/runs/34481007522)
+  succeeded: build, isolated preview, WebGL bytes/headers, preview startup,
+  promotion/live WebGL verification and preview-channel deletion. One fresh public
+  Chromium check at13:13:58UTC loaded p4-Vega's canvas, current How to Play card
+  with1000-point completion and plain score counter, with zero page errors.
+  Existing owner device acceptance remains the physical-device evidence.
+
+Temporary executable transport/deployment/check helpers are removed at release
+closeout; non-secret build/state/probe evidence remains outside Git. The obsolete
+packaged WebGL release was replaced and is recoverable from Git. No open-ended
+temporary-file sweep or repeat package-script audit was performed.
 
 ## Verification record
 

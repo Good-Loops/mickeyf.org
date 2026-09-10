@@ -2200,8 +2200,11 @@ The image retains the current Node/OpenSSL base. The owner explicitly approved
 this exact replacement-image exception on 2026-09-10 with the October 7 expiry
 and earlier-reassessment conditions unchanged, as recorded in
 `RELEASE_READINESS.md`. Backend staging/promotion follows that decision.
-Frontend publication waits
-for the compatible backend to be serving, not merely built or merged.
+That prerequisite is now complete: generation135 serves 100% of traffic on
+`mickeyf-org-p4-1000-6c5a8859-0910`, with the exact reviewed image and unchanged
+runtime configuration. The temporary candidate tag was removed. Anonymous
+catalog/leaderboard delivery and CORS/no-store checks passed without account or
+score writes.
 
 The guarded Unity release build refreshed the unreleased canvas-scroll bridge:
 certified build `5473694d…4ba7`, packaged release `97daf31c…c098`, source
@@ -2210,6 +2213,17 @@ passed. The obsolete packaged release was replaced and remains recoverable from
 Git; the ordinary local WebGL server's output was not changed. This carries
 forward the owner's device acceptance, not a claim of another physical-device
 test. The Unity CLI/Pipeline compatibility follow-up below remains open.
+
+Published release closeout (2026-09-10): PR #328 merged as `b6888bc2` after required
+CI/CodeQL passed. Firebase workflow `34481007522` succeeded, including isolated
+preview validation, Three Bosses startup/payload checks, live promotion/payload
+verification and deletion of its temporary preview channel. A fresh signed-out
+public Chromium check loaded p4-Vega's canvas, current How to Play card (including
+1000-point completion), and plain score counter without page errors. This is a
+delivery check, not another physical-device or score-persistence test. Release
+acceptance is closed; do not reopen its device, Safari, script-audit or generic
+login/submission checklists. Next planned phase is the bounded Clean Code inventory
+below. The dated security exceptions remain accepted, not fixed.
 
 Site-wide canvas scrolling (2026-09-09, implemented locally): the owner chose to retain
 inline Three Bosses gameplay, reserving gestures that start on its actual UI
@@ -2248,7 +2262,7 @@ improving the game incrementally; the owner approved extending completion to 100
   (owner device acceptance completed 2026-09-10).
 - [x] Prioritize and implement the approved game-feel, analog-input, feedback,
   results/retry and 1000-point completion batch described above.
-- [ ] Before publishing that batch, deploy the backend's 1000-point acceptance
+- [x] Before publishing that batch, deploy the backend's 1000-point acceptance
   policy first; do not reset previous personal bests or change the database schema.
 - [x] Verify keyboard behavior plus real Android and iOS touch, orientation,
   scrolling, and fullscreen behavior before release. Carry forward completed
