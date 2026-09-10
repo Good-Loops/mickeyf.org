@@ -260,10 +260,21 @@ First native-device acceptance limits identified on 2026-09-10:
   older login or an offline logout from silently restoring a session.
   Cookie/JWT expiry remains four hours; this is not indefinite remembered login.
   The native host is intentionally pinned and checked against both build jobs;
-  changing API hosts requires reviewing that allowlist too. Focused transport
-  checks passed, but Swift compilation and physical close/reopen/logout checks
-  remain required. Do not mark persistence accepted until the new build passes
-  those device checks. p4-Vega's separate asset-loading failure is unchanged.
+  changing API hosts requires reviewing that allowlist too. All 33 focused
+  transport checks and frontend TypeScript passed. Unsigned iOS workflow
+  [34512879625](https://github.com/Good-Loops/mickeyf.com/actions/runs/34512879625)
+  passed the complete frontend tests/build and Swift simulator compilation on
+  source `5b12b15aa7cc9a70d14dcc81f1c2ce6786b52aec`, without signing credentials.
+  This is not a TestFlight upload or physical persistence proof. After a signed
+  build, check login -> full close/reopen within four hours -> logout -> full
+  close/reopen still logged out (including offline logout). p4-Vega's separate
+  asset-loading failure is unchanged.
+
+  Focused local commands from the repository root:
+  ```sh
+  node --experimental-strip-types --test frontend/ts/services/authApi.test.mjs frontend/ts/services/nativeApiFetch.test.mjs frontend/ts/services/leaderboardApi.test.mjs
+  frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json
+  ```
 - Check user-selected audio playback and interruption/resume. No first-party
   microphone capture was found; do not add a microphone permission without a use.
 - If Apple reports Missing Compliance, the owner must confirm the encryption
