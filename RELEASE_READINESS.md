@@ -395,6 +395,11 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    Prepare for Submission. The Developer identifier description is Ludolume;
    `com.mickeyf.app` remains unchanged. No signed build, TestFlight upload or
    public store release is claimed.
+   App Information categories Entertainment (primary) and Music (secondary)
+   were saved and verified after reload on 2026-09-10. Fresh app/bundle API
+   reads still return Ludolume; the previous description persists only in the
+   observed App Store Connect selector. That cosmetic inconsistency does not
+   change the registered identifier or authorize broader CI-key permissions.
    API access subsequently approved; a Developer-role team key and non-secret
    identifiers are stored in the protected `ios-testflight` environment. Exact
    app/bundle reads returned HTTP 200 and Ludolume; a bundle-name PATCH returned

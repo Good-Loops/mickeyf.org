@@ -89,12 +89,19 @@ accepted the owner-selected name Ludolume and created its App Store Connect reco
 - Apple app ID: `6810735137`.
 - Platform/language: iOS, English (U.S.).
 - SKU: `ludolume-ios`.
+- Categories: Entertainment (primary), Music (secondary), saved and verified
+  after reloading App Information on 2026-09-10.
 - Status: Prepare for Submission; no binary upload, review submission or release.
 
 The on-device display name is Ludolume. Apple Developer's Identifiers list
 confirmed the renamed description; App Store Connect's bundle selector still
 showed the previous description after refresh. The underlying identifier is
 unchanged. Google Play registration remains separate.
+
+The owner's confirmed sequence is Apple distribution signing and a signed
+TestFlight build for the iPhone, Google/Apple sign-in, then the Clean Code sweep.
+Keep the signing/upload milestone below in scope; public store publication
+still requires separate release approval.
 
 API access verified 2026-09-10 after the owner accepted Apple's API-use agreement:
 

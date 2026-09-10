@@ -2362,6 +2362,14 @@ reverse-domain convention for `mickeyf.com`. Capacitor, Android and iOS now use
 that identifier consistently; local configuration alone does not reserve it
 with Apple or Google Play.
 
+Immediate priority reaffirmed by the owner on 2026-09-10: finish this bounded
+branding/account setup, complete Apple distribution signing and a signed
+TestFlight build for the owner's iPhone, implement Google and Apple sign-in,
+then resume the incremental Clean Code sweep. Do not skip the TestFlight/device
+milestone. Public store publication still requires separate release approval.
+Do not let App Store Connect's stale bundle-description label expand this work
+into repeated refreshes, a replacement app/identifier or broader CI permissions.
+
 - [x] Register the Apple bundle ID and create the App Store Connect record.
   Apple Developer registration verified 2026-09-10: explicit `com.mickeyf.app`
   under team `AX4Z7T24C9`, description Ludolume. After the original listing name
@@ -2370,6 +2378,11 @@ with Apple or Google Play.
   No binary was uploaded, submitted for review or published. App Store Connect's
   bundle selector still displayed the previous description after refresh, although
   Apple Developer's Identifiers list confirmed Ludolume with `com.mickeyf.app`.
+- [x] Set App Information categories: Entertainment (primary), Music (secondary).
+  Saved in App Store Connect and verified after a page reload on 2026-09-10.
+  Exact API reads also reconfirmed Ludolume for both app and bundle records;
+  the selector's previous description remains an Apple UI inconsistency, not
+  evidence that `com.mickeyf.app` needs replacing. No store submission occurred.
 - [ ] Confirm Google Play developer account access and create its app record.
 - [ ] Preserve the PWA track and review the existing Android/iOS shells. Build
   Android on Windows; use GitHub Actions macOS/Xcode for iOS (owner approved
