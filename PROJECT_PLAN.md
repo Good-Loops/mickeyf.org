@@ -2375,7 +2375,7 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   under team `AX4Z7T24C9`, description Ludolume. After the original listing name
   was rejected, Apple accepted the owner-selected Ludolume: app `6810735137`,
   iOS, English (U.S.), SKU `ludolume-ios`, status Prepare for Submission.
-  No binary was uploaded, submitted for review or published. App Store Connect's
+  Registration alone did not upload or submit a binary. App Store Connect's
   bundle selector still displayed the previous description after refresh, although
   Apple Developer's Identifiers list confirmed Ludolume with `com.mickeyf.app`.
 - [x] Set App Information categories: Entertainment (primary), Music (secondary).
@@ -2396,8 +2396,8 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   simulator compilation and artifact upload succeeded. This is not physical
   iPhone validation or a signed store build. Android native compilation is
   still unverified; the local Java/Android SDK toolchain is not configured.
-  See `frontend/ios/BUILDING.md`; no signed build, TestFlight upload or public
-  store release has been performed.
+  See `frontend/ios/BUILDING.md`; that unsigned run did not upload to TestFlight
+  or publish a store release. The signed iOS checkpoint is recorded below.
 - [x] Create the Apple distribution identity and configure protected signing secrets.
   With owner approval on 2026-09-10, the account-holder UI created Apple
   Distribution certificate `Q4FS72TU6B` (expires 2027-09-10) and active
@@ -2410,10 +2410,19 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   An AES-256-encrypted P12 and DPAPI-protected password are backed up locally
   with restricted access. `ios-testflight` holds `ASC_PRIVATE_KEY_P8` and all
   three iOS signing secrets; the exact `improvement/clean-code-sweep` branch
-  restriction and `Good-Loops` reviewer remain in place. Workflow/helper code is
-  prepared; successful signed upload remains pending. Next: the protected signed
-  build/upload and physical iPhone acceptance; credential setup is not proof
-  that signing, export or TestFlight upload succeeds.
+  restriction and `Good-Loops` reviewer remain in place.
+- [x] Build, verify and upload the signed iOS app to internal TestFlight.
+  [Protected run `34505852569`](https://github.com/Good-Loops/mickeyf.com/actions/runs/34505852569)
+  passed on exact commit `cd59d311e8b866f77477f8867a6334544a89a066`: signed
+  archive/export, IPA metadata and leaf-certificate verification, upload and
+  credential/artifact cleanup all succeeded. App Store Connect GET (HTTP 200)
+  confirms Ludolume 1.0 build `4.1.0`, ID
+  `2999535d-e87d-47e1-91cf-ce2bb4bbd4ea`, processing `VALID`, audience
+  `INTERNAL_ONLY`, not expired. Internal testing is `MISSING_EXPORT_COMPLIANCE`:
+  `usesNonExemptEncryption` is unset and no beta groups are assigned. The owner's
+  compliance declaration, internal tester assignment and physical iPhone
+  acceptance remain pending; no legal answers or public store submission were
+  made, and no website/backend release was performed.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma

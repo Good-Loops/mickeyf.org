@@ -13,7 +13,7 @@ approved PR #330 on 2026-09-10. That PR contained only the workflow and signing
 ignore rules. Merging the full development branch also carries its website/auth
 changes and can trigger website deployment; that remains separate approval.
 
-The renamed workflow is **Ludolume iOS build (manual)**. GitHub's
+The workflow and future run titles use **Ludolume iOS build**. GitHub's
 Actions listing may retain its original title until this workflow-only rename
 reaches `main`; this does not authorize merging the full development branch.
 Select **Run workflow** and choose the reviewed branch. The stable filename
@@ -54,7 +54,7 @@ Native artwork sources, generation prompts and export instructions are in
 shared celestial image; its navy background avoids a white reveal. This is the
 OS launch screen, not an added timed loading overlay.
 
-## Next stage: signed TestFlight builds
+## Signed TestFlight builds
 
 The same manual workflow now has an `upload_testflight` boolean, defaulting to
 `false`. The default remains the unsigned simulator job. Selecting `true` uses
@@ -64,7 +64,20 @@ The helper `scripts/ios-testflight.mjs` is dedicated to this job: it checks the
 app/team/profile/certificate, assigns a unique build number, archives an iPhone
 app, exports an internal-only TestFlight IPA and uploads through Apple's tool.
 It removes temporary signing material and signed outputs; neither is uploaded
-as a public Actions artifact. Tool checks on Windows do not prove macOS signing.
+as a public Actions artifact.
+
+Signed build/upload verified on 2026-09-10:
+[run 34505852569](https://github.com/Good-Loops/mickeyf.com/actions/runs/34505852569)
+passed at exact commit `cd59d311e8b866f77477f8867a6334544a89a066`, including signed
+archive/export, IPA metadata, deep signature and leaf-certificate verification,
+Apple upload and credential/artifact cleanup. App Store Connect GET (HTTP 200)
+confirms Ludolume version **1.0**, build **4.1.0**, ID
+`2999535d-e87d-47e1-91cf-ce2bb4bbd4ea`: processing `VALID`, audience
+`INTERNAL_ONLY`, not expired. Internal testing is `MISSING_EXPORT_COMPLIANCE`;
+`usesNonExemptEncryption` is unset and no beta groups are assigned. The owner's
+compliance declaration, internal tester assignment and physical iPhone runtime
+acceptance remain pending. No legal answers, public store submission or
+website/backend release were made by this upload.
 
 The first protected run, `34504646121`, stopped at uploader preflight before
 dependencies, signing credentials or uploads were used: `altool --help` did not
@@ -74,14 +87,12 @@ of duplicate bundle/version command-line overrides, and Apple's documented
 Preflight checks the flags from the actual upload command, not a separate list.
 This was not a certificate rejection or an Apple upload failure.
 
-Run `34505161671` then passed uploader preflight, locked web tests/build, native
-synchronization, signing-identity import, iPhone archive/export, IPA metadata,
-deep signature verification and embedded-profile matching. It stopped while
+Run `34505161671` passed archive/export and signature checks but stopped while
 extracting the signing certificate: the optional `codesign --extract-certificates`
 prefix was passed separately, making it another input path. The helper now uses
 `--extract-certificates=<prefix>` and retains the leaf-certificate comparison.
-Cleanup passed. No upload was attempted; the corrected extraction and subsequent
-Apple upload still need runner verification.
+Cleanup passed; that failed run attempted no upload. The successful run above
+verified the correction and subsequent Apple upload.
 
 The GitHub `ios-testflight` environment was created and read back on 2026-09-10:
 
@@ -91,9 +102,9 @@ The GitHub `ios-testflight` environment was created and read back on 2026-09-10:
   The owner should review the exact source commit in GitHub before approving a
   signing run. This is a release checkpoint, not two-person separation of duties.
 - The Developer-role team API key is stored as `ASC_PRIVATE_KEY_P8`, with its
-  non-secret identifiers in environment variables. The signed/upload path is
-  prepared but has not yet completed a signing run. Configuring credentials
-  does not start a build or publish.
+  non-secret identifiers in environment variables. The protected signed/upload
+  path passed in run `34505852569`; configuring credentials alone does not start
+  a build or publish.
 - When rolling the active branch, explicitly update its exact branch policy;
   do not replace it with a broad wildcard to work around a blocked run.
 
@@ -120,8 +131,8 @@ Distribution credentials created with owner approval on 2026-09-10:
   HTTP 200 using the existing Developer-role API key; no roles or browser
   security settings were changed to retrieve them.
 - The three signing secret names were read back from `ios-testflight` after
-  storage. Values are not readable through GitHub; successful macOS import and
-  signing remain the first protected run's acceptance check.
+  storage. Values are not readable through GitHub; macOS import and signing were
+  subsequently verified by the successful protected run.
 - The local backup is under `%LOCALAPPDATA%/Ludolume/Apple/Distribution-20260910`,
   restricted to this Windows user and SYSTEM. Both the RSA key and P12 are
   encrypted; the password is DPAPI-protected for the same user and computer.
@@ -140,7 +151,8 @@ accepted the owner-selected name Ludolume and created its App Store Connect reco
 - SKU: `ludolume-ios`.
 - Categories: Entertainment (primary), Music (secondary), saved and verified
   after reloading App Information on 2026-09-10.
-- Status: Prepare for Submission; no binary upload, review submission or release.
+- Store status: Prepare for Submission; the internal TestFlight upload is not
+  a public store review submission or release.
 
 The on-device display name is Ludolume. Apple Developer's Identifiers list
 confirmed the renamed description; App Store Connect's bundle selector still
@@ -149,7 +161,7 @@ unchanged. Google Play registration remains separate.
 
 The owner's confirmed sequence is Apple distribution signing and a signed
 TestFlight build for the iPhone, Google/Apple sign-in, then the Clean Code sweep.
-Keep the signing/upload milestone below in scope; public store publication
+Keep the pending iPhone acceptance milestone in scope; public store publication
 still requires separate release approval.
 
 API access verified 2026-09-10 after the owner accepted Apple's API-use agreement:
@@ -174,11 +186,12 @@ API access verified 2026-09-10 after the owner accepted Apple's API-use agreemen
   and computer; it is not a portable recovery file. Rotate the Apple key and
   replace the GitHub secret if access is lost or compromise is suspected.
 
-These checks prove API authentication and record reads, not GitHub-runner key
-consumption, signed compilation, TestFlight upload or native runtime behavior.
+Those initial API checks proved authentication and record reads. The successful
+protected run now verifies runner key consumption, signed compilation and
+TestFlight upload; native runtime behavior remains unverified.
 Do not expose the P8 or minted JWTs in logs, source, artifacts or chat.
 
-Before running the signed upload:
+For subsequent signed uploads and device acceptance:
 
 1. Use the existing Ludolume App Store Connect record (`6810735137`) and
    registered `com.mickeyf.app` bundle ID; do not create a duplicate record or
@@ -193,8 +206,10 @@ Before running the signed upload:
 4. Review the exact source commit and approve the protected manual signing job.
    It uses unique build numbers and temporary-keychain cleanup. Uploading to
    TestFlight does not authorize public App Store submission or release.
-5. Check installation, artwork, audio playback and gameplay on the owner's
-   iPhone. Native auth/session acceptance follows the origin/login work below;
+5. Obtain the owner's export-compliance answers and assign internal testers;
+   neither is completed by uploading. Check installation, artwork, audio playback
+   and gameplay on the owner's iPhone. Native auth/session acceptance follows the
+   origin/login work below;
    do not confuse successful installation with authentication readiness.
    Preserve the PWA and Android tracks.
 

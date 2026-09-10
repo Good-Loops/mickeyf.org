@@ -393,8 +393,8 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    native compile. After the original listing name was rejected, Apple accepted
    the owner-selected Ludolume: app `6810735137`, SKU `ludolume-ios`, status
    Prepare for Submission. The Developer identifier description is Ludolume;
-   `com.mickeyf.app` remains unchanged. No signed build, TestFlight upload or
-   public store release is claimed.
+   `com.mickeyf.app` remains unchanged. Registration did not itself upload or
+   publish a binary; the subsequent signed checkpoint is recorded below.
    App Information categories Entertainment (primary) and Music (secondary)
    were saved and verified after reload on 2026-09-10. Fresh app/bundle API
    reads still return Ludolume; the previous description persists only in the
@@ -409,9 +409,19 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    profile certificate and helper guards passed. The encrypted P12/password
    backup has restricted local access; `ios-testflight` stores the API key and
    three signing secrets, retaining its exact active-branch restriction and
-   `Good-Loops` reviewer. Workflow/helper changes are prepared; no successful
-   signed build or TestFlight upload is claimed yet. Native
-   Capacitor origins are not currently allowed by backend CORS: native auth
+   `Good-Loops` reviewer. Protected run
+   [`34505852569`](https://github.com/Good-Loops/mickeyf.com/actions/runs/34505852569)
+   passed on exact commit `cd59d311e8b866f77477f8867a6334544a89a066`, including
+   signed archive/export, IPA metadata and leaf-certificate verification,
+   TestFlight upload and credential/artifact cleanup. App Store Connect GET
+   (HTTP 200) confirms Ludolume 1.0 build `4.1.0`
+   (`2999535d-e87d-47e1-91cf-ce2bb4bbd4ea`): processing `VALID`, audience
+   `INTERNAL_ONLY`, not expired. Internal testing remains
+   `MISSING_EXPORT_COMPLIANCE`, with `usesNonExemptEncryption` unset and no beta
+   groups assigned. Owner compliance declaration, internal tester assignment
+   and physical iPhone acceptance are pending; no legal answers, public store
+   submission or website/backend release were made. Native Capacitor origins
+   are not currently allowed by backend CORS: native auth
    acceptance remains scoped to the following provider-login milestone, not
    the initial signed gameplay-build checkpoint. See `frontend/ios/BUILDING.md`.
 

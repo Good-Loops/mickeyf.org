@@ -1,4 +1,5 @@
-name: Ludolume iOS build (manual)
+name: Ludolume iOS build
+run-name: Ludolume iOS build
 
 # No push/PR trigger: native builds remain separate from website deployment.
 on:
