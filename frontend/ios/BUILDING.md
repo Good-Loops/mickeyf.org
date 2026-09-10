@@ -270,11 +270,13 @@ First native-device acceptance limits identified on 2026-09-10:
   [34513464675](https://github.com/Good-Loops/mickeyf.com/actions/runs/34513464675)
   uploaded version `1.0`, build `6.1.0`, from source
   `e5b22722f123a1222e993941843de28282846ee1`; signing and cleanup passed.
-  Apple processed it as `VALID` / `INTERNAL_ONLY`, but it currently requires the
-  owner's export-compliance answers (`MISSING_EXPORT_COMPLIANCE`). It has not
-  been added to Ludolume Internal yet; preserve that existing group and tester.
-  Compilation and upload are not physical persistence proof. Once available,
-  check login -> full close/reopen within four hours -> logout -> full
+  Apple processed it as `VALID` / `INTERNAL_ONLY`. The owner saved the export
+  answers on 2026-09-10; Apple's API confirms `usesNonExemptEncryption: false`.
+  The build was added to the existing Ludolume Internal group, with readback
+  confirming `IN_BETA_TESTING`. Previous builds and tester access were preserved;
+  no public release was performed. The temporary release helper was removed.
+  Compilation and upload are not physical persistence proof. Device check:
+  login -> full close/reopen within four hours -> logout -> full
   close/reopen still logged out (including offline logout). p4-Vega's separate
   asset-loading failure is unchanged.
 
