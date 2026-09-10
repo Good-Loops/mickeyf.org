@@ -225,8 +225,9 @@ For subsequent signed uploads and device acceptance:
    TestFlight does not authorize public App Store submission or release.
 5. Build `4.1.0`'s compliance, tester setup and iPhone installation are complete.
    Future declarations still require the owner's answers when Apple requests
-   them. Login and persistence on build `6.1.0` are owner-confirmed; resolve native p4-Vega loading,
-   and confirm signup before accepting those paths. Installation does not prove
+   them. Login/persistence on `6.1.0` and p4-Vega loading on `7.1.0` are
+   owner-confirmed; accept the combined `8.1.0` layout corrections and confirm
+   signup before accepting those paths. Installation does not prove
    gameplay or full authentication readiness.
    Preserve the PWA and Android tracks.
 
@@ -319,15 +320,26 @@ First native-device acceptance limits identified on 2026-09-10:
   only inside main. CSS fullscreen fallback fills the viewport without clipping
   in both orientations and restores the fixed shell on exit. These are browser
   simulations, not WKWebView/device acceptance. No native configuration or
-  authentication changes; the next TestFlight build must include this correction.
+  authentication changes. The owner-approved combined build below includes it.
 - Small-screen Home polish is required before public app release. The welcome
   uses 30–38px text and quotes use 14–16px wrapped normal-flow text, with a
   separate author and reserved space instead of random clipped positioning.
   All 61 quotes fit at 320×568 and 844×390 in local browser geometry checks;
   representative portrait, landscape and desktop screenshots were reviewed.
   TypeScript and the production build passed (existing chunk-size warning).
-  This later change is not included in build `7.1.0`; a subsequent native build
-  and owner small-screen visual check remain required before release.
+  This later change is not included in build `7.1.0`; the combined build below
+  includes it. The owner small-screen visual check remains required before release.
+- Combined layout upload (2026-09-10): owner-approved workflow
+  [34531224341](https://github.com/Good-Loops/mickeyf.com/actions/runs/34531224341)
+  uploaded version `1.0`, build `8.1.0`, from source
+  `57665ff116284c15de9247637f660b08e1e5c0bb`. All 221 cloud tests, web build,
+  signing/upload and credential/output cleanup passed. Apple confirms build
+  `711a17df-82cf-456d-b402-72b8fd0401d3` is `VALID` / `INTERNAL_ONLY`, not expired,
+  initially with `MISSING_EXPORT_COMPLIANCE`. The owner saved the questionnaire;
+  Apple confirms `usesNonExemptEncryption: false`. Existing Ludolume Internal
+  group assignment was verified, with readback `IN_BETA_TESTING`; previous builds
+  and testers were preserved. The temporary release helper was removed. Device
+  acceptance remains pending. No public website/App Store release was performed.
 - Check user-selected audio playback and interruption/resume. No first-party
   microphone capture was found; do not add a microphone permission without a use.
 - If Apple reports Missing Compliance, the owner must confirm the encryption

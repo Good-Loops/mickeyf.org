@@ -2435,8 +2435,10 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   and Apple-processed; owner export answers are saved and the existing internal
   group has access (`IN_BETA_TESTING`). The owner confirms p4-Vega loads/plays.
   Portrait HUD offsets and unwanted native outer-page scrolling reported next
-  are corrected locally; a combined update with the Home fix and native device
-  acceptance remains pending. See `frontend/ios/BUILDING.md`.
+  are included in combined build `8.1.0` with the Home fix. Apple has processed
+  it; owner export answers are saved and existing internal access is verified
+  (`IN_BETA_TESTING`). Native device acceptance remains pending.
+  See `frontend/ios/BUILDING.md`.
   Provider login follows.
   No roles, public testing, public store submission or website release were
   enabled by this setup.
@@ -2444,8 +2446,9 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   quotes on the iPhone. Implemented locally: smaller welcome/quote text, balanced
   wrapping, separate author and stable normal-flow placement. All 61 quotes fit
   at 320×568 and 844×390; portrait/landscape/desktop visual checks, TypeScript and
-  production build passed. This change postdates TestFlight `7.1.0` and needs a
-  subsequent native build/device check. Global Safari edge handling is unchanged.
+  production build passed. This change postdates TestFlight `7.1.0` and is in
+  available internal build `8.1.0`, pending the owner device check. Global Safari
+  edge handling is unchanged.
 - [ ] Accept native fixed-screen layout and p4-Vega portrait HUD in that combined
   update. Local corrections scope safe insets to fullscreen and lock only the
   outer native document, preserving overflow access for long forms/lists.
