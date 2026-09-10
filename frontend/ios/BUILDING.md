@@ -297,9 +297,12 @@ First native-device acceptance limits identified on 2026-09-10:
   `320997ce4cdfaf8ce1ebd4dffc7b058cbf7c24a5`. All 218 cloud tests, web build,
   native signing/upload and credential/output cleanup passed. Apple confirms
   build `11ad9ad6-5708-4b2b-b40b-0f797f61411e` is `VALID` / `INTERNAL_ONLY`,
-  not expired, initially `MISSING_EXPORT_COMPLIANCE`. The questionnaire is open
-  for the owner; no declaration was inferred. Group assignment and the iPhone
-  launch check remain pending. Do not treat upload or URL tests as device proof.
+  not expired, initially `MISSING_EXPORT_COMPLIANCE`. The owner saved the
+  questionnaire; Apple confirms `usesNonExemptEncryption: false`. The build was
+  added to the existing Ludolume Internal group, with readback confirming
+  `IN_BETA_TESTING`; previous builds/testers were preserved. The temporary release
+  helper was removed. The iPhone p4-Vega launch check remains pending; do not
+  treat upload or URL tests as device proof.
 - Small-screen Home polish is required before public app release. The welcome
   uses 30–38px text and quotes use 14–16px wrapped normal-flow text, with a
   separate author and reserved space instead of random clipped positioning.

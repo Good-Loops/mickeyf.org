@@ -2432,8 +2432,9 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   p4-Vega still fails on that installed build. A deterministic Pixi custom-scheme
   asset URL bug is now fixed locally, with five focused regression tests,
   TypeScript and a production build passing. Signed build `7.1.0` is uploaded
-  and Apple-processed; owner export answers, internal group assignment and native
-  p4-Vega launch check remain pending. See `frontend/ios/BUILDING.md`.
+  and Apple-processed; owner export answers are saved and the existing internal
+  group has access (`IN_BETA_TESTING`). The native p4-Vega launch check remains
+  pending. See `frontend/ios/BUILDING.md`.
   Provider login follows.
   No roles, public testing, public store submission or website release were
   enabled by this setup.

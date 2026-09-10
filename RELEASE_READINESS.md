@@ -430,7 +430,8 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    Signup, offline logout and expiry have not been separately device-verified.
    Native p4-Vega still fails on that build. Its demonstrated Pixi asset URL bug
    is corrected in uploaded build `7.1.0` (source `320997ce`), Apple-processed as
-   `VALID` / `INTERNAL_ONLY`; export compliance and the device check remain pending.
+   `VALID` / `INTERNAL_ONLY`. Export answers are saved and the existing internal
+   group has access (`IN_BETA_TESTING`); the device check remains pending.
    The subsequent small-screen Home typography/quote correction is locally
    verified but not included in `7.1.0`; it requires a later native build and
    iPhone acceptance before public app release. No roles, public
