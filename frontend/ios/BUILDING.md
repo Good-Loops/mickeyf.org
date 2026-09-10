@@ -250,7 +250,8 @@ First native-device acceptance limits identified on 2026-09-10:
 - Check Three Bosses' packaged asset URLs in WKWebView on the device; a custom
   scheme behaves differently from a normal website origin. Desktop URL parsing
   alone is not proof of a device failure or success.
-- A follow-up session correction is implemented but not yet in TestFlight:
+- A follow-up session correction has been uploaded to TestFlight; device
+  acceptance remains pending:
   `LudolumeApiPlugin.swift` uses Foundation's persistent cookie storage for the
   exact production API origin/routes. Auth, p4-Vega scores and Three Bosses API
   calls share that transport on iOS; website/Android fetch remains unchanged.
@@ -265,8 +266,15 @@ First native-device acceptance limits identified on 2026-09-10:
   [34512879625](https://github.com/Good-Loops/mickeyf.com/actions/runs/34512879625)
   passed the complete frontend tests/build and Swift simulator compilation on
   source `5b12b15aa7cc9a70d14dcc81f1c2ce6786b52aec`, without signing credentials.
-  This is not a TestFlight upload or physical persistence proof. After a signed
-  build, check login -> full close/reopen within four hours -> logout -> full
+  The owner-approved signed workflow
+  [34513464675](https://github.com/Good-Loops/mickeyf.com/actions/runs/34513464675)
+  uploaded version `1.0`, build `6.1.0`, from source
+  `e5b22722f123a1222e993941843de28282846ee1`; signing and cleanup passed.
+  Apple processed it as `VALID` / `INTERNAL_ONLY`, but it currently requires the
+  owner's export-compliance answers (`MISSING_EXPORT_COMPLIANCE`). It has not
+  been added to Ludolume Internal yet; preserve that existing group and tester.
+  Compilation and upload are not physical persistence proof. Once available,
+  check login -> full close/reopen within four hours -> logout -> full
   close/reopen still logged out (including offline logout). p4-Vega's separate
   asset-loading failure is unchanged.
 
