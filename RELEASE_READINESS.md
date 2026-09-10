@@ -359,9 +359,9 @@ The following release sequence is complete; it is not a fresh checklist to rerun
 4. Retain the dated S7/S8 reassessment boundaries and deferred maintenance list.
    No backend pipeline reactivation, dependency refresh, further deployment or
    unrelated cloud mutation is implied by this closeout. Phase16's bounded
-   first-party inventory is now recorded in `CLEAN_CODE_INVENTORY.md`; its next
-   slice is the leaderboard detail-loader dependency boundary, not another
-   release audit.
+   first-party inventory and completed leaderboard detail-loader extraction are
+   recorded in `CLEAN_CODE_INVENTORY.md`. The next candidate is a bounded backend
+   request-policy extraction, not another release audit.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

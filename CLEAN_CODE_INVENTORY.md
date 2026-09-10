@@ -69,7 +69,7 @@ refactor everything in them.
 
 | Area | Review boundary | Current decision |
 | --- | --- | --- |
-| Leaderboard UI/data loading | `frontend/ts/pages/leaderboards`, hub page, transport/service boundary and route tests | First slice: isolate the existing detail-state loader, described below. |
+| Leaderboard UI/data loading | `frontend/ts/pages/leaderboards`, hub page, transport/service boundary and route tests | First slice completed 2026-09-10: isolated the detail-state loader and its direct Node tests, described below. |
 | Shared shell/forms/services/styles | `App`, `Header`, components, context, hooks, layout, auth pages/services and `frontend/sass` | Review after the first slice; preserve accessibility and accepted Safari behavior. Do not start with tiny repeated click handlers. |
 | Games | `frontend/ts/games`, game pages, help/results and bridge modules | Inspect responsibilities and lifecycles, preserving newly accepted gameplay, 1000-point policy, faster diagonal movement and touch/scroll boundaries. No generic release retest. |
 | Animations/audio/math | `frontend/ts/animations`, music controls, shared utilities and public facades | Review ownership of renderer/audio/timing cleanup and pure calculations; retain artistic behavior. |
@@ -80,15 +80,16 @@ refactor everything in them.
 
 ## First slice: isolate the leaderboard detail-state loader
 
-### Existing code and the cost of its placement
+### Before the refactor and the cost of its placement
 
-`frontend/ts/pages/leaderboards/GameLeaderboard.tsx:13-90` defines the detail
+At pre-refactor commit `86cd0cf4`,
+`frontend/ts/pages/leaderboards/GameLeaderboard.tsx:13-90` defined the detail
 state and loading decisions alongside the React page. The function already
 accepts injected readers, which is a good foundation. However, its default
 readers come from `leaderboardService`, which imports environment configuration
 and constructs the configured API client.
 
-Current code, abbreviated only to show the dependency boundary:
+Before-code, abbreviated only to show the dependency boundary:
 
 ```ts
 // GameLeaderboard.tsx
@@ -104,19 +105,19 @@ export async function loadGameLeaderboardState(
 }
 ```
 
-`leaderboardRoutes.test.mjs:16-38` starts Vite in middleware mode and loads
+At that same commit, `leaderboardRoutes.test.mjs:16-38` starts Vite in middleware mode and loads
 the `.tsx` module even for the injected-reader logic case at line 320. Vite
 is appropriate for its JSX/view tests; it should not be required just to test
 how a catalog/read result becomes `success`, `not-found` or `error`.
 
-### Proposed change — not implemented in this inventory
+### Implemented change — 2026-09-10
 
-Move the existing state/types/loader into adjacent
-`frontend/ts/pages/leaderboards/leaderboardDetailState.ts`. Import DTO types
+The existing state/types/loader now live in adjacent
+`frontend/ts/pages/leaderboards/leaderboardDetailState.ts`. It imports DTO types
 and `LeaderboardRequestError` directly from `../../services/leaderboardApi.ts`,
 not the environment-configured `leaderboardService`.
 
-Illustrative new signature (the omitted body retains the existing decisions):
+Actual new signature (the unchanged decision body is omitted here):
 
 ```ts
 // leaderboardDetailState.ts
@@ -151,7 +152,7 @@ loader is still asynchronous and performs I/O through its supplied readers;
 it is not a mathematically pure function. The trade-off is one extra module
 and explicit arguments at the call site, justified by independent logic tests.
 
-### Behavior to preserve and proportionate verification
+### Preserved behavior and verification boundaries
 
 - Keep catalog-first loading, no game read for missing/unknown routes, and the
   same AbortSignal passed to both reads.
@@ -174,6 +175,52 @@ and explicit arguments at the call site, justified by independent logic tests.
 Finish that slice with a reviewed diff and commit/sync before choosing another
 subsystem. Do not combine it with new caching, new state libraries, table
 redesigns or backend authorization changes.
+
+### Implementation closeout
+
+The loader's decision body and the page's JSX/formatting functions were compared
+with the previous commit and are text-identical. The page imports the extracted
+loader, state type and existing cancellation predicate, and passes its real
+readers explicitly. The transport, React effect lifecycle and UI are unchanged.
+
+The test boundary changed from loading a `.tsx` module through Vite to:
+
+```js
+import { loadGameLeaderboardState } from './leaderboardDetailState.ts';
+
+const result = await loadGameLeaderboardState('p4-vega', undefined, {
+    readCatalog: async () => catalog,
+    readGame: async () => { throw new Error('service unavailable'); },
+});
+assert.deepEqual(result, {
+    status: 'error',
+    game: p4VegaGame,
+    message: 'service unavailable',
+});
+```
+
+This test case uses fixed responses to exercise a failed game read. No browser,
+real API request or database is involved. Existing logic assertions were moved,
+not abandoned; cancellation, signal forwarding and missing-route cases were
+added. The original hub/view tests remain in the Vite-backed route suite.
+
+Checks actually completed:
+
+- `node --experimental-strip-types --test frontend/ts/pages/leaderboards/leaderboardDetailState.test.mjs`
+  — 13 passed independently of Vite/React/environment configuration.
+- `npm --prefix frontend test` — TypeScript and all 185 tests passed.
+- `npm --prefix frontend run build` — passed; existing >500 kB chunk warning
+  remains. No dependency or lockfile changes; the only package edit registers
+  the new test file in the existing command.
+- Browser: local p4-Vega detail → leaderboard hub → Three Bosses detail loaded
+  and rendered their existing tables. This was read-only, not a new gameplay,
+  authentication, score-write or physical-device campaign.
+- `git diff --check` — passed. Independent read-only review found no boundary
+  regression. No backend/cloud configuration, Unity content or deployment changed.
+
+Next candidate is the already-identified duplicated backend Three Bosses
+mutation preconditions. Review it as a source-level policy extraction with
+unchanged security-check order, not a new production submission audit.
 
 ## Learning-oriented handoff for each future change
 

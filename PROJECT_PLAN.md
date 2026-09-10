@@ -2278,18 +2278,24 @@ category totals, subsystem queue, protected/generated boundaries and teaching
 example. The active branch is `improvement/clean-code-sweep`.
 
 - [x] Inventory tracked first-party, generated, native and third-party areas.
-- [ ] First code slice: extract the existing leaderboard detail-state loader
+- [x] First code slice: extract the existing leaderboard detail-state loader
   from `GameLeaderboard.tsx` into a React/environment-independent adjacent
   module with explicit readers; separate its logic tests from JSX/view tests.
-  Keep effect cleanup, rendering, HTTP contracts and behavior unchanged.
+  Effect cleanup, rendering, HTTP contracts and decision body remain unchanged.
+  Completed 2026-09-10: 13 direct Node loader cases; TypeScript and all 185
+  frontend tests passed; production build passed with the existing chunk-size
+  warning; local browser detail/hub navigation and both tables verified.
+- [ ] Next candidate: consolidate the duplicated Three Bosses mutation
+  preconditions in the backend controller without changing guard order,
+  response contracts, router middleware or persistence.
 - [ ] Complete subsequent subsystem reviews one at a time; choose actual
   improvements from evidence, not file length or similar-looking syntax.
 
 **Learning handoff:** show actual before/after code for each implementation,
 explain the project boundary and general coding principle, state trade-offs and
 preserved behavior, and report checks actually run. Proposed examples must be
-clearly distinguished from implemented changes. The inventory's first example
-is proposed only; no application refactor has happened yet.
+clearly distinguished from implemented changes. The inventory now records
+the first implemented before/after example and its exact verification scope.
 
 After Three Bosses and the p4-Vega improvement phase are stable, inspect every
 tracked first-party source, test, configuration, and documentation area using
