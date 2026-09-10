@@ -106,6 +106,12 @@ Apple's placeholder refresh behavior remains unverified. On 2026-09-10 the owner
 approved a store-eligible upload and draft association, explicitly without App
 Review submission or release. The workflow now exposes that eligibility as an
 opt-in choice; internal-only remains the default. Artwork is unchanged.
+The first approved `app-store-draft` upload was dispatched as
+[run 34542319206](https://github.com/Good-Loops/mickeyf.com/actions/runs/34542319206)
+at exact commit `39fcfd7452d867adff5957e2d64df263b9fd201d` (build `10.1.0`).
+Upload/processing and draft attachment are not yet verified. App Store Connect
+redirected the operator browser to sign-in after the Test Information save;
+the owner must sign back in before draft attachment can continue.
 See Apple's [build selection](https://developer.apple.com/help/app-store-connect/manage-builds/choose-a-build-to-submit)
 and [distribution methods](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases).
 
@@ -113,8 +119,13 @@ TestFlight's English (U.S.) beta description, feedback email, marketing URL and
 review notes were saved and read back on 2026-09-10. Existing review contacts
 were preserved. The owner confirmed there is no published privacy policy, so
 that URL remains blank rather than pointing to an unrelated page. A dedicated
-ordinary reviewer account is approved; its credentials belong only in Apple's
-review credential fields, never in source control or public release notes.
+ordinary reviewer account was created and its browser login verified. TestFlight
+now has sign-in required enabled and its dedicated credentials saved and read
+back. The verification session was logged out; no scores or personal-account
+data were added. Its password is also backed up with Windows DPAPI outside the
+repository, restricted to the current Windows user and SYSTEM. Credentials
+belong only in Apple's review fields and encrypted operator storage, never in
+source control or public release notes.
 
 The first protected run, `34504646121`, stopped at uploader preflight before
 dependencies, signing credentials or uploads were used: `altool --help` did not
