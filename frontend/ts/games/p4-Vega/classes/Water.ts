@@ -10,7 +10,7 @@
  */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
 import { getRandomX, getRandomY } from '@/utils/random';
-import { isColliding } from '@/utils/isColliding';
+import { areP4BoundsColliding, getP4PickupResult } from '../p4Rules';
 
 import { GameplayNoteSelector } from '@/games/helpers/GameplayNoteSelector';
 import { Entity } from '@/games/helpers/Entity';
@@ -19,6 +19,7 @@ import { BlackHole } from './BlackHole';
 import { P4 } from './P4';
 
 import { Container, ContainerChild, AnimatedSprite } from 'pixi.js';
+import type { Context } from 'tone';
 
 /**
  * Water entity for P4-Vega.
@@ -35,7 +36,7 @@ export class Water extends Entity<AnimatedSprite> {
     private startY = CANVAS_HEIGHT * .5;
     private collectibleEnabled = true;
 
-    private noteSelector = new GameplayNoteSelector();
+    private noteSelector: GameplayNoteSelector;
 
     /**
      * @param stage - Container that will own the water sprite in the scene graph.
@@ -43,9 +44,11 @@ export class Water extends Entity<AnimatedSprite> {
      */
     constructor(
         stage: Container<ContainerChild>,
-        public waterAnim: AnimatedSprite
+        public waterAnim: AnimatedSprite,
+        audioContext?: Context,
     ) {
         super(waterAnim);
+        this.noteSelector = new GameplayNoteSelector(audioContext);
         stage.addChild(waterAnim);
 
         waterAnim.x = this.startX - waterAnim.width;
@@ -67,35 +70,26 @@ export class Water extends Entity<AnimatedSprite> {
         p4: P4,
         notesPlaying: boolean,
         stage: Container<ContainerChild>
-    ) {
-        if (!this.collectibleEnabled) return;
+    ): boolean {
+        if (!this.collectibleEnabled || !areP4BoundsColliding(p4.p4Anim.getBounds(), waterAnim.getBounds())) return false;
+        const pickup = getP4PickupResult(p4.totalWater);
+        if (!pickup) return false;
 
-        if (!BlackHole.hasSpawnCapacity()) {
+        p4.totalWater = pickup.score;
+        if (notesPlaying) this.noteSelector.playNote();
+
+        if (pickup.completed) {
+            // The initial hazard plus 99 pickup hazards uses the pool; pickup 100 ends the run.
             this.disableCollectible();
-            return;
+        } else {
+            BlackHole.spawn(stage, p4.p4Anim);
+            waterAnim.x = getRandomX(waterAnim.width + Entity.gap);
+            waterAnim.y = getRandomY(waterAnim.height + Entity.gap);
         }
-
-        if (isColliding(p4.p4Anim, waterAnim)) {
-            const blackHole = BlackHole.spawn(stage, p4.p4Anim);
-            if (!blackHole) {
-                this.disableCollectible();
-                return;
-            }
-
-            if (notesPlaying) this.noteSelector.playNote();
-
-            p4.totalWater += 10;
-
-            if (BlackHole.hasSpawnCapacity()) {
-                waterAnim.x = getRandomX(waterAnim.width + Entity.gap);
-                waterAnim.y = getRandomY(waterAnim.height + Entity.gap);
-            } else {
-                this.disableCollectible();
-            }
-        }
+        return true;
     }
 
-    /** Stops further collisions once no black-hole animation remains for a valid pickup. */
+    /** The final collectible disappears only after its points have been awarded. */
     private disableCollectible(): void {
         this.collectibleEnabled = false;
         this.waterAnim.visible = false;
@@ -104,6 +98,7 @@ export class Water extends Entity<AnimatedSprite> {
 
     /** Destroys the water sprite. Caller is responsible for removing it from the stage if needed. */
     destroy() {
+        this.noteSelector.dispose();
         this.waterAnim.destroy();
     }
 }

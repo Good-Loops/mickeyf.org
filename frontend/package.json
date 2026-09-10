@@ -9,7 +9,7 @@
     "scripts": {
         "dev": "npm --prefix .. run frontend:dev:local --",
         "dev:vite": "vite",
-        "test": "tsc -p tsconfig.json --noEmit && node --experimental-strip-types --test ts/components/canvasFullscreenStyles.test.mjs ts/components/fullscreenMode.test.mjs ts/games/three-bosses/unityGameReady.test.mjs ts/games/three-bosses/unitySubmissionBridge.test.mjs ts/games/three-bosses/unityVisibility.test.mjs ts/layout/safariBackgroundEdges.test.mjs ts/pages/games/threeBossesAvailability.test.mjs ts/pages/leaderboards/leaderboardRoutes.test.mjs ts/services/leaderboardApi.test.mjs",
+        "test": "tsc -p tsconfig.json --noEmit && node --experimental-strip-types --test ts/components/canvasFullscreenStyles.test.mjs ts/components/fullscreenMode.test.mjs ts/games/helpers/gameplayNotePlayback.test.mjs ts/games/p4-Vega/p4RestartTap.test.mjs ts/games/p4-Vega/p4PauseController.test.mjs ts/games/p4-Vega/p4Input.test.mjs ts/games/p4-Vega/p4Rules.test.mjs ts/games/p4-Vega/p4RunResult.test.mjs ts/games/p4-Vega/p4SimulationClock.test.mjs ts/games/three-bosses/unityGameReady.test.mjs ts/games/three-bosses/unityPageScroll.test.mjs ts/games/three-bosses/unitySubmissionBridge.test.mjs ts/games/three-bosses/unityVisibility.test.mjs ts/layout/safariBackgroundEdges.test.mjs ts/pages/games/threeBossesAvailability.test.mjs ts/pages/leaderboards/leaderboardRoutes.test.mjs ts/services/leaderboardApi.test.mjs ts/utils/canvasPageGestures.test.mjs",
         "build": "vite build",
         "preview": "vite preview"
     },
@@ -25,15 +25,13 @@
         "react-dom": "^19.2.0",
         "react-router-dom": "^7.9.5",
         "sweetalert2": "^11.10.8",
-        "tone": "^15.0.4",
-        "webfontloader": "^1.6.28"
+        "tone": "^15.0.4"
     },
     "devDependencies": {
         "@capacitor/cli": "^8.5.0",
         "@types/node": "^20.19.24",
         "@types/react": "^19.2.2",
         "@types/react-dom": "^19.2.2",
-        "@types/webfontloader": "^1.6.38",
         "@vitejs/plugin-react": "^5.1.0",
         "sass": "^1.49.8",
         "typescript": "^5.9.3",

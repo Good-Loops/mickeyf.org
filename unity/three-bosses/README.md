@@ -45,6 +45,14 @@ On touch devices, the battle scenes add a left-side movement/aim stick and
 right-side Jump, Dash, and Fire buttons. The keyboard controls remain active
 and unchanged on desktop.
 
+In the embedded website view, vertical drags beginning outside interactive Unity
+controls scroll the page. Touches beginning on a joystick or button stay owned
+by that control until release; multi-touch is reserved for gameplay. Fullscreen
+does not scroll the page. `WebPageTouchScroll` raycasts the actual UI and forwards
+single-touch deltas through `ThreeBossesPageScroll.jslib` to the host; no duplicate
+HUD coordinates or scene changes are required. This is direct drag scrolling,
+not native momentum scrolling. Loading/error overlays use native page gestures.
+
 ## Play Mode verification
 
 For gameplay changes, use this checklist for the affected features. Preserve

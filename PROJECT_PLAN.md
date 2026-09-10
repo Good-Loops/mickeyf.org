@@ -4,14 +4,15 @@ This tracked roadmap records the active continuation of the broader migration
 and game plan. Detailed implementation decisions remain subject to review at
 each phase boundary.
 
-Current release gates (reconciled 2026-09-08 local): see the
+Current release state (published 2026-09-09 local): see the
 [cumulative release/security ledger](RELEASE_READINESS.md). It supersedes stale
 pending claims in the dated history below. Named cleanup and the bounded script
-audit are complete. The scoped Firebase dependency patch `3ea379fe` passed the
-complete non-deploying CI run `34301221560`; the remaining gates are eventual
-PR/CodeQL merge checks and guarded hosted delivery. The owner has approved
-publication and public mobile enablement; preserve the continuing polish branch
-and leave the already-deployed backend unchanged. The combined
+audit are complete. Owner-approved PR #322 passed its required checks and CodeQL,
+merged as `c94c5de5`, and Firebase run `34305326963` successfully published the
+tested Three Bosses package with public mobile gameplay enabled. Hosted
+runtime/header checks, gzip negotiation and mobile-emulated Chromium startup
+passed; the temporary Hosting preview was deleted. The continuing polish branch
+is preserved and synchronized; the already-deployed backend is unchanged. The combined
 fresh-load/landscape phone observation is complete: the owner reported about
 10 seconds to load and correct Fire/fullscreen-exit behavior on the local
 release-candidate preview. This is not a production CDN timing measurement.
@@ -1752,8 +1753,9 @@ Execution order clarified with the owner on 2026-09-07 to avoid circular work:
   follow-up change removes the 14 trailing spaces; normalized text comparison
   confirms no scene content change. Prior successful suites were not rerun for
   archiving, whitespace normalization or checkpointing. No push or deployment.
-- **Remaining scope, superseded by the current ledger:** PR/release approval.
-  The combined mobile load/touch observation is now owner-accepted (see R2).
+- **Remaining scope, superseded by the current ledger:** release completed by
+  PR #322 and Firebase run `34305326963`; retained maintenance/deferred work is
+  listed in the ledger. The combined mobile load/touch observation is now owner-accepted (see R2).
   Generic login/submission
   replay and exhaustive weapon/audio coverage are no longer release blockers. Existing
   accepted owner gameplay and visual checks stay closed. Read-only catalog
@@ -2054,20 +2056,204 @@ an accepted risk before this item is closed.
 
 ## Phase 15 — p4-Vega improvement and mobile polish
 
-Begin this phase after the current Three Bosses polish milestone is stable.
-Preserve p4-Vega's existing score rules and keyboard behavior while improving
-the game incrementally:
+Branch handoff (2026-09-09): active work continues on
+`feature/p4-vega-improvements`, created from the synced canvas-scrolling checkpoint
+`59db12d4` and renamed from the initial `codex/` name at the owner's request.
+The owner superseded the earlier instruction to preserve
+`feature/three-bosses-polish`: its release-documentation and canvas-scrolling
+commits are both retained on the active branch, so the old local/remote branch
+and superseded remote `codex/p4-vega-improvements` were deleted. Stale remote
+references were pruned, and local `main` was fast-forwarded to `origin/main`.
+No work was merged into `main` or deployed by this cleanup. Physical phone checks
+remain explicitly deferred, not passed, and do not block starting p4-Vega work.
 
-- add a real pause button and a simple pause menu with explicit, testable pause
-  state transitions;
-- stop the canvas from swallowing ordinary vertical touch-scroll gestures, so a
+Branch policy: use descriptive `feature/`, `improvement/` or `fix/` prefixes,
+not `codex/`. Keep local `main` and the active development branch; retire completed
+branches only after verifying their work is safely retained. Keep remote branches
+only while useful. After each branch creation or development handoff, post the
+dated single-paragraph development log to Slack `#dev-log` (channel
+`C0A4J46RSP7`) and confirm delivery; writing it only in chat is not sufficient.
+Commit and sync to the active branch; merging to `main` and deployment remain
+separate decisions.
+
+Dependency closeout (2026-09-09): at the owner's request, the exact updates from
+Dependabot PRs #321, #323, #324 and #325 were consolidated into dependency-only
+PR #326. Combined web audit/test/build, documentation, Unity integrity and CodeQL
+checks passed; protected merge `78295368` brought the updates into `main`, then
+merge `92cf0d87` synced them into the active p4-Vega branch. Original proposals
+were closed as superseded and their branches pruned; the temporary
+`fix/dependency-updates` branch and worktree were removed. Only `main` and the
+active feature branch remain. The separate existing deployment-tooling
+`stream-json` advisory is not resolved by these four updates. Both missing
+branch-transition logs and the latest public-release feature summary were posted
+to Slack `#dev-log`. Firebase Hosting run `34309113940` completed successfully
+for `78295368`; no p4-Vega pause or newer inline-scrolling source was published.
+
+Pause implementation (2026-09-09, development branch only): an icon Pause/Resume
+button and a compact glass menu are available inline and in fullscreen. Explicit
+loading/running/paused/game-over transitions stop the private ticker, only the
+currently playing sprites, and the game-owned audio context without resetting
+the run, score, frames or music position. Held keys and joystick captures are
+cleared; Space still activates focused controls and restarts a finished run.
+Slow score requests no longer block the end screen/retry, and late responses
+cannot display a personal-best popup over a newer run. Aborted route loads and
+navigation dispose the owned renderer, listeners, sprites and audio context.
+
+The 21 focused pause/input/restart tests and TypeScript checks passed with the
+updated frontend dependencies. Vite production build passed with the existing
+large-chunk warning, and generated documentation was refreshed successfully.
+The root locked install initially hit a Windows certificate-chain error; rerunning
+with Node's `--use-system-ca` resolved it without disabling TLS verification.
+Isolated Chrome verified a pixel-stable paused canvas,
+stopped/resumed audio clock, keyboard Resume, portrait/landscape menu fit,
+fullscreen presence and route teardown without browser errors. This is not a
+physical-device or listening test; owner-deferred phone checks remain pending.
+Controls/onboarding guide (2026-09-09, development branch only): How to play opens
+a compact glass card from the controls panel or fullscreen pause menu. It explains
+movement, water/black-hole rules, pause/restart, music/key/scale options, mobile
+controls and automatic best-score submission. Opening it pauses an active run;
+closing it leaves Resume explicit. The native modal contains keyboard focus and
+keeps its close button visible while content scrolls on short screens. Chrome
+verified portrait/landscape fit, touch/keyboard closing, focus return and native/
+fallback fullscreen. TypeScript, 21 focused tests and the production build passed
+(existing large-chunk warning only). Score rules are unchanged.
+
+Game-feel/results batch (2026-09-09, development branch only): implemented the
+owner-approved upgrades together. A bounded fixed 60Hz simulation preserves the
+original 60Hz movement feel on different refresh rates, explicitly retaining
+faster diagonals. The analog joystick supports proportional speed and keyboard
+priority per axis. A live score display and reusable +10/ripple effect make
+pickups visible. Centered 80% hitboxes and a 0.6-second non-lethal spawn pulse
+are the trial collision/readability change, pending the owner's gameplay judgment.
+Spawn selection now has a bounded fallback rather than an unbounded retry loop.
+
+Boundary correction follow-up (2026-09-09): blue/red hazards use center anchors
+while yellow uses a top-left anchor. Spawn placement now translates full rendered
+bounds into the correct sprite position and reserves a 16px arena-space inset,
+including fallback corners. Bounces clamp both axes and turn velocity inward,
+so even an idle out-of-bounds axis cannot remain clipped. All 15 rules tests
+passed with `node --experimental-strip-types --test ts/games/p4-Vega/p4Rules.test.mjs`
+from `frontend`; `npx tsc -p tsconfig.json --noEmit` also passed. Isolated Chromium
+verified all three actual sprite variants at all four spawn extremes, stationary
+axis correction, right-edge reflection, and desktop/320px rendering. Player
+movement, faster diagonals, pickup scoring and the spawn warning are unchanged.
+
+The 100th pickup awards the final ten points and completes the run at **1000**,
+without requesting a 101st hazard. A responsive glass results card handles
+defeat/victory, restart, guide access, signed-out messaging, personal bests and
+submission failure/retry. Restart does not wait for networking; aborted or late
+old-run responses cannot replace current UI. Catch-up pickup notes use strictly
+increasing audio times, and optional sound errors cannot stop the simulation.
+The guide reflects these rules. Removed the replaced canvas game-over helpers,
+unused old collision helper and their now-unused webfontloader dependencies.
+
+Validation: frontend TypeScript and all 164 tests passed; the Vite production
+build passed with the existing large-chunk warning. Backend TypeScript and 31
+focused policy/auth/controller/repository tests passed. Isolated Chromium checked
+320/390px portrait results, desktop and landscape native fullscreen, a controlled
+100-pickup victory, the warning-to-collision transition, analog partial/full tilt,
+restart/pause and mocked submission failure/retry/pending-request restart. No real
+scores, accounts or database rows were written. Generated API docs were refreshed
+by the existing watcher. Physical phone feel/acceptance remains deferred, not claimed.
+
+Validation commands for this batch:
+- In `frontend`: `npm test` and `npm run build`.
+- In `backend`: `npm test` and
+  `node --test -r ts-node/register ts/security/p4VegaScorePolicy.test.ts ts/security/scoreSubmissionAuthorization.test.ts ts/security/mainController.security.test.ts ts/leaderboards/p4VegaScoreRepository.test.ts`.
+- At the repository root: `git diff --check`.
+
+Release dependency: deploy the backend's compatible 0–1000 validation policy
+**before** the frontend that submits 1000. Previous scores, ten-point increments,
+personal-best storage, authorization and database schema remain unchanged. This
+batch does not deploy either service or change leaderboard history.
+
+Phone acceptance and scope closeout (2026-09-10): after testing the current
+p4-Vega page on iPhone, the owner reported that gameplay was good and requested
+the fullscreen joystick at the bottom corners. `91c6503e` implements that placement
+for the existing left/right preference, retaining the enlarged touch target and
+clearance for the fullscreen exit. `665c76cf` adds fullscreen-only selection and
+touch-callout suppression for the score/HUD; eight focused style tests and
+isolated native/fallback browser checks passed. The latter is not a new physical
+iPhone confirmation. Live and results scores show only the score, without /1000.
+
+The owner explicitly accepted the rare, intermittent Safari edge bands and asked
+to move on. Record these as an **accepted visual limitation, not fixed**; do not
+reopen the investigation or add further preview/repaint experiments unless the
+owner requests it or a materially worse regression appears. The possible
+paint/geometry timing interaction remains unconfirmed. Existing Safari recovery
+and page zoom behavior are unchanged.
+
+Release acceptance (2026-09-10): the owner subsequently reported "Done. All good.
+Approved. Proceed." for the remaining focused device/scrolling check and release.
+Carry forward that closeout, completed keyboard/browser checks and iPhone gameplay
+acceptance. Do not repeat the old login/submission campaign, package-script audit
+or complete game checklist. Release approval is separate from accepting the
+Safari limitation and does not silently extend the exact-image S8 security
+exception in `RELEASE_READINESS.md`.
+
+Backend-first release preparation (2026-09-10): backend-only PR #327 passed the
+required Web/Unity checks and CodeQL, then merged as
+`7cfe7b5c7bd24e3362c7e2c089cde81999339d99`. Cloud Build
+`397a07e2-d007-4306-be6c-9f60112a809e` successfully built that exact source as image
+`sha256:6c5a8859328daa79423b23ae8e248191f73e62db2a563e9e907cd5a92a366331`.
+The image retains the current Node/OpenSSL base. The owner explicitly approved
+this exact replacement-image exception on 2026-09-10 with the October 7 expiry
+and earlier-reassessment conditions unchanged, as recorded in
+`RELEASE_READINESS.md`. Backend staging/promotion follows that decision.
+Frontend publication waits
+for the compatible backend to be serving, not merely built or merged.
+
+The guarded Unity release build refreshed the unreleased canvas-scroll bridge:
+certified build `5473694d…4ba7`, packaged release `97daf31c…c098`, source
+`346491b4`, Unity 6000.3.8f1, 1004 source files. Package provenance/hash validation
+passed. The obsolete packaged release was replaced and remains recoverable from
+Git; the ordinary local WebGL server's output was not changed. This carries
+forward the owner's device acceptance, not a claim of another physical-device
+test. The Unity CLI/Pipeline compatibility follow-up below remains open.
+
+Site-wide canvas scrolling (2026-09-09, implemented locally): the owner chose to retain
+inline Three Bosses gameplay, reserving gestures that start on its actual UI
+controls and allowing other vertical drags to scroll. PIXI canvases now allow
+native vertical pan/pinch gestures; fullscreen retains gesture capture. p4-Vega
+restart requires a tap, not a drag or cancelled scroll. Three Bosses loading/error
+surfaces also allow native scrolling; the running game forwards non-control drags
+through a small Unity/browser bridge, without moving the page in fullscreen or
+escaping the existing viewport lock. Frontend type checking, 128 tests, a Vite
+build, and Chromium touch/fullscreen checks passed. Unity compilation and all ten
+focused gesture tests passed; guarded build `build_e494f313e54a` succeeded with
+zero actionable warnings and restored its guarded settings. In mobile-emulated
+Chromium, 70px/35px open-canvas drags produced matching scroll distances, menu
+audio/joystick/Fire drags produced no page movement, and fullscreen stayed fixed.
+The existing VS Code Front terminal now serves that local build on LAN port 5173;
+backend and Docs were not restarted. Physical iPhone/Android confirmation of this
+new scroll behavior is deferred by the owner, not claimed. Temporary browser and
+Editor-transport helpers were removed. This is not a public deployment.
+The pause implementation above builds on this unreleased scrolling behavior.
+
+Tooling follow-up discovered here: installed Unity CLI 1.0.0-beta.8 rejects
+parameterized commands against the project's older Pipeline command parser.
+This build used the same Editor's authenticated structured API through the
+existing guarded builder's injected transport; no package/version was changed.
+Resolve that CLI/Pipeline compatibility in a bounded tooling maintenance task.
+
+Begin this phase after the current Three Bosses polish milestone is stable.
+Preserve p4-Vega's ten-point pickups and faster diagonal keyboard movement while
+improving the game incrementally; the owner approved extending completion to 1000:
+
+- [x] Add a real pause button and a simple pause menu with explicit, testable pause
+  state transitions (owner device acceptance completed 2026-09-10).
+- [x] Stop the canvas from swallowing ordinary vertical touch-scroll gestures, so a
   visitor can scroll the page even when the gesture begins over the canvas,
-  while preserving deliberate interactions with actual game controls;
-- audit and prioritize further upgrades to game feel, onboarding, controls,
-  visual and audio feedback, performance, responsive/fullscreen behavior, and
-  score/leaderboard UX rather than committing to speculative rewrites; and
-- verify keyboard behavior plus real Android and iOS touch, orientation,
-  scrolling, and fullscreen behavior before release.
+  while preserving deliberate interactions with actual game controls
+  (owner device acceptance completed 2026-09-10).
+- [x] Prioritize and implement the approved game-feel, analog-input, feedback,
+  results/retry and 1000-point completion batch described above.
+- [ ] Before publishing that batch, deploy the backend's 1000-point acceptance
+  policy first; do not reset previous personal bests or change the database schema.
+- [x] Verify keyboard behavior plus real Android and iOS touch, orientation,
+  scrolling, and fullscreen behavior before release. Carry forward completed
+  keyboard/browser checks and the owner's 2026-09-10 device closeout. Rare Safari
+  edge bands are accepted and are not a release blocker.
 
 ## Phase 16 — Whole-project Clean Code sweep
 

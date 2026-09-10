@@ -13,6 +13,7 @@
 import { Application, Graphics } from "pixi.js";
 
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/utils/constants";
+import { enableCanvasPageGestures } from '@/utils/canvasPageGestures';
 
 import { audioEngine } from "@/animations/helpers/audio/AudioEngine";
 import { PitchHysteresis } from "@/animations/helpers/audio/PitchHysteresis";
@@ -61,6 +62,7 @@ export async function runDancingCircles({ container }: DancingCirclesDeps) {
     const getNowMs = () => performance.now() - startMs;
 
     app.canvas.classList.add("dancing-circles__canvas");
+    enableCanvasPageGestures(app.canvas, app.renderer.events);
     app.canvas.setAttribute("role", "img");
     app.canvas.setAttribute("aria-label", "Dancing Circles animation");
     container.append(app.canvas);

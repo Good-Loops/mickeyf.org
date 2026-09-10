@@ -36,6 +36,49 @@ test('larger desktop fullscreen keeps its existing width-driven enlargement', ()
     assert.doesNotMatch(desktopCss, /flex: 0 0 auto;/);
 });
 
+test('all fullscreen modes override embedded canvas page gestures', () => {
+    for (const mode of [':fullscreen', ':-webkit-full-screen', '[data-canvas-fullscreen=fallback]']) {
+        const rule = css.split('}').find(part => part.includes(`__canvas-wrapper${mode} .fixture__canvas`)
+            && part.includes('touch-action: none !important;'));
+        assert.ok(rule, mode);
+    }
+});
+
+test('p4-Vega disables selection and touch callouts only inside fullscreen gameplay', () => {
+    const gameCss = compileString("@use 'pages/p4-vega';", {
+        loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],
+    }).css;
+    const selectionRules = gameCss.split('}').filter(part => part.includes('user-select: none;'));
+    assert.equal(selectionRules.length, 1);
+    const [rule] = selectionRules;
+    for (const mode of [':fullscreen', ':-webkit-full-screen', '[data-canvas-fullscreen=fallback]']) {
+        assert.ok(rule.includes(`.p4-vega__canvas-wrapper${mode}`));
+    }
+    assert.ok(rule.includes('-webkit-user-select: none;'));
+    assert.ok(rule.includes('-webkit-touch-callout: none;'));
+    assert.doesNotMatch(rule, /touch-action:|\.p4-vega__canvas-wrapper\s*\{/);
+});
+
+test('p4-Vega fullscreen joystick uses safe bottom corners and leaves the exit button clear', () => {
+    const gameCss = compileString("@use 'pages/p4-vega';", {
+        loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],
+    }).css;
+    const rule = gameCss.split('}').find(part => part.includes('.p4-vega__joystick--fullscreen')
+        && part.includes('bottom: max(2rem, env(safe-area-inset-bottom))'));
+    assert.ok(rule);
+    for (const mode of [':fullscreen', ':-webkit-full-screen', '[data-canvas-fullscreen=fallback]']) {
+        assert.ok(rule.includes(`__canvas-wrapper${mode} .p4-vega__joystick--fullscreen`));
+    }
+    assert.ok(rule.includes('top: auto;'));
+    assert.ok(rule.includes('transform: none;'));
+    assert.ok(rule.includes('right: calc(max(1rem, env(safe-area-inset-right)) + 4rem);'));
+    assert.ok(rule.includes('width: 10.4rem;'));
+    assert.ok(rule.includes('height: 10.4rem;'));
+    const leftRule = gameCss.split('}').find(part => part.includes('[data-joystick-side=left]')
+        && part.includes('left: max(2rem, env(safe-area-inset-left))'));
+    assert.ok(leftRule?.includes('right: auto;'));
+});
+
 test('compact Three Bosses fullscreen keeps the exit control at the safe screen corner', () => {
     const gameCss = compileString("@use 'pages/three-bosses';", {
         loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],

@@ -5,17 +5,37 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from '@/context/AuthContext';
-import { p4Vega } from '@/games/p4-Vega/p4-Vega';
+import { p4Vega, type P4VegaController, type P4VegaState } from '@/games/p4-Vega/p4-Vega';
 import FullscreenButton from "@/components/FullscreenButton";
 import ScoreSubmissionNotice from '@/components/ScoreSubmissionNotice';
 import Dropdown from '@/components/Dropdown';
+import P4VegaHelp from './P4VegaHelp';
+import P4VegaResults from './P4VegaResults';
+import type { P4RunResult } from '@/games/p4-Vega/p4RunResult';
 
 type JoystickSide = 'left' | 'right';
 
 const JOYSTICK_SIDE_STORAGE_KEY = 'p4-vega-fullscreen-joystick-side';
 
+const PlaybackIcon: React.FC<{ paused: boolean }> = ({ paused }) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        {paused
+            ? <path d="m9 5 11 7-11 7Z" fill="currentColor" />
+            : <path d="M8 5v14M16 5v14" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />}
+    </svg>
+);
+
 const P4Vega: React.FC = () => {
     const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
+    const controllerRef = useRef<P4VegaController | null>(null);
+    const pauseButtonRef = useRef<HTMLButtonElement | null>(null);
+    const resumeButtonRef = useRef<HTMLButtonElement | null>(null);
+    const helpDialogRef = useRef<HTMLDialogElement | null>(null);
+    const previousStateRef = useRef<P4VegaState>('loading');
+    const [gameState, setGameState] = useState<P4VegaState>('loading');
+    const [gameError, setGameError] = useState(false);
+    const [score, setScore] = useState(0);
+    const [result, setResult] = useState<P4RunResult | null>(null);
     const { isAuthenticated, loading } = useAuth();
     const isAuthenticatedRef = useRef(isAuthenticated);
 
@@ -24,6 +44,8 @@ const P4Vega: React.FC = () => {
     const [selectedKey, setSelectedKey] = useState<string>('C');
     const [selectedScale, setSelectedScale] = useState<string>('Major');
     const showSubmissionNotice = !loading && !isAuthenticated;
+    const paused = gameState === 'paused';
+    const canTogglePause = gameState === 'running' || paused;
     const [joystickSide, setJoystickSide] = useState<JoystickSide>(() => {
         if (typeof window === 'undefined') return 'right';
         const savedSide = window.localStorage.getItem(JOYSTICK_SIDE_STORAGE_KEY);
@@ -38,29 +60,68 @@ const P4Vega: React.FC = () => {
     useEffect(() => {
         if (loading || !canvasWrapperRef.current) return;
 
-        let dispose: (() => void) | undefined;
-        let cancelled = false;
+        const abortController = new AbortController();
         const container = canvasWrapperRef.current;
+        setGameState('loading');
+        setGameError(false);
+        setScore(0);
+        setResult(null);
 
         (async () => {
-            const nextDispose = await p4Vega(container, {
-                isAuthenticated: () => isAuthenticatedRef.current,
-            });
-
-            if (cancelled) {
-                nextDispose();
-                return;
+            try {
+                const controller = await p4Vega(container, {
+                    isAuthenticated: () => isAuthenticatedRef.current,
+                    signal: abortController.signal,
+                    onStateChange: (state) => {
+                        if (!abortController.signal.aborted) setGameState(state);
+                    },
+                    onScoreChange: (value) => {
+                        if (!abortController.signal.aborted) setScore(value);
+                    },
+                    onResultChange: (value) => {
+                        if (!abortController.signal.aborted) setResult(value);
+                    },
+                });
+                if (abortController.signal.aborted) controller.dispose();
+                else controllerRef.current = controller;
+            } catch (error) {
+                if (!abortController.signal.aborted) {
+                    console.error('Unable to load p4-Vega:', error);
+                    setGameError(true);
+                }
             }
-
-            dispose = nextDispose;
         })();
 
         return () => {
-            // Must dispose on unmount to prevent duplicate loops.
-            cancelled = true;
-            dispose?.();
+            abortController.abort();
+            controllerRef.current?.dispose();
+            controllerRef.current = null;
         };
     }, [loading]);
+
+    useEffect(() => {
+        if (!helpDialogRef.current?.open) {
+            if (paused) resumeButtonRef.current?.focus({ preventScroll: true });
+            else if (previousStateRef.current === 'paused') {
+                pauseButtonRef.current?.focus({ preventScroll: true });
+            }
+        }
+        previousStateRef.current = gameState;
+    }, [gameState, paused]);
+
+    const togglePause = (): void => {
+        const controller = controllerRef.current;
+        if (!controller || !canTogglePause) return;
+        if (paused) void controller.resume();
+        else void controller.pause();
+    };
+
+    const openHelp = (): void => {
+        // Also cancel an in-flight Resume before it can restart play under the guide.
+        void controllerRef.current?.pause();
+        helpDialogRef.current?.showModal();
+        helpDialogRef.current?.querySelector('.p4-vega__help-body')?.scrollTo(0, 0);
+    };
 
     return (
         <section
@@ -77,22 +138,78 @@ const P4Vega: React.FC = () => {
             <div
                 className="p4-vega__canvas-wrapper"
                 ref={canvasWrapperRef}
+                data-game-state={gameState}
             >
+                <div className="p4-vega__score" aria-label={`Score: ${score}`}>
+                    <span>Score</span><strong>{score.toLocaleString()}</strong>
+                </div>
                 <FullscreenButton
                     targetRef={canvasWrapperRef}
                     className="p4-vega__fullscreen-btn"
                 />
                 <button
                     type="button"
+                    ref={pauseButtonRef}
+                    className="p4-vega__pause-btn"
+                    onClick={togglePause}
+                    disabled={!canTogglePause}
+                    aria-label={paused ? 'Resume game' : 'Pause game'}
+                    aria-expanded={paused}
+                    aria-controls={paused ? 'p4-pause-menu' : undefined}
+                    title={paused ? 'Resume game' : 'Pause game'}
+                >
+                    <PlaybackIcon paused={paused} />
+                </button>
+                {paused && (
+                    <div className="p4-vega__pause-overlay">
+                        <div
+                            id="p4-pause-menu"
+                            className="p4-vega__pause-menu"
+                            role="dialog"
+                            aria-labelledby="p4-pause-heading"
+                        >
+                            <span className="p4-vega__pause-eyebrow">p4-Vega</span>
+                            <h2 id="p4-pause-heading">Paused</h2>
+                            <button
+                                type="button"
+                                ref={resumeButtonRef}
+                                className="p4-vega__resume-btn"
+                                onClick={togglePause}
+                            >
+                                <PlaybackIcon paused />
+                                Resume
+                            </button>
+                            <button type="button" className="p4-vega__help-btn" onClick={openHelp} aria-haspopup="dialog">
+                                How to play
+                            </button>
+                        </div>
+                    </div>
+                )}
+                {result && (
+                    <P4VegaResults
+                        result={result}
+                        onRestart={() => { void controllerRef.current?.restart(); }}
+                        onRetrySubmission={() => { void controllerRef.current?.retrySubmission(); }}
+                        onHelp={openHelp}
+                    />
+                )}
+                {gameError && <p className="p4-vega__load-error" role="alert">The game could not load. Please refresh to try again.</p>}
+                <button
+                    type="button"
                     className="p4-vega__joystick p4-vega__joystick--fullscreen"
                     data-p4-joystick
                     aria-label="Movement joystick"
+                    disabled={gameState !== 'running'}
                 >
                     <span className="p4-vega__joystick-thumb" data-p4-joystick-thumb />
                 </button>
+                <P4VegaHelp dialogRef={helpDialogRef} />
             </div>
 
             <div className='p4-vega__ui'>
+                <button type="button" className="p4-vega__help-btn" onClick={openHelp} disabled={gameState === 'loading'} aria-haspopup="dialog">
+                    How to play
+                </button>
                 <label className='p4-vega__ui--option' data-checkbox>
                     <input className='p4-vega__ui--checkbox' type='checkbox' data-bg-music-playing />
                     <span className='p4-vega__ui--option-btn'>Background Music</span>
@@ -188,6 +305,7 @@ const P4Vega: React.FC = () => {
                 className="p4-vega__joystick p4-vega__joystick--page"
                 data-p4-joystick
                 aria-label="Movement joystick"
+                disabled={gameState !== 'running'}
             >
                 <span className="p4-vega__joystick-thumb" data-p4-joystick-thumb />
             </button>

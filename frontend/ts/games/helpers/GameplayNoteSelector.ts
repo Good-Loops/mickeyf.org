@@ -1,8 +1,9 @@
 import { scales } from '@/utils/scales';
 import { keys } from '@/utils/keys';
 import { transpose } from '@/utils/transpose';
+import { createGameplayNotePlayback } from './gameplayNotePlayback';
 
-import { now, MembraneSynth } from 'tone';
+import { MembraneSynth, type Context } from 'tone';
 
 /**
  * Represents a musical scale definition.
@@ -28,7 +29,15 @@ type Scale = {
  * @category Games — Core
  */
 export class GameplayNoteSelector {
-    private synth = new MembraneSynth().toDestination();
+    private synth: MembraneSynth;
+    private playSafely: ReturnType<typeof createGameplayNotePlayback>;
+
+    constructor(context?: Context) {
+        this.synth = new MembraneSynth(context ? { context } : {}).toDestination();
+        this.playSafely = createGameplayNotePlayback(this.synth, (error) => {
+            console.warn('P4-Vega pickup audio could not play; gameplay will continue.', error);
+        });
+    }
 
     private selectedKey = 'C';
     private lastKey = 'C';
@@ -239,6 +248,10 @@ export class GameplayNoteSelector {
         * @param selection - Optional explicit selection (`key` and `scaleName`).
      */
     playNote(selection?: { key: string; scaleName: string }): void {
+        this.playSafely(() => this.selectNote(selection));
+    }
+
+    private selectNote(selection?: { key: string; scaleName: string }): number {
         const selectedScale =
             selection?.scaleName ||
             (
@@ -264,6 +277,10 @@ export class GameplayNoteSelector {
         const note = this.getNote(this.lastPlayedNote, isFirstNote) as number;
         this.lastPlayedNote = note;
 
-        this.synth?.triggerAttackRelease(note, 0.8, now());
+        return note;
+    }
+
+    dispose(): void {
+        this.synth.dispose();
     }
 }

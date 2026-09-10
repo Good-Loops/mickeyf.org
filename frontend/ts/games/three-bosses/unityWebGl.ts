@@ -2,6 +2,7 @@ import {
     isThreeBossesReleaseEnabled,
     THREE_BOSSES_BUILD_BASE_PATH,
 } from '@/config/featureFlags';
+import { bindUnityPageScroll } from './unityPageScroll';
 import {
     bindThreeBossesPortraitLayout,
     bindUnityVisibility,
@@ -241,6 +242,7 @@ const startNewHandle = async ({
         let releaseVisibility: (() => void) | null = null;
         let releasePortraitLayout: (() => void) | null = null;
         let releaseSubmissionBridge: (() => void) | null = null;
+        let releasePageScroll: (() => void) | null = null;
         let browserBindingsReleased = false;
 
         try {
@@ -250,6 +252,7 @@ const startNewHandle = async ({
             configureThreeBossesTouchControls(instance);
             releasePortraitLayout = bindThreeBossesPortraitLayout(instance);
             releaseVisibility = bindUnityVisibility(instance);
+            releasePageScroll = bindUnityPageScroll(canvas);
             releaseSubmissionBridge = bindThreeBossesSubmissionBridge(
                 instance,
                 issueRunTicket,
@@ -257,6 +260,7 @@ const startNewHandle = async ({
             );
             configureThreeBossesSubmission(instance, false);
         } catch (error) {
+            releasePageScroll?.();
             try {
                 releaseSubmissionBridge?.();
             } catch {
@@ -279,6 +283,7 @@ const startNewHandle = async ({
         const releaseBrowserBindings = () => {
             if (browserBindingsReleased) return;
             browserBindingsReleased = true;
+            releasePageScroll?.();
 
             try {
                 configureThreeBossesSubmission(instance, false);

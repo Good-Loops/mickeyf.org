@@ -108,7 +108,8 @@ $three-bosses-fullscreen-button-size: 3.4rem;
         line-height: 1.45;
         text-align: center;
         backdrop-filter: blur(1rem);
-        pointer-events: none;
+        // Loading/errors have no game controls, so their surface can use native scrolling.
+        touch-action: pan-y pinch-zoom;
 
         &::before {
             content: '';
@@ -132,6 +133,12 @@ $three-bosses-fullscreen-button-size: 3.4rem;
             border-radius: inherit;
             box-shadow: inset 0 0 3rem rgba(black, .42);
         }
+    }
+
+    &__startup-gestures {
+        position: absolute;
+        inset: $three-bosses-frame-padding;
+        touch-action: pan-y pinch-zoom;
     }
 
     &__loading,
@@ -474,6 +481,9 @@ $three-bosses-fullscreen-button-size: 3.4rem;
         border: 0;
         box-shadow: none;
         backdrop-filter: none;
+
+        .three-bosses__status,
+        .three-bosses__startup-gestures { touch-action: none; }
     }
 
     &__canvas-wrapper:fullscreen &__canvas,

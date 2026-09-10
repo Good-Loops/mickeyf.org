@@ -5,17 +5,25 @@
  * - Bootstraps the PIXI renderer + root stage container and attaches the canvas to the provided DOM container.
  * - Creates and owns the lifetime of major game entities (e.g. `Sky`, `P4`, `Water`, `BlackHole`) and their PIXI resources.
  * - Wires the per-frame loop (update orchestration + render) and controls start/stop ordering.
- * - Orchestrates game-over handling and reset flow, delegating end-state UI to shared helpers (e.g. `gameOver`).
+ * - Publishes score/results to the React page and owns restart and submission lifetimes.
  *
  * Ownership boundaries:
  * - Entities encapsulate their internal state and per-entity PIXI objects; this module owns their creation, update order,
  *   and teardown/recreation during restart.
- * - Shared helpers (e.g. `../utils/gameOver`) encapsulate specific end-state behavior (texts/UI composition), while this
- *   module decides when to invoke them and owns adding/removing the returned display objects.
+ * - The fixed 60Hz simulation preserves the original movement speeds independently of rendering frequency.
  */
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants';
+import { enableCanvasPageGestures } from '@/utils/canvasPageGestures';
 import { getRandomInt } from '@/utils/random';
-import { gameOver } from './utils/gameOver';
+import { bindP4RestartTap } from './p4RestartTap';
+import { bindP4Input } from './p4Input';
+import { createP4RunResults, type P4RunResult } from './p4RunResult';
+import { createP4SimulationClock } from './p4SimulationClock';
+import { P4_WIN_SCORE } from './p4Rules';
+import { PickupFeedback } from './classes/PickupFeedback';
+import { createP4PauseController, type P4VegaController, type P4VegaState } from './p4PauseController';
+
+export type { P4VegaController, P4VegaState } from './p4PauseController';
 
 import { API_BASE } from '@/config/apiConfig';
 
@@ -38,466 +46,277 @@ import bhYellowPngURL from '@/assets/sprites/p4Vega/bhYellow.png';
 
 import bgMusicURL from '@/assets/audio/bg-sound-p4.mp3';
 
-import Swal from 'sweetalert2';
-import { Player } from 'tone';
+import { Context, Player } from 'tone';
 import { 
     autoDetectRenderer, 
     Container, 
-    ContainerChild, 
     Assets, 
     AnimatedSprite, 
     Spritesheet,
     Ticker 
 } from 'pixi.js';
 
-type P4VegaAuth = {
-  isAuthenticated?: () => boolean;
+export type P4VegaOptions = {
+    isAuthenticated?: () => boolean;
+    onStateChange?: (state: P4VegaState) => void;
+    onScoreChange?: (score: number) => void;
+    onResultChange?: (result: P4RunResult | null) => void;
+    signal?: AbortSignal;
 };
 
-/**
- * Starts a P4-Vega game session.
- *
- * Intended call site: route enter / game start, where a DOM container is available for the PIXI canvas.
- *
- * Inputs:
- * - `container`: Optional DOM element that receives the renderer's canvas.
- * - `auth`: Optional auth context used to decide whether to submit scores on game-over.
- *
- * Output:
- * - Resolves to a disposer function that stops the frame loop, unregisters event listeners, removes the canvas from the
- *   DOM, and destroys owned PIXI/audio resources.
- *
- * Lifecycle notes:
- * - Renderer/stage and event listeners are created immediately.
- * - Asset loading and entity construction happen inside `load()` (invoked once on start and again on restart).
- */
-export async function p4Vega(container?: HTMLElement, auth?: P4VegaAuth): Promise<() => void> {
+/** Starts one owned game session; aborting initialization or disposing releases its resources. */
+export async function p4Vega(
+    container?: HTMLElement,
+    options: P4VegaOptions = {},
+): Promise<P4VegaController> {
+    const abortError = (): DOMException => new DOMException('P4-Vega initialization was cancelled.', 'AbortError');
+    if (options.signal?.aborted) throw abortError();
+    options.onStateChange?.('loading');
+
     const renderer = await autoDetectRenderer({
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
         backgroundColor: 0x0d0033,
     });
+    if (options.signal?.aborted) {
+        renderer.destroy(true);
+        throw abortError();
+    }
 
     const canvas = renderer.view.canvas as HTMLCanvasElement;
     canvas.className = 'p4-vega__canvas';
     canvas.id = 'p4-canvas';
+    enableCanvasPageGestures(canvas, renderer.events);
     container?.appendChild(canvas);
 
     const stage = new Container();
+    const ticker = new Ticker();
+    const simulation = createP4SimulationClock();
+    const lifetime = new AbortController();
+    const audioContext = new Context();
+    const rawAudioContext = audioContext.rawContext as AudioContext;
+    const root = container?.closest('[data-p4-vega]') ?? document;
+    const bgMusicCheckbox = root.querySelector<HTMLInputElement>('[data-bg-music-playing]');
+    const notesPlayingCheckbox = root.querySelector<HTMLInputElement>('[data-musical-notes-playing]');
 
-    const bgMusicCheckbox = document.querySelector(
-        '[data-bg-music-playing]'
-    ) as HTMLInputElement;
+    let sky: Sky | undefined;
+    let p4: P4 | undefined;
+    let water: Water | undefined;
+    let spritesheets: Spritesheet[] = [];
+    let input: ReturnType<typeof bindP4Input> | undefined;
+    let musicPlaying = false;
+    let pickupFeedback: PickupFeedback | undefined;
+
+    const session = createP4PauseController({
+        ticker,
+        animations: () => [
+            ...(p4 ? [p4.p4Anim] : []),
+            ...(water ? [water.waterAnim] : []),
+            ...BlackHole.bHAnimArray,
+        ],
+        clearInput: () => input?.clear(),
+        audio: {
+            suspend: () => rawAudioContext.suspend(),
+            resume: () => audioContext.resume(),
+            setMuted: (muted) => { audioContext.destination.mute = muted; },
+        },
+        onStateChange: (state) => {
+            simulation.reset();
+            options.onStateChange?.(state);
+        },
+        onAudioError: (error) => console.warn('P4-Vega audio pause/resume failed; the game remains paused.', error),
+    });
+
+    const synchronizeBackgroundMusic = (): void => {
+        if (session.disposed || !p4MusicPlayer.loaded) return;
+        const shouldPlay = bgMusicCheckbox?.checked ?? false;
+        if (shouldPlay === musicPlaying) return;
+        if (shouldPlay) p4MusicPlayer.start();
+        else p4MusicPlayer.stop();
+        musicPlaying = shouldPlay;
+    };
+
     const p4MusicPlayer = new Player({
+        context: audioContext,
         url: bgMusicURL,
         loop: true,
+        onload: synchronizeBackgroundMusic,
+        onerror: (error) => {
+            if (!session.disposed) console.warn('P4-Vega background music could not load.', error);
+        },
     }).toDestination();
 
-    /** Toggles background music on/off based on the UI checkbox state. */
-    const toggleBackgroundMusic = (): void => {
-        if (bgMusicCheckbox.checked) {
-            p4MusicPlayer.start();
-        } else {
-            p4MusicPlayer.stop();
+    const updateAudioPreference = (): void => {
+        synchronizeBackgroundMusic();
+        if ((session.state === 'running' || session.state === 'game-over' || session.state === 'completed')
+            && (bgMusicCheckbox?.checked || notesPlayingCheckbox?.checked)) {
+            void audioContext.resume().catch((error: unknown) => {
+                if (!session.disposed) console.warn('P4-Vega audio could not start.', error);
+            });
         }
     };
+    bgMusicCheckbox?.addEventListener('change', updateAudioPreference);
+    notesPlayingCheckbox?.addEventListener('change', updateAudioPreference);
 
-    const notesPlayingCheckbox = document.querySelector(
-        '[data-musical-notes-playing]'
-    ) as HTMLInputElement;
-    let notesPlaying = false;
-
-    /** Toggles whether gameplay may emit musical notes (read by `Water.update(...)`). */
-    const toggleNotesPlaying = (): void => {
-        notesPlaying = notesPlayingCheckbox.checked;
+    const destroyRun = (): void => {
+        p4?.destroy();
+        water?.destroy();
+        BlackHole.destroy();
+        p4 = undefined;
+        water = undefined;
+        sky = undefined;
+        pickupFeedback = undefined;
+        stage.removeChildren().forEach((child) => child.destroy({ children: true }));
+        spritesheets.forEach((sheet) => sheet.destroy(false));
+        spritesheets = [];
     };
 
-    let gameLive: boolean,
-        gameOverTexts: ContainerChild[] = [],
-        sky: Sky,
-        p4: P4,
-        water: Water;
+    const ensureActive = (): void => {
+        if (session.disposed || lifetime.signal.aborted) throw abortError();
+    };
 
-    /**
-     * (Re)loads assets and constructs a fresh set of entities for a new run.
-     *
-     * Ownership: this runner owns the created entities and is responsible for destroying their PIXI resources on
-     * restart/cleanup.
-     */
     const load = async (): Promise<void> => {
-        toggleBackgroundMusic();
-
-        gameLive = true;
-
-        sky = new Sky(stage);
-
-        const [
-            p4Base,
-            waterBase,
-            bhBlueBase,
-            bhRedBase,
-            bhYellowBase,
-        ] = await Promise.all([
+        options.onScoreChange?.(0);
+        const [p4Base, waterBase, bhBlueBase, bhRedBase, bhYellowBase] = await Promise.all([
             Assets.load(p4PngURL),
             Assets.load(waterPngURL),
             Assets.load(bhBluePngURL),
             Assets.load(bhRedPngURL),
             Assets.load(bhYellowPngURL),
         ]);
+        ensureActive();
 
-        const p4Spritesheet = new Spritesheet(p4Base, p4Data);
-        const waterSpritesheet = new Spritesheet(waterBase, waterData);
-        const bhBlueSpritesheet = new Spritesheet(bhBlueBase, bhBlueData);
-        const bhRedSpritesheet = new Spritesheet(bhRedBase, bhRedData);
-        const bhYellowSpritesheet = new Spritesheet(bhYellowBase, bhYellowData);
-
-        await Promise.all([
-            p4Spritesheet.parse(),
-            waterSpritesheet.parse(),
-            bhBlueSpritesheet.parse(),
-            bhRedSpritesheet.parse(),
-            bhYellowSpritesheet.parse(),
-        ]);
-
-
-        const p4Anim = new AnimatedSprite(p4Spritesheet.animations.p4);
-        const waterAnim = new AnimatedSprite(
-            waterSpritesheet.animations.water
-        );
-
-        // Pre-create a pool of animated sprites for `BlackHole` instances to draw from.
-        for (let blackHoleIndex = 0; blackHoleIndex < 100; blackHoleIndex++) {
-            let bhAnim: AnimatedSprite;
-            switch (getRandomInt(0, 2)) {
-                case 0:
-                    bhAnim = new AnimatedSprite(
-                        bhBlueSpritesheet.animations.bhBlue
-                    );
-                    break;
-                case 1:
-                    bhAnim = new AnimatedSprite(
-                        bhRedSpritesheet.animations.bhRed
-                    );
-                    break;
-                case 2:
-                    bhAnim = new AnimatedSprite(
-                        bhYellowSpritesheet.animations.bhYellow
-                    );
-                    break;
-            }
-            BlackHole.bHAnimArray.push(bhAnim!);
+        const p4Sheet = new Spritesheet(p4Base, p4Data);
+        const waterSheet = new Spritesheet(waterBase, waterData);
+        const blueSheet = new Spritesheet(bhBlueBase, bhBlueData);
+        const redSheet = new Spritesheet(bhRedBase, bhRedData);
+        const yellowSheet = new Spritesheet(bhYellowBase, bhYellowData);
+        const loadedSheets = [p4Sheet, waterSheet, blueSheet, redSheet, yellowSheet];
+        try {
+            await Promise.all(loadedSheets.map((sheet) => sheet.parse()));
+            ensureActive();
+        } catch (error) {
+            loadedSheets.forEach((sheet) => sheet.destroy(false));
+            throw error;
         }
-        if (!BlackHole.spawn(stage, p4Anim)) {
-            throw new Error('Black hole animation pool is empty');
-        }
+        spritesheets = loadedSheets;
 
+        sky = new Sky(stage);
+        const p4Anim = new AnimatedSprite(p4Sheet.animations.p4);
+        const waterAnim = new AnimatedSprite(waterSheet.animations.water);
+        const blackHoleFrames = [
+            blueSheet.animations.bhBlue,
+            redSheet.animations.bhRed,
+            yellowSheet.animations.bhYellow,
+        ];
+        for (let index = 0; index < 100; index++) {
+            BlackHole.bHAnimArray.push(new AnimatedSprite(blackHoleFrames[getRandomInt(0, 2)]));
+        }
         p4 = new P4(stage, p4Anim);
-        water = new Water(stage, waterAnim);
+        if (!BlackHole.spawn(stage, p4Anim)) throw new Error('Black hole animation pool is empty');
+        water = new Water(stage, waterAnim, audioContext);
+        pickupFeedback = new PickupFeedback(stage);
+        synchronizeBackgroundMusic();
+        session.completeLoad();
     };
 
-    /**
-     * Per-frame orchestration step.
-     *
-     * Called once per tick by Pixi's `Ticker`.
-     *
-     * Time units: this runner does not pass a delta value to entities (the `Ticker` delta is ignored here), so entity
-     * movement/timing is governed by their internal per-update logic.
-     *
-     * Ordering is explicit:
-     * - Background first (`sky`), then player (`p4`), then interactions/collection (`water`), then hazards (`BlackHole`).
-     * - When the run ends (`gameLive === false`), the ticker is stopped and game-over UI is produced via `gameOver(...)`.
-     */
-    const update = async (): Promise<void> => {
-        sky.update();
-        p4.update(p4.p4Anim);
-        water.update(water.waterAnim, p4, notesPlaying, stage);
-        for (let i = 0; i < BlackHole.bHArray.length; i++) {
-            let blackHole = BlackHole.bHArray[i];
-            gameLive = blackHole.update(p4, gameLive);
-        }
-
-        if (!gameLive) {
-            ticker.stop();
-            const isAuthenticated = auth?.isAuthenticated?.() ?? false;
-            if (isAuthenticated) {
-                await submitScore();
-            }
-            gameOverTexts = await gameOver(gameLive, p4);
-            gameOverTexts.forEach((text) => stage.addChild(text));
-            renderer.render(stage);
-        }
-    };
-
-    /**
-     * Per-frame render step.
-     *
-     * Called once per tick by Pixi's `Ticker`, after `update()` in this runner.
-     */
-    const render = async (): Promise<void> => {
-        renderer.render(stage);
-    };
-
-    const ticker = new Ticker();
-    /**
-     * Frame loop registration.
-     *
-     * Pixi calls each registered callback once per frame; this runner keeps update and render as separate callbacks to
-     * make ordering explicit.
-     */
-    ticker.add(update);
-    ticker.add(render);
-
-    await load();
-    ticker.start();
-
-    /**
-     * Restarts the current session by tearing down the current entities and rebuilding a fresh run.
-     *
-     * Entities are not reused across restarts; this ensures state does not leak between runs.
-     */
-    const restart = async (): Promise<void> => {
-        gameLive = true;
-
-        p4.destroy();
-        water.destroy();
-        BlackHole.destroy();
-        stage.removeChildren();
-
-        p4MusicPlayer.stop();
-
-        await load();
-        ticker.start();
-    };
-
-    /**
-     * Submits the player's score.
-     *
-     * Called only on game-over, and only when an authenticated session is indicated by `auth`.
-     */
-    const submitScore = async () => {
-        const p4_score = p4.totalWater;
-
-        await fetch(`${API_BASE}/api/users`, {
+    const submitScore = async (score: number, signal: AbortSignal): Promise<{ personalBest: boolean }> => {
+        const response = await fetch(API_BASE + '/api/users', {
             method: 'POST',
             credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                type: 'submit_score',
-                p4_score: p4_score,
-            }),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then((data) => {
-                if (data.error) {
-                    console.error(data.error);
-                }
-                if (data.personalBest) {
-                    Swal.fire({
-                        title: 'Congratulations!',
-                        text: 'You have broken a new personal record, check the leaderboard to see where you stand!',
-                        icon: 'success',
-                    });
-                }
-            })
-            .catch((error) => console.error('Fetch error:', error));
-    };
-
-    /**
-     * Keyboard input wiring.
-     *
-     * - Arrow keys toggle movement flags on the `P4` entity.
-     * - Space triggers restart when the run is over.
-     *
-     * Cleanup invariant: listeners registered here must be removed by the disposer.
-     */
-    const handleKeydown = (key: Event): void => {
-        const code = (<KeyboardEvent>key).code;
-        if (!['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Space'].includes(code)) return;
-        key.preventDefault();
-        switch (code) {
-            case 'ArrowRight':
-                p4.isMovingRight = true;
-                break;
-            case 'ArrowLeft':
-                p4.isMovingLeft = true;
-                break;
-            case 'ArrowUp':
-                p4.isMovingUp = true;
-                break;
-            case 'ArrowDown':
-                p4.isMovingDown = true;
-                break;
-            case 'Space':
-                if (!gameLive) restart();
-                break;
-            default:
-                break;
-        }
-    };
-
-    /** Complements `handleKeydown` by clearing movement flags on key release. */
-    const handleKeyup = (key: Event): void => {
-        const code = (<KeyboardEvent>key).code;
-        if (!['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(code)) return;
-        key.preventDefault();
-        switch (code) {
-            case 'ArrowRight':
-                p4.isMovingRight = false;
-                break;
-            case 'ArrowLeft':
-                p4.isMovingLeft = false;
-                break;
-            case 'ArrowUp':
-                p4.isMovingUp = false;
-                break;
-            case 'ArrowDown':
-                p4.isMovingDown = false;
-                break;
-            default:
-                break;
-        }
-    };
-
-    const registeredListeners: Array<{
-        element: Document | HTMLElement;
-        event: string;
-        handler: EventListener;
-    }> = [];
-
-    document.addEventListener("keydown", handleKeydown);
-    registeredListeners.push({
-        element: document,
-        event: "keydown",
-        handler: handleKeydown,
-    });
-
-    document.addEventListener("keyup", handleKeyup);
-    registeredListeners.push({
-        element: document,
-        event: "keyup",
-        handler: handleKeyup,
-    });
-
-    bgMusicCheckbox.addEventListener("change", toggleBackgroundMusic);
-    registeredListeners.push({
-        element: bgMusicCheckbox,
-        event: "change",
-        handler: toggleBackgroundMusic,
-    });
-
-    notesPlayingCheckbox.addEventListener("change", toggleNotesPlaying);
-    registeredListeners.push({
-        element: notesPlayingCheckbox,
-        event: "change",
-        handler: toggleNotesPlaying,
-    });
-
-    const attachJoystick = (joystick: HTMLElement): void => {
-        const joystickThumb = joystick.querySelector<HTMLElement>('[data-p4-joystick-thumb]');
-        if (!joystickThumb) return;
-        let joystickPointerId: number | null = null;
-
-        const resetJoystick = (): void => {
-            p4.isMovingRight = false;
-            p4.isMovingLeft = false;
-            p4.isMovingUp = false;
-            p4.isMovingDown = false;
-            joystickThumb.style.transform = 'translate(0, 0)';
-        };
-
-        const updateJoystick = (event: PointerEvent): void => {
-            if (event.pointerId !== joystickPointerId) return;
-            event.preventDefault();
-
-            const bounds = joystick.getBoundingClientRect();
-            const radius = bounds.width * .32;
-            const offsetX = event.clientX - (bounds.left + bounds.width * .5);
-            const offsetY = event.clientY - (bounds.top + bounds.height * .5);
-            const distance = Math.hypot(offsetX, offsetY);
-            const scale = distance > radius ? radius / distance : 1;
-            const x = offsetX * scale;
-            const y = offsetY * scale;
-            const threshold = radius * .22;
-
-            joystickThumb.style.transform = `translate(${x}px, ${y}px)`;
-            p4.isMovingLeft = x < -threshold;
-            p4.isMovingRight = x > threshold;
-            p4.isMovingUp = y < -threshold;
-            p4.isMovingDown = y > threshold;
-        };
-
-        const startJoystick = (event: Event): void => {
-            if (!(event instanceof PointerEvent)) return;
-            joystickPointerId = event.pointerId;
-            joystick.setPointerCapture(event.pointerId);
-            updateJoystick(event);
-        };
-
-        const stopJoystick = (event: Event): void => {
-            if (!(event instanceof PointerEvent) || event.pointerId !== joystickPointerId) return;
-            event.preventDefault();
-            joystickPointerId = null;
-            resetJoystick();
-        };
-
-        joystick.addEventListener('pointerdown', startJoystick);
-        registeredListeners.push({ element: joystick, event: 'pointerdown', handler: startJoystick });
-        joystick.addEventListener('pointermove', updateJoystick as EventListener);
-        registeredListeners.push({ element: joystick, event: 'pointermove', handler: updateJoystick as EventListener });
-        ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((event) => {
-            joystick.addEventListener(event, stopJoystick);
-            registeredListeners.push({ element: joystick, event, handler: stopJoystick });
+            signal,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'submit_score', p4_score: score }),
         });
+        if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
+        const data = await response.json();
+        if (data?.success !== true || typeof data.personalBest !== 'boolean') throw new Error('Invalid score submission response');
+        return { personalBest: data.personalBest };
     };
 
-    container?.closest('[data-p4-vega]')
-        ?.querySelectorAll<HTMLElement>('[data-p4-joystick]')
-        .forEach(attachJoystick);
-
-    const handleCanvasPointerUp = (): void => {
-        if (!gameLive) void restart();
-    };
-    canvas.addEventListener('pointerup', handleCanvasPointerUp);
-    registeredListeners.push({
-        element: canvas,
-        event: 'pointerup',
-        handler: handleCanvasPointerUp,
+    const results = createP4RunResults({
+        submit: submitScore,
+        onChange: (result) => { if (!session.disposed) options.onResultChange?.(result); },
     });
 
-    return () => {
-        /**
-         * Disposes the game session.
-         *
-         * Guarantees:
-         * - Stops the frame loop.
-         * - Stops background audio.
-         * - Destroys owned PIXI resources and removes the canvas from the DOM.
-         * - Unregisters all event listeners registered by this runner.
-         */
-        ticker.stop();
+    const finishRun = (endedPlayer: P4, completed = false): void => {
+        session.endRun(completed);
+        renderer.render(stage);
+        void results.finish(completed ? 'completed' : 'defeat', endedPlayer.totalWater, options.isAuthenticated?.() ?? false);
+        session.finishGameOver();
+    };
+
+    const step = (): boolean => {
+        if (!session.canMove || !sky || !p4 || !water) return false;
+        sky.update();
+        p4.update(p4.p4Anim);
+        pickupFeedback?.update();
+        const pickupX = water.waterAnim.x + water.waterAnim.width / 2;
+        const pickupY = water.waterAnim.y + water.waterAnim.height / 2;
+        if (water.update(water.waterAnim, p4, notesPlayingCheckbox?.checked ?? false, stage)) {
+            options.onScoreChange?.(p4.totalWater);
+            pickupFeedback?.show(pickupX, pickupY);
+            if (p4.totalWater >= P4_WIN_SCORE) { finishRun(p4, true); return false; }
+        }
+        let gameLive = true;
+        BlackHole.bHArray.forEach((blackHole) => { gameLive = blackHole.update(p4!, gameLive); });
+        if (!gameLive) finishRun(p4);
+        return gameLive;
+    };
+    ticker.add((frame) => simulation.advance(frame.elapsedMS, step));
+    ticker.add(() => {
+        if (!session.disposed) renderer.render(stage);
+    });
+
+    const restart = async (): Promise<void> => {
+        if (!session.beginRestart()) return;
+        results.reset();
+        destroyRun();
+        p4MusicPlayer.stop();
+        musicPlaying = false;
+        try {
+            await load();
+        } catch (error) {
+            if (!session.disposed) console.error('P4-Vega restart failed.', error);
+        }
+    };
+
+    input = bindP4Input({
+        keyboardTarget: document,
+        joysticks: Array.from(root.querySelectorAll<HTMLElement>('[data-p4-joystick]')),
+        movement: () => p4,
+        canMove: () => session.canMove,
+        canRestart: () => session.canRestart,
+        restart: () => { void restart(); },
+    });
+    const disposeRestartTap = bindP4RestartTap(canvas, () => session.canRestart, () => { void restart(); });
+
+    const dispose = (): void => {
+        if (session.disposed) return;
+        session.dispose();
+        results.dispose();
+        lifetime.abort();
+        options.signal?.removeEventListener('abort', dispose);
         ticker.destroy();
-
-        if (p4MusicPlayer) {
-            p4MusicPlayer.stop();
-        }
-
-        p4?.destroy();
-        water?.destroy();
-        BlackHole.destroy();
-        stage.removeChildren();
+        input?.dispose();
+        disposeRestartTap();
+        bgMusicCheckbox?.removeEventListener('change', updateAudioPreference);
+        notesPlayingCheckbox?.removeEventListener('change', updateAudioPreference);
+        p4MusicPlayer.dispose();
+        destroyRun();
+        stage.destroy();
         renderer.destroy(true);
-
+        audioContext.dispose();
         canvas.remove();
-
-        registeredListeners.forEach(({ element, event, handler }) => {
-            element.removeEventListener(event, handler);
-        });
     };
+    options.signal?.addEventListener('abort', dispose, { once: true });
+
+    try {
+        ensureActive();
+        await load();
+    } catch (error) {
+        dispose();
+        throw error;
+    }
+    return { dispose, pause: session.pause, resume: session.resume, restart, retrySubmission: results.retry };
 }
