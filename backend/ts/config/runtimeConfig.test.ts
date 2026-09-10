@@ -12,7 +12,7 @@ const productionEnvironment = {
     CLOUD_SQL_CONNECTION_NAME: 'test-project:test-region:test-instance',
 };
 
-test('production runtime configuration exposes only exact HTTPS frontend origins', () => {
+test('production runtime configuration allows only the website and packaged iOS origins', () => {
     const config = loadRuntimeConfig(productionEnvironment);
 
     assert.equal(config.isProduction, true);
@@ -22,8 +22,19 @@ test('production runtime configuration exposes only exact HTTPS frontend origins
     assert.deepEqual(config.corsOrigins, [
         'https://mickeyf.com',
         'https://www.mickeyf.com',
+        'capacitor://localhost',
     ]);
-    assert.equal(config.corsOrigins.some((origin) => origin.includes('localhost')), false);
+    for (const origin of [
+        'null',
+        'http://localhost',
+        'http://localhost:5173',
+        'https://localhost',
+        'capacitor://localhost:5173',
+        'capacitor://localhost.evil.example',
+        'https://mickeyf.com.evil.example',
+    ]) {
+        assert.equal(config.corsOrigins.includes(origin), false, origin);
+    }
 });
 
 test('Three Bosses run submissions require the exact positive runtime opt-in', () => {
