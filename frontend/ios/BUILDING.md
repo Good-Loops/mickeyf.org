@@ -89,10 +89,19 @@ No roles or public testing were enabled.
 The workflow did not answer the compliance questionnaire or make a public store
 submission or website/backend release.
 
-App Store Connect's Add Builds view displays the correct cosmic-controller
-icon for `4.1.0`; the app-record header still shows Apple's placeholder. Its
-refresh timing is unverified; this does not establish a missing build icon or
-require a replacement build.
+App Store Connect's Add Build view was checked again on 2026-09-10: builds
+`4.1.0` through `9.1.0` display the correct cosmic-controller icon, while the
+app-record header and owner's App Store Connect iPhone app show a placeholder.
+The draft App Store version has no selected build; every current build is
+Internal Only and its selection is disabled. Local icon configuration is valid
+(opaque RGB 1024x1024 asset, correct AppIcon target/resource selection).
+This supports a listing/build-association issue, not missing packaged artwork;
+Apple's placeholder refresh behavior remains unverified. A store-eligible
+upload and draft association would need separate owner approval. Neither means
+submitting for review or publishing. Do not replace artwork or remove the
+internal-only upload safeguard just to force a refresh without that approval.
+See Apple's [build selection](https://developer.apple.com/help/app-store-connect/manage-builds/choose-a-build-to-submit)
+and [distribution methods](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases).
 
 The first protected run, `34504646121`, stopped at uploader preflight before
 dependencies, signing credentials or uploads were used: `altool --help` did not
@@ -364,8 +373,11 @@ First native-device acceptance limits identified on 2026-09-10:
   completed from source `bd107c547c50da90e335d276332da1262962c2ad`, version `1.0`,
   build `9.1.0` (ID `575c1208-6849-41da-bc7f-923279477245`). All 226 cloud tests,
   web build, signing/upload and credential/output cleanup passed. Apple readback
-  is `VALID` / `INTERNAL_ONLY` / `MISSING_EXPORT_COMPLIANCE`; owner questionnaire
-  answers, existing internal-group assignment and the focused device check remain.
+  was initially `VALID` / `INTERNAL_ONLY` / `MISSING_EXPORT_COMPLIANCE`. The owner
+  saved the questionnaire; Apple confirms `usesNonExemptEncryption: false`.
+  Assignment to the existing Ludolume Internal group was added and verified,
+  with readback `IN_BETA_TESTING`. The temporary API helper was removed; only the
+  focused device check remains for these fixes.
   No public release, backend deployment or permission changes were performed.
 - Check user-selected audio playback and interruption/resume. No first-party
   microphone capture was found; do not add a microphone permission without a use.

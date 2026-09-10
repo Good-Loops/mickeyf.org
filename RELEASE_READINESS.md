@@ -440,8 +440,8 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    accepts those three fixes. Subsequent p4 frame/main-scroll, native fullscreen
    exit and navigation fixes are uploaded in `9.1.0` from `bd107c54`; forty focused
    tests, TypeScript/build and all 226 cloud tests pass, including signed upload
-   and cleanup. Apple reports `VALID` / `MISSING_EXPORT_COMPLIANCE`; owner answers,
-   existing internal-group assignment and native device acceptance remain.
+   and cleanup. Owner export answers are saved; existing internal-group access
+   is verified (`IN_BETA_TESTING`). Native device acceptance remains.
    No roles, public
    testing, public store submission or website release were enabled.
    The exact `capacitor://localhost` backend allowance is now live;

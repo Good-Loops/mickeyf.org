@@ -2461,8 +2461,8 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   fullscreen on iOS, and preserve navigation state across overlapping requests.
   Forty focused tests, TypeScript and production build pass. Approved internal
   build `9.1.0` uploaded from `bd107c54`; all 226 cloud tests and signing/upload
-  cleanup passed. Apple processing is `VALID`; owner export-compliance answers,
-  existing group assignment and the focused device check remain pending.
+  cleanup passed. Owner export answers are saved, and existing internal-group
+  access is verified (`IN_BETA_TESTING`). Only the focused device check remains.
   Do not repeat Home/loading tests.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
