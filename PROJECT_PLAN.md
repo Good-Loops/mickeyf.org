@@ -2292,9 +2292,13 @@ example. The active branch is `improvement/clean-code-sweep`.
   passed on 2026-09-10; no production/authentication campaign was repeated.
 - [x] Simplified frontend test discovery to a quoted Node glob: the same 19
   files and 185 passing tests, no coverage removed or dependency added.
-- [ ] Next bounded cleanup: correct stale backend paths in
-  `.github/copilot-instructions.md` and assess the captured legacy
-  `resources/project-structure.txt` documentation; no new inventory generator.
+- [x] Corrected stale backend paths in `.github/copilot-instructions.md` and
+  retired the unused 586-line `resources/project-structure.txt` plus its
+  dedicated attribute rule. All 18 guide paths and tracked references checked;
+  no application changes, replacement generator or repeated build/test run.
+- [ ] Next bounded review: login/signup form responsibilities and request/error
+  handling. Refactor only a demonstrated maintenance problem; preserve UX,
+  accessibility and current authentication contracts.
 - [ ] Complete subsequent subsystem reviews one at a time; choose actual
   improvements from evidence, not file length or similar-looking syntax.
 

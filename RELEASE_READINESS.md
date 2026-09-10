@@ -362,8 +362,10 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    first-party inventory, leaderboard detail-loader extraction and shared
    Three Bosses request-policy extraction are recorded in
    `CLEAN_CODE_INVENTORY.md`. Frontend test discovery now uses a matching glob
-   without removing coverage. Next is bounded stale project-guidance cleanup,
-   not another release audit; these refactors have not been deployed.
+   without removing coverage. Stale project-guidance cleanup is also complete;
+   next is a bounded login/signup source-responsibility review, not another
+   release or production authentication audit. These refactors have not been
+   deployed.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

@@ -52,7 +52,7 @@ directories and out-of-repository evidence archives are outside this inventory.
 | Generated dependency locks | 5 | Four npm lockfiles and Unity `Packages/packages-lock.json`. Update through the appropriate dependency workflow, not a stylistic rewrite. |
 | Generated Capacitor wiring | 2 | Android `app/capacitor.build.gradle` and `capacitor.settings.gradle`, explicitly marked generated. |
 | Upstream tools/fonts/resources/notices | 95 | 11 Unity CLI skill files; 80 TextMesh Pro/Oxanium files including their metadata; `UNITY_COMPANION_LICENSE.md`; 3 Gradle wrapper files. Preserve attribution and update through upstream workflows. |
-| Captured legacy directory listing | 1 | `resources/project-structure.txt` includes old paths and machine-generated directory output. A documentation follow-up, not a current inventory or authority for deletion. |
+| Captured legacy directory listing | 1 | Baseline path `resources/project-structure.txt` contained stale paths and captured generated/dependency output. Retired after reference review on 2026-09-10; this historical baseline count remains unchanged. |
 
 Ownership evidence for Unity content comes from
 `unity/three-bosses/ASSET_PROVENANCE.md` and
@@ -70,13 +70,13 @@ refactor everything in them.
 | Area | Review boundary | Current decision |
 | --- | --- | --- |
 | Leaderboard UI/data loading | `frontend/ts/pages/leaderboards`, hub page, transport/service boundary and route tests | First slice completed 2026-09-10: isolated the detail-state loader and its direct Node tests, described below. |
-| Shared shell/forms/services/styles | `App`, `Header`, components, context, hooks, layout, auth pages/services and `frontend/sass` | Review after the first slice; preserve accessibility and accepted Safari behavior. Do not start with tiny repeated click handlers. |
+| Shared shell/forms/services/styles | `App`, `Header`, components, context, hooks, layout, auth pages/services and `frontend/sass` | Next bounded review: login/signup form responsibilities and request/error handling. Select a refactor only if evidence warrants it; preserve accessibility and accepted Safari behavior. |
 | Games | `frontend/ts/games`, game pages, help/results and bridge modules | Inspect responsibilities and lifecycles, preserving newly accepted gameplay, 1000-point policy, faster diagonal movement and touch/scroll boundaries. No generic release retest. |
 | Animations/audio/math | `frontend/ts/animations`, music controls, shared utilities and public facades | Review ownership of renderer/audio/timing cleanup and pure calculations; retain artistic behavior. |
 | Backend | `backend/ts` configuration, controllers, routers, middleware, repositories, security, migrations and public contracts | Second slice completed 2026-09-10: consolidated the duplicated Three Bosses mutation preconditions. Ordering, DTOs, gates, credentials and persistence remain unchanged. Other backend areas are still review scopes. |
 | Unity | Custom `Assets/Scripts`, `Editor`, `Plugins/WebGL` and `Tests` | Review source responsibilities separately from serialized content. Any later scene/asset mutation uses the established Unity workflow and preserves GUIDs. |
 | Native platforms | Android/iOS entry points, resources and configuration | Inventory complete; substantive review stays aligned with the native/PWA phase and available platform checks. |
-| Tooling/configuration/docs | Root, `.github`, `.githooks`, `.vscode`, `scripts`, `docs-src`, `design`, `resources`, subsystem docs | Preserve deployment boundaries. The old directory listing and outdated backend paths in `.github/copilot-instructions.md` are concrete documentation follow-ups; do not repeat the completed package audit. |
+| Tooling/configuration/docs | Root, `.github`, `.githooks`, `.vscode`, `scripts`, `docs-src`, `design`, `resources`, subsystem docs | Stale project-guidance slice completed 2026-09-10: corrected backend paths and retired the unused directory listing. Other tooling areas remain review scopes; preserve deployment boundaries and do not repeat the completed package audit. |
 
 ## First slice: isolate the leaderboard detail-state loader
 
@@ -281,9 +281,36 @@ not reopened. Local and CI Node versions are 22.23.2.
 This batch did not repeat frontend builds/device tests or production submission
 checks: frontend application source and production state were unchanged.
 Generated documentation stayed unchanged; `git diff --check` passed.
-Next bounded cleanup: correct outdated backend paths in
-`.github/copilot-instructions.md` and resolve the captured legacy directory
-listing's documentation purpose, without adding a generated-file maintenance loop.
+## Third slice: retire stale project guidance — 2026-09-10
+
+Corrected the five backend locations in `.github/copilot-instructions.md`.
+For example, the old entry `backend/app.ts` is now `backend/ts/app.ts`.
+The old "Database config" entry pointed to nonexistent
+`backend/config/dbConfig.ts`; the guide now distinguishes the actual database
+pool (`backend/ts/db/dbConfig.ts`) from validated environment configuration
+(`backend/ts/config/**`). No application files were moved or modified.
+
+Removed `resources/project-structure.txt` (586 lines) and its dedicated
+`.gitattributes` rule. The captured tree mixed obsolete source paths with
+`node_modules`, `dist`, Android build intermediates, APKs and logs. Tracked
+reference search found no code, build or documentation-generator consumer:
+only the attribute rule, inventory/roadmap notes and the listing's own name.
+Git retains the old snapshot; no replacement tree or generator was added.
+
+The principle is to document stable responsibilities rather than maintain a
+second, manually synchronized filesystem inventory. Use Git/IDE discovery
+for the current file list. The trade-off is losing an in-tree historical
+snapshot, which remains recoverable from Git history. The original inventory
+counts above intentionally describe their dated baseline, not today's count.
+
+Validation: all 18 frontend/backend path references in the guide resolved to
+tracked files/directories; tracked-reference search confirmed no remaining
+consumer of the retired listing; `git diff --check` passed. No tests, builds,
+dependency installs, server restarts or deployments were needed or run for
+this documentation-only slice.
+
+Next bounded review: login/signup form responsibilities and request/error
+handling, without changing UX or reopening a production authentication test.
 
 ## Learning-oriented handoff for each future change
 
