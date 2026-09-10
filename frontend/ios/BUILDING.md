@@ -62,7 +62,13 @@ the signed job only on `improvement/clean-code-sweep` and requires approval of
 the `ios-testflight` environment. No push or pull-request event uploads a build.
 The helper `scripts/ios-testflight.mjs` is dedicated to this job: it checks the
 app/team/profile/certificate, assigns a unique build number, archives an iPhone
-app, exports an internal-only TestFlight IPA and uploads through Apple's tool.
+app, exports a signed IPA and uploads through Apple's tool. The explicit
+`upload_distribution` choice defaults to `internal-only`. The owner-approved
+`app-store-draft` choice removes only the internal-only export restriction so
+the processed build can be attached to the draft App Store version. Uploading,
+attaching a draft build, submitting for review and releasing are separate actions;
+the workflow performs only the upload. Both choices retain the same protected
+environment, app identity checks and signing safeguards.
 It removes temporary signing material and signed outputs; neither is uploaded
 as a public Actions artifact.
 
@@ -96,12 +102,19 @@ The draft App Store version has no selected build; every current build is
 Internal Only and its selection is disabled. Local icon configuration is valid
 (opaque RGB 1024x1024 asset, correct AppIcon target/resource selection).
 This supports a listing/build-association issue, not missing packaged artwork;
-Apple's placeholder refresh behavior remains unverified. A store-eligible
-upload and draft association would need separate owner approval. Neither means
-submitting for review or publishing. Do not replace artwork or remove the
-internal-only upload safeguard just to force a refresh without that approval.
+Apple's placeholder refresh behavior remains unverified. On 2026-09-10 the owner
+approved a store-eligible upload and draft association, explicitly without App
+Review submission or release. The workflow now exposes that eligibility as an
+opt-in choice; internal-only remains the default. Artwork is unchanged.
 See Apple's [build selection](https://developer.apple.com/help/app-store-connect/manage-builds/choose-a-build-to-submit)
 and [distribution methods](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases).
+
+TestFlight's English (U.S.) beta description, feedback email, marketing URL and
+review notes were saved and read back on 2026-09-10. Existing review contacts
+were preserved. The owner confirmed there is no published privacy policy, so
+that URL remains blank rather than pointing to an unrelated page. A dedicated
+ordinary reviewer account is approved; its credentials belong only in Apple's
+review credential fields, never in source control or public release notes.
 
 The first protected run, `34504646121`, stopped at uploader preflight before
 dependencies, signing credentials or uploads were used: `altool --help` did not

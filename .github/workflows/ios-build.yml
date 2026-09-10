@@ -6,10 +6,18 @@ on:
   workflow_dispatch:
     inputs:
       upload_testflight:
-        description: Sign and upload an internal TestFlight build (requires ios-testflight approval)
+        description: Sign and upload a build (requires ios-testflight approval; never submits for review)
         type: boolean
         required: false
         default: false
+      upload_distribution:
+        description: Build eligibility; app-store-draft permits draft attachment, not submission or release
+        type: choice
+        required: true
+        default: internal-only
+        options:
+          - internal-only
+          - app-store-draft
 
 permissions:
   contents: read
@@ -108,7 +116,7 @@ jobs:
   testflight:
     # Also restrict the protected environment to this exact branch in GitHub.
     if: ${{ inputs.upload_testflight && github.ref == 'refs/heads/improvement/clean-code-sweep' }}
-    name: Sign and upload internal TestFlight build
+    name: Sign and upload (${{ inputs.upload_distribution || 'internal-only' }})
     environment: ios-testflight
     runs-on: macos-26
     timeout-minutes: 35
@@ -128,6 +136,7 @@ jobs:
       ASC_APP_ID: ${{ vars.ASC_APP_ID }}
       IOS_TEAM_ID: ${{ vars.IOS_TEAM_ID }}
       IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID }}
+      IOS_UPLOAD_DISTRIBUTION: ${{ inputs.upload_distribution || 'internal-only' }}
     steps:
       - name: Checkout reviewed branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -142,6 +151,7 @@ jobs:
 
       - name: Check pinned signing tools and public configuration
         run: |
+          node --test ../scripts/ios-testflight.test.mjs
           node ../scripts/ios-testflight.mjs preflight
           pod --version
 
@@ -153,7 +163,7 @@ jobs:
           npm run build
           npx --no-install cap sync ios
 
-      - name: Sign, verify and upload to internal TestFlight
+      - name: Sign, verify and upload without submitting for review
         env:
           IOS_DISTRIBUTION_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
           IOS_DISTRIBUTION_P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_P12_PASSWORD }}

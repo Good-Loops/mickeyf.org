@@ -22,6 +22,19 @@ export function buildNumber(runNumber, attempt) {
     return `${Number(runNumber)}.${Number(attempt)}.0`;
 }
 
+export function uploadDistribution(value = 'internal-only') {
+    requireThat(value === 'internal-only' || value === 'app-store-draft',
+        'Upload distribution must be internal-only or app-store-draft.');
+    return value;
+}
+
+export function exportOptions(signing, distribution = 'internal-only') {
+    return { method: 'app-store-connect', destination: 'export', signingStyle: 'manual',
+        teamID: TEAM, signingCertificate: signing.fingerprint, provisioningProfiles: { [BUNDLE]: signing.profile.uuid },
+        manageAppVersionAndBuildNumber: false,
+        testFlightInternalTestingOnly: uploadDistribution(distribution) === 'internal-only', stripSwiftSymbols: true };
+}
+
 export function validateProfile(profile, now = Date.now()) {
     const entitlements = profile.entitlements;
     requireThat(UUID.test(profile.uuid) && profile.teams?.length === 1 && profile.teams[0] === TEAM,
@@ -55,7 +68,8 @@ function configuration() {
     return { root, keychain: join(root, 'signing.keychain-db'),
         profilePath: join(homedir(), 'Library/Developer/Xcode/UserData/Provisioning Profiles',
             `ludolume-${process.env.GITHUB_RUN_ID}-${process.env.GITHUB_RUN_ATTEMPT}.mobileprovision`),
-        build: buildNumber(process.env.GITHUB_RUN_NUMBER, process.env.GITHUB_RUN_ATTEMPT) };
+        build: buildNumber(process.env.GITHUB_RUN_NUMBER, process.env.GITHUB_RUN_ATTEMPT),
+        distribution: uploadDistribution(process.env.IOS_UPLOAD_DISTRIBUTION) };
 }
 
 function childEnvironment(extra = {}) {
@@ -153,7 +167,7 @@ function preflight() {
         .filter(argument => argument.startsWith('--'));
     const missingOptions = requiredOptions.filter(option => !`${altool.stdout}${altool.stderr}`.includes(option));
     requireThat(missingOptions.length === 0, `Pinned altool does not expose: ${missingOptions.join(', ')}.`);
-    console.log(`Pinned native tools and protected app identifiers verified; build ${config.build}.`);
+    console.log(`Pinned native tools and protected app identifiers verified; build ${config.build}, ${config.distribution}.`);
 }
 
 function installSigningMaterial(config) {
@@ -216,12 +230,10 @@ function archiveAndExport(config, signing) {
         '-configuration', 'Release', '-sdk', 'iphoneos', '-destination', 'generic/platform=iOS',
         '-derivedDataPath', join(config.root, 'derived-data'), '-archivePath', archive, 'archive'], { diagnostics: true });
     const options = join(config.root, 'ExportOptions.plist');
-    privateFile(options, JSON.stringify({ method: 'app-store-connect', destination: 'export', signingStyle: 'manual',
-        teamID: TEAM, signingCertificate: signing.fingerprint, provisioningProfiles: { [BUNDLE]: signing.profile.uuid },
-        manageAppVersionAndBuildNumber: false, testFlightInternalTestingOnly: true, stripSwiftSymbols: true }));
+    privateFile(options, JSON.stringify(exportOptions(signing, config.distribution)));
     run('Encode export options', 'plutil', ['-convert', 'xml1', options]);
     const exportPath = join(config.root, 'export');
-    run('Export internal TestFlight IPA', 'xcodebuild', ['-quiet', '-exportArchive', '-archivePath', archive,
+    run(`Export ${config.distribution} IPA`, 'xcodebuild', ['-quiet', '-exportArchive', '-archivePath', archive,
         '-exportPath', exportPath, '-exportOptionsPlist', options], { diagnostics: true });
     const files = readdirSync(exportPath).filter(file => file.endsWith('.ipa'));
     requireThat(files.length === 1, 'Expected exactly one exported IPA.');
@@ -292,12 +304,12 @@ async function upload() {
         const keyDirectory = join(config.root, 'private_keys');
         mkdirSync(keyDirectory, { mode: 0o700 });
         privateFile(join(keyDirectory, `AuthKey_${process.env.ASC_KEY_ID}.p8`), process.env.ASC_PRIVATE_KEY_P8);
-        console.log(`Uploading verified internal TestFlight build ${config.build}; no App Review submission.`);
+        console.log(`Uploading verified ${config.distribution} build ${config.build}; no App Review submission.`);
         run('Apple build upload', 'xcrun', uploadArguments(ipa, process.env.ASC_KEY_ID, process.env.ASC_ISSUER_ID),
             { cwd: config.root, diagnostics: true });
-        appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Internal TestFlight upload command completed\n\nSource commit: ${process.env.GITHUB_SHA}\n\n`
+        appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### ${config.distribution} upload command completed\n\nSource commit: ${process.env.GITHUB_SHA}\n\n`
             + `App ${APP}, version ${info.CFBundleShortVersionString}, build ${config.build}.\n\n`
-            + 'Apple processing and internal tester assignment remain separate. No public store submission was performed.\n');
+            + 'Apple processing, tester assignment and draft association remain separate. No App Review submission or public release was performed.\n');
     } finally { cleanup(config); }
 }
 
