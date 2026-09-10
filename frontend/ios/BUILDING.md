@@ -115,8 +115,11 @@ build and saved; the API confirms it remains `PREPARE_FOR_SUBMISSION`.
 Returning to the Apps listing now displays the correct controller icon, verified
 visually in Chrome. The owner's iPhone App Store Connect cache was not checked.
 No App Review submission, release, or external tester assignment was performed.
-Build `10.1.0` still needs the owner's export-compliance declaration; its blank
-questionnaire is open in Chrome. No answers were selected on the owner's behalf.
+The owner saved build `10.1.0`'s export-compliance declaration on 2026-09-10.
+The API confirms `usesNonExemptEncryption: false`, `READY_FOR_BETA_TESTING`
+internally and `READY_FOR_BETA_SUBMISSION` externally. The draft still references
+this build and remains `PREPARE_FOR_SUBMISSION`; no tester assignment or review
+submission was added as part of the compliance verification.
 See Apple's [build selection](https://developer.apple.com/help/app-store-connect/manage-builds/choose-a-build-to-submit)
 and [distribution methods](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases).
 
