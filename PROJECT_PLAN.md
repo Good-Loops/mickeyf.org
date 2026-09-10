@@ -2363,9 +2363,13 @@ app ID `org.mickeyf.app`; this is not proof of an App Store/Play registration.
 - [ ] Confirm/reserve the intended bundle/package identifiers and create store
   app records. Confirm Google Play developer account access separately.
 - [ ] Preserve the PWA track and review the existing Android/iOS shells. Build
-  Android on Windows; choose a cloud macOS/Xcode builder for iOS with protected
-  signing credentials, bounded cost and manual release approval. Codemagic is a
-  documented Capacitor option; no service purchase or workflow is activated yet.
+  Android on Windows; use GitHub Actions macOS/Xcode for iOS (owner approved
+  2026-09-10), with protected signing credentials, bounded cost and manual release
+  approval. Manual unsigned simulator workflow and a shared Xcode scheme are
+  prepared; cloud compilation is not yet verified. The workflow must reach
+  `main` through a separately approved merge before it can be manually run.
+  See `frontend/ios/BUILDING.md`; no signing credentials, paid service, TestFlight
+  upload or public store release has been activated.
 - [ ] Add Google and Apple sign-in while retaining username/password accounts
   and score ownership. Verify provider identities on the backend; require proof
   before linking an existing account, never match solely on an email string.

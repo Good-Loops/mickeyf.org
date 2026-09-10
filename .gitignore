@@ -16,6 +16,12 @@ frontend/dist/
 # Ignore credentials file
 credentials.json
 
+# Native app signing material belongs in protected secret storage.
+*.p8
+*.p12
+*.pfx
+*.mobileprovision
+
 # Ignore docker compose file
 docker-compose.yml
 

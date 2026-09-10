@@ -1,0 +1,98 @@
+name: BeatCalc iOS simulator build (manual)
+
+# No push/PR trigger: native builds remain separate from website deployment.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-simulator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulator:
+    name: Compile unsigned iOS simulator app
+    runs-on: macos-26
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: frontend
+    env:
+      CI: "true"
+      NPM_CONFIG_FUND: "false"
+      COCOAPODS_DISABLE_STATS: "true"
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      VITE_PROD_API_URL: https://mickeyf-org-j7yuum4tiq-uc.a.run.app
+      VITE_ENABLE_THREE_BOSSES_RELEASE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.2
+          package-manager-cache: false
+
+      - name: Check native build tools
+        run: |
+          xcodebuild -version
+          pod --version
+
+      - name: Install locked frontend dependencies
+        run: |
+          npm install --global npm@11.6.2 --no-audit --no-fund
+          npm ci --no-audit
+
+      - name: Build web assets and synchronize native dependencies
+        run: |
+          npm test
+          npm run build
+          npx --no-install cap sync ios
+
+      - name: Compile the simulator app without signing credentials
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/beatcalc-derived-data" \
+            -resultBundlePath "$RUNNER_TEMP/beatcalc-build.xcresult" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package simulator app
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$RUNNER_TEMP/beatcalc-derived-data/Build/Products/Release-iphonesimulator/App.app" \
+            "$RUNNER_TEMP/BeatCalc-simulator.zip"
+          {
+            echo '### Unsigned simulator build'
+            echo "Source commit: $GITHUB_SHA"
+            echo 'This app is for an iOS Simulator on a Mac, not an iPhone or TestFlight.'
+            echo 'Compilation does not verify native gameplay, authentication, or store readiness.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload simulator app
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: beatcalc-ios-simulator-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/BeatCalc-simulator.zip
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload Xcode diagnostics on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: beatcalc-ios-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/beatcalc-build.xcresult
+          if-no-files-found: ignore
+          retention-days: 1
