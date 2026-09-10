@@ -2418,11 +2418,14 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   credential/artifact cleanup all succeeded. App Store Connect GET (HTTP 200)
   confirms Ludolume 1.0 build `4.1.0`, ID
   `2999535d-e87d-47e1-91cf-ce2bb4bbd4ea`, processing `VALID`, audience
-  `INTERNAL_ONLY`, not expired. Internal testing is `MISSING_EXPORT_COMPLIANCE`:
-  `usesNonExemptEncryption` is unset and no beta groups are assigned. The owner's
-  compliance declaration, internal tester assignment and physical iPhone
-  acceptance remain pending; no legal answers or public store submission were
-  made, and no website/backend release was performed.
+  `INTERNAL_ONLY`, not expired. The initial `MISSING_EXPORT_COMPLIANCE` state
+  cleared after the owner personally submitted Apple's encryption declaration
+  on 2026-09-10; the live App Store Connect UI now confirms **Ready to Test**.
+  The **Ludolume Internal** group now has one tester (the existing Account Holder,
+  status Invited) and only build `4.1.0`; automatic distribution is disabled.
+  Invitation acceptance, installation and physical iPhone runtime acceptance
+  remain pending. No roles, public testing, public store submission or
+  website/backend release were enabled by this setup.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma

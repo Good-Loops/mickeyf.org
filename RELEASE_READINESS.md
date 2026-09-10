@@ -416,12 +416,15 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    TestFlight upload and credential/artifact cleanup. App Store Connect GET
    (HTTP 200) confirms Ludolume 1.0 build `4.1.0`
    (`2999535d-e87d-47e1-91cf-ce2bb4bbd4ea`): processing `VALID`, audience
-   `INTERNAL_ONLY`, not expired. Internal testing remains
-   `MISSING_EXPORT_COMPLIANCE`, with `usesNonExemptEncryption` unset and no beta
-   groups assigned. Owner compliance declaration, internal tester assignment
-   and physical iPhone acceptance are pending; no legal answers, public store
-   submission or website/backend release were made. Native Capacitor origins
-   are not currently allowed by backend CORS: native auth
+   `INTERNAL_ONLY`, not expired. The owner personally submitted Apple's
+   encryption declaration on 2026-09-10; the live App Store Connect UI now shows
+   **Ready to Test**, replacing the initial `MISSING_EXPORT_COMPLIANCE` state.
+   **Ludolume Internal** now contains only build `4.1.0` and the existing Account
+   Holder as its sole tester (Invited), with automatic distribution disabled.
+   Invitation acceptance, installation and physical iPhone runtime acceptance
+   remain pending; no roles, public testing, public store submission or
+   website/backend release were enabled by this setup. Native
+   Capacitor origins are not currently allowed by backend CORS: native auth
    acceptance remains scoped to the following provider-login milestone, not
    the initial signed gameplay-build checkpoint. See `frontend/ios/BUILDING.md`.
 

@@ -13,9 +13,9 @@ approved PR #330 on 2026-09-10. That PR contained only the workflow and signing
 ignore rules. Merging the full development branch also carries its website/auth
 changes and can trigger website deployment; that remains separate approval.
 
-The workflow and future run titles use **Ludolume iOS build**. GitHub's
-Actions listing may retain its original title until this workflow-only rename
-reaches `main`; this does not authorize merging the full development branch.
+The workflow and future run titles use **Ludolume iOS build**. The name-only
+PR #331 merged to `main` as `292c5a64`, and GitHub's API confirms the workflow
+name. This did not merge the full development branch or deploy its changes.
 Select **Run workflow** and choose the reviewed branch. The stable filename
 also allows the equivalent command:
 
@@ -73,11 +73,21 @@ archive/export, IPA metadata, deep signature and leaf-certificate verification,
 Apple upload and credential/artifact cleanup. App Store Connect GET (HTTP 200)
 confirms Ludolume version **1.0**, build **4.1.0**, ID
 `2999535d-e87d-47e1-91cf-ce2bb4bbd4ea`: processing `VALID`, audience
-`INTERNAL_ONLY`, not expired. Internal testing is `MISSING_EXPORT_COMPLIANCE`;
-`usesNonExemptEncryption` is unset and no beta groups are assigned. The owner's
-compliance declaration, internal tester assignment and physical iPhone runtime
-acceptance remain pending. No legal answers, public store submission or
-website/backend release were made by this upload.
+`INTERNAL_ONLY`, not expired. The initial `MISSING_EXPORT_COMPLIANCE` state
+cleared after the owner personally submitted Apple's encryption declaration
+on 2026-09-10; the live App Store Connect UI now confirms **Ready to Test**.
+The **Ludolume Internal** group (`c610a469-a86a-4e0f-9a8b-c83809230442`) now shows
+**1 Tester · 1 Build**: the existing Account Holder is Invited, and only build
+`4.1.0` is assigned. Automatic distribution is disabled; future builds require
+manual assignment. Invitation acceptance, installation and physical iPhone
+runtime acceptance remain pending. No roles or public testing were enabled.
+The workflow did not answer the compliance questionnaire or make a public store
+submission or website/backend release.
+
+App Store Connect's Add Builds view displays the correct cosmic-controller
+icon for `4.1.0`; the app-record header still shows Apple's placeholder. Its
+refresh timing is unverified; this does not establish a missing build icon or
+require a replacement build.
 
 The first protected run, `34504646121`, stopped at uploader preflight before
 dependencies, signing credentials or uploads were used: `altool --help` did not
@@ -206,8 +216,10 @@ For subsequent signed uploads and device acceptance:
 4. Review the exact source commit and approve the protected manual signing job.
    It uses unique build numbers and temporary-keychain cleanup. Uploading to
    TestFlight does not authorize public App Store submission or release.
-5. Obtain the owner's export-compliance answers and assign internal testers;
-   neither is completed by uploading. Check installation, artwork, audio playback
+5. Accept the internal tester invitation and install build `4.1.0`. Its
+   export-compliance declaration and tester assignment are complete; future
+   declarations still require the owner's answers when Apple requests them.
+   Check installation, artwork, audio playback
    and gameplay on the owner's iPhone. Native auth/session acceptance follows the
    origin/login work below;
    do not confuse successful installation with authentication readiness.
