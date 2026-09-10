@@ -12,7 +12,6 @@ import Dropdown from '@/components/Dropdown';
 import P4VegaHelp from './P4VegaHelp';
 import P4VegaResults from './P4VegaResults';
 import type { P4RunResult } from '@/games/p4-Vega/p4RunResult';
-import { P4_WIN_SCORE } from '@/games/p4-Vega/p4Rules';
 
 type JoystickSide = 'left' | 'right';
 
@@ -141,8 +140,8 @@ const P4Vega: React.FC = () => {
                 ref={canvasWrapperRef}
                 data-game-state={gameState}
             >
-                <div className="p4-vega__score" aria-label={`Score: ${score} of ${P4_WIN_SCORE}`}>
-                    <span>Score</span><strong>{score.toLocaleString()}</strong><span>/ {P4_WIN_SCORE.toLocaleString()}</span>
+                <div className="p4-vega__score" aria-label={`Score: ${score}`}>
+                    <span>Score</span><strong>{score.toLocaleString()}</strong>
                 </div>
                 <FullscreenButton
                     targetRef={canvasWrapperRef}
