@@ -301,8 +301,25 @@ First native-device acceptance limits identified on 2026-09-10:
   questionnaire; Apple confirms `usesNonExemptEncryption: false`. The build was
   added to the existing Ludolume Internal group, with readback confirming
   `IN_BETA_TESTING`; previous builds/testers were preserved. The temporary release
-  helper was removed. The iPhone p4-Vega launch check remains pending; do not
-  treat upload or URL tests as device proof.
+  helper was removed. The owner confirms p4-Vega now loads/plays on the iPhone
+  in `7.1.0`. The follow-up portrait screenshot identified misplaced HUD controls
+  and unwanted outer-page scrolling, addressed in the next local correction.
+- Native portrait layout correction (2026-09-10): embedded p4-Vega score/pause
+  offsets are now local canvas padding, not the device safe-area inset applied
+  a second time. Fullscreen retains notch-safe offsets in all three modes.
+  Bootstrap marks actual Capacitor apps before the first React frame; only that
+  native shell uses a fixed viewport with non-scrolling outer document. Long
+  content remains accessible in the main scroll area. Ordinary browsers keep
+  their page scrolling and the Safari toolbar workaround is skipped in native.
+  Thirty focused shell/fullscreen/Safari tests, TypeScript and the production
+  build passed (existing chunk warning). Synthetic 393×852 iPhone safe-area
+  checks confirm an 852px document, no outer scroll under wheel/scroll requests,
+  and 8.5px HUD offsets; the Home quote is fully visible. Simulated 844×390
+  landscape keeps the outer document fixed while longer p4/form content scrolls
+  only inside main. CSS fullscreen fallback fills the viewport without clipping
+  in both orientations and restores the fixed shell on exit. These are browser
+  simulations, not WKWebView/device acceptance. No native configuration or
+  authentication changes; the next TestFlight build must include this correction.
 - Small-screen Home polish is required before public app release. The welcome
   uses 30–38px text and quotes use 14–16px wrapped normal-flow text, with a
   separate author and reserved space instead of random clipped positioning.

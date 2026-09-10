@@ -2433,8 +2433,10 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   asset URL bug is now fixed locally, with five focused regression tests,
   TypeScript and a production build passing. Signed build `7.1.0` is uploaded
   and Apple-processed; owner export answers are saved and the existing internal
-  group has access (`IN_BETA_TESTING`). The native p4-Vega launch check remains
-  pending. See `frontend/ios/BUILDING.md`.
+  group has access (`IN_BETA_TESTING`). The owner confirms p4-Vega loads/plays.
+  Portrait HUD offsets and unwanted native outer-page scrolling reported next
+  are corrected locally; a combined update with the Home fix and native device
+  acceptance remains pending. See `frontend/ios/BUILDING.md`.
   Provider login follows.
   No roles, public testing, public store submission or website release were
   enabled by this setup.
@@ -2444,6 +2446,11 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   at 320×568 and 844×390; portrait/landscape/desktop visual checks, TypeScript and
   production build passed. This change postdates TestFlight `7.1.0` and needs a
   subsequent native build/device check. Global Safari edge handling is unchanged.
+- [ ] Accept native fixed-screen layout and p4-Vega portrait HUD in that combined
+  update. Local corrections scope safe insets to fullscreen and lock only the
+  outer native document, preserving overflow access for long forms/lists.
+  Thirty focused tests, TypeScript/build and simulated portrait bounds passed;
+  owner verification in the installed update is still required.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma

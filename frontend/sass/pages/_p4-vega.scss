@@ -53,8 +53,8 @@
     &__pause-btn {
         position: absolute;
         z-index: $front;
-        top: max(.85rem, env(safe-area-inset-top));
-        right: max(.85rem, env(safe-area-inset-right));
+        top: .85rem;
+        right: .85rem;
         width: 3.8rem;
         height: 3.8rem;
     }
@@ -62,8 +62,8 @@
     &__score {
         position: absolute;
         z-index: 1;
-        top: max(.85rem, env(safe-area-inset-top));
-        left: max(.85rem, env(safe-area-inset-left));
+        top: .85rem;
+        left: .85rem;
         display: flex;
         align-items: baseline;
         gap: .55rem;
@@ -382,6 +382,13 @@
         -webkit-user-select: none;
         user-select: none;
         -webkit-touch-callout: none;
+
+        // Only edge-to-edge gameplay needs device insets; embedded HUDs use canvas corners.
+        .p4-vega__score,
+        .p4-vega__pause-btn { top: max(.85rem, env(safe-area-inset-top)); }
+
+        .p4-vega__score { left: max(.85rem, env(safe-area-inset-left)); }
+        .p4-vega__pause-btn { right: max(.85rem, env(safe-area-inset-right)); }
     }
 }
 

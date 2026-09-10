@@ -79,6 +79,30 @@ test('p4-Vega fullscreen joystick uses safe bottom corners and leaves the exit b
     assert.ok(leftRule?.includes('right: auto;'));
 });
 
+test('p4-Vega applies device safe insets only to fullscreen HUD controls', () => {
+    const gameCss = compileString("@use 'pages/p4-vega';", {
+        loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],
+    }).css;
+    for (const [control, side] of [['score', 'left'], ['pause-btn', 'right']]) {
+        const selector = `.p4-vega__${control}`;
+        const embedded = gameCss.split('}').find(part => part.trim().startsWith(`${selector} {`)
+            && part.includes('position: absolute;'));
+        assert.ok(embedded, `embedded ${control}`);
+        assert.ok(embedded.includes('top: 0.85rem;'));
+        assert.ok(embedded.includes(`${side}: 0.85rem;`));
+        assert.doesNotMatch(embedded, /safe-area-inset/);
+
+        for (const edge of ['top', side]) {
+            const insetRules = gameCss.split('}').filter(part => part.includes(selector)
+                && part.includes(`${edge}: max(0.85rem, env(safe-area-inset-${edge}));`));
+            assert.equal(insetRules.length, 1, `${control} ${edge} inset`);
+            for (const mode of [':fullscreen', ':-webkit-full-screen', '[data-canvas-fullscreen=fallback]']) {
+                assert.ok(insetRules[0].includes(`__canvas-wrapper${mode} ${selector}`));
+            }
+        }
+    }
+});
+
 test('compact Three Bosses fullscreen keeps the exit control at the safe screen corner', () => {
     const gameCss = compileString("@use 'pages/three-bosses';", {
         loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],
