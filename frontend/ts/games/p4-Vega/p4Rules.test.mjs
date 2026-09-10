@@ -3,9 +3,11 @@ import test from 'node:test';
 import {
     areP4BoundsColliding,
     chooseP4HazardSpawn,
+    constrainP4HazardBounds,
     getP4Hitbox,
     getP4MovementAxis,
     getP4PickupResult,
+    P4_HAZARD_EDGE_MARGIN,
     P4_PICKUP_POINTS,
     P4_WIN_SCORE,
 } from './p4Rules.ts';
@@ -75,7 +77,7 @@ test('repeated unsafe spawn candidates terminate at the farthest valid corner', 
         { width: 1920, height: 1080 }, { width: 100, height: 100 },
         { x: 0, y: 0, width: 100, height: 100 }, () => { calls++; return 0; },
     );
-    assert.deepEqual(spawn, { x: 1820, y: 980 });
+    assert.deepEqual(spawn, { x: 1804, y: 964 });
     assert.equal(calls, 32);
 });
 
@@ -84,5 +86,82 @@ test('an arena too small for the desired clearance still returns a bounded posit
         { width: 120, height: 100 }, { width: 80, height: 80 },
         { x: 0, y: 0, width: 80, height: 80 }, () => 0,
     );
-    assert.deepEqual(spawn, { x: 40, y: 20 });
+    assert.deepEqual(spawn, { x: 24, y: 10 });
+});
+
+test('random spawn extremes keep the complete hazard inside the edge margin', () => {
+    assert.equal(P4_HAZARD_EDGE_MARGIN, 16);
+    for (const [randomX, randomY, x, y] of [
+        [0, 0, 16, 16],
+        [1, 0, 1804, 16],
+        [0, 1, 16, 964],
+        [1, 1, 1804, 964],
+    ]) {
+        const values = [randomX, randomY];
+        let calls = 0;
+        const spawn = chooseP4HazardSpawn(
+            { width: 1920, height: 1080 }, { width: 100, height: 100 },
+            { x: 910, y: 490, width: 100, height: 100 }, () => values[calls++],
+        );
+        assert.deepEqual(spawn, { x, y });
+        assert.equal(calls, 2, 'the safe extreme is accepted without falling back');
+    }
+});
+
+const arena = { width: 1920, height: 1080 };
+const constrain = (x, y, vX, vY) => constrainP4HazardBounds(
+    arena, { x, y, width: 100, height: 100 }, { x: vX, y: vY },
+);
+
+test('an overshoot is clamped at each edge and the moving axis points back inward', () => {
+    for (const [input, expected] of [
+        [[-30, 500, -4.5, 0], { x: 16, y: 500, vX: 4.5, vY: 0 }],
+        [[1810, 500, 2.5, 0], { x: 1804, y: 500, vX: -2.5, vY: 0 }],
+        [[800, -20, 0, -1.5], { x: 800, y: 16, vX: 0, vY: 1.5 }],
+        [[800, 1005, 0, 4.5], { x: 800, y: 964, vX: 0, vY: -4.5 }],
+    ]) {
+        assert.deepEqual(constrain(...input), expected);
+    }
+});
+
+test('a hazard touching an exact edge turns inward without an off-canvas frame', () => {
+    assert.deepEqual(constrain(16, 500, -2.5, 0), { x: 16, y: 500, vX: 2.5, vY: 0 });
+    assert.deepEqual(constrain(1804, 500, 2.5, 0), { x: 1804, y: 500, vX: -2.5, vY: 0 });
+    assert.deepEqual(constrain(800, 16, 0, -2.5), { x: 800, y: 16, vX: 0, vY: 2.5 });
+    assert.deepEqual(constrain(800, 964, 0, 2.5), { x: 800, y: 964, vX: 0, vY: -2.5 });
+});
+
+test('already inward velocity is preserved instead of repeatedly reversing at an edge', () => {
+    for (const [x, y, vX, vY, clampedX, clampedY] of [
+        [0, 500, 3.5, 0, 16, 500],
+        [1820, 500, -3.5, 0, 1804, 500],
+        [800, 0, 0, 3.5, 800, 16],
+        [800, 980, 0, -3.5, 800, 964],
+    ]) {
+        assert.deepEqual(constrain(x, y, vX, vY), { x: clampedX, y: clampedY, vX, vY });
+        assert.deepEqual(constrain(clampedX, clampedY, vX, vY), { x: clampedX, y: clampedY, vX, vY });
+    }
+});
+
+test('a stationary axis outside an edge is corrected without inventing movement', () => {
+    assert.deepEqual(constrain(-45, 500, 0, 3.5), { x: 16, y: 500, vX: 0, vY: 3.5 });
+    assert.deepEqual(constrain(1820, 500, 0, -3.5), { x: 1804, y: 500, vX: 0, vY: -3.5 });
+    assert.deepEqual(constrain(800, -45, 3.5, 0), { x: 800, y: 16, vX: 3.5, vY: 0 });
+    assert.deepEqual(constrain(800, 980, -3.5, 0), { x: 800, y: 964, vX: -3.5, vY: 0 });
+});
+
+test('an interior hazard retains fractional position and velocity without mutating the bounds', () => {
+    const bounds = { x: 500.25, y: 400.75, width: 100, height: 100 };
+    const velocity = { x: -2.5, y: 1.5 };
+    assert.deepEqual(constrainP4HazardBounds(arena, bounds, velocity), {
+        x: 500.25, y: 400.75, vX: -2.5, vY: 1.5,
+    });
+    assert.deepEqual(bounds, { x: 500.25, y: 400.75, width: 100, height: 100 });
+    assert.deepEqual(velocity, { x: -2.5, y: 1.5 });
+});
+
+test('boundary correction uses all 90 pixels of rendered artwork, not the reduced collision hitbox', () => {
+    assert.deepEqual(constrainP4HazardBounds(
+        arena, { x: 1850, y: 990, width: 90, height: 90 }, { x: 4.5, y: 0 },
+    ), { x: 1814, y: 974, vX: -4.5, vY: 0 });
 });

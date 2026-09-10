@@ -2127,6 +2127,17 @@ pickups visible. Centered 80% hitboxes and a 0.6-second non-lethal spawn pulse
 are the trial collision/readability change, pending the owner's gameplay judgment.
 Spawn selection now has a bounded fallback rather than an unbounded retry loop.
 
+Boundary correction follow-up (2026-09-09): blue/red hazards use center anchors
+while yellow uses a top-left anchor. Spawn placement now translates full rendered
+bounds into the correct sprite position and reserves a 16px arena-space inset,
+including fallback corners. Bounces clamp both axes and turn velocity inward,
+so even an idle out-of-bounds axis cannot remain clipped. All 15 rules tests
+passed with `node --experimental-strip-types --test ts/games/p4-Vega/p4Rules.test.mjs`
+from `frontend`; `npx tsc -p tsconfig.json --noEmit` also passed. Isolated Chromium
+verified all three actual sprite variants at all four spawn extremes, stationary
+axis correction, right-edge reflection, and desktop/320px rendering. Player
+movement, faster diagonals, pickup scoring and the spawn warning are unchanged.
+
 The 100th pickup awards the final ten points and completes the run at **1000**,
 without requesting a 101st hazard. A responsive glass results card handles
 defeat/victory, restart, guide access, signed-out messaging, personal bests and

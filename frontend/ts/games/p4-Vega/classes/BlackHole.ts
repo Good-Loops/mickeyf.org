@@ -14,7 +14,7 @@ import {
     getRandomBoolean,
     getRandomInt,
 } from '@/utils/random';
-import { areP4BoundsColliding, chooseP4HazardSpawn, P4_SPAWN_WARNING_STEPS } from '../p4Rules';
+import { areP4BoundsColliding, chooseP4HazardSpawn, constrainP4HazardBounds, P4_SPAWN_WARNING_STEPS } from '../p4Rules';
 
 import { Entity } from '@/games/helpers/Entity';
 
@@ -33,6 +33,7 @@ const VELOCITY_MAX = 4.5;
  * - Velocity components (`vX`, `vY`) are in pixels per update call.
  *
  * Invariants:
+ * - Full visual bounds stay inset from the arena, regardless of the sprite's anchor.
  * - Placement keeps a gap from the player; a short non-lethal pulse announces each spawn.
  * - Movement is axis-aligned in the current implementation (only one of `vX`/`vY` is non-zero).
  */
@@ -101,12 +102,15 @@ export class BlackHole extends Entity<AnimatedSprite> {
      * Chooses a random position away from the player, with a bounded safest-corner fallback.
      */
     private setPosition(p4Anim: AnimatedSprite) {
+        const bounds = this.anim.getBounds();
         const position = chooseP4HazardSpawn(
             { width: CANVAS_WIDTH, height: CANVAS_HEIGHT },
-            this.anim,
+            bounds,
             p4Anim.getBounds(),
         );
-        this.anim.position.set(position.x, position.y);
+        // Blue/red sprites are center-anchored; yellow is top-left-anchored.
+        this.anim.x += position.x - bounds.x;
+        this.anim.y += position.y - bounds.y;
     }
 
     /**
@@ -130,20 +134,18 @@ export class BlackHole extends Entity<AnimatedSprite> {
             gameLive = false;
         }
 
-        if (this.vX == 0) {
-            this.anim.y += this.vY!;
-        } else {
-            this.anim.x += this.vX!;
-        }
-
-        const bhBounds = this.anim.getBounds();
-
-        if (bhBounds.y + bhBounds.height > CANVAS_HEIGHT || bhBounds.y < 0) {
-            this.vY! *= -1;
-        }
-        if (bhBounds.x + bhBounds.width > CANVAS_WIDTH || bhBounds.x < 0) {
-            this.vX! *= -1;
-        }
+        this.anim.x += this.vX;
+        this.anim.y += this.vY;
+        const bounds = this.anim.getBounds();
+        const constrained = constrainP4HazardBounds(
+            { width: CANVAS_WIDTH, height: CANVAS_HEIGHT },
+            bounds,
+            { x: this.vX, y: this.vY },
+        );
+        this.anim.x += constrained.x - bounds.x;
+        this.anim.y += constrained.y - bounds.y;
+        this.vX = constrained.vX;
+        this.vY = constrained.vY;
 
         return gameLive;
     }
