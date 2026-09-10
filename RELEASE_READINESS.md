@@ -419,12 +419,16 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    `INTERNAL_ONLY`, not expired. The owner personally submitted Apple's
    encryption declaration on 2026-09-10; the live App Store Connect UI now shows
    **Ready to Test**, replacing the initial `MISSING_EXPORT_COMPLIANCE` state.
-   **Ludolume Internal** now contains only build `4.1.0` and the existing Account
-   Holder as its sole tester (Invited), with automatic distribution disabled.
-   Invitation acceptance, installation and physical iPhone runtime acceptance
-   remain pending; no roles, public testing, public store submission or
-   website/backend release were enabled by this setup. Native
-   Capacitor origins are not currently allowed by backend CORS: native auth
+   **Ludolume Internal** contains only build `4.1.0` and the existing Account
+   Holder as its sole tester, with automatic distribution disabled. The owner
+   installed TestFlight version 1.0/build `4.1.0` on the iPhone and confirms games
+   and controls work. Native authentication is not accepted: password login
+   reports “could not reach server”; live preflight confirms the missing native
+   origin allowance. No roles, public
+   testing, public store submission or website/backend release were enabled.
+   An exact `capacitor://localhost` backend allowance is prepared, not deployed;
+   14 focused configuration/authorization tests and backend TypeScript passed.
+   Deployment approval and iPhone session verification are pending. Native auth
    acceptance remains scoped to the following provider-login milestone, not
    the initial signed gameplay-build checkpoint. See `frontend/ios/BUILDING.md`.
 

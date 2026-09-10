@@ -26,6 +26,8 @@ export type DatabaseConfig = {
 const PRODUCTION_ORIGINS = Object.freeze([
     'https://mickeyf.com',
     'https://www.mickeyf.com',
+    // Packaged iOS WebView origin, not an HTTP development server or app attestation.
+    'capacitor://localhost',
 ]);
 
 const DEVELOPMENT_ORIGINS = Object.freeze([

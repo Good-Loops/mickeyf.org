@@ -77,10 +77,12 @@ confirms Ludolume version **1.0**, build **4.1.0**, ID
 cleared after the owner personally submitted Apple's encryption declaration
 on 2026-09-10; the live App Store Connect UI now confirms **Ready to Test**.
 The **Ludolume Internal** group (`c610a469-a86a-4e0f-9a8b-c83809230442`) now shows
-**1 Tester · 1 Build**: the existing Account Holder is Invited, and only build
-`4.1.0` is assigned. Automatic distribution is disabled; future builds require
-manual assignment. Invitation acceptance, installation and physical iPhone
-runtime acceptance remain pending. No roles or public testing were enabled.
+**1 Tester · 1 Build**, with the existing Account Holder as sole tester and only
+build `4.1.0` assigned. Automatic distribution is disabled; future builds require
+manual assignment. The owner installed TestFlight version 1.0/build `4.1.0`
+on the iPhone and confirms games and controls work. Installation/gameplay is
+accepted; native authentication is not: password login reports “could not reach
+server” and diagnosis is active. No roles or public testing were enabled.
 The workflow did not answer the compliance questionnaire or make a public store
 submission or website/backend release.
 
@@ -198,7 +200,9 @@ API access verified 2026-09-10 after the owner accepted Apple's API-use agreemen
 
 Those initial API checks proved authentication and record reads. The successful
 protected run now verifies runner key consumption, signed compilation and
-TestFlight upload; native runtime behavior remains unverified.
+TestFlight upload. The owner accepted installation/gameplay on the iPhone;
+native authentication remains unverified and its reported failure is under
+investigation.
 Do not expose the P8 or minted JWTs in logs, source, artifacts or chat.
 
 For subsequent signed uploads and device acceptance:
@@ -216,21 +220,22 @@ For subsequent signed uploads and device acceptance:
 4. Review the exact source commit and approve the protected manual signing job.
    It uses unique build numbers and temporary-keychain cleanup. Uploading to
    TestFlight does not authorize public App Store submission or release.
-5. Accept the internal tester invitation and install build `4.1.0`. Its
-   export-compliance declaration and tester assignment are complete; future
-   declarations still require the owner's answers when Apple requests them.
-   Check installation, artwork, audio playback
-   and gameplay on the owner's iPhone. Native auth/session acceptance follows the
-   origin/login work below;
-   do not confuse successful installation with authentication readiness.
+5. Build `4.1.0`'s compliance, tester setup and iPhone installation/gameplay check
+   are complete. Future declarations still require the owner's answers when
+   Apple requests them. Resolve the native login failure before claiming
+   auth/session acceptance; installation does not prove authentication readiness.
    Preserve the PWA and Android tracks.
 
 First native-device acceptance limits identified on 2026-09-10:
 
-- Production CORS currently allows the website origins, not `capacitor://localhost`.
-  The native-origin preflight received no `Access-Control-Allow-Origin`, so
-  native login/leaderboards need origin/session work in the following login
-  milestone. This signing task does not change or deploy the backend.
+- The live production CORS policy still excludes `capacitor://localhost`:
+  its login preflight returned 204 without `Access-Control-Allow-Origin`, while
+  the website origin was allowed and the session endpoint responded normally.
+  A backend-only correction adds that exact iOS origin (not HTTP localhost,
+  wildcard origins, or Android) and retains authentication checks. Deployment
+  approval and iPhone login/session/logout verification remain pending; CORS
+  permission alone does not prove cookie persistence. Native auth belongs to the
+  provider-login milestone; this correction has not been deployed.
 - Check Three Bosses' packaged asset URLs in WKWebView on the device; a custom
   scheme behaves differently from a normal website origin. Desktop URL parsing
   alone is not proof of a device failure or success.

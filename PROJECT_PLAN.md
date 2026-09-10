@@ -2421,11 +2421,13 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   `INTERNAL_ONLY`, not expired. The initial `MISSING_EXPORT_COMPLIANCE` state
   cleared after the owner personally submitted Apple's encryption declaration
   on 2026-09-10; the live App Store Connect UI now confirms **Ready to Test**.
-  The **Ludolume Internal** group now has one tester (the existing Account Holder,
-  status Invited) and only build `4.1.0`; automatic distribution is disabled.
-  Invitation acceptance, installation and physical iPhone runtime acceptance
-  remain pending. No roles, public testing, public store submission or
-  website/backend release were enabled by this setup.
+  The **Ludolume Internal** group has one tester (the existing Account Holder)
+  and only build `4.1.0`; automatic distribution is disabled. The owner installed
+  TestFlight version 1.0/build `4.1.0` on the iPhone and confirms games and
+  controls work. This accepts installation/gameplay, not native authentication:
+  password login reports “could not reach server” and diagnosis is active.
+  No roles, public testing, public store submission or website/backend release
+  were enabled by this setup.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma
@@ -2437,7 +2439,8 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   before linking an existing account, never match solely on an email string.
   Web and native clients need their own provider configuration and approved
   sign-in flows; do not load Google OAuth inside Capacitor's embedded WebView.
-  The native Capacitor origin is currently outside the backend CORS allowlist.
+  The live backend excludes the native Capacitor origin. The exact iOS-origin
+  correction is prepared and locally verified; deployment approval is pending.
   Native login/session acceptance and that scoped origin change belong to this
   provider-login milestone, not the initial signed gameplay-build checkpoint.
 - [ ] Configure Apple's primary Sign in with Apple App ID, web Services ID,
@@ -2445,8 +2448,9 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   separately from native app registration; membership alone does not activate it.
 - [ ] Review native session persistence, privacy disclosures, account deletion,
   provider disconnect/revocation and current store policies before submission.
-- [ ] Test signed builds through Android internal testing and TestFlight on the
-  owner's iPhone, then obtain separate approval for each public store release.
+- [ ] Complete Android internal testing and obtain separate approval for each
+  public store release. The iPhone TestFlight installation/gameplay check is
+  accepted above; native authentication remains pending.
 
 Primary references checked 2026-09-10:
 [Capacitor build requirements](https://capacitorjs.com/docs/getting-started/environment-setup),

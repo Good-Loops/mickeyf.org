@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Request } from 'express';
 import jwt from 'jsonwebtoken';
+import { loadRuntimeConfig } from '../config/runtimeConfig';
 import { authorizeThreeBossesMutation } from './threeBossesMutationAuthorization';
 
 const secret = 'unit-test-secret-that-is-not-a-runtime-credential';
@@ -29,6 +30,30 @@ function mutationRequest(
         signedCookies,
     };
 }
+
+test('the packaged iOS origin permits transport, not unauthenticated score changes', () => {
+    const nativeOptions = {
+        ...options,
+        allowedMutationOrigins: loadRuntimeConfig({
+            NODE_ENV: 'production', SESSION_SECRET: secret,
+        }).corsOrigins,
+    };
+    const nativeHeaders = { origin: 'capacitor://localhost' };
+    assert.deepEqual(
+        authorizeThreeBossesMutation(mutationRequest(nativeHeaders, {}), nativeOptions),
+        unauthorized
+    );
+    assert.equal(
+        authorizeThreeBossesMutation(mutationRequest(nativeHeaders), nativeOptions).authorized,
+        true
+    );
+    assert.deepEqual(
+        authorizeThreeBossesMutation(mutationRequest({
+            origin: 'capacitor://localhost.evil.example',
+        }), nativeOptions),
+        unauthorized
+    );
+});
 
 test('disabled submissions take precedence over invalid authentication, origin, and content type', () => {
     const request = mutationRequest({ origin: 'https://untrusted.example', 'content-type': 'text/plain' }, {});
