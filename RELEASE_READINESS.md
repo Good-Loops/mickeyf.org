@@ -378,10 +378,15 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    lifecycle checks passed, not real account/score writes or device testing.
    Backend/Unity assets remain unchanged. Native-store/social-provider work is
    separately planned in Phase 17. The owner subsequently approved GitHub Actions
-   for iOS: a manual unsigned simulator build workflow is prepared, but has not
-   run in the cloud. Default-branch activation requires a separately approved
-   merge; Apple signing/TestFlight credentials remain unconfigured. No provider
-   login, store upload or public release has been activated.
+   for iOS: approved workflow-only PR #330 activated manual builds on `main`
+   without publishing the pending website/authentication changes. Cloud run
+   `34494943864` passed against development commit `aa832702`: all 202 frontend
+   tests, Vite build, Capacitor/CocoaPods sync, unsigned Xcode simulator build
+   and artifact upload. New celestial native artwork includes a real-alpha
+   Android adaptive layer; exports and asset references were checked. Physical
+   native appearance, Android compilation and native authentication remain
+   unverified. Apple signing/TestFlight credentials remain unconfigured. No
+   provider login, store upload or additional public website release was activated.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

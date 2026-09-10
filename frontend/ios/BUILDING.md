@@ -8,10 +8,10 @@ dependencies. It builds the web assets, synchronizes Capacitor, then compiles th
 shared `App` scheme with signing disabled. It does not deploy the website, change
 the backend, contact Apple to publish, or use Apple credentials.
 
-The workflow must first be present on the repository's default branch (`main`)
-before GitHub will accept a manual dispatch. Merging the current development
-branch also carries its other changes and can trigger website deployment;
-that is a separate approval, not an incidental cloud-build setup step.
+The workflow was activated on the repository's default branch (`main`) by
+approved PR #330 on 2026-09-10. That PR contained only the workflow and signing
+ignore rules. Merging the full development branch also carries its website/auth
+changes and can trigger website deployment; that remains separate approval.
 
 After the workflow is available on `main`, select **Actions → BeatCalc iOS
 simulator build (manual) → Run workflow** and choose the reviewed branch. The
@@ -27,8 +27,24 @@ cannot be installed on a physical iPhone, and is not a TestFlight build.
 Successful compilation is not proof of working WKWebView authentication,
 microphone/audio permissions, packaged Unity assets, or native gameplay.
 
-No cloud compile has been verified yet. Windows can run the frontend checks,
-but it cannot validate Xcode compilation locally.
+First cloud compile verified on 2026-09-10:
+[run 34494943864](https://github.com/Good-Loops/mickeyf.com/actions/runs/34494943864),
+development commit `aa83270262ce579826eab79bc85ee55f85139da9`. TypeScript and all
+202 frontend tests, Vite build, Capacitor/CocoaPods synchronization, unsigned
+Xcode simulator compilation, packaging and artifact upload passed. The uploaded
+ZIP was 57,907,439 bytes and expires after one day. Windows still cannot run this
+Xcode build locally, and no simulator/device runtime test is claimed.
+
+Non-failing upstream/tooling warnings were retained rather than patched inside
+dependencies: Capacitor's Swift closure capture, the runner's Metal-toolchain
+search path, optional App Intents metadata, CocoaPods script dependency analysis,
+and the artifact action's Node runtime/deprecation notices. The build completed;
+these are not evidence of native runtime correctness or a clean warning-free build.
+
+Native artwork sources, generation prompts and export instructions are in
+`../resources/README.md`. The iOS icon is opaque and the launch screen uses one
+shared celestial image; its navy background avoids a white reveal. This is the
+OS launch screen, not an added timed loading overlay.
 
 ## Next stage: signed TestFlight builds
 

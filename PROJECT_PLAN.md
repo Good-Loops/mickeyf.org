@@ -2366,10 +2366,22 @@ app ID `org.mickeyf.app`; this is not proof of an App Store/Play registration.
   Android on Windows; use GitHub Actions macOS/Xcode for iOS (owner approved
   2026-09-10), with protected signing credentials, bounded cost and manual release
   approval. Manual unsigned simulator workflow and a shared Xcode scheme are
-  prepared; cloud compilation is not yet verified. The workflow must reach
-  `main` through a separately approved merge before it can be manually run.
+  prepared. Approved workflow-only PR #330 merged to `main` on 2026-09-10;
+  it did not publish the pending website/authentication changes. The first
+  [manual cloud build](https://github.com/Good-Loops/mickeyf.com/actions/runs/34494943864)
+  passed on development commit `aa83270262ce579826eab79bc85ee55f85139da9`:
+  all 202 frontend tests, Vite build, Capacitor/CocoaPods sync, Xcode unsigned
+  simulator compilation and artifact upload succeeded. This is not physical
+  iPhone validation or a signed store build. Android native compilation is
+  still unverified; the local Java/Android SDK toolchain is not configured.
   See `frontend/ios/BUILDING.md`; no signing credentials, paid service, TestFlight
   upload or public store release has been activated.
+- [x] Create matching celestial/glass BeatCalc native icons and launch artwork.
+  Sources and prompts live in `frontend/resources/README.md`. Android adaptive
+  icons have a real alpha foreground, extracted using the owner-approved chroma
+  key method; iOS retains an opaque 1024-square icon. Portrait/landscape exports,
+  XML/asset references and duplicate-resource checks passed. Native device
+  appearance remains part of signed-build acceptance, not a completed device test.
 - [ ] Add Google and Apple sign-in while retaining username/password accounts
   and score ownership. Verify provider identities on the backend; require proof
   before linking an existing account, never match solely on an email string.
