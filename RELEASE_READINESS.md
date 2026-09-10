@@ -363,7 +363,8 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    Three Bosses request-policy extraction are recorded in
    `CLEAN_CODE_INVENTORY.md`. Frontend test discovery now uses a matching glob
    without removing coverage. Stale project-guidance cleanup is also complete;
-   next is a bounded login/signup source-responsibility review, not another
+   auth transport is now consistently service-owned with corrected session
+   response typing. Next is stale session-check result handling, not another
    release or production authentication audit. These refactors have not been
    deployed.
 

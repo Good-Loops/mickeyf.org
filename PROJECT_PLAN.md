@@ -2296,9 +2296,15 @@ example. The active branch is `improvement/clean-code-sweep`.
   retired the unused 586-line `resources/project-structure.txt` plus its
   dedicated attribute rule. All 18 guide paths and tracked references checked;
   no application changes, replacement generator or repeated build/test run.
-- [ ] Next bounded review: login/signup form responsibilities and request/error
-  handling. Refactor only a demonstrated maintenance problem; preserve UX,
-  accessibility and current authentication contracts.
+- [x] Login/signup request-boundary review: moved all four auth HTTP operations
+  into independently testable `authApi.ts`, kept configured exports in
+  `authService.ts`, and removed the session username `any` cast. Existing
+  forms, alerts, cookies and response contracts preserved. On 2026-09-10,
+  9 transport cases, TypeScript/all 194 frontend tests and Vite build passed;
+  existing chunk warning remains. No real auth requests or new dependency.
+- [ ] Next bounded task: protect initial session verification from overwriting
+  newer login/logout state in `AuthContext`; check ordering with deferred fake
+  responses, not a new production authentication campaign.
 - [ ] Complete subsequent subsystem reviews one at a time; choose actual
   improvements from evidence, not file length or similar-looking syntax.
 

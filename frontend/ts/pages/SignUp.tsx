@@ -4,7 +4,7 @@
  */
 import { useState } from "react";
 import Swal from "sweetalert2";
-import { API_BASE } from "@/config/apiConfig";
+import { signupRequest } from "@/services/authService";
 
 const SignUp: React.FC = () => {
     const [userName, setUserName] = useState("");
@@ -17,25 +17,11 @@ const SignUp: React.FC = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${API_BASE}/api/users`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    type: "signup",
-                    user_name: userName,
-                    email,
-                    user_password: userPassword,
-                }),
-                credentials: "include",
+            const data = await signupRequest({
+                user_name: userName,
+                email,
+                user_password: userPassword,
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const data = await response.json();
 
             if (data.error) {
                 switch (data.error) {

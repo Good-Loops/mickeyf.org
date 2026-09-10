@@ -12,9 +12,8 @@
  * - The service layer (`services/authService.ts`) owns network/provider calls.
  */
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { loginRequest, verifyRequest } from '@/services/authService';
+import { loginRequest, logoutRequest, verifyRequest } from '@/services/authService';
 import Swal from 'sweetalert2';
-import { API_BASE } from '@/config/apiConfig';
 
 /** UI-facing auth context value owned by `AuthProvider`. */
 type AuthContextType = {
@@ -51,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const res = await verifyRequest();
                 if (res.loggedIn) {
                     setIsAuthenticated(true);
-                    setUserName((res as any).user_name ?? null);
+                    setUserName(res.user_name ?? null);
                 } else {
                     setIsAuthenticated(false);
                     setUserName(null);
@@ -121,10 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
      */
     const logout = async () => {
         try {
-            await fetch(`${API_BASE}/auth/logout`, {
-                method: 'POST',
-                credentials: 'include', // important so cookie is sent and cleared
-            });
+            await logoutRequest();
         } catch (err) {
             console.error('logout failed', err);
         }

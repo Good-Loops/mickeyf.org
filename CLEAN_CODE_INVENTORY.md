@@ -70,7 +70,7 @@ refactor everything in them.
 | Area | Review boundary | Current decision |
 | --- | --- | --- |
 | Leaderboard UI/data loading | `frontend/ts/pages/leaderboards`, hub page, transport/service boundary and route tests | First slice completed 2026-09-10: isolated the detail-state loader and its direct Node tests, described below. |
-| Shared shell/forms/services/styles | `App`, `Header`, components, context, hooks, layout, auth pages/services and `frontend/sass` | Next bounded review: login/signup form responsibilities and request/error handling. Select a refactor only if evidence warrants it; preserve accessibility and accepted Safari behavior. |
+| Shared shell/forms/services/styles | `App`, `Header`, components, context, hooks, layout, auth pages/services and `frontend/sass` | Fourth slice completed 2026-09-10: auth transport separated from UI/configuration and session-response typing corrected. Next is the initial session-check lifecycle; preserve accessibility and accepted Safari behavior. Other shell/style areas remain review scopes. |
 | Games | `frontend/ts/games`, game pages, help/results and bridge modules | Inspect responsibilities and lifecycles, preserving newly accepted gameplay, 1000-point policy, faster diagonal movement and touch/scroll boundaries. No generic release retest. |
 | Animations/audio/math | `frontend/ts/animations`, music controls, shared utilities and public facades | Review ownership of renderer/audio/timing cleanup and pure calculations; retain artistic behavior. |
 | Backend | `backend/ts` configuration, controllers, routers, middleware, repositories, security, migrations and public contracts | Second slice completed 2026-09-10: consolidated the duplicated Three Bosses mutation preconditions. Ordering, DTOs, gates, credentials and persistence remain unchanged. Other backend areas are still review scopes. |
@@ -309,8 +309,70 @@ consumer of the retired listing; `git diff --check` passed. No tests, builds,
 dependency installs, server restarts or deployments were needed or run for
 this documentation-only slice.
 
-Next bounded review: login/signup form responsibilities and request/error
-handling, without changing UX or reopening a production authentication test.
+## Fourth slice: a consistent auth transport boundary — 2026-09-10
+
+Login and session verification already used `authService.ts`, but signup
+constructed its request in `SignUp.tsx` and logout did so in `AuthContext.tsx`.
+That split left HTTP options, response parsing, form state and alerts mixed
+across different layers. The service also omitted the verified username from
+its session-response type, requiring an `any` cast in the context.
+
+New `frontend/ts/services/authApi.ts` owns the four HTTP operations through
+`createAuthApi(apiBase, fetchRequest)`. The configured `authService.ts` exports
+those operations using the existing `API_BASE`; tests supply a fake fetch.
+This follows the existing leaderboard transport/service split, without a
+generic HTTP framework, new dependency or shared form component.
+
+Before, signup constructed `fetch`, checked HTTP status and parsed JSON in
+its submit handler. The actual replacement is:
+
+```ts
+const data = await signupRequest({
+    user_name: userName,
+    email,
+    user_password: userPassword,
+});
+```
+
+Its existing alert switch, success-only field clearing, loading cleanup and
+JSX remain text-identical. Login's page is unchanged. Logout now delegates
+to `logoutRequest()` but still clears local state on server/network failure.
+Session verification now describes both real response shapes, allowing:
+
+```diff
+- setUserName((res as any).user_name ?? null);
++ setUserName(res.user_name ?? null);
+```
+
+The benefit is one testable HTTP boundary and explicit responsibilities, not
+merely fewer lines. The trade-off is an extra module and factory; it has four
+real operations and tests independent of React/Vite/environment configuration.
+TypeScript response types describe the expected contract; they do **not** add
+runtime JSON validation. Stronger payload checks, new 429 messaging and form
+validation changes are not silently included in a behavior-preserving refactor.
+
+Preserved contracts: exact endpoints and selected payload fields, password
+whitespace, `credentials: 'include'`, HTTP-200 validation errors (including
+duplicate-user `status: 409` in the JSON body), non-2xx rejection before parsing,
+network/JSON failure propagation, no auto-login after signup, and existing
+best-effort logout. Backend and public API behavior are unchanged.
+
+Checks actually completed:
+
+- `node --experimental-strip-types --test frontend/ts/services/authApi.test.mjs`
+  — 9 focused transport tests passed, using fake responses only.
+- `npm --prefix frontend test` — TypeScript and all 194 tests passed; the new
+  file was discovered by the glob without another package-script edit.
+- `npm --prefix frontend run build` — passed; existing >500 kB chunk warning.
+- Source comparison confirmed the unchanged signup alert/state-cleanup/JSX
+  section and unchanged Login page; `git diff --check` passed.
+- No real accounts, auth requests, database writes, device campaign or backend
+  build. No dependency/lockfile or generated-documentation changes.
+
+Next bounded task: protect `AuthContext` from a delayed initial session check
+overwriting a newer login/logout result. Its current mount request can settle
+after those actions; this is a source-observed race opportunity, not a newly
+reproduced production incident. Test with deferred fake responses, not accounts.
 
 ## Learning-oriented handoff for each future change
 
