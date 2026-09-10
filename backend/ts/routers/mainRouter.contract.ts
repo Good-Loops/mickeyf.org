@@ -69,7 +69,7 @@ export type PostUsersRequest =
           user_name?: string;
 
                     /**
-                     * Score value in the range 0–990 (inclusive), in increments of 10.
+                     * Score value in the range 0–1000 (inclusive), in increments of 10.
                      */
           p4_score: number;
       }
