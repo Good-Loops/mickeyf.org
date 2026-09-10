@@ -4,10 +4,10 @@ type LoginPayload = {
     user_password: string;
 };
 
-type SignupPayload = LoginPayload & { email: string };
+export type SignupPayload = LoginPayload & { email: string };
 type AccountError = { error: string; message?: string; status?: number };
 type LoginResponse = { success: true; user_name: string } | AccountError;
-type SignupResponse = { success: true; error?: never } | AccountError;
+export type SignupResponse = { success: true; error?: never } | AccountError;
 type VerificationResponse =
     | { loggedIn: true; user_name: string }
     | { loggedIn: false };

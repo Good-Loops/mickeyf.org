@@ -2302,9 +2302,17 @@ example. The active branch is `improvement/clean-code-sweep`.
   forms, alerts, cookies and response contracts preserved. On 2026-09-10,
   9 transport cases, TypeScript/all 194 frontend tests and Vite build passed;
   existing chunk warning remains. No real auth requests or new dependency.
-- [ ] Next bounded task: protect initial session verification from overwriting
-  newer login/logout state in `AuthContext`; check ordering with deferred fake
-  responses, not a new production authentication campaign.
+- [x] Initial session verification now ignores results after a newer login/logout
+  starts or the effect is cleaned up. Deferred browser responses verified that
+  signup auto-login survives a late signed-out startup response.
+- [x] Owner-requested signup improvement: create the account, sign in through the
+  existing cookie-based login, show one welcome message and navigate Home.
+  Failed automatic login preserves account creation and routes to Log in;
+  duplicate submissions are guarded. Shared SweetAlert2 glass styling matches
+  the site without a replacement library. On 2026-09-10, TypeScript/all 200
+  frontend tests and Vite build passed (existing chunk warning); mocked browser
+  success/error/fallback and desktop/portrait/landscape checks passed. No real
+  accounts or backend changes; physical iPhone dialog behavior is not verified.
 - [ ] Complete subsequent subsystem reviews one at a time; choose actual
   improvements from evidence, not file length or similar-looking syntax.
 

@@ -70,7 +70,7 @@ refactor everything in them.
 | Area | Review boundary | Current decision |
 | --- | --- | --- |
 | Leaderboard UI/data loading | `frontend/ts/pages/leaderboards`, hub page, transport/service boundary and route tests | First slice completed 2026-09-10: isolated the detail-state loader and its direct Node tests, described below. |
-| Shared shell/forms/services/styles | `App`, `Header`, components, context, hooks, layout, auth pages/services and `frontend/sass` | Fourth slice completed 2026-09-10: auth transport separated from UI/configuration and session-response typing corrected. Next is the initial session-check lifecycle; preserve accessibility and accepted Safari behavior. Other shell/style areas remain review scopes. |
+| Shared shell/forms/services/styles | `App`, `Header`, components, context, hooks, layout, auth pages/services and `frontend/sass` | Auth transport and initial session-check lifecycle completed 2026-09-10. Owner-requested signup auto-login and shared glass alerts are recorded below; other shell/style areas remain review scopes. |
 | Games | `frontend/ts/games`, game pages, help/results and bridge modules | Inspect responsibilities and lifecycles, preserving newly accepted gameplay, 1000-point policy, faster diagonal movement and touch/scroll boundaries. No generic release retest. |
 | Animations/audio/math | `frontend/ts/animations`, music controls, shared utilities and public facades | Review ownership of renderer/audio/timing cleanup and pure calculations; retain artistic behavior. |
 | Backend | `backend/ts` configuration, controllers, routers, middleware, repositories, security, migrations and public contracts | Second slice completed 2026-09-10: consolidated the duplicated Three Bosses mutation preconditions. Ordering, DTOs, gates, credentials and persistence remain unchanged. Other backend areas are still review scopes. |
@@ -369,10 +369,55 @@ Checks actually completed:
 - No real accounts, auth requests, database writes, device campaign or backend
   build. No dependency/lockfile or generated-documentation changes.
 
-Next bounded task: protect `AuthContext` from a delayed initial session check
-overwriting a newer login/logout result. Its current mount request can settle
-after those actions; this is a source-observed race opportunity, not a newly
-reproduced production incident. Test with deferred fake responses, not accounts.
+The initial session-check follow-up is completed in the next checkpoint below.
+
+## Signup onboarding and shared alert theme — 2026-09-10
+
+This is an explicitly requested behavior change, not a behavior-preserving
+refactor: signup previously only created the account and cleared the form.
+It now signs in through the existing cookie-based login endpoint, shows one
+welcome message, then navigates Home. Manual login retains its normal message.
+
+`signupFlow.ts` owns the sequence, not HTTP or React. Its explicit outcomes are
+`rejected`, `authenticated`, and `login-required`. The third state matters:
+account creation can succeed even if the following login request fails. The
+page must then say "Account created" and offer Log in, not repeat registration.
+The page's synchronous ref guard also prevents overlapping signup submissions.
+
+The implemented dependency boundary is:
+
+```ts
+login: (user, password) => login(user, password, { showFeedback: false }),
+```
+
+Signup owns its completion message; the same login operation still owns auth
+state. Suppressing its normal "Welcome back!" alert avoids two success dialogs.
+`AuthContext` also ignores initial verification results after an auth action
+starts or the effect is cleaned up. A late startup response must not undo a
+successful signup/login. This is not a general concurrent-auth request manager.
+
+`components/siteAlert.ts` configures one SweetAlert2 mixin; `_site-alert.scss`
+owns its glass colors, typography, focus styles and responsive layout. Existing
+auth consumers use this wrapper. The installed library already supports custom
+classes, so no replacement dependency is needed. Keyboard/focus behavior stays
+with SweetAlert2, while unnecessary height/scrollbar adjustments are disabled.
+The trade-off is a small flow module and wrapper, each with one clear purpose;
+no generic workflow engine or new component framework was added.
+
+Checks completed:
+
+- Six focused `signupFlow.test.mjs` cases cover sequencing, credentials,
+  registration errors, malformed success and post-creation login failure.
+- `npm --prefix frontend test` — TypeScript and all 200 tests passed.
+- `npm --prefix frontend run build` — passed; existing >500 kB chunk warning.
+- Isolated Chromium with intercepted API responses verified signup success at
+  1366x900, 390x844 and 844x390, late startup verification, duplicate-user errors,
+  failed automatic login/manual-login redirect, rapid double submission, and
+  unchanged manual-login feedback/Enter-key confirmation. No page errors.
+- Rendered portrait screenshot inspected; dialogs fit all three viewports with
+  44px action targets. Physical iPhone/Safari behavior is not claimed.
+- No real accounts, database writes, backend/cookie-policy changes, new package,
+  or temporary preview/script files. Screenshots remain outside the repository.
 
 ## Learning-oriented handoff for each future change
 

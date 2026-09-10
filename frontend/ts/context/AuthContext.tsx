@@ -11,16 +11,18 @@
  * - This module owns UI-facing auth state and update actions.
  * - The service layer (`services/authService.ts`) owns network/provider calls.
  */
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { loginRequest, logoutRequest, verifyRequest } from '@/services/authService';
-import Swal from 'sweetalert2';
+import Swal from '@/components/siteAlert';
+
+type LoginOptions = { showFeedback?: boolean };
 
 /** UI-facing auth context value owned by `AuthProvider`. */
 type AuthContextType = {
     userName: string | null;
     isAuthenticated: boolean;
     loading: boolean;
-    login: (user: string, pass: string) => Promise<boolean>;
+    login: (user: string, pass: string, options?: LoginOptions) => Promise<boolean>;
     logout: () => void;
 };
 
@@ -38,16 +40,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [userName, setUserName] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
+    const hasAuthActionStarted = useRef(false);
 
     useEffect(() => {
-        /**
-         * Initialization boundary:
-         * - Runs once on mount to reconcile UI state with the backend session.
-         * - No subscription is established here; cleanup is not required.
-         */
+        let active = true;
+        // A slow startup check must not overwrite a newer login or logout.
+        const canApplyVerification = () => active && !hasAuthActionStarted.current;
         (async () => {
             try {
                 const res = await verifyRequest();
+                if (!canApplyVerification()) return;
                 if (res.loggedIn) {
                     setIsAuthenticated(true);
                     setUserName(res.user_name ?? null);
@@ -56,11 +58,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     setUserName(null);
                 }
             } catch (err) {
-                console.error('verify on mount failed', err);
+                if (canApplyVerification()) console.error('verify on mount failed', err);
             } finally {
-                setLoading(false);
+                if (canApplyVerification()) setLoading(false);
             }
         })();
+        return () => { active = false; };
     }, []);
 
     /**
@@ -69,7 +72,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
      * Non-obvious behavior: normalizes common failure modes into user-facing alerts and resolves to a boolean success
      * result rather than throwing.
      */
-    const login = async (user: string, pass: string) => {
+    const login = async (user: string, pass: string, { showFeedback = true }: LoginOptions = {}) => {
+        hasAuthActionStarted.current = true;
+        setLoading(false);
         try {
             const res = await loginRequest({
                 user_name: user,
@@ -77,6 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             });
 
             if ('error' in res) {
+                if (!showFeedback) return false;
                 if (res.error === 'AUTH_FAILED') {
                     await Swal.fire({
                         title: 'Authentication failed',
@@ -96,19 +102,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsAuthenticated(true);
             setUserName(res.user_name);
 
-            await Swal.fire({
-                title: 'Welcome back!',
-                icon: 'success',
-            });
+            if (showFeedback) {
+                await Swal.fire({
+                    title: 'Welcome back!',
+                    icon: 'success',
+                });
+            }
 
             return true;
         } catch (err) {
             console.error(err);
-            await Swal.fire({
-                title: 'Error',
-                text: 'Could not reach the server.',
-                icon: 'error',
-            });
+            if (showFeedback) {
+                await Swal.fire({
+                    title: 'Error',
+                    text: 'Could not reach the server.',
+                    icon: 'error',
+                });
+            }
             return false;
         }
     };
@@ -119,6 +129,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
      * Side effect: performs a cookie-bearing request (`credentials: 'include'`) so the server can clear the session.
      */
     const logout = async () => {
+        hasAuthActionStarted.current = true;
+        setLoading(false);
         try {
             await logoutRequest();
         } catch (err) {

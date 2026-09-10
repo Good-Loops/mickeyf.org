@@ -364,9 +364,14 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    `CLEAN_CODE_INVENTORY.md`. Frontend test discovery now uses a matching glob
    without removing coverage. Stale project-guidance cleanup is also complete;
    auth transport is now consistently service-owned with corrected session
-   response typing. Next is stale session-check result handling, not another
-   release or production authentication audit. These refactors have not been
-   deployed.
+   response typing, and stale startup checks cannot overwrite newer auth actions.
+   The owner-requested signup auto-login and shared SweetAlert2 glass theme are
+   also implemented: creation succeeds before login, and failed automatic login
+   routes to manual login without repeating registration. TypeScript/all 200
+   frontend tests, Vite build and mocked browser flow/responsive checks passed;
+   physical iPhone dialog behavior remains unverified. No backend/cookie-policy
+   changes or real account writes. These changes have not been deployed; continue
+   bounded subsystem cleanup, not another production authentication audit.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

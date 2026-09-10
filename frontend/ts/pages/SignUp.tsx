@@ -1,30 +1,41 @@
 /**
  * Sign-up page ("/signup").
- * Collects account details and calls the existing backend registration endpoint.
+ * Creates an account, then signs in through the existing cookie-based login flow.
  */
-import { useState } from "react";
-import Swal from "sweetalert2";
+import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "@/components/siteAlert";
 import { signupRequest } from "@/services/authService";
+import { useAuth } from "@/context/AuthContext";
+import { signupAndLogin } from "./signupFlow.ts";
 
 const SignUp: React.FC = () => {
     const [userName, setUserName] = useState("");
     const [email, setEmail] = useState("");
     const [userPassword, setUserPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const submitting = useRef(false);
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        if (submitting.current) return;
+        submitting.current = true;
         setLoading(true);
 
         try {
-            const data = await signupRequest({
+            const result = await signupAndLogin({
                 user_name: userName,
                 email,
                 user_password: userPassword,
+            }, {
+                signup: signupRequest,
+                login: (user, password) => login(user, password, { showFeedback: false }),
             });
 
-            if (data.error) {
-                switch (data.error) {
+            if (result.status === "rejected") {
+                switch (result.error) {
                 case "INVALID_EMAIL":
                     Swal.fire({ title: "Invalid email", icon: "warning" });
                     break;
@@ -44,20 +55,34 @@ const SignUp: React.FC = () => {
                 default:
                     Swal.fire({
                         title: "Could not sign up",
-                        text: data.message || "Please try again.",
+                        text: result.message || "Please try again.",
                         icon: "error",
                     });
                     break;
                 }
             } else {
-                Swal.fire({
-                    title: "Welcome, go break some records!",
-                    text: "Successfully signed up",
-                    icon: "success",
-                });
                 setUserName("");
                 setEmail("");
                 setUserPassword("");
+
+                if (result.status === "authenticated") {
+                    await Swal.fire({
+                        title: "You're all set!",
+                        text: "Your account is ready and you're logged in. Go break some records!",
+                        icon: "success",
+                        confirmButtonText: "Let's go",
+                    });
+                    navigate("/");
+                } else {
+                    // Registration succeeded: never ask the user to create it again.
+                    await Swal.fire({
+                        title: "Account created",
+                        text: "We couldn't log you in automatically. Please log in with your new account.",
+                        icon: "info",
+                        confirmButtonText: "Go to log in",
+                    });
+                    navigate("/login");
+                }
             }
         } catch (error) {
             console.error(error);
@@ -67,6 +92,7 @@ const SignUp: React.FC = () => {
                 icon: "error",
             });
         } finally {
+            submitting.current = false;
             setLoading(false);
         }
     };
