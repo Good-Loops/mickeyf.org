@@ -2196,9 +2196,11 @@ required Web/Unity checks and CodeQL, then merged as
 `7cfe7b5c7bd24e3362c7e2c089cde81999339d99`. Cloud Build
 `397a07e2-d007-4306-be6c-9f60112a809e` successfully built that exact source as image
 `sha256:6c5a8859328daa79423b23ae8e248191f73e62db2a563e9e907cd5a92a366331`.
-No candidate deployment or production traffic change has occurred. The image
-retains the current Node/OpenSSL base; the existing receipt-image exception is
-not transferable without an explicit owner decision. Frontend publication waits
+The image retains the current Node/OpenSSL base. The owner explicitly approved
+this exact replacement-image exception on 2026-09-10 with the October 7 expiry
+and earlier-reassessment conditions unchanged, as recorded in
+`RELEASE_READINESS.md`. Backend staging/promotion follows that decision.
+Frontend publication waits
 for the compatible backend to be serving, not merely built or merged.
 
 The guarded Unity release build refreshed the unreleased canvas-scroll bridge:

@@ -392,10 +392,15 @@ native/transitive reachability audit.
 
 The [official Node release index](https://nodejs.org/dist/index.json), checked
 2026-09-10, still lists Node 22.23.2 with embedded OpenSSL 3.5.7 as the newest
-Node 22 release. The exact-image S8 exception above has **not** been extended to
-this replacement. Obtain an explicit owner decision before deploying it; general
-release approval is not an unrecorded security waiver. The prior October 7 expiry
-and earlier-reassessment conditions must not be silently reset.
+Node 22 release. The owner explicitly approved the exact replacement-image S8
+exception on 2026-09-10, replying "Yes" to the decision naming image
+`6c5a8859…6331` and backend-first publication. This covers only
+`sha256:6c5a8859328daa79423b23ae8e248191f73e62db2a563e9e907cd5a92a366331`
+and the reviewed scope above, through **2026-10-07**, with the same earlier
+reassessment triggers (patched supported Node release, relevant image/code/runtime
+dependency/configuration changes, native/FFI/provider/cipher/protocol expansion,
+or relevant advisory/incident). It is explicit risk acceptance, not remediation,
+an assertion of no vulnerabilities, or blanket approval for subsequent images.
 
 The guarded Unity release builder produced certified build `5473694d…4ba7` from
 `346491b4`, with 1004-source-file provenance and restored project settings. The
