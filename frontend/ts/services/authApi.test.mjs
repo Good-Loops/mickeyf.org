@@ -18,6 +18,12 @@ for (const [method, type, payload, result] of [
     test(`${method} posts only its selected fields and includes session credentials`, async () => {
         let observed;
         const api = createAuthApi(apiBase, async (url, init) => {
+            if (url.endsWith('/auth/verify-token')) {
+                assert.equal(init.credentials, 'include');
+                assert.equal(init.method, 'GET');
+                assert.equal(init.body, undefined);
+                return Response.json({ loggedIn: true, user_name: 'Player' });
+            }
             observed = { url, init };
             return Response.json(result);
         });
@@ -59,6 +65,40 @@ test('HTTP 200 application errors pass through, including the legacy duplicate s
         const api = createAuthApi(apiBase, async () => ({ ok: true, json: async () => result }));
         assert.equal(await api[method](payload), result);
     }
+});
+
+test('login cannot report success when the next request has no matching session', async () => {
+    for (const session of [{ loggedIn: false }, { loggedIn: true, user_name: 'Other' }]) {
+        const calls = [];
+        const api = createAuthApi(apiBase, async (url) => {
+            calls.push(url);
+            return Response.json(url.endsWith('/api/users')
+                ? { success: true, user_name: 'Player' }
+                : session);
+        });
+        const result = await api.loginRequest(credentials);
+        assert.equal(result.error, 'SESSION_NOT_ESTABLISHED');
+        assert.match(result.message, /session could not be saved/);
+        assert.deepEqual(calls, [`${apiBase}/api/users`, `${apiBase}/auth/verify-token`]);
+    }
+});
+
+test('a rejected password never triggers session verification', async () => {
+    let calls = 0;
+    const api = createAuthApi(apiBase, async () => {
+        calls++;
+        return Response.json({ error: 'AUTH_FAILED' });
+    });
+    assert.deepEqual(await api.loginRequest(credentials), { error: 'AUTH_FAILED' });
+    assert.equal(calls, 1);
+});
+
+test('a failed follow-up verification rejects instead of reporting login success', async () => {
+    const api = createAuthApi(apiBase, async (url) => {
+        if (url.endsWith('/auth/verify-token')) throw new TypeError('Network unavailable');
+        return Response.json({ success: true, user_name: 'Player' });
+    });
+    await assert.rejects(api.loginRequest(credentials), /Network unavailable/);
 });
 
 test('non-success HTTP responses reject before reading JSON and preserve existing error messages', async () => {

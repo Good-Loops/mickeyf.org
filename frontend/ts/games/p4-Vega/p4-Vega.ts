@@ -26,6 +26,7 @@ import { createP4PauseController, type P4VegaController, type P4VegaState } from
 export type { P4VegaController, P4VegaState } from './p4PauseController';
 
 import { API_BASE } from '@/config/apiConfig';
+import { apiFetch } from '@/services/apiFetch';
 
 import { P4 } from './classes/P4';
 import { Water } from './classes/Water';
@@ -221,7 +222,7 @@ export async function p4Vega(
     };
 
     const submitScore = async (score: number, signal: AbortSignal): Promise<{ personalBest: boolean }> => {
-        const response = await fetch(API_BASE + '/api/users', {
+        const response = await apiFetch(API_BASE + '/api/users', {
             method: 'POST',
             credentials: 'include',
             signal,

@@ -40,12 +40,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [userName, setUserName] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
-    const hasAuthActionStarted = useRef(false);
+    const authActionVersion = useRef(0);
 
     useEffect(() => {
         let active = true;
         // A slow startup check must not overwrite a newer login or logout.
-        const canApplyVerification = () => active && !hasAuthActionStarted.current;
+        const canApplyVerification = () => active && authActionVersion.current === 0;
         (async () => {
             try {
                 const res = await verifyRequest();
@@ -73,13 +73,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
      * result rather than throwing.
      */
     const login = async (user: string, pass: string, { showFeedback = true }: LoginOptions = {}) => {
-        hasAuthActionStarted.current = true;
+        const actionVersion = ++authActionVersion.current;
         setLoading(false);
         try {
             const res = await loginRequest({
                 user_name: user,
                 user_password: pass,
             });
+            // A completed older login must not undo a more recent logout.
+            if (actionVersion !== authActionVersion.current) return false;
 
             if ('error' in res) {
                 if (!showFeedback) return false;
@@ -109,8 +111,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 });
             }
 
-            return true;
+            return actionVersion === authActionVersion.current;
         } catch (err) {
+            if (actionVersion !== authActionVersion.current) return false;
             console.error(err);
             if (showFeedback) {
                 await Swal.fire({
@@ -129,15 +132,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
      * Side effect: performs a cookie-bearing request (`credentials: 'include'`) so the server can clear the session.
      */
     const logout = async () => {
-        hasAuthActionStarted.current = true;
+        const actionVersion = ++authActionVersion.current;
         setLoading(false);
         try {
             await logoutRequest();
         } catch (err) {
             console.error('logout failed', err);
         }
-        setIsAuthenticated(false);
-        setUserName(null);
+        if (actionVersion === authActionVersion.current) {
+            setIsAuthenticated(false);
+            setUserName(null);
+        }
     };
 
     return (

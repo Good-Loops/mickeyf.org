@@ -250,6 +250,20 @@ First native-device acceptance limits identified on 2026-09-10:
 - Check Three Bosses' packaged asset URLs in WKWebView on the device; a custom
   scheme behaves differently from a normal website origin. Desktop URL parsing
   alone is not proof of a device failure or success.
+- A follow-up session correction is implemented but not yet in TestFlight:
+  `LudolumeApiPlugin.swift` uses Foundation's persistent cookie storage for the
+  exact production API origin/routes. Auth, p4-Vega scores and Three Bosses API
+  calls share that transport on iOS; website/Android fetch remains unchanged.
+  It rejects redirects, limits request/response sizes, and never returns cookies
+  or response headers to JavaScript. Login now verifies its session before
+  reporting success. Native POST ordering and local-first logout prevent an
+  older login or an offline logout from silently restoring a session.
+  Cookie/JWT expiry remains four hours; this is not indefinite remembered login.
+  The native host is intentionally pinned and checked against both build jobs;
+  changing API hosts requires reviewing that allowlist too. Focused transport
+  checks passed, but Swift compilation and physical close/reopen/logout checks
+  remain required. Do not mark persistence accepted until the new build passes
+  those device checks. p4-Vega's separate asset-loading failure is unchanged.
 - Check user-selected audio playback and interruption/resume. No first-party
   microphone capture was found; do not add a microphone permission without a use.
 - If Apple reports Missing Compliance, the owner must confirm the encryption

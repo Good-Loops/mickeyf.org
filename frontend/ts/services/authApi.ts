@@ -39,7 +39,19 @@ export function createAuthApi(apiBase: string, fetchRequest: typeof fetch = fetc
             user_name: payload.user_name,
             user_password: payload.user_password,
         });
-        return response.json();
+        const result: LoginResponse = await response.json();
+        if ('error' in result) return result;
+
+        // Accepting a password does not prove the client retained its cookie.
+        // Confirm the next request authenticates before showing login success.
+        const session = await verifyRequest();
+        if (!session.loggedIn || session.user_name !== result.user_name) {
+            return {
+                error: 'SESSION_NOT_ESTABLISHED',
+                message: 'Your password was accepted, but the login session could not be saved. Please try again.',
+            };
+        }
+        return result;
     }
 
     async function signupRequest(payload: SignupPayload): Promise<SignupResponse> {
