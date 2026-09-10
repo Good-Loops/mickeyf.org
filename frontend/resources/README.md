@@ -1,7 +1,7 @@
-# BeatCalc native artwork
+# Ludolume native artwork
 
 Celestial glass artwork created with the built-in image-generation tool on
-2026-09-10. It preserves BeatCalc's controller-and-musical-notes identity and the
+2026-09-10. It preserves Ludolume's controller-and-musical-notes identity and the
 website's navy, cyan and frosted-glass palette. These are native app assets;
 the published website favicon and PWA icons are unchanged.
 
@@ -40,15 +40,21 @@ icon on a solid navy background; older Android versions have the illustrated
 launch resources. Neither platform has an artificial splash delay. Actual native
 launch appearance still needs device validation.
 
-## Generation prompts
+## Current regeneration prompts
+
+The original masters were created under the previous brand name. The splash
+wordmark was edited with the built-in image-generation tool for the Ludolume
+rename. After comparing psychedelic alternatives, the owner selected the clean
+cosmic/geometric lettering. Text-free icon artwork remains unchanged. The recipes
+below use the current brand; the focused wordmark-edit prompt is recorded below.
 
 ### Icon master
 
-Use case: logo-brand. Asset type: production BeatCalc mobile app icon, one square
+Use case: logo-brand. Asset type: production Ludolume mobile app icon, one square
 1024 by 1024 PNG, full-bleed opaque background, no rounded outer corners, no device
-mockup. Primary request: a premium celestial/glass reinterpretation of BeatCalc's
+mockup. Primary request: a premium celestial/glass reinterpretation of Ludolume's
 existing identity: a game controller with a pair of joined musical eighth notes
-in its center, D-pad at left, four round buttons at right. BeatCalc is an
+in its center, D-pad at left, four round buttons at right. Ludolume is an
 interactive music, math, games and animations app. Match its website's deep
 midnight-navy space background, restrained blue-teal nebulae, pale silver lettering
 and translucent glass panels. Subject: one bold, instantly readable glass game
@@ -65,13 +71,14 @@ Return the single final app icon artwork, not a presentation sheet.
 
 ### Launch artwork (icon master as reference)
 
-Use case: compositing. Reference image: BeatCalc celestial glass controller app
+Use case: compositing. Reference image: Ludolume celestial glass controller app
 icon. Create matching production native launch/splash artwork, a single opaque
 square PNG 3072 by 3072 (or largest supported square), NOT a phone mockup. Preserve
 the controller's exact frosted silver/cyan design and musical notes, but make it a
 SMALL center emblem occupying only 25% of canvas width and 18% of canvas height.
 Directly below in quiet, crisp silver geometric sans-serif, write exactly
-"BeatCalc" (capital B and C, no spaces), wordmark width at most 25% of full image.
+"Ludolume" (capital L, remaining letters lowercase, no spaces), wordmark width
+at most 25% of full image.
 Both logo and wordmark contained within the central 30% square of the entire
 canvas so extreme portrait and landscape center-crops keep them complete. Extend
 the midnight navy #08121e celestial background to every edge, subtle smoky
@@ -82,9 +89,19 @@ no progress bar or fake loading percentage, no slogans, no borders, no watermark
 Think calm high-end astronomy/music instrument software, not loud gaming splash.
 The outer 70% is atmospheric negative space. One final square art asset.
 
+### Selected wordmark edit (splash master as edit target)
+
+Use case: text-localization. Replace only the existing app-name lettering with
+exactly "Ludolume" (L-u-d-o-l-u-m-e). Preserve the clean cosmic/geometric
+silver/cyan type treatment, centered placement below the controller and generous
+crop margins. Keep the controller, musical notes, orbital arc, stars, nebula,
+navy palette, scale and full-bleed square composition unchanged. No added text,
+slogan, border or loading UI. This is a normalized record of the selected edit
+specification; the rejected psychedelic variants are not project assets.
+
 ### Keyable controller (icon master as edit target)
 
-Use case: background-extraction. Edit target: this BeatCalc app icon. Keep ONLY
+Use case: background-extraction. Edit target: this Ludolume app icon. Keep ONLY
 the silver/cyan frosted glass controller and its existing dark D-pad, four buttons
 and joined musical notes. Preserve its front-view shape and design. Replace ALL
 space background, orbit arcs, stars and area under the controller's arch with a

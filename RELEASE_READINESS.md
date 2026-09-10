@@ -390,8 +390,11 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    On 2026-09-10 the owner selected `com.mickeyf.app`; Capacitor, Android and
    iOS configurations were aligned and the explicit bundle ID was registered
    with Apple. Focused identifier/XML/Xcode-project checks passed, not a fresh
-   native compile. App Store Connect rejected `BeatCalc` as an existing app name;
-   the listing record awaits an owner-approved alternative.
+   native compile. After the original listing name was rejected, Apple accepted
+   the owner-selected Ludolume: app `6810735137`, SKU `ludolume-ios`, status
+   Prepare for Submission. The Developer identifier description is Ludolume;
+   `com.mickeyf.app` remains unchanged. No signed build, TestFlight upload or
+   public store release is claimed.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

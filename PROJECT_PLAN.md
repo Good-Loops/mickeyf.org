@@ -2353,21 +2353,24 @@ The focused first-party `package.json` script audit (originally requested
 above by the owner on 2026-09-08. Do not duplicate that audit in this later phase
 unless relevant changes or new evidence warrant it.
 
-## Phase 17 — BeatCalc native stores and social sign-in
+## Phase 17 — Ludolume native stores and social sign-in
 
-Owner direction confirmed 2026-09-10: publish BeatCalc through Capacitor to both
+Owner direction confirmed 2026-09-10: publish Ludolume through Capacitor to both
 Google Play and Apple's App Store. The owner has an Apple Developer membership
 but no Mac. The owner selected `com.mickeyf.app` on 2026-09-10 to match the
 reverse-domain convention for `mickeyf.com`. Capacitor, Android and iOS now use
 that identifier consistently; local configuration alone does not reserve it
 with Apple or Google Play.
 
-- [ ] Confirm/reserve the intended bundle/package identifiers and create store
-  app records. Confirm Google Play developer account access separately.
+- [x] Register the Apple bundle ID and create the App Store Connect record.
   Apple Developer registration verified 2026-09-10: explicit `com.mickeyf.app`
-  under team `AX4Z7T24C9`, description BeatCalc. App Store Connect rejected the
-  listing name `BeatCalc` as already in use; the owner must choose an available
-  listing name before the app record can be created. No store app was published.
+  under team `AX4Z7T24C9`, description Ludolume. After the original listing name
+  was rejected, Apple accepted the owner-selected Ludolume: app `6810735137`,
+  iOS, English (U.S.), SKU `ludolume-ios`, status Prepare for Submission.
+  No binary was uploaded, submitted for review or published. App Store Connect's
+  bundle selector still displayed the previous description after refresh, although
+  Apple Developer's Identifiers list confirmed Ludolume with `com.mickeyf.app`.
+- [ ] Confirm Google Play developer account access and create its app record.
 - [ ] Preserve the PWA track and review the existing Android/iOS shells. Build
   Android on Windows; use GitHub Actions macOS/Xcode for iOS (owner approved
   2026-09-10), with protected signing credentials, bounded cost and manual release
@@ -2384,10 +2387,10 @@ with Apple or Google Play.
   upload or public store release has been activated.
   Signing preparation (2026-09-10): created and verified the `ios-testflight`
   GitHub environment, restricted to the current development branch with owner
-  review required. It is empty of secrets; the Apple team and explicit bundle ID
-  are now verified, but the App Store Connect record and signing credentials
-  remain prerequisites before enabling a signing/upload workflow.
-- [x] Create matching celestial/glass BeatCalc native icons and launch artwork.
+  review required. It is empty of secrets; the Apple team, explicit bundle ID
+  and App Store Connect record are now verified. Signing credentials remain
+  prerequisites before enabling a signing/upload workflow.
+- [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma
   key method; iOS retains an opaque 1024-square icon. Portrait/landscape exports,

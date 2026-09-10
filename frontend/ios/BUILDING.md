@@ -1,4 +1,4 @@
-# BeatCalc iOS cloud builds
+# Ludolume iOS cloud builds
 
 ## First stage: unsigned simulator compilation
 
@@ -13,9 +13,11 @@ approved PR #330 on 2026-09-10. That PR contained only the workflow and signing
 ignore rules. Merging the full development branch also carries its website/auth
 changes and can trigger website deployment; that remains separate approval.
 
-After the workflow is available on `main`, select **Actions → BeatCalc iOS
-simulator build (manual) → Run workflow** and choose the reviewed branch. The
-equivalent command is:
+The renamed workflow is **Ludolume iOS simulator build (manual)**. GitHub's
+Actions listing may retain its original title until this workflow-only rename
+reaches `main`; this does not authorize merging the full development branch.
+Select **Run workflow** and choose the reviewed branch. The stable filename
+also allows the equivalent command:
 
 ```sh
 gh workflow run ios-build.yml --repo Good-Loops/mickeyf.com --ref <reviewed-branch>
@@ -79,18 +81,25 @@ Team ID, API key ID, issuer ID and the numeric App Store Connect app ID are
 non-secret identifiers to confirm from Apple. Generate the temporary runner
 keychain password per job; never expose keys through logs or public artifacts.
 Apple Developer registration was verified on 2026-09-10: explicit bundle ID
-`com.mickeyf.app`, description `BeatCalc`, team `AX4Z7T24C9`. No optional
-capabilities were enabled. App Store Connect rejected the new app record because
-the name `BeatCalc` is already in use. No app record or numeric Apple app ID was
-created; the owner must choose an available listing name. The app's on-device
-display name remains BeatCalc. Google Play registration is still separate.
+`com.mickeyf.app`, description `Ludolume`, team `AX4Z7T24C9`. No optional
+capabilities were enabled. After the original listing name was rejected, Apple
+accepted the owner-selected name Ludolume and created its App Store Connect record:
+
+- Apple app ID: `6810735137`.
+- Platform/language: iOS, English (U.S.).
+- SKU: `ludolume-ios`.
+- Status: Prepare for Submission; no binary upload, review submission or release.
+
+The on-device display name is Ludolume. Apple Developer's Identifiers list
+confirmed the renamed description; App Store Connect's bundle selector still
+showed the previous description after refresh. The underlying identifier is
+unchanged. Google Play registration remains separate.
 
 Before adding a signing/upload job:
 
-1. Complete the App Store Connect app record using the registered
-   `com.mickeyf.app` bundle ID and an owner-approved, available listing name.
-   The rejected attempt selected iOS, English (U.S.) and SKU `beatcalc-ios`;
-   those values have not been saved in an app record.
+1. Use the existing Ludolume App Store Connect record (`6810735137`) and
+   registered `com.mickeyf.app` bundle ID; do not create a duplicate record or
+   change the identifier to refresh its displayed description.
 2. Configure a protected GitHub environment with approved release branches and
    manual review. Keep Apple credentials out of repository-wide build jobs and
    untrusted pull-request code.

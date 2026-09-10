@@ -1,4 +1,4 @@
-name: BeatCalc iOS simulator build (manual)
+name: Ludolume iOS simulator build (manual)
 
 # No push/PR trigger: native builds remain separate from website deployment.
 on:
@@ -63,16 +63,16 @@ jobs:
             -configuration Release \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath "$RUNNER_TEMP/beatcalc-derived-data" \
-            -resultBundlePath "$RUNNER_TEMP/beatcalc-build.xcresult" \
+            -derivedDataPath "$RUNNER_TEMP/ludolume-derived-data" \
+            -resultBundlePath "$RUNNER_TEMP/ludolume-build.xcresult" \
             CODE_SIGNING_ALLOWED=NO \
             build
 
       - name: Package simulator app
         run: |
           ditto -c -k --sequesterRsrc --keepParent \
-            "$RUNNER_TEMP/beatcalc-derived-data/Build/Products/Release-iphonesimulator/App.app" \
-            "$RUNNER_TEMP/BeatCalc-simulator.zip"
+            "$RUNNER_TEMP/ludolume-derived-data/Build/Products/Release-iphonesimulator/App.app" \
+            "$RUNNER_TEMP/Ludolume-simulator.zip"
           {
             echo '### Unsigned simulator build'
             echo "Source commit: $GITHUB_SHA"
@@ -83,8 +83,8 @@ jobs:
       - name: Upload simulator app
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: beatcalc-ios-simulator-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/BeatCalc-simulator.zip
+          name: ludolume-ios-simulator-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/Ludolume-simulator.zip
           if-no-files-found: error
           retention-days: 1
 
@@ -92,7 +92,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: beatcalc-ios-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/beatcalc-build.xcresult
+          name: ludolume-ios-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ludolume-build.xcresult
           if-no-files-found: ignore
           retention-days: 1

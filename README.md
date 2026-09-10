@@ -1,4 +1,4 @@
-# mickeyf.com — BeatCalc Web App
+# mickeyf.com — Ludolume Web App
 
 mickeyf.com is an interactive music-and-math platform with games, animations,
 educational resources, authentication, and leaderboards.
