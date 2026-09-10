@@ -1,4 +1,4 @@
-package org.mickeyf.app;
+package com.mickeyf.app;
 
 import com.getcapacitor.BridgeActivity;
 

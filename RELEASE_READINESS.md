@@ -387,6 +387,11 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    native appearance, Android compilation and native authentication remain
    unverified. Apple signing/TestFlight credentials remain unconfigured. No
    provider login, store upload or additional public website release was activated.
+   On 2026-09-10 the owner selected `com.mickeyf.app`; Capacitor, Android and
+   iOS configurations were aligned and the explicit bundle ID was registered
+   with Apple. Focused identifier/XML/Xcode-project checks passed, not a fresh
+   native compile. App Store Connect rejected `BeatCalc` as an existing app name;
+   the listing record awaits an owner-approved alternative.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

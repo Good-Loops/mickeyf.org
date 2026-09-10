@@ -2357,11 +2357,17 @@ unless relevant changes or new evidence warrant it.
 
 Owner direction confirmed 2026-09-10: publish BeatCalc through Capacitor to both
 Google Play and Apple's App Store. The owner has an Apple Developer membership
-but no Mac. Existing `frontend/capacitor.config.ts` names BeatCalc with local
-app ID `org.mickeyf.app`; this is not proof of an App Store/Play registration.
+but no Mac. The owner selected `com.mickeyf.app` on 2026-09-10 to match the
+reverse-domain convention for `mickeyf.com`. Capacitor, Android and iOS now use
+that identifier consistently; local configuration alone does not reserve it
+with Apple or Google Play.
 
 - [ ] Confirm/reserve the intended bundle/package identifiers and create store
   app records. Confirm Google Play developer account access separately.
+  Apple Developer registration verified 2026-09-10: explicit `com.mickeyf.app`
+  under team `AX4Z7T24C9`, description BeatCalc. App Store Connect rejected the
+  listing name `BeatCalc` as already in use; the owner must choose an available
+  listing name before the app record can be created. No store app was published.
 - [ ] Preserve the PWA track and review the existing Android/iOS shells. Build
   Android on Windows; use GitHub Actions macOS/Xcode for iOS (owner approved
   2026-09-10), with protected signing credentials, bounded cost and manual release
@@ -2378,8 +2384,9 @@ app ID `org.mickeyf.app`; this is not proof of an App Store/Play registration.
   upload or public store release has been activated.
   Signing preparation (2026-09-10): created and verified the `ios-testflight`
   GitHub environment, restricted to the current development branch with owner
-  review required. It is empty of secrets; Apple app registration, team identity
-  and credentials must be confirmed before enabling a signing/upload workflow.
+  review required. It is empty of secrets; the Apple team and explicit bundle ID
+  are now verified, but the App Store Connect record and signing credentials
+  remain prerequisites before enabling a signing/upload workflow.
 - [x] Create matching celestial/glass BeatCalc native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma

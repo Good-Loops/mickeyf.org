@@ -35,6 +35,12 @@ Xcode simulator compilation, packaging and artifact upload passed. The uploaded
 ZIP was 57,907,439 bytes and expires after one day. Windows still cannot run this
 Xcode build locally, and no simulator/device runtime test is claimed.
 
+The first compile predates the owner-approved bundle ID correction to
+`com.mickeyf.app`. The correction was checked across Capacitor, both parsed
+Xcode build configurations, Android's namespace/application ID, Java activity
+path/package, XML resources and instrumented-test expectation. No fresh native
+compile or device test was run just for this identifier change.
+
 Non-failing upstream/tooling warnings were retained rather than patched inside
 dependencies: Capacitor's Swift closure capture, the runner's Metal-toolchain
 search path, optional App Intents metadata, CocoaPods script dependency analysis,
@@ -72,14 +78,19 @@ Keep signing credentials in this environment, not repository-wide secrets:
 Team ID, API key ID, issuer ID and the numeric App Store Connect app ID are
 non-secret identifiers to confirm from Apple. Generate the temporary runner
 keychain password per job; never expose keys through logs or public artifacts.
-App registration and credentials remain prerequisites, not inferred from the
-existing local bundle ID or the owner's Developer Program membership.
+Apple Developer registration was verified on 2026-09-10: explicit bundle ID
+`com.mickeyf.app`, description `BeatCalc`, team `AX4Z7T24C9`. No optional
+capabilities were enabled. App Store Connect rejected the new app record because
+the name `BeatCalc` is already in use. No app record or numeric Apple app ID was
+created; the owner must choose an available listing name. The app's on-device
+display name remains BeatCalc. Google Play registration is still separate.
 
 Before adding a signing/upload job:
 
-1. Confirm `org.mickeyf.app` is the intended and available Apple bundle ID;
-   the local Capacitor config does not reserve it. Create the App Store Connect
-   app record and confirm the Apple team.
+1. Complete the App Store Connect app record using the registered
+   `com.mickeyf.app` bundle ID and an owner-approved, available listing name.
+   The rejected attempt selected iOS, English (U.S.) and SKU `beatcalc-ios`;
+   those values have not been saved in an app record.
 2. Configure a protected GitHub environment with approved release branches and
    manual review. Keep Apple credentials out of repository-wide build jobs and
    untrusted pull-request code.
