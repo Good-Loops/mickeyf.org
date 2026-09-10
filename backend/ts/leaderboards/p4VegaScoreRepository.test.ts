@@ -148,10 +148,10 @@ test('propagates generic leaderboard query failures', async () => {
     );
 });
 
-test('writes an improving score only to generic storage on one committed connection', async () => {
-    const fake = createFakeDatabase({ storedScore: 900, writeAffectedRows: 2 });
+test('writes the 1000-point completion over a former 990-point best on one committed connection', async () => {
+    const fake = createFakeDatabase({ storedScore: 990, writeAffectedRows: 2 });
 
-    const personalBest = await submitP4VegaScore(fake.database, 42, 990);
+    const personalBest = await submitP4VegaScore(fake.database, 42, 1000);
 
     assert.equal(personalBest, true);
     assert.equal(fake.acquisitions(), 1);
@@ -175,7 +175,7 @@ test('writes an improving score only to generic storage on one committed connect
     assert.equal(fake.queries[2].timeout, 10_000);
     assert.match(fake.queries[2].sql, /^INSERT INTO game_personal_bests/);
     assert.match(fake.queries[2].sql, /ON DUPLICATE KEY UPDATE/);
-    assert.deepEqual(fake.queries[2].values, ['p4-vega', 1, 42, 990]);
+    assert.deepEqual(fake.queries[2].values, ['p4-vega', 1, 42, 1000]);
     assert.match(fake.queries[3].sql, /RELEASE_LOCK/);
     assert.equal(fake.queries.some(({ sql }) => /\bp4_score\b/iu.test(sql)), false);
 });
@@ -327,6 +327,7 @@ test('rejects invalid internal inputs before acquiring a database connection', a
 
     await assert.rejects(() => submitP4VegaScore(fake.database, 0, 990), TypeError);
     await assert.rejects(() => submitP4VegaScore(fake.database, 42, 995), TypeError);
+    await assert.rejects(() => submitP4VegaScore(fake.database, 42, 1010), TypeError);
 
     assert.equal(fake.acquisitions(), 0);
     assert.deepEqual(fake.events, []);

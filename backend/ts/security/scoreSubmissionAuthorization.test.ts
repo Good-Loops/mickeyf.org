@@ -46,10 +46,21 @@ test('missing server authentication configuration produces HTTP 500 contract', (
 });
 
 test('invalid score produces HTTP 400 contract before persistence', () => {
-    assert.deepEqual(
-        authorizeScoreSubmission(scoreRequest({ p4_score: 995 }, { token: validToken() }), secret),
-        { authorized: false, status: 400, error: 'INVALID_SCORE' }
-    );
+    for (const score of [995, 1001, 1010]) {
+        assert.deepEqual(
+            authorizeScoreSubmission(scoreRequest({ p4_score: score }, { token: validToken() }), secret),
+            { authorized: false, status: 400, error: 'INVALID_SCORE' }
+        );
+    }
+});
+
+test('completion at 1000 is authorized with either existing authentication transport', () => {
+    for (const bearer of [false, true]) {
+        assert.deepEqual(
+            authorizeScoreSubmission(scoreRequest({ p4_score: 1000 }, { token: validToken(), bearer }), secret),
+            { authorized: true, identity: { userId: 42, userName: 'verified-user' }, score: 1000 }
+        );
+    }
 });
 
 test('body username mismatch produces HTTP 403 contract', () => {
