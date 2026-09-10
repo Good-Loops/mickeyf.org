@@ -20,6 +20,7 @@ import { bindP4Input } from './p4Input';
 import { createP4RunResults, type P4RunResult } from './p4RunResult';
 import { createP4SimulationClock } from './p4SimulationClock';
 import { P4_WIN_SCORE } from './p4Rules';
+import { resolveP4AssetUrl } from './p4AssetUrl';
 import { PickupFeedback } from './classes/PickupFeedback';
 import { createP4PauseController, type P4VegaController, type P4VegaState } from './p4PauseController';
 
@@ -178,12 +179,13 @@ export async function p4Vega(
 
     const load = async (): Promise<void> => {
         options.onScoreChange?.(0);
+        const loadTexture = (source: string) => Assets.load(resolveP4AssetUrl(source, document.baseURI));
         const [p4Base, waterBase, bhBlueBase, bhRedBase, bhYellowBase] = await Promise.all([
-            Assets.load(p4PngURL),
-            Assets.load(waterPngURL),
-            Assets.load(bhBluePngURL),
-            Assets.load(bhRedPngURL),
-            Assets.load(bhYellowPngURL),
+            loadTexture(p4PngURL),
+            loadTexture(waterPngURL),
+            loadTexture(bhBluePngURL),
+            loadTexture(bhRedPngURL),
+            loadTexture(bhYellowPngURL),
         ]);
         ensureActive();
 

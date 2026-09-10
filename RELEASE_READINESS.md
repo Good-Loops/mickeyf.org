@@ -419,14 +419,17 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    `INTERNAL_ONLY`, not expired. The owner personally submitted Apple's
    encryption declaration on 2026-09-10; the live App Store Connect UI now shows
    **Ready to Test**, replacing the initial `MISSING_EXPORT_COMPLIANCE` state.
-   **Ludolume Internal** contains only build `4.1.0` and the existing Account
+   **Ludolume Internal** initially contained only build `4.1.0` and the existing Account
    Holder as its sole tester, with automatic distribution disabled. The owner
    installed TestFlight version 1.0/build `4.1.0` on the iPhone. Other tested
    functionality is reported working, but p4-Vega shows “The game could not
-   load. Please refresh to try again.”; its cause remains unproven. After the
+   load. Please refresh to try again.”; the cause was initially unknown. After the
    CORS rollout below, the owner confirms password login works, but fully closing
-   and reopening the app loses the session. Signup has not been rechecked.
-   Native p4-Vega and session persistence are not accepted. No roles, public
+   and reopening the app initially lost the session. The owner subsequently
+   confirmed login/logout and close/reopen persistence on build `6.1.0`.
+   Signup, offline logout and expiry have not been separately device-verified.
+   Native p4-Vega still fails on that build. Its demonstrated Pixi asset URL bug
+   is corrected locally, pending a signed update and device check. No roles, public
    testing, public store submission or website release were enabled.
    The exact `capacitor://localhost` backend allowance is now live;
    14 focused configuration/authorization tests and backend TypeScript passed.
@@ -447,8 +450,9 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    configuration and rollback revision `mickeyf-org-p4-1000-6c5a8859-0910` are
    intact. All six live preflights and the unauthenticated session probe passed.
    The temporary branch/worktree were removed, leaving only `main` and the
-   active branch. Native session persistence remains under investigation, and
-   signup needs device confirmation. See `frontend/ios/BUILDING.md`.
+   active branch. Native persistence is now owner-confirmed on build `6.1.0`;
+   p4-Vega's corrected asset loading and signup still need device confirmation.
+   See `frontend/ios/BUILDING.md` for the current narrow checkpoint.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

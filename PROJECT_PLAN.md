@@ -2421,14 +2421,18 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   `INTERNAL_ONLY`, not expired. The initial `MISSING_EXPORT_COMPLIANCE` state
   cleared after the owner personally submitted Apple's encryption declaration
   on 2026-09-10; the live App Store Connect UI now confirms **Ready to Test**.
-  The **Ludolume Internal** group has one tester (the existing Account Holder)
+  The **Ludolume Internal** group initially had one tester (the existing Account Holder)
   and only build `4.1.0`; automatic distribution is disabled. The owner installed
   TestFlight version 1.0/build `4.1.0` on the iPhone. The owner reports other
   tested functionality working, but p4-Vega shows “The game could not load.
   Please refresh to try again.” After the CORS rollout below, the owner confirms
-  password login works, but the session is lost after fully closing and reopening
-  the app; signup has not been rechecked. Installation/login are accepted, not
-  native p4-Vega or session persistence. An image-loader cause is unproven.
+  password login works. A subsequent native-cookie correction in build `6.1.0`
+  passed the owner's login/logout and full close/reopen check on 2026-09-10;
+  signup, offline logout and expiry have not been separately rechecked.
+  p4-Vega still fails on that installed build. A deterministic Pixi custom-scheme
+  asset URL bug is now fixed locally, with five focused regression tests,
+  TypeScript and a production build passing. Next: signed update and native
+  p4-Vega launch check; see `frontend/ios/BUILDING.md`. Provider login follows.
   No roles, public testing, public store submission or website release were
   enabled by this setup.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.

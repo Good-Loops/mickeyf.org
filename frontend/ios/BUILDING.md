@@ -76,16 +76,16 @@ confirms Ludolume version **1.0**, build **4.1.0**, ID
 `INTERNAL_ONLY`, not expired. The initial `MISSING_EXPORT_COMPLIANCE` state
 cleared after the owner personally submitted Apple's encryption declaration
 on 2026-09-10; the live App Store Connect UI now confirms **Ready to Test**.
-The **Ludolume Internal** group (`c610a469-a86a-4e0f-9a8b-c83809230442`) now shows
+The **Ludolume Internal** group (`c610a469-a86a-4e0f-9a8b-c83809230442`) initially showed
 **1 Tester · 1 Build**, with the existing Account Holder as sole tester and only
 build `4.1.0` assigned. Automatic distribution is disabled; future builds require
 manual assignment. The owner installed TestFlight version 1.0/build `4.1.0`
-on the iPhone. Other tested functionality is reported working, but p4-Vega shows
+on the iPhone. Other tested functionality was reported working, but p4-Vega showed
 “The game could not load. Please refresh to try again.” After the CORS rollout
-below, the owner confirms password login works, but fully closing and reopening
-the app loses the session. Signup has not been rechecked. Installation/login
-are accepted, not native p4-Vega or session persistence. The image-loader cause
-remains unproven. No roles or public testing were enabled.
+below, the owner confirmed password login worked, but fully closing and reopening
+the app lost the session. Those initial failures are tracked in the current
+native-device checkpoint below; build `6.1.0` subsequently passed persistence.
+No roles or public testing were enabled.
 The workflow did not answer the compliance questionnaire or make a public store
 submission or website/backend release.
 
@@ -204,8 +204,8 @@ API access verified 2026-09-10 after the owner accepted Apple's API-use agreemen
 Those initial API checks proved authentication and record reads. The successful
 protected run now verifies runner key consumption, signed compilation and
 TestFlight upload. The owner installed the app and confirms password login after
-the CORS rollout; native p4-Vega and session persistence remain unresolved, and
-signup has not been rechecked.
+the CORS rollout. The owner also confirms session persistence on build `6.1.0`;
+native p4-Vega remains unresolved on that build, and signup has not been rechecked.
 Do not expose the P8 or minted JWTs in logs, source, artifacts or chat.
 
 For subsequent signed uploads and device acceptance:
@@ -225,7 +225,7 @@ For subsequent signed uploads and device acceptance:
    TestFlight does not authorize public App Store submission or release.
 5. Build `4.1.0`'s compliance, tester setup and iPhone installation are complete.
    Future declarations still require the owner's answers when Apple requests
-   them. Login now works; resolve native p4-Vega loading and session persistence,
+   them. Login and persistence on build `6.1.0` are owner-confirmed; resolve native p4-Vega loading,
    and confirm signup before accepting those paths. Installation does not prove
    gameplay or full authentication readiness.
    Preserve the PWA and Android tracks.
@@ -244,14 +244,13 @@ First native-device acceptance limits identified on 2026-09-10:
   unchanged runtime/configuration. All six live preflights and the unauthenticated
   session probe passed; the prior p4 revision remains intact for rollback.
   See `RELEASE_READINESS.md` for exact build/rollout evidence and exception scope.
-  The owner confirms login now works; persistence across full close/reopen fails
-  and signup has not been rechecked. CORS permission is not cookie-persistence
-  acceptance; that diagnosis remains in the native-auth milestone.
+  The owner confirmed login after this rollout; persistence initially failed.
+  The separate native correction below passed the owner's close/reopen check.
+  Signup has not been rechecked; CORS permission alone is not session acceptance.
 - Check Three Bosses' packaged asset URLs in WKWebView on the device; a custom
   scheme behaves differently from a normal website origin. Desktop URL parsing
   alone is not proof of a device failure or success.
-- A follow-up session correction has been uploaded to TestFlight; device
-  acceptance remains pending:
+- The follow-up session correction is owner-confirmed on TestFlight `1.0 (6.1.0)`:
   `LudolumeApiPlugin.swift` uses Foundation's persistent cookie storage for the
   exact production API origin/routes. Auth, p4-Vega scores and Three Bosses API
   calls share that transport on iOS; website/Android fetch remains unchanged.
@@ -275,16 +274,25 @@ First native-device acceptance limits identified on 2026-09-10:
   The build was added to the existing Ludolume Internal group, with readback
   confirming `IN_BETA_TESTING`. Previous builds and tester access were preserved;
   no public release was performed. The temporary release helper was removed.
-  Compilation and upload are not physical persistence proof. Device check:
-  login -> full close/reopen within four hours -> logout -> full
-  close/reopen still logged out (including offline logout). p4-Vega's separate
-  asset-loading failure is unchanged.
+  The owner reports the requested login -> full close/reopen -> logout -> full
+  close/reopen check passed. Offline logout and four-hour expiry were not
+  separately device-tested. The owner reports p4-Vega still fails on this build.
 
   Focused local commands from the repository root:
   ```sh
   node --experimental-strip-types --test frontend/ts/services/authApi.test.mjs frontend/ts/services/nativeApiFetch.test.mjs frontend/ts/services/leaderboardApi.test.mjs
   frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json
   ```
+- p4-Vega asset correction (2026-09-10): reproduced Pixi `8.20.1` converting
+  `/assets/p4.png` under `capacitor://localhost/games/p4-Vega` into
+  `capacitor://assets/p4.png`, losing the host and packaged `assets/` directory.
+  All five sprite loads now use `new URL(source, document.baseURI).href` before
+  Pixi resolves them. Its real resolver/loader passes five focused tests covering
+  custom/HTTP(S) schemes, relative/absolute paths and inlined images; frontend
+  TypeScript and the production build passed (existing large-chunk warning).
+  Worker/renderer settings, gameplay and native authentication are unchanged.
+  This correction is not in installed build `6.1.0`; a new signed upload and
+  iPhone launch check remain required. Do not treat local URL tests as device proof.
 - Check user-selected audio playback and interruption/resume. No first-party
   microphone capture was found; do not add a microphone permission without a use.
 - If Apple reports Missing Compliance, the owner must confirm the encryption
