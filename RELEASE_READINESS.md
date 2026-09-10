@@ -332,10 +332,28 @@ explicitly deferred, not described as fixed.
 
 ## Next execution order and authority
 
-1. Move to the planned p4-Vega improvements, starting with pause/resume and touch
-   scrolling outside active gameplay, when the owner proceeds. Do not reopen
-   accepted Three Bosses gameplay/authentication checks without a regression.
-2. Retain the dated S7/S8 reassessment boundaries and deferred maintenance list.
+Updated 2026-09-10: p4-Vega's approved feature batch is implemented on
+`feature/p4-vega-improvements`, not published. The owner reported good gameplay
+on iPhone. Bottom-corner fullscreen joystick placement and fullscreen HUD
+selection protection are recorded in Phase 15 of `PROJECT_PLAN.md`. The owner
+accepted the rare intermittent Safari edge bands: **accepted, not fixed**. This
+is not a reason to repeat the Safari investigation or earlier accepted tests.
+
+1. Close the distinct current Android touch/orientation and canvas-scrolling
+   check. Carry forward completed keyboard/browser and iPhone gameplay evidence;
+   do not restart a login/submission or exhaustive game checklist.
+2. Obtain release approval. Release the backend-only 0–1000 policy first, keeping
+   previous scores, ten-point increments, schema, authorization and runtime flags
+   unchanged. A backend main push or zero-traffic candidate is not proof of
+   production promotion: verify the exact serving revision before publishing the
+   1000-point frontend. Do not merge the full feature branch first, because the
+   Firebase workflow publishes relevant frontend changes from main automatically.
+   Backend trigger state must be checked at release time; the older disabled
+   trigger snapshot is not a fresh live-state claim.
+3. After device closeout and the backend prerequisite, publish the approved
+   frontend batch through the existing release flow. Keep accepted Three Bosses
+   gameplay/authentication checks closed absent a relevant regression.
+4. Retain the dated S7/S8 reassessment boundaries and deferred maintenance list.
    No backend pipeline reactivation, dependency refresh, new deployment or
    unrelated cloud mutation is implied by this closeout.
 

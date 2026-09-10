@@ -2167,6 +2167,30 @@ Release dependency: deploy the backend's compatible 0–1000 validation policy
 personal-best storage, authorization and database schema remain unchanged. This
 batch does not deploy either service or change leaderboard history.
 
+Phone acceptance and scope closeout (2026-09-10): after testing the current
+p4-Vega page on iPhone, the owner reported that gameplay was good and requested
+the fullscreen joystick at the bottom corners. `91c6503e` implements that placement
+for the existing left/right preference, retaining the enlarged touch target and
+clearance for the fullscreen exit. `665c76cf` adds fullscreen-only selection and
+touch-callout suppression for the score/HUD; eight focused style tests and
+isolated native/fallback browser checks passed. The latter is not a new physical
+iPhone confirmation. Live and results scores show only the score, without /1000.
+
+The owner explicitly accepted the rare, intermittent Safari edge bands and asked
+to move on. Record these as an **accepted visual limitation, not fixed**; do not
+reopen the investigation or add further preview/repaint experiments unless the
+owner requests it or a materially worse regression appears. The possible
+paint/geometry timing interaction remains unconfirmed. Existing Safari recovery
+and page zoom behavior are unchanged.
+
+Carry forward completed keyboard/browser checks and the owner's iPhone gameplay
+acceptance. A focused current Android touch/orientation check and explicit
+site-wide canvas scrolling acceptance remain unconfirmed, not failed. Do not
+repeat the old login/submission campaign, package-script audit or complete game
+checklist. Next is this bounded device closeout and release approval; deploy the
+compatible backend policy before publishing the frontend. No production action
+is authorized by accepting the Safari limitation.
+
 Site-wide canvas scrolling (2026-09-09, implemented locally): the owner chose to retain
 inline Three Bosses gameplay, reserving gestures that start on its actual UI
 controls and allowing other vertical drags to scroll. PIXI canvases now allow
@@ -2207,7 +2231,10 @@ improving the game incrementally; the owner approved extending completion to 100
 - [ ] Before publishing that batch, deploy the backend's 1000-point acceptance
   policy first; do not reset previous personal bests or change the database schema.
 - [ ] Verify keyboard behavior plus real Android and iOS touch, orientation,
-  scrolling, and fullscreen behavior before release.
+  scrolling, and fullscreen behavior before release. Carry forward completed
+  keyboard/browser checks and the owner's 2026-09-10 iPhone gameplay acceptance;
+  only the focused Android/scrolling checks above remain unconfirmed. Rare Safari
+  edge bands are accepted and are not a release blocker.
 
 ## Phase 16 — Whole-project Clean Code sweep
 
