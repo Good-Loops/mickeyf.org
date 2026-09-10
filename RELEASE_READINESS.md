@@ -372,6 +372,12 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    physical iPhone dialog behavior remains unverified. No backend/cookie-policy
    changes or real account writes. These changes have not been deployed; continue
    bounded subsystem cleanup, not another production authentication audit.
+   Subsequent game record alerts use the same theme: server-confirmed personal
+   bests only, Three Bosses run-ID deduplication and fullscreen-aware placement.
+   All 202 frontend tests and build passed; mocked browser notifications and
+   lifecycle checks passed, not real account/score writes or device testing.
+   Backend/Unity assets remain unchanged. Native-store/social-provider work is
+   separately planned in Phase 17; no provider/store/cloud-build activation.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

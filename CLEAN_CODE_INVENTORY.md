@@ -419,6 +419,37 @@ Checks completed:
 - No real accounts, database writes, backend/cookie-policy changes, new package,
   or temporary preview/script files. Screenshots remain outside the repository.
 
+## Shared game personal-best notification — 2026-09-10
+
+The previous SweetAlert audit correctly covered all 12 library calls but did not
+cover every game notification: p4-Vega had a custom results-card badge; Three
+Bosses forwarded the accepted result only to Unity. Both now render the shared
+`PersonalBestAlert` for server-confirmed personal bests. The existing p4 badge
+remains; this is an explicit UI feature, not changed ranking/storage logic.
+
+The important boundary is **save first, notify separately**. The Unity submission
+bridge delivers success before calling its optional presentation observer and
+contains observer failures. An alert failure must not falsely report that a
+stored score failed. Three Bosses deduplicates by run ID rather than rejecting
+`replayed: true`, since a replay may be the first received confirmation after a
+lost response. p4 mounts its alert only for a submitted personal-best result.
+
+The presenter shares theme, fullscreen placement and cleanup. It recreates the
+dialog through SweetAlert when fullscreen placement changes so accessibility
+isolation is recalculated, rather than moving an inert/aria-hidden DOM branch.
+It defers behind p4's open help dialog and restores game focus without scrolling.
+
+Verification: 13 submission-bridge cases passed, including observer throw/reject,
+timeout/disposal and receipt replay. TypeScript/all 202 frontend tests passed;
+Vite build passed with its existing chunk warning. Isolated Chromium used fake
+game callbacks and intercepted API reads, with every real POST blocked. Portrait
+p4, landscape native p4 and fallback Three Bosses, desktop Three Bosses,
+fullscreen transitions while open, duplicate/non-record suppression, another
+run, help deferral, focus and route cleanup passed. The first transition fixture
+needed its prefixed fullscreen API disabled too; that corrected fixture passed.
+Screenshots inspected; no real scores/accounts, physical-device claim, Unity
+rebuild, dependency change or temporary in-repository test page/script.
+
 ## Learning-oriented handoff for each future change
 
 The owner requested on 2026-09-10 that improvements be taught, not merely

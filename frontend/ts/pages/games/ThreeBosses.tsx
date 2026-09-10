@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import FullscreenButton from '@/components/FullscreenButton';
 import ScoreSubmissionNotice from '@/components/ScoreSubmissionNotice';
+import PersonalBestAlert from '@/components/PersonalBestAlert';
 import {
     isThreeBossesLocalEnabled,
     isThreeBossesMobilePreviewRequested,
@@ -208,6 +209,7 @@ const ThreeBosses: React.FC = () => {
     const frameRef = useRef<HTMLDivElement | null>(null);
     const [loadState, setLoadState] = useState<LoadState>({ kind: 'loading', progress: 0 });
     const [hasUnityCanvasControl, setHasUnityCanvasControl] = useState(false);
+    const [personalBest, setPersonalBest] = useState<{ runId: string; score: number } | null>(null);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -216,6 +218,7 @@ const ThreeBosses: React.FC = () => {
         const controller = new AbortController();
         let cancelled = false;
         let handle: UnityWebGlHandle | null = null;
+        const announcedRuns = new Set<string>();
 
         setHasUnityCanvasControl(false);
 
@@ -233,6 +236,12 @@ const ThreeBosses: React.FC = () => {
                     },
                     issueRunTicket: issueThreeBossesRunTicket,
                     submitRun: submitThreeBossesRun,
+                    onSubmissionAccepted: (response) => {
+                        if (cancelled || !response.personalBest || announcedRuns.has(response.runId)) return;
+                        // A receipt replay may be our first received success after a lost response.
+                        announcedRuns.add(response.runId);
+                        setPersonalBest({ runId: response.runId, score: response.result.score });
+                    },
                 });
 
                 if (cancelled) {
@@ -276,6 +285,15 @@ const ThreeBosses: React.FC = () => {
 
     return (
         <section className="three-bosses">
+            {personalBest && (
+                <PersonalBestAlert
+                    key={personalBest.runId}
+                    gameName="Three Bosses"
+                    score={personalBest.score}
+                    fullscreenTargetRef={frameRef}
+                    focusTargetRef={canvasRef}
+                />
+            )}
             <h1 className="u-visually-hidden">Three Bosses</h1>
             {isThreeBossesLocalEnabled && (
                 <p className="three-bosses__local-note">Local WebGL playability prototype</p>

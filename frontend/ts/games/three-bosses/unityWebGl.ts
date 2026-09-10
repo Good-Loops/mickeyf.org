@@ -18,6 +18,7 @@ import {
     configureThreeBossesSubmission,
     type ThreeBossesRunTicketIssuer,
     type ThreeBossesRunSubmitter,
+    type ThreeBossesSubmissionObserver,
 } from '@/games/three-bosses/unitySubmissionBridge';
 
 type UnityWebGlInstance = UnityVisibilityBridgeInstance & Readonly<{
@@ -71,6 +72,7 @@ type StartUnityWebGlOptions = Readonly<{
     onCanvasOwned?: () => void;
     issueRunTicket: ThreeBossesRunTicketIssuer;
     submitRun: ThreeBossesRunSubmitter;
+    onSubmissionAccepted?: ThreeBossesSubmissionObserver;
 }>;
 
 const manifestUrl = `${THREE_BOSSES_BUILD_BASE_PATH}build-manifest.json`;
@@ -213,6 +215,7 @@ const startNewHandle = async ({
     onCanvasOwned,
     issueRunTicket,
     submitRun,
+    onSubmissionAccepted,
 }: StartUnityWebGlOptions): Promise<UnityWebGlHandle> => {
     const manifest = await readManifest(signal);
     const loaderUrl = resolveAssetUrl(manifest.loaderUrl);
@@ -256,7 +259,10 @@ const startNewHandle = async ({
             releaseSubmissionBridge = bindThreeBossesSubmissionBridge(
                 instance,
                 issueRunTicket,
-                submitRun
+                submitRun,
+                undefined,
+                undefined,
+                onSubmissionAccepted,
             );
             configureThreeBossesSubmission(instance, false);
         } catch (error) {

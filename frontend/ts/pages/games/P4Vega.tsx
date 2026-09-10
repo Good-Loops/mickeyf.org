@@ -191,6 +191,8 @@ const P4Vega: React.FC = () => {
                         onRestart={() => { void controllerRef.current?.restart(); }}
                         onRetrySubmission={() => { void controllerRef.current?.retrySubmission(); }}
                         onHelp={openHelp}
+                        fullscreenTargetRef={canvasWrapperRef}
+                        helpDialogRef={helpDialogRef}
                     />
                 )}
                 {gameError && <p className="p4-vega__load-error" role="alert">The game could not load. Please refresh to try again.</p>}

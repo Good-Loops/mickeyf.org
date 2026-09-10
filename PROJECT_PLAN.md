@@ -2316,6 +2316,15 @@ example. The active branch is `improvement/clean-code-sweep`.
 - [ ] Complete subsequent subsystem reviews one at a time; choose actual
   improvements from evidence, not file length or similar-looking syntax.
 
+Record-notification follow-up (2026-09-10): p4-Vega's existing results-card badge
+was not a SweetAlert, and Three Bosses had no browser record announcement. Both
+now use the shared glass `PersonalBestAlert` after server confirmation. Receipt
+replays can supply the first confirmation but repeated Three Bosses run IDs do
+not repeat the announcement. Existing p4 badge, scores, ranking, submission
+contracts and Unity build are unchanged. Mocked browser checks covered desktop,
+portrait, native/fallback fullscreen, focus, help-dialog deferral and cleanup;
+physical-device record notification checks remain unverified.
+
 **Learning handoff:** show actual before/after code for each implementation,
 explain the project boundary and general coding principle, state trade-offs and
 preserved behavior, and report checks actually run. Proposed examples must be
@@ -2343,6 +2352,40 @@ The focused first-party `package.json` script audit (originally requested
 2026-09-06) was moved into the bounded pre-release temporary-artifact cleanup
 above by the owner on 2026-09-08. Do not duplicate that audit in this later phase
 unless relevant changes or new evidence warrant it.
+
+## Phase 17 — BeatCalc native stores and social sign-in
+
+Owner direction confirmed 2026-09-10: publish BeatCalc through Capacitor to both
+Google Play and Apple's App Store. The owner has an Apple Developer membership
+but no Mac. Existing `frontend/capacitor.config.ts` names BeatCalc with local
+app ID `org.mickeyf.app`; this is not proof of an App Store/Play registration.
+
+- [ ] Confirm/reserve the intended bundle/package identifiers and create store
+  app records. Confirm Google Play developer account access separately.
+- [ ] Preserve the PWA track and review the existing Android/iOS shells. Build
+  Android on Windows; choose a cloud macOS/Xcode builder for iOS with protected
+  signing credentials, bounded cost and manual release approval. Codemagic is a
+  documented Capacitor option; no service purchase or workflow is activated yet.
+- [ ] Add Google and Apple sign-in while retaining username/password accounts
+  and score ownership. Verify provider identities on the backend; require proof
+  before linking an existing account, never match solely on an email string.
+  Web and native clients need their own provider configuration and approved
+  sign-in flows; do not load Google OAuth inside Capacitor's embedded WebView.
+- [ ] Configure Apple's primary Sign in with Apple App ID, web Services ID,
+  return URLs and protected signing key. Check the web-service prerequisites
+  separately from native app registration; membership alone does not activate it.
+- [ ] Review native session persistence, privacy disclosures, account deletion,
+  provider disconnect/revocation and current store policies before submission.
+- [ ] Test signed builds through Android internal testing and TestFlight on the
+  owner's iPhone, then obtain separate approval for each public store release.
+
+Primary references checked 2026-09-10:
+[Capacitor build requirements](https://capacitorjs.com/docs/getting-started/environment-setup),
+[Codemagic Capacitor signing and distribution](https://docs.codemagic.io/yaml-quick-start/building-an-ionic-app/),
+[Google native sign-in restrictions](https://developers.google.com/identity/protocols/oauth2/native-app),
+[Apple web sign-in setup](https://developer.apple.com/help/account/capabilities/configure-sign-in-with-apple-for-the-web/),
+[Apple login/account review requirements](https://developer.apple.com/app-store/review/guidelines/).
+Provider login and store publication are planned, not implemented or verified.
 
 ## Deferred tooling follow-up
 
