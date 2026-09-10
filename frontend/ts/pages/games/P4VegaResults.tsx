@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import type { P4RunResult } from '@/games/p4-Vega/p4RunResult';
-import { P4_WIN_SCORE } from '@/games/p4-Vega/p4Rules';
 
 type P4VegaResultsProps = {
     result: P4RunResult;
@@ -45,7 +44,6 @@ export default function P4VegaResults({
                     <p className="p4-vega__results-score" id="p4-results-score">
                         <span>Score</span>
                         <strong>{result.score.toLocaleString('en-US')}</strong>
-                        <span>/ {P4_WIN_SCORE.toLocaleString('en-US')}</span>
                     </p>
                     {result.personalBest && <span className="p4-vega__results-best">New personal best</span>}
                     <p
