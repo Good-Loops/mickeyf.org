@@ -2387,9 +2387,13 @@ with Apple or Google Play.
   upload or public store release has been activated.
   Signing preparation (2026-09-10): created and verified the `ios-testflight`
   GitHub environment, restricted to the current development branch with owner
-  review required. It is empty of secrets; the Apple team, explicit bundle ID
-  and App Store Connect record are now verified. Signing credentials remain
-  prerequisites before enabling a signing/upload workflow.
+  review required. Apple API access is approved and a Developer-role team key
+  is stored in that environment. Exact app/bundle API reads passed with HTTP 200;
+  both names already return Ludolume. Refreshing the bundle label via PATCH was
+  denied (HTTP 403); permissions were not broadened. The plaintext key download
+  was removed after protected GitHub storage and a Windows-encrypted local backup
+  were verified. Distribution certificate/profile remain prerequisites before
+  enabling a signing/upload workflow. See `frontend/ios/BUILDING.md`.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma

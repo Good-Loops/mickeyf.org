@@ -385,7 +385,7 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    and artifact upload. New celestial native artwork includes a real-alpha
    Android adaptive layer; exports and asset references were checked. Physical
    native appearance, Android compilation and native authentication remain
-   unverified. Apple signing/TestFlight credentials remain unconfigured. No
+   unverified. Apple distribution certificate/profile remain unconfigured. No
    provider login, store upload or additional public website release was activated.
    On 2026-09-10 the owner selected `com.mickeyf.app`; Capacitor, Android and
    iOS configurations were aligned and the explicit bundle ID was registered
@@ -395,6 +395,12 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    Prepare for Submission. The Developer identifier description is Ludolume;
    `com.mickeyf.app` remains unchanged. No signed build, TestFlight upload or
    public store release is claimed.
+   API access subsequently approved; a Developer-role team key and non-secret
+   identifiers are stored in the protected `ios-testflight` environment. Exact
+   app/bundle reads returned HTTP 200 and Ludolume; a bundle-name PATCH returned
+   HTTP 403 without permission escalation. The plaintext download was removed
+   after verifying its Windows-encrypted backup. This does not validate a signed
+   build or upload, and no build/deployment was triggered by credential setup.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

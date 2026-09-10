@@ -2,8 +2,9 @@
 
 Celestial glass artwork created with the built-in image-generation tool on
 2026-09-10. It preserves Ludolume's controller-and-musical-notes identity and the
-website's navy, cyan and frosted-glass palette. These are native app assets;
-the published website favicon and PWA icons are unchanged.
+website's navy, cyan and frosted-glass palette. The same approved controller
+master now supplies the website favicon, Apple touch icon and PWA icons.
+Updating source assets does not publish a website release.
 
 ## Sources and exports
 
@@ -39,6 +40,19 @@ iOS uses the illustrated launch screen. Android 12+ uses the platform's centered
 icon on a solid navy background; older Android versions have the illustrated
 launch resources. Neither platform has an artificial splash delay. Actual native
 launch appearance still needs device validation.
+
+## Website icons
+
+`frontend/public` contains the browser PNG (96 pixels), ICO (16/32/48 pixels),
+Apple touch icon (180 pixels) and PWA icons (192/512 pixels). The browser favicon
+uses a larger controller crop inside a circle with transparent outer corners.
+Apple/PWA exports retain opaque backgrounds and launcher-safe padding. The
+obsolete SVG favicon wrapper was removed so browsers do not select old artwork.
+Browser icon URLs carry a brand revision query to refresh cached favicons.
+
+These are deterministic size/crop/mask exports of the existing master using
+Sharp from `@capacitor/assets` 3.0.5's dependency installation, not independently
+generated artwork. Source/native icons are unchanged by the website exports.
 
 ## Current regeneration prompts
 

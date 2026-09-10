@@ -63,19 +63,20 @@ The GitHub `ios-testflight` environment was created and read back on 2026-09-10:
   owner also starts manual runs; otherwise a sole operator could not approve them.
   The owner should review the exact source commit in GitHub before approving a
   signing run. This is a release checkpoint, not two-person separation of duties.
-- No Apple secrets or variables have been stored, and no signed/upload workflow
-  has been enabled. Creating this environment does not start a build or publish.
+- The Developer-role team API key is stored as `ASC_PRIVATE_KEY_P8`, with its
+  non-secret identifiers in environment variables. No signed/upload workflow
+  has been enabled. Configuring credentials does not start a build or publish.
 - When rolling the active branch, explicitly update its exact branch policy;
   do not replace it with a broad wildcard to work around a blocked run.
 
 Keep signing credentials in this environment, not repository-wide secrets:
 
-| Planned secret | Purpose |
+| Secret | Purpose/status |
 | --- | --- |
-| `IOS_DISTRIBUTION_P12_BASE64` | Distribution certificate and its private signing key |
-| `IOS_DISTRIBUTION_P12_PASSWORD` | Password protecting that signing identity |
-| `IOS_PROVISION_PROFILE_BASE64` | Apple profile authorizing this app ID and certificate |
-| `ASC_PRIVATE_KEY_P8` | App Store Connect API authentication key |
+| `IOS_DISTRIBUTION_P12_BASE64` | Pending: distribution certificate and its private signing key |
+| `IOS_DISTRIBUTION_P12_PASSWORD` | Pending: password protecting that signing identity |
+| `IOS_PROVISION_PROFILE_BASE64` | Pending: Apple profile authorizing this app ID and certificate |
+| `ASC_PRIVATE_KEY_P8` | Configured: App Store Connect API authentication key |
 
 Team ID, API key ID, issuer ID and the numeric App Store Connect app ID are
 non-secret identifiers to confirm from Apple. Generate the temporary runner
@@ -95,16 +96,42 @@ confirmed the renamed description; App Store Connect's bundle selector still
 showed the previous description after refresh. The underlying identifier is
 unchanged. Google Play registration remains separate.
 
+API access verified 2026-09-10 after the owner accepted Apple's API-use agreement:
+
+- Created the team key `Ludolume GitHub TestFlight` with the Developer role,
+  not Admin. Team keys apply to all apps in the Apple account; their name does
+  not restrict access to Ludolume alone.
+- Stored `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_APP_ID`, `IOS_TEAM_ID`,
+  `IOS_BUNDLE_ID` and `IOS_BUNDLE_RESOURCE_ID` as variables in `ios-testflight`.
+  The bundle resource ID (`BFW2RJD725`) is distinct from the app ID (`6810735137`).
+- Scoped, 120-second JWT GET requests returned HTTP 200 for the exact app and
+  filtered bundle record. Both names were already Ludolume and the bundle was
+  `com.mickeyf.app`. Node required `--use-system-ca` on this Windows host;
+  certificate verification was not disabled.
+- An idempotent attempt to refresh the bundle description through PATCH returned
+  HTTP 403 with this Developer key. No permission escalation was performed.
+  Do not create an Admin CI key or recreate the app to fix the stale UI label.
+- A Windows-DPAPI-encrypted local backup is under
+  `%LOCALAPPDATA%/Ludolume/Apple/ASC-<key-id>.dpapi.xml`, restricted to the current
+  Windows user and SYSTEM. Its decryption round trip was verified before the
+  plaintext download was removed. This backup requires the same Windows user
+  and computer; it is not a portable recovery file. Rotate the Apple key and
+  replace the GitHub secret if access is lost or compromise is suspected.
+
+These checks prove API authentication and record reads, not GitHub-runner key
+consumption, signed compilation, TestFlight upload or native runtime behavior.
+Do not expose the P8 or minted JWTs in logs, source, artifacts or chat.
+
 Before adding a signing/upload job:
 
 1. Use the existing Ludolume App Store Connect record (`6810735137`) and
    registered `com.mickeyf.app` bundle ID; do not create a duplicate record or
    change the identifier to refresh its displayed description.
-2. Configure a protected GitHub environment with approved release branches and
+2. Preserve the configured GitHub environment's approved release branch and
    manual review. Keep Apple credentials out of repository-wide build jobs and
    untrusted pull-request code.
 3. Supply an Apple Distribution signing identity (`.p12` plus password), matching
-   App Store provisioning profile, and appropriately scoped App Store Connect
+   App Store provisioning profile. Reuse the configured App Store Connect
    API key/issuer/key ID through protected secret storage. Never commit or paste
    private signing keys into chat. The ignore rules are only a safety net.
 4. Add a separately approved signed archive/export/upload job, with unique build
@@ -123,4 +150,7 @@ References checked 2026-09-10:
 [Capacitor requirements](https://capacitorjs.com/docs/getting-started/environment-setup),
 [GitHub manual workflows](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow),
 [GitHub Apple signing](https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications),
+[Apple API keys](https://developer.apple.com/help/app-store-connect/get-started/app-store-connect-api/),
+[Apple API tokens](https://developer.apple.com/documentation/appstoreconnectapi/generating-tokens-for-api-requests),
+[Windows encrypted credential exports](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/import-clixml),
 [runner pricing](https://docs.github.com/en/billing/reference/actions-runner-pricing).
