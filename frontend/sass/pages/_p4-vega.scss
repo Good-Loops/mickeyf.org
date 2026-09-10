@@ -374,6 +374,15 @@
 
     @include canvas-fullscreen-button-position('p4-vega');
     @include block-canvas-fullscreen('p4-vega');
+
+    &__canvas-wrapper:fullscreen,
+    &__canvas-wrapper:-webkit-full-screen,
+    &__canvas-wrapper[data-canvas-fullscreen='fallback'] {
+        // Repeated gameplay taps must not select the overlaid HUD.
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
 }
 
 @media (hover: none) and (pointer: coarse) {
