@@ -13,7 +13,7 @@ approved PR #330 on 2026-09-10. That PR contained only the workflow and signing
 ignore rules. Merging the full development branch also carries its website/auth
 changes and can trigger website deployment; that remains separate approval.
 
-The renamed workflow is **Ludolume iOS simulator build (manual)**. GitHub's
+The renamed workflow is **Ludolume iOS build (manual)**. GitHub's
 Actions listing may retain its original title until this workflow-only rename
 reaches `main`; this does not authorize merging the full development branch.
 Select **Run workflow** and choose the reviewed branch. The stable filename
@@ -56,6 +56,16 @@ OS launch screen, not an added timed loading overlay.
 
 ## Next stage: signed TestFlight builds
 
+The same manual workflow now has an `upload_testflight` boolean, defaulting to
+`false`. The default remains the unsigned simulator job. Selecting `true` uses
+the signed job only on `improvement/clean-code-sweep` and requires approval of
+the `ios-testflight` environment. No push or pull-request event uploads a build.
+The helper `scripts/ios-testflight.mjs` is dedicated to this job: it checks the
+app/team/profile/certificate, assigns a unique build number, archives an iPhone
+app, exports an internal-only TestFlight IPA and uploads through Apple's tool.
+It removes temporary signing material and signed outputs; neither is uploaded
+as a public Actions artifact. Tool checks on Windows do not prove macOS signing.
+
 The GitHub `ios-testflight` environment was created and read back on 2026-09-10:
 
 - Only the branch `improvement/clean-code-sweep` is allowed (no tag rule).
@@ -64,8 +74,9 @@ The GitHub `ios-testflight` environment was created and read back on 2026-09-10:
   The owner should review the exact source commit in GitHub before approving a
   signing run. This is a release checkpoint, not two-person separation of duties.
 - The Developer-role team API key is stored as `ASC_PRIVATE_KEY_P8`, with its
-  non-secret identifiers in environment variables. No signed/upload workflow
-  has been enabled. Configuring credentials does not start a build or publish.
+  non-secret identifiers in environment variables. The signed/upload path is
+  prepared but has not yet completed a signing run. Configuring credentials
+  does not start a build or publish.
 - When rolling the active branch, explicitly update its exact branch policy;
   do not replace it with a broad wildcard to work around a blocked run.
 
@@ -73,10 +84,31 @@ Keep signing credentials in this environment, not repository-wide secrets:
 
 | Secret | Purpose/status |
 | --- | --- |
-| `IOS_DISTRIBUTION_P12_BASE64` | Pending: distribution certificate and its private signing key |
-| `IOS_DISTRIBUTION_P12_PASSWORD` | Pending: password protecting that signing identity |
-| `IOS_PROVISION_PROFILE_BASE64` | Pending: Apple profile authorizing this app ID and certificate |
+| `IOS_DISTRIBUTION_P12_BASE64` | Configured: encrypted distribution identity, including Apple G3 intermediate |
+| `IOS_DISTRIBUTION_P12_PASSWORD` | Configured: randomly generated identity password |
+| `IOS_PROVISION_PROFILE_BASE64` | Configured: active App Store profile for this app ID and certificate |
 | `ASC_PRIVATE_KEY_P8` | Configured: App Store Connect API authentication key |
+
+Distribution credentials created with owner approval on 2026-09-10:
+
+- Certificate `Q4FS72TU6B`, Apple Distribution, team `AX4Z7T24C9`, expires
+  2027-09-10. Its public key matches the encrypted local RSA private key and
+  its signature verifies against Apple's G3 intermediate.
+- Profile `Z392C733U4`, **Ludolume App Store 2026-09-10**, UUID
+  `e312aedc-9b44-4464-8ce9-0e0f0fb39c0a`, expires 2027-09-10. Its CMS signature,
+  exact application identifier, non-development entitlements and matching
+  distribution certificate were checked before storage.
+- Chrome blocked certificate downloads both manually and through browser
+  automation. Apple's official certificate/profile GET endpoints returned
+  HTTP 200 using the existing Developer-role API key; no roles or browser
+  security settings were changed to retrieve them.
+- The three signing secret names were read back from `ios-testflight` after
+  storage. Values are not readable through GitHub; successful macOS import and
+  signing remain the first protected run's acceptance check.
+- The local backup is under `%LOCALAPPDATA%/Ludolume/Apple/Distribution-20260910`,
+  restricted to this Windows user and SYSTEM. Both the RSA key and P12 are
+  encrypted; the password is DPAPI-protected for the same user and computer.
+  Do not commit this folder or treat it as portable recovery storage.
 
 Team ID, API key ID, issuer ID and the numeric App Store Connect app ID are
 non-secret identifiers to confirm from Apple. Generate the temporary runner
@@ -129,7 +161,7 @@ These checks prove API authentication and record reads, not GitHub-runner key
 consumption, signed compilation, TestFlight upload or native runtime behavior.
 Do not expose the P8 or minted JWTs in logs, source, artifacts or chat.
 
-Before adding a signing/upload job:
+Before running the signed upload:
 
 1. Use the existing Ludolume App Store Connect record (`6810735137`) and
    registered `com.mickeyf.app` bundle ID; do not create a duplicate record or
@@ -137,19 +169,36 @@ Before adding a signing/upload job:
 2. Preserve the configured GitHub environment's approved release branch and
    manual review. Keep Apple credentials out of repository-wide build jobs and
    untrusted pull-request code.
-3. Supply an Apple Distribution signing identity (`.p12` plus password), matching
-   App Store provisioning profile. Reuse the configured App Store Connect
+3. Confirm the configured Apple Distribution identity (`.p12` plus password)
+   and matching App Store provisioning profile are current. Reuse App Store Connect
    API key/issuer/key ID through protected secret storage. Never commit or paste
    private signing keys into chat. The ignore rules are only a safety net.
-4. Add a separately approved signed archive/export/upload job, with unique build
-   numbers and temporary-keychain cleanup. Uploading to TestFlight does not
-   authorize public App Store submission or release.
-5. Check the signed build on the owner's iPhone, including native auth/session,
-   audio permissions and gameplay. Preserve the PWA and Android tracks.
+4. Review the exact source commit and approve the protected manual signing job.
+   It uses unique build numbers and temporary-keychain cleanup. Uploading to
+   TestFlight does not authorize public App Store submission or release.
+5. Check installation, artwork, audio playback and gameplay on the owner's
+   iPhone. Native auth/session acceptance follows the origin/login work below;
+   do not confuse successful installation with authentication readiness.
+   Preserve the PWA and Android tracks.
+
+First native-device acceptance limits identified on 2026-09-10:
+
+- Production CORS currently allows the website origins, not `capacitor://localhost`.
+  The native-origin preflight received no `Access-Control-Allow-Origin`, so
+  native login/leaderboards need origin/session work in the following login
+  milestone. This signing task does not change or deploy the backend.
+- Check Three Bosses' packaged asset URLs in WKWebView on the device; a custom
+  scheme behaves differently from a normal website origin. Desktop URL parsing
+  alone is not proof of a device failure or success.
+- Check user-selected audio playback and interruption/resume. No first-party
+  microphone capture was found; do not add a microphone permission without a use.
+- If Apple reports Missing Compliance, the owner must confirm the encryption
+  answers before the build becomes available to testers. No exemption declaration
+  has been inferred or inserted into Info.plist by this workflow.
 
 Standard runner compute is free for public repositories. Private repositories
 use their plan's included allowance, then paid usage; storage has separate
-allowances. The manual trigger, 30-minute job timeout, no dependency cache, and
+allowances. The manual trigger, 30/35-minute simulator/signing timeouts, no dependency cache, and
 one-day artifact retention limit incidental usage. They are not an account-wide
 spending cap. Never buy larger runners or change billing limits implicitly.
 

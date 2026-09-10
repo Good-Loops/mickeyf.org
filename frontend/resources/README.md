@@ -45,21 +45,22 @@ launch appearance still needs device validation.
 
 `frontend/public` contains the browser PNG (96 pixels), ICO (16/32/48 pixels),
 Apple touch icon (180 pixels) and PWA icons (192/512 pixels). The browser favicon
-composites the approved transparent controller over a clean cosmic-background
-crop, inside a circle with transparent outer corners. The controller occupies
-97.5% of the diameter; its circle-safe placement preserves the handles and notes
-while making the foreground more prominent than a crop of the padded icon.
+contains only the approved controller on a fully transparent canvas, including
+the area beneath its arch. The complete silhouette is centered vertically and
+fills the width with a one-pixel antialiasing margin on either side, preserving
+both handles and the musical notes. It has no circle or cosmic background.
 Apple/PWA exports retain opaque backgrounds and launcher-safe padding. The
 obsolete SVG favicon wrapper was removed so browsers do not select old artwork.
 Browser icon URLs carry a brand revision query to refresh cached favicons.
 
-Browser exports trim `icon-foreground.png` to `(74, 235, 876, 554)` and use the
-300-pixel-square cosmic patch at `(475, 950)` in `icon-only.png`. Position the
-foreground so its original circle-fit center `(511.5, 605)` aligns with the
-icon center. Composite/mask at 8x output size, then downsample with Lanczos3;
-pack the 16/32/48-pixel PNG frames into the ICO. No icon generation is needed.
+Browser exports trim the full nonzero-alpha bounds of `icon-foreground.png` to
+`(72, 233, 880, 558)`. For each output size, resize the cropped controller to
+`size - 2` pixels wide, preserving its aspect ratio, then center it on a square
+RGBA canvas with zero background alpha. Render at 8x output size and downsample
+with Lanczos3; pack the 16/32/48-pixel PNG frames into the ICO. No icon generation
+is needed.
 
-These are deterministic size/crop/composite/mask exports of the existing masters using
+These are deterministic size/crop/composite exports of the existing masters using
 Sharp from `@capacitor/assets` 3.0.5's dependency installation, not independently
 generated artwork. Source/native icons are unchanged by the website exports.
 

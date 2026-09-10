@@ -2396,17 +2396,24 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   simulator compilation and artifact upload succeeded. This is not physical
   iPhone validation or a signed store build. Android native compilation is
   still unverified; the local Java/Android SDK toolchain is not configured.
-  See `frontend/ios/BUILDING.md`; no signing credentials, paid service, TestFlight
-  upload or public store release has been activated.
-  Signing preparation (2026-09-10): created and verified the `ios-testflight`
-  GitHub environment, restricted to the current development branch with owner
-  review required. Apple API access is approved and a Developer-role team key
-  is stored in that environment. Exact app/bundle API reads passed with HTTP 200;
-  both names already return Ludolume. Refreshing the bundle label via PATCH was
-  denied (HTTP 403); permissions were not broadened. The plaintext key download
-  was removed after protected GitHub storage and a Windows-encrypted local backup
-  were verified. Distribution certificate/profile remain prerequisites before
-  enabling a signing/upload workflow. See `frontend/ios/BUILDING.md`.
+  See `frontend/ios/BUILDING.md`; no signed build, TestFlight upload or public
+  store release has been performed.
+- [x] Create the Apple distribution identity and configure protected signing secrets.
+  With owner approval on 2026-09-10, the account-holder UI created Apple
+  Distribution certificate `Q4FS72TU6B` (expires 2027-09-10) and active
+  `IOS_APP_STORE` profile `Z392C733U4`, “Ludolume App Store 2026-09-10”
+  (UUID `e312aedc-9b44-4464-8ce9-0e0f0fb39c0a`), for exactly
+  `AX4Z7T24C9.com.mickeyf.app`. After Chrome downloads were blocked, the existing
+  Developer-role API key retrieved both by exact GET (HTTP 200), without role
+  escalation. The RSA key matches the leaf certificate; Apple WWDR G3 leaf and
+  profile CMS signatures, profile/certificate matching and helper guards passed.
+  An AES-256-encrypted P12 and DPAPI-protected password are backed up locally
+  with restricted access. `ios-testflight` holds `ASC_PRIVATE_KEY_P8` and all
+  three iOS signing secrets; the exact `improvement/clean-code-sweep` branch
+  restriction and `Good-Loops` reviewer remain in place. Workflow/helper code is
+  prepared; successful signed upload remains pending. Next: the protected signed
+  build/upload and physical iPhone acceptance; credential setup is not proof
+  that signing, export or TestFlight upload succeeds.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma
@@ -2418,6 +2425,9 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   before linking an existing account, never match solely on an email string.
   Web and native clients need their own provider configuration and approved
   sign-in flows; do not load Google OAuth inside Capacitor's embedded WebView.
+  The native Capacitor origin is currently outside the backend CORS allowlist.
+  Native login/session acceptance and that scoped origin change belong to this
+  provider-login milestone, not the initial signed gameplay-build checkpoint.
 - [ ] Configure Apple's primary Sign in with Apple App ID, web Services ID,
   return URLs and protected signing key. Check the web-service prerequisites
   separately from native app registration; membership alone does not activate it.

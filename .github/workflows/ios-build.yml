@@ -1,18 +1,25 @@
-name: Ludolume iOS simulator build (manual)
+name: Ludolume iOS build (manual)
 
 # No push/PR trigger: native builds remain separate from website deployment.
 on:
   workflow_dispatch:
+    inputs:
+      upload_testflight:
+        description: Sign and upload an internal TestFlight build (requires ios-testflight approval)
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: ios-simulator-${{ github.ref }}
-  cancel-in-progress: true
+  group: ios-${{ inputs.upload_testflight && 'testflight' || github.ref }}
+  cancel-in-progress: ${{ !inputs.upload_testflight }}
 
 jobs:
   simulator:
+    if: ${{ !inputs.upload_testflight }}
     name: Compile unsigned iOS simulator app
     runs-on: macos-26
     timeout-minutes: 30
@@ -96,3 +103,64 @@ jobs:
           path: ${{ runner.temp }}/ludolume-build.xcresult
           if-no-files-found: ignore
           retention-days: 1
+
+  testflight:
+    # Also restrict the protected environment to this exact branch in GitHub.
+    if: ${{ inputs.upload_testflight && github.ref == 'refs/heads/improvement/clean-code-sweep' }}
+    name: Sign and upload internal TestFlight build
+    environment: ios-testflight
+    runs-on: macos-26
+    timeout-minutes: 35
+    defaults:
+      run:
+        shell: bash
+        working-directory: frontend
+    env:
+      CI: "true"
+      NPM_CONFIG_FUND: "false"
+      COCOAPODS_DISABLE_STATS: "true"
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      VITE_PROD_API_URL: https://mickeyf-org-j7yuum4tiq-uc.a.run.app
+      VITE_ENABLE_THREE_BOSSES_RELEASE: "1"
+      ASC_KEY_ID: ${{ vars.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ vars.ASC_ISSUER_ID }}
+      ASC_APP_ID: ${{ vars.ASC_APP_ID }}
+      IOS_TEAM_ID: ${{ vars.IOS_TEAM_ID }}
+      IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID }}
+    steps:
+      - name: Checkout reviewed branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.2
+          package-manager-cache: false
+
+      - name: Check pinned signing tools and public configuration
+        run: |
+          node ../scripts/ios-testflight.mjs preflight
+          pod --version
+
+      - name: Install locked dependencies and build before loading credentials
+        run: |
+          npm install --global npm@11.6.2 --no-audit --no-fund
+          npm ci --no-audit
+          npm test
+          npm run build
+          npx --no-install cap sync ios
+
+      - name: Sign, verify and upload to internal TestFlight
+        env:
+          IOS_DISTRIBUTION_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
+          IOS_DISTRIBUTION_P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_P12_PASSWORD }}
+          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          ASC_PRIVATE_KEY_P8: ${{ secrets.ASC_PRIVATE_KEY_P8 }}
+        run: node ../scripts/ios-testflight.mjs upload
+
+      # No IPA/archive/log artifacts: only the unsigned job uploads artifacts.
+      - name: Remove signing material and signed outputs
+        if: ${{ always() }}
+        run: node ../scripts/ios-testflight.mjs cleanup

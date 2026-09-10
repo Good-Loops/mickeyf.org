@@ -385,8 +385,8 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    and artifact upload. New celestial native artwork includes a real-alpha
    Android adaptive layer; exports and asset references were checked. Physical
    native appearance, Android compilation and native authentication remain
-   unverified. Apple distribution certificate/profile remain unconfigured. No
-   provider login, store upload or additional public website release was activated.
+   unverified. No provider login, store upload or additional public website
+   release was activated by that unsigned build.
    On 2026-09-10 the owner selected `com.mickeyf.app`; Capacitor, Android and
    iOS configurations were aligned and the explicit bundle ID was registered
    with Apple. Focused identifier/XML/Xcode-project checks passed, not a fresh
@@ -400,12 +400,20 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    reads still return Ludolume; the previous description persists only in the
    observed App Store Connect selector. That cosmetic inconsistency does not
    change the registered identifier or authorize broader CI-key permissions.
-   API access subsequently approved; a Developer-role team key and non-secret
-   identifiers are stored in the protected `ios-testflight` environment. Exact
-   app/bundle reads returned HTTP 200 and Ludolume; a bundle-name PATCH returned
-   HTTP 403 without permission escalation. The plaintext download was removed
-   after verifying its Windows-encrypted backup. This does not validate a signed
-   build or upload, and no build/deployment was triggered by credential setup.
+   Distribution signing is now configured with owner approval (2026-09-10):
+   certificate `Q4FS72TU6B` expires 2027-09-10; active `IOS_APP_STORE` profile
+   `Z392C733U4` (UUID `e312aedc-9b44-4464-8ce9-0e0f0fb39c0a`) matches exactly
+   `AX4Z7T24C9.com.mickeyf.app`. Existing Developer-key GETs retrieved both
+   (HTTP 200) after browser downloads failed, without permission escalation.
+   RSA-key/leaf matching, Apple WWDR G3 leaf signature, profile CMS signature,
+   profile certificate and helper guards passed. The encrypted P12/password
+   backup has restricted local access; `ios-testflight` stores the API key and
+   three signing secrets, retaining its exact active-branch restriction and
+   `Good-Loops` reviewer. Workflow/helper changes are prepared; no successful
+   signed build or TestFlight upload is claimed yet. Native
+   Capacitor origins are not currently allowed by backend CORS: native auth
+   acceptance remains scoped to the following provider-login milestone, not
+   the initial signed gameplay-build checkpoint. See `frontend/ios/BUILDING.md`.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a
