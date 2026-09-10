@@ -2285,9 +2285,16 @@ example. The active branch is `improvement/clean-code-sweep`.
   Completed 2026-09-10: 13 direct Node loader cases; TypeScript and all 185
   frontend tests passed; production build passed with the existing chunk-size
   warning; local browser detail/hub navigation and both tables verified.
-- [ ] Next candidate: consolidate the duplicated Three Bosses mutation
-  preconditions in the backend controller without changing guard order,
-  response contracts, router middleware or persistence.
+- [x] Second slice: consolidated the duplicated Three Bosses mutation
+  preconditions in `threeBossesMutationAuthorization.ts`, preserving guard
+  order, response contracts, router middleware and persistence. Backend
+  TypeScript, 8 policy cases, 7 existing HTTP/router cases and webpack build
+  passed on 2026-09-10; no production/authentication campaign was repeated.
+- [x] Simplified frontend test discovery to a quoted Node glob: the same 19
+  files and 185 passing tests, no coverage removed or dependency added.
+- [ ] Next bounded cleanup: correct stale backend paths in
+  `.github/copilot-instructions.md` and assess the captured legacy
+  `resources/project-structure.txt` documentation; no new inventory generator.
 - [ ] Complete subsequent subsystem reviews one at a time; choose actual
   improvements from evidence, not file length or similar-looking syntax.
 
@@ -2295,7 +2302,7 @@ example. The active branch is `improvement/clean-code-sweep`.
 explain the project boundary and general coding principle, state trade-offs and
 preserved behavior, and report checks actually run. Proposed examples must be
 clearly distinguished from implemented changes. The inventory now records
-the first implemented before/after example and its exact verification scope.
+the implemented examples and their exact verification scopes.
 
 After Three Bosses and the p4-Vega improvement phase are stable, inspect every
 tracked first-party source, test, configuration, and documentation area using

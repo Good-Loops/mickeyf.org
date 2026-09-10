@@ -73,7 +73,7 @@ refactor everything in them.
 | Shared shell/forms/services/styles | `App`, `Header`, components, context, hooks, layout, auth pages/services and `frontend/sass` | Review after the first slice; preserve accessibility and accepted Safari behavior. Do not start with tiny repeated click handlers. |
 | Games | `frontend/ts/games`, game pages, help/results and bridge modules | Inspect responsibilities and lifecycles, preserving newly accepted gameplay, 1000-point policy, faster diagonal movement and touch/scroll boundaries. No generic release retest. |
 | Animations/audio/math | `frontend/ts/animations`, music controls, shared utilities and public facades | Review ownership of renderer/audio/timing cleanup and pure calculations; retain artistic behavior. |
-| Backend | `backend/ts` configuration, controllers, routers, middleware, repositories, security, migrations and public contracts | Later candidate: duplicated Three Bosses mutation preconditions. Preserve ordering, DTOs, gates, credentials and persistence. Not the first slice because its security-sensitive surface is larger. |
+| Backend | `backend/ts` configuration, controllers, routers, middleware, repositories, security, migrations and public contracts | Second slice completed 2026-09-10: consolidated the duplicated Three Bosses mutation preconditions. Ordering, DTOs, gates, credentials and persistence remain unchanged. Other backend areas are still review scopes. |
 | Unity | Custom `Assets/Scripts`, `Editor`, `Plugins/WebGL` and `Tests` | Review source responsibilities separately from serialized content. Any later scene/asset mutation uses the established Unity workflow and preserves GUIDs. |
 | Native platforms | Android/iOS entry points, resources and configuration | Inventory complete; substantive review stays aligned with the native/PWA phase and available platform checks. |
 | Tooling/configuration/docs | Root, `.github`, `.githooks`, `.vscode`, `scripts`, `docs-src`, `design`, `resources`, subsystem docs | Preserve deployment boundaries. The old directory listing and outdated backend paths in `.github/copilot-instructions.md` are concrete documentation follow-ups; do not repeat the completed package audit. |
@@ -218,9 +218,72 @@ Checks actually completed:
 - `git diff --check` — passed. Independent read-only review found no boundary
   regression. No backend/cloud configuration, Unity content or deployment changed.
 
-Next candidate is the already-identified duplicated backend Three Bosses
-mutation preconditions. Review it as a source-level policy extraction with
-unchanged security-check order, not a new production submission audit.
+## Second slice: shared Three Bosses mutation policy — 2026-09-10
+
+Before this refactor, `leaderboardController.ts` repeated the same four guards
+in both ticket issuance and run submission: enabled flag, authentication,
+trusted Origin, JSON content type. Each guard built its own versioned HTTP error.
+Changing that policy required keeping two copies in sync.
+
+Both handlers now start with this actual code:
+
+```ts
+const authorization = authorizeThreeBossesMutation(req, mutationPolicy);
+if (!authorization.authorized) {
+    return res.status(authorization.status).json({
+        success: false,
+        contractVersion: LEADERBOARD_CONTRACT_VERSION,
+        error: authorization.error,
+    });
+}
+```
+
+The new `backend/ts/security/threeBossesMutationAuthorization.ts` owns only
+those shared decisions. Its discriminated union exposes a trusted identity on
+success, or a status/error on rejection. TypeScript therefore requires checking
+`authorized` before reading `identity`. The controller still owns HTTP response
+serialization, endpoint-specific payload validation, tickets and persistence.
+
+This removes duplicate **policy**, not every repeated line. A small response
+block remains in each handler deliberately; a generic response/middleware
+framework would add more indirection than this change needs. The extra module
+is justified by two real callers and direct policy tests, not by file length.
+
+Order and exact responses are retained: disabled → 403 `SUBMISSION_DISABLED`;
+authentication or Origin failure → 401 `UNAUTHORIZED`; non-JSON → 400
+`INVALID_RUN`. Three Bosses keeps its existing 401 authentication-configuration
+failure response, distinct from p4-Vega's 500. Existing authentication and
+Origin validators are reused unchanged. Router limiter/JSON middleware order,
+payload/ticket rules, database calls and response DTOs are untouched.
+
+Checks actually completed:
+
+- `npm --prefix backend test` — TypeScript passed.
+- From `backend`: `node --test -r ts-node/register ts/security/threeBossesMutationAuthorization.test.ts`
+  — 8 policy cases passed; registered in the existing `test:unit` command.
+- From `backend`: `node --test -r ts-node/register ts/routers/leaderboardRouter.test.ts ts/routers/threeBossesRouter.security.test.ts`
+  — 7 existing HTTP/router cases passed with fake persistence, including
+  disabled-before-limiter behavior and both endpoint contracts.
+- `npm --prefix backend run prod` — webpack production bundles passed.
+- Independent read-only review found no actionable policy/wiring issue.
+
+### Test command simplification approved in the same batch
+
+`frontend/package.json` now uses
+`tsc -p tsconfig.json --noEmit && node --experimental-strip-types --test "ts/**/*.test.mjs"`
+instead of 19 explicit file paths. The quoted glob lets Node discover tests
+without relying on shell expansion. Read-only set comparison found the exact
+same 19 files, and `npm --prefix frontend test` passed TypeScript and all 185
+tests. New matching test files are discovered automatically. No tests were
+deleted, no dependency/lockfile changed, and the completed package audit was
+not reopened. Local and CI Node versions are 22.23.2.
+
+This batch did not repeat frontend builds/device tests or production submission
+checks: frontend application source and production state were unchanged.
+Generated documentation stayed unchanged; `git diff --check` passed.
+Next bounded cleanup: correct outdated backend paths in
+`.github/copilot-instructions.md` and resolve the captured legacy directory
+listing's documentation purpose, without adding a generated-file maintenance loop.
 
 ## Learning-oriented handoff for each future change
 
