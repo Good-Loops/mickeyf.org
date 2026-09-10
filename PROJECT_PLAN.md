@@ -2459,8 +2459,11 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   installed build. Local fixes preserve rounded inline corners, fit controls
   without main scrolling, remove fullscreen frame decoration, use in-app CSS
   fullscreen on iOS, and preserve navigation state across overlapping requests.
-  Forty focused tests, TypeScript and production build pass; a new TestFlight
-  upload and owner device check remain pending. Do not repeat Home/loading tests.
+  Forty focused tests, TypeScript and production build pass. Approved internal
+  build `9.1.0` uploaded from `bd107c54`; all 226 cloud tests and signing/upload
+  cleanup passed. Apple processing is `VALID`; owner export-compliance answers,
+  existing group assignment and the focused device check remain pending.
+  Do not repeat Home/loading tests.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma

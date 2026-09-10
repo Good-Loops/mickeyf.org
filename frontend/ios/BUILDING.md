@@ -226,8 +226,9 @@ For subsequent signed uploads and device acceptance:
 5. Build `4.1.0`'s compliance, tester setup and iPhone installation are complete.
    Future declarations still require the owner's answers when Apple requests
    them. Login/persistence on `6.1.0` and p4-Vega loading on `7.1.0` are
-   owner-confirmed; accept the combined `8.1.0` layout corrections and confirm
-   signup before accepting those paths. Installation does not prove
+   owner-confirmed, as are the three combined `8.1.0` layout corrections.
+   Accept the subsequent native fullscreen/frame follow-up and confirm signup
+   before accepting those paths. Installation does not prove
    gameplay or full authentication readiness.
    Preserve the PWA and Android tracks.
 
@@ -358,7 +359,14 @@ First native-device acceptance limits identified on 2026-09-10:
   TypeScript and production build pass (existing chunk warning). Local touch
   simulation confirms Games navigation before/after fullscreen, unchanged
   portrait bounds on exit, round-corner styling and zero native fullscreen calls.
-  Physical-device confirmation needs a subsequent approved TestFlight upload.
+  Owner-approved follow-up upload
+  [34539835666](https://github.com/Good-Loops/mickeyf.com/actions/runs/34539835666)
+  completed from source `bd107c547c50da90e335d276332da1262962c2ad`, version `1.0`,
+  build `9.1.0` (ID `575c1208-6849-41da-bc7f-923279477245`). All 226 cloud tests,
+  web build, signing/upload and credential/output cleanup passed. Apple readback
+  is `VALID` / `INTERNAL_ONLY` / `MISSING_EXPORT_COMPLIANCE`; owner questionnaire
+  answers, existing internal-group assignment and the focused device check remain.
+  No public release, backend deployment or permission changes were performed.
 - Check user-selected audio playback and interruption/resume. No first-party
   microphone capture was found; do not add a microphone permission without a use.
 - If Apple reports Missing Compliance, the owner must confirm the encryption
