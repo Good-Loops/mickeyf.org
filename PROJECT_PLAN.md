@@ -2431,10 +2431,18 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   signup, offline logout and expiry have not been separately rechecked.
   p4-Vega still fails on that installed build. A deterministic Pixi custom-scheme
   asset URL bug is now fixed locally, with five focused regression tests,
-  TypeScript and a production build passing. Next: signed update and native
-  p4-Vega launch check; see `frontend/ios/BUILDING.md`. Provider login follows.
+  TypeScript and a production build passing. Signed build `7.1.0` is uploaded
+  and Apple-processed; owner export answers, internal group assignment and native
+  p4-Vega launch check remain pending. See `frontend/ios/BUILDING.md`.
+  Provider login follows.
   No roles, public testing, public store submission or website release were
   enabled by this setup.
+- [ ] Before public app release, accept small-screen Home typography and full
+  quotes on the iPhone. Implemented locally: smaller welcome/quote text, balanced
+  wrapping, separate author and stable normal-flow placement. All 61 quotes fit
+  at 320×568 and 844×390; portrait/landscape/desktop visual checks, TypeScript and
+  production build passed. This change postdates TestFlight `7.1.0` and needs a
+  subsequent native build/device check. Global Safari edge handling is unchanged.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma

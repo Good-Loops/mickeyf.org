@@ -429,7 +429,11 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    confirmed login/logout and close/reopen persistence on build `6.1.0`.
    Signup, offline logout and expiry have not been separately device-verified.
    Native p4-Vega still fails on that build. Its demonstrated Pixi asset URL bug
-   is corrected locally, pending a signed update and device check. No roles, public
+   is corrected in uploaded build `7.1.0` (source `320997ce`), Apple-processed as
+   `VALID` / `INTERNAL_ONLY`; export compliance and the device check remain pending.
+   The subsequent small-screen Home typography/quote correction is locally
+   verified but not included in `7.1.0`; it requires a later native build and
+   iPhone acceptance before public app release. No roles, public
    testing, public store submission or website release were enabled.
    The exact `capacitor://localhost` backend allowance is now live;
    14 focused configuration/authorization tests and backend TypeScript passed.

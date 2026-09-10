@@ -291,8 +291,23 @@ First native-device acceptance limits identified on 2026-09-10:
   custom/HTTP(S) schemes, relative/absolute paths and inlined images; frontend
   TypeScript and the production build passed (existing large-chunk warning).
   Worker/renderer settings, gameplay and native authentication are unchanged.
-  This correction is not in installed build `6.1.0`; a new signed upload and
-  iPhone launch check remain required. Do not treat local URL tests as device proof.
+  Owner-approved workflow
+  [34526331701](https://github.com/Good-Loops/mickeyf.com/actions/runs/34526331701)
+  uploaded version `1.0`, build `7.1.0`, from source
+  `320997ce4cdfaf8ce1ebd4dffc7b058cbf7c24a5`. All 218 cloud tests, web build,
+  native signing/upload and credential/output cleanup passed. Apple confirms
+  build `11ad9ad6-5708-4b2b-b40b-0f797f61411e` is `VALID` / `INTERNAL_ONLY`,
+  not expired, initially `MISSING_EXPORT_COMPLIANCE`. The questionnaire is open
+  for the owner; no declaration was inferred. Group assignment and the iPhone
+  launch check remain pending. Do not treat upload or URL tests as device proof.
+- Small-screen Home polish is required before public app release. The welcome
+  uses 30–38px text and quotes use 14–16px wrapped normal-flow text, with a
+  separate author and reserved space instead of random clipped positioning.
+  All 61 quotes fit at 320×568 and 844×390 in local browser geometry checks;
+  representative portrait, landscape and desktop screenshots were reviewed.
+  TypeScript and the production build passed (existing chunk-size warning).
+  This later change is not included in build `7.1.0`; a subsequent native build
+  and owner small-screen visual check remain required before release.
 - Check user-selected audio playback and interruption/resume. No first-party
   microphone capture was found; do not add a microphone permission without a use.
 - If Apple reports Missing Compliance, the owner must confirm the encryption
