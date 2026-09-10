@@ -328,7 +328,7 @@ First native-device acceptance limits identified on 2026-09-10:
   representative portrait, landscape and desktop screenshots were reviewed.
   TypeScript and the production build passed (existing chunk-size warning).
   This later change is not included in build `7.1.0`; the combined build below
-  includes it. The owner small-screen visual check remains required before release.
+  includes it. The owner confirms the small-screen quote correction in `8.1.0`.
 - Combined layout upload (2026-09-10): owner-approved workflow
   [34531224341](https://github.com/Good-Loops/mickeyf.com/actions/runs/34531224341)
   uploaded version `1.0`, build `8.1.0`, from source
@@ -338,8 +338,27 @@ First native-device acceptance limits identified on 2026-09-10:
   initially with `MISSING_EXPORT_COMPLIANCE`. The owner saved the questionnaire;
   Apple confirms `usesNonExemptEncryption: false`. Existing Ludolume Internal
   group assignment was verified, with readback `IN_BETA_TESTING`; previous builds
-  and testers were preserved. The temporary release helper was removed. Device
-  acceptance remains pending. No public website/App Store release was performed.
+  and testers were preserved. The temporary release helper was removed. The
+  owner accepts the three corrections; subsequent fullscreen/frame/inner-scroll
+  defects were reported below. No public website/App Store release was performed.
+- Native fullscreen/frame follow-up (2026-09-10): owner screenshots confirm
+  WebKit's system close overlay and whole-web-view inset changes after native
+  fullscreen exit. Installed iOS now uses existing CSS fullscreen instead of
+  WebKit's separate presentation window; browser and Android native fullscreen
+  selection are unchanged. This avoids the native presenter, not a promise to
+  hide iOS status/home-indicator UI. Fullscreen clears the inline card's border,
+  padding, shadow, blur and corner rounding; proportional 16:9 letterboxing remains.
+  Native p4-Vega has a finite, responsive game layout with no main scroll area;
+  portrait shares a row between settings and joystick, landscape uses columns.
+  Its framed canvas keeps a 16:9 content box and explicit rounded clipping.
+  Dropdowns/help retain their own overflow access. Ordinary web layouts and
+  long native forms retain scrolling. A reproduced overlapping-fullscreen race
+  could overwrite the original `inert` snapshot and disable navigation after
+  exit; fallback isolation is now idempotent and tested. Forty focused tests,
+  TypeScript and production build pass (existing chunk warning). Local touch
+  simulation confirms Games navigation before/after fullscreen, unchanged
+  portrait bounds on exit, round-corner styling and zero native fullscreen calls.
+  Physical-device confirmation needs a subsequent approved TestFlight upload.
 - Check user-selected audio playback and interruption/resume. No first-party
   microphone capture was found; do not add a microphone permission without a use.
 - If Apple reports Missing Compliance, the owner must confirm the encryption

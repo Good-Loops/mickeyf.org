@@ -19,7 +19,7 @@ import App from "@/App";
 import "../sass/style.scss";
 
 // Apply native viewport rules before the first React frame; web routes stay unchanged.
-if (Capacitor.isNativePlatform()) document.documentElement.dataset.nativeApp = 'true';
+if (Capacitor.isNativePlatform()) document.documentElement.dataset.nativeApp = Capacitor.getPlatform();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<BrowserRouter>

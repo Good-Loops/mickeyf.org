@@ -402,7 +402,11 @@
         height: 100vh;
         height: 100dvh;
         margin: 0;
+        padding: 0;
+        border: 0;
         border-radius: 0;
+        box-shadow: none;
+        backdrop-filter: none;
 
         display: flex;
         align-items: center;
@@ -424,6 +428,7 @@
     .#{$block}__canvas-wrapper[data-canvas-fullscreen='fallback'] .#{$block}__canvas {
         // Embedded canvases allow page gestures; fullscreen belongs to the experience.
         touch-action: none !important;
+        border-radius: 0;
         width: 100%;
         height: auto;
         max-width: 100vw;

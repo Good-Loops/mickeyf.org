@@ -76,6 +76,24 @@ html[data-native-app] .app-shell {
         // unlike unsafe flex centering which can hide the first controls.
         > * { flex-shrink: 0; margin-block: auto; }
     }
+
+    // Gameplay fits the available screen; forms and other long routes still scroll.
+    > .main:has(> .p4-vega) {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        align-items: stretch;
+        justify-items: center;
+        padding-block: .8rem;
+        overflow: hidden;
+
+        > .p4-vega { margin-block: 0; }
+    }
+}
+
+// Inline gameplay stays clipped to its layout; fullscreen must cover that boundary.
+html[data-native-app].canvas-fullscreen-fallback-active .app-shell > .main {
+    overflow: visible;
 }
 
 .space-background {

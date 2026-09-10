@@ -436,8 +436,11 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    typography/quote fixes are uploaded in combined build `8.1.0` (source
    `57665ff1`); all 221 cloud tests, build, signing/upload and cleanup passed.
    Apple reports `VALID` / `INTERNAL_ONLY`; owner export answers are saved and
-   existing internal group access is verified (`IN_BETA_TESTING`). iPhone
-   acceptance remains before public app release. No roles, public
+   existing internal group access is verified (`IN_BETA_TESTING`). The owner
+   accepts those three fixes. Subsequent p4 frame/main-scroll, native fullscreen
+   exit and navigation issues have local corrections with forty focused tests,
+   TypeScript/build passing; a new native upload/device acceptance remains.
+   No roles, public
    testing, public store submission or website release were enabled.
    The exact `capacitor://localhost` backend allowance is now live;
    14 focused configuration/authorization tests and backend TypeScript passed.

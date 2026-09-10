@@ -44,6 +44,15 @@ test('all fullscreen modes override embedded canvas page gestures', () => {
     }
 });
 
+test('fullscreen removes the embedded decorative frame and canvas corner rounding', () => {
+    const frame = desktopCss.split('}').find(part => part.includes('display: flex;'));
+    for (const declaration of ['padding: 0;', 'border: 0;', 'border-radius: 0;', 'box-shadow: none;', 'backdrop-filter: none;']) {
+        assert.ok(frame?.includes(declaration), declaration);
+    }
+    const canvas = desktopCss.split('}').find(part => part.includes('touch-action: none !important;'));
+    assert.ok(canvas?.includes('border-radius: 0;'));
+});
+
 test('p4-Vega disables selection and touch callouts only inside fullscreen gameplay', () => {
     const gameCss = compileString("@use 'pages/p4-vega';", {
         loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],

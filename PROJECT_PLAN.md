@@ -2437,23 +2437,30 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   Portrait HUD offsets and unwanted native outer-page scrolling reported next
   are included in combined build `8.1.0` with the Home fix. Apple has processed
   it; owner export answers are saved and existing internal access is verified
-  (`IN_BETA_TESTING`). Native device acceptance remains pending.
+  (`IN_BETA_TESTING`). The owner accepts those three corrections in `8.1.0`;
+  follow-up native fullscreen, canvas-frame and p4 inner-scroll issues are below.
   See `frontend/ios/BUILDING.md`.
   Provider login follows.
   No roles, public testing, public store submission or website release were
   enabled by this setup.
-- [ ] Before public app release, accept small-screen Home typography and full
+- [x] Before public app release, accept small-screen Home typography and full
   quotes on the iPhone. Implemented locally: smaller welcome/quote text, balanced
   wrapping, separate author and stable normal-flow placement. All 61 quotes fit
   at 320×568 and 844×390; portrait/landscape/desktop visual checks, TypeScript and
   production build passed. This change postdates TestFlight `7.1.0` and is in
-  available internal build `8.1.0`, pending the owner device check. Global Safari
-  edge handling is unchanged.
-- [ ] Accept native fixed-screen layout and p4-Vega portrait HUD in that combined
+  available internal build `8.1.0`, accepted by the owner. Global Safari edge
+  handling is unchanged.
+- [x] Accept native fixed-screen layout and p4-Vega portrait HUD in that combined
   update. Local corrections scope safe insets to fullscreen and lock only the
   outer native document, preserving overflow access for long forms/lists.
   Thirty focused tests, TypeScript/build and simulated portrait bounds passed;
-  owner verification in the installed update is still required.
+  the owner confirms those corrections in `8.1.0`. Subsequent issues remain below.
+- [ ] Accept the follow-up native p4-Vega screen-fit/fullscreen corrections on an
+  installed build. Local fixes preserve rounded inline corners, fit controls
+  without main scrolling, remove fullscreen frame decoration, use in-app CSS
+  fullscreen on iOS, and preserve navigation state across overlapping requests.
+  Forty focused tests, TypeScript and production build pass; a new TestFlight
+  upload and owner device check remain pending. Do not repeat Home/loading tests.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma
