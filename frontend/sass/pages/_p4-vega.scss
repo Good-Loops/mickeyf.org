@@ -382,12 +382,14 @@
     .p4-vega__canvas-wrapper[data-canvas-fullscreen='fallback'] .p4-vega__joystick--fullscreen {
         position: absolute;
         z-index: $front-9;
-        top: 50%;
-        right: 2rem;
+        top: auto;
+        bottom: max(2rem, env(safe-area-inset-bottom));
+        // Reserve the fullscreen exit's 3rem hit box plus 1rem of clearance.
+        right: calc(max(1rem, env(safe-area-inset-right)) + 4rem);
         display: block;
         width: 10.4rem;
         height: 10.4rem;
-        transform: translateY(-50%);
+        transform: none;
 
         .p4-vega__joystick-thumb {
             width: 4.2rem;
@@ -405,7 +407,7 @@
         .p4-vega__canvas-wrapper[data-canvas-fullscreen='fallback']
         .p4-vega__joystick--fullscreen {
         right: auto;
-        left: 2rem;
+        left: max(2rem, env(safe-area-inset-left));
     }
 }
 

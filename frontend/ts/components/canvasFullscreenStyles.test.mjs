@@ -44,6 +44,26 @@ test('all fullscreen modes override embedded canvas page gestures', () => {
     }
 });
 
+test('p4-Vega fullscreen joystick uses safe bottom corners and leaves the exit button clear', () => {
+    const gameCss = compileString("@use 'pages/p4-vega';", {
+        loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],
+    }).css;
+    const rule = gameCss.split('}').find(part => part.includes('.p4-vega__joystick--fullscreen')
+        && part.includes('bottom: max(2rem, env(safe-area-inset-bottom))'));
+    assert.ok(rule);
+    for (const mode of [':fullscreen', ':-webkit-full-screen', '[data-canvas-fullscreen=fallback]']) {
+        assert.ok(rule.includes(`__canvas-wrapper${mode} .p4-vega__joystick--fullscreen`));
+    }
+    assert.ok(rule.includes('top: auto;'));
+    assert.ok(rule.includes('transform: none;'));
+    assert.ok(rule.includes('right: calc(max(1rem, env(safe-area-inset-right)) + 4rem);'));
+    assert.ok(rule.includes('width: 10.4rem;'));
+    assert.ok(rule.includes('height: 10.4rem;'));
+    const leftRule = gameCss.split('}').find(part => part.includes('[data-joystick-side=left]')
+        && part.includes('left: max(2rem, env(safe-area-inset-left))'));
+    assert.ok(leftRule?.includes('right: auto;'));
+});
+
 test('compact Three Bosses fullscreen keeps the exit control at the safe screen corner', () => {
     const gameCss = compileString("@use 'pages/three-bosses';", {
         loadPaths: [fileURLToPath(new URL('../../sass', import.meta.url))],
