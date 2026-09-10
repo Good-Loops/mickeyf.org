@@ -132,6 +132,12 @@ async function verifyUploadTarget(privateKey) {
         'App Store Connect app ID does not match the signed bundle ID.');
 }
 
+export function uploadArguments(ipa, keyId, issuerId) {
+    // Identity/build metadata is verified in the IPA; avoid duplicate CLI overrides.
+    return ['altool', '--upload-package', ipa, '--platform', 'ios', '--apple-id', APP,
+        '--api-key', keyId, '--api-issuer', issuerId, '--wait', '--output-format', 'json'];
+}
+
 function preflight() {
     const config = configuration();
     requireThat(process.env.DEVELOPER_DIR === '/Applications/Xcode_26.6.app/Contents/Developer',
@@ -143,10 +149,10 @@ function preflight() {
         requireThat(`${help.stdout}${help.stderr}`.includes(option), `Pinned Xcode does not expose ${option}.`);
     }
     const altool = run('Read Apple uploader capabilities', 'xcrun', ['altool', '--help']);
-    for (const option of ['--upload-package', '--platform', '--apple-id', '--bundle-id', '--bundle-version',
-        '--bundle-short-version-string', '--api-key', '--api-issuer', '--p8-file-path', '--wait', '--output-format']) {
-        requireThat(`${altool.stdout}${altool.stderr}`.includes(option), `Pinned altool does not expose ${option}.`);
-    }
+    const requiredOptions = uploadArguments('App.ipa', process.env.ASC_KEY_ID, process.env.ASC_ISSUER_ID)
+        .filter(argument => argument.startsWith('--'));
+    const missingOptions = requiredOptions.filter(option => !`${altool.stdout}${altool.stderr}`.includes(option));
+    requireThat(missingOptions.length === 0, `Pinned altool does not expose: ${missingOptions.join(', ')}.`);
     console.log(`Pinned native tools and protected app identifiers verified; build ${config.build}.`);
 }
 
@@ -281,13 +287,13 @@ async function upload() {
         const signing = installSigningMaterial(config);
         const ipa = archiveAndExport(config, signing);
         const info = verifyIpa(config, signing, ipa);
-        const keyPath = join(config.root, 'AuthKey.p8');
-        privateFile(keyPath, process.env.ASC_PRIVATE_KEY_P8);
+        // altool's documented relative key lookup keeps credentials inside owned temp storage.
+        const keyDirectory = join(config.root, 'private_keys');
+        mkdirSync(keyDirectory, { mode: 0o700 });
+        privateFile(join(keyDirectory, `AuthKey_${process.env.ASC_KEY_ID}.p8`), process.env.ASC_PRIVATE_KEY_P8);
         console.log(`Uploading verified internal TestFlight build ${config.build}; no App Review submission.`);
-        run('Apple build upload', 'xcrun', ['altool', '--upload-package', ipa, '--platform', 'ios', '--apple-id', APP,
-            '--bundle-id', BUNDLE, '--bundle-version', config.build, '--bundle-short-version-string', info.CFBundleShortVersionString,
-            '--api-key', process.env.ASC_KEY_ID, '--api-issuer', process.env.ASC_ISSUER_ID, '--p8-file-path', keyPath,
-            '--wait', '--output-format', 'json'], { cwd: config.root, diagnostics: true });
+        run('Apple build upload', 'xcrun', uploadArguments(ipa, process.env.ASC_KEY_ID, process.env.ASC_ISSUER_ID),
+            { cwd: config.root, diagnostics: true });
         appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Internal TestFlight upload command completed\n\nSource commit: ${process.env.GITHUB_SHA}\n\n`
             + `App ${APP}, version ${info.CFBundleShortVersionString}, build ${config.build}.\n\n`
             + 'Apple processing and internal tester assignment remain separate. No public store submission was performed.\n');

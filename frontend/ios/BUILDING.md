@@ -66,6 +66,15 @@ app, exports an internal-only TestFlight IPA and uploads through Apple's tool.
 It removes temporary signing material and signed outputs; neither is uploaded
 as a public Actions artifact. Tool checks on Windows do not prove macOS signing.
 
+The first protected run, `34504646121`, stopped at uploader preflight before
+dependencies, signing credentials or uploads were used: `altool --help` did not
+list `--bundle-id`. The helper now uses the already-verified IPA metadata instead
+of duplicate bundle/version command-line overrides, and Apple's documented
+`./private_keys/AuthKey_<key-id>.p8` lookup inside its owned temporary directory.
+Preflight checks the flags from the actual upload command, not a separate list.
+The corrected signed run still needs runner verification; this was not a
+certificate rejection or an Apple upload failure.
+
 The GitHub `ios-testflight` environment was created and read back on 2026-09-10:
 
 - Only the branch `improvement/clean-code-sweep` is allowed (no tag rule).
