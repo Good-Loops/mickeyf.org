@@ -358,8 +358,10 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    gameplay/authentication checks closed absent a relevant regression.
 4. Retain the dated S7/S8 reassessment boundaries and deferred maintenance list.
    No backend pipeline reactivation, dependency refresh, further deployment or
-   unrelated cloud mutation is implied by this closeout. Next is Phase16's
-   bounded first-party Clean Code inventory, not another release audit.
+   unrelated cloud mutation is implied by this closeout. Phase16's bounded
+   first-party inventory is now recorded in `CLEAN_CODE_INVENTORY.md`; its next
+   slice is the leaderboard detail-loader dependency boundary, not another
+   release audit.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

@@ -1,0 +1,203 @@
+# Clean Code inventory and teaching plan
+
+## Baseline and scope
+
+Recorded 2026-09-10 against `3af15ecbf18d0b277578f2488943648acbc70085`
+(`main` after the p4-Vega release closeout). The baseline has **1,586 tracked
+files**. This document is a new file beyond that baseline.
+
+This is an ownership and subsystem inventory, with targeted source inspection
+to choose the first refactor. It is **not** a claim that every implementation
+has received a line-by-line review. No application code, dependency, database,
+Unity asset, deployed service or running development process changed in this
+pass. Completed release, device and package-script audits stay closed.
+
+Reference: Robert C. Martin, *Clean Code: A Handbook of Agile Software
+Craftsmanship*, the owner's local `C:\Users\User\Desktop\Pastas\Books\CleanCode.pdf`.
+Consulted printed pages 35 (focused functions), 120 (dependency boundaries),
+124 (readable tests) and 138 (responsibilities), corresponding to PDF pages
+66, 151, 155 and 169. The book remains outside the repository. Its examples
+are guidance, not rules requiring tiny functions, classes, wrappers or rewrites
+where those would add more complexity than they remove.
+
+## Tracked-file classification
+
+The source of truth is Git's index, not a recursive scan of the working folder:
+
+```powershell
+git ls-files -z
+git ls-files | Group-Object { ($_ -split '/')[0] } |
+    Sort-Object Count -Descending
+```
+
+Every baseline path was assigned once using the boundaries below. Generated,
+upstream, native and asset paths take precedence over general source/test/file
+extension rules. The remaining 63 non-Unity tooling/configuration paths were
+listed and inspected as a set; they are not an unclassified catch-all.
+Counts total 1,586. Ignored dependencies, caches, local credentials, build
+directories and out-of-repository evidence archives are outside this inventory.
+
+| Class | Files | Boundary and treatment |
+| --- | ---: | --- |
+| First-party implementation | 313 | 208 frontend TypeScript/shaders/Sass and backend TypeScript files, plus 105 Unity runtime/editor C# and WebGL `.jslib` files. Review behavior-preserving changes by subsystem. |
+| First-party tests | 76 | 67 `.test.ts` / `.test.mjs` files across frontend, backend and tooling; 9 Unity C# test files. Counts are files, not passing tests or coverage. |
+| First-party tooling/configuration | 93 | 63 root/build/deploy/dev/editor/web configuration and tool files; 30 Unity project/package/assembly configuration files. Includes TypeDoc source CSS and the web manifest. Existing package-script audit is carried forward. |
+| First-party documentation/references | 18 | Root and subsystem Markdown, agent instructions, design guidance, `docs-src/index.md`, and `resources/colors.txt`. Excludes upstream skill/license text and the captured tree below. |
+| Protected schema migration history | 5 | `backend/migrations/0001` through `0005`. Do not rewrite or delete applied history. Executable migration/recovery code is included in first-party implementation, not assumed disposable. |
+| Project-controlled native scaffolds/assets | 65 | Remaining `frontend/android/**` and `frontend/ios/**`, including Java/Swift entry points, example tests, resources and project files. Classify template remnants before changing them; preserve the Capacitor direction. |
+| Project-controlled media/serialized content | 334 | 33 web artwork/audio/sprite-data files and 301 Unity scenes, prefabs, animation/material/data/settings/media files. Not conventional source refactoring targets; preserve references, attribution and embedded C2PA Content Credentials (provenance, not secrets). |
+| Required Unity project metadata | 478 | Project `.meta` files outside the third-party group. These carry GUID/import settings and are not disposable generated junk. |
+| Generated TypeDoc | 96 | `docs/**`. Change the source/configuration and regenerate when relevant; do not hand-refactor the generated site. |
+| Generated Unity release | 5 | Four content-addressed files in `frontend/public/unity/three-bosses/releases/**` plus `build-manifest.json`. Preserve exact release bytes and provenance; use the release pipeline for changes. |
+| Generated dependency locks | 5 | Four npm lockfiles and Unity `Packages/packages-lock.json`. Update through the appropriate dependency workflow, not a stylistic rewrite. |
+| Generated Capacitor wiring | 2 | Android `app/capacitor.build.gradle` and `capacitor.settings.gradle`, explicitly marked generated. |
+| Upstream tools/fonts/resources/notices | 95 | 11 Unity CLI skill files; 80 TextMesh Pro/Oxanium files including their metadata; `UNITY_COMPANION_LICENSE.md`; 3 Gradle wrapper files. Preserve attribution and update through upstream workflows. |
+| Captured legacy directory listing | 1 | `resources/project-structure.txt` includes old paths and machine-generated directory output. A documentation follow-up, not a current inventory or authority for deletion. |
+
+Ownership evidence for Unity content comes from
+`unity/three-bosses/ASSET_PROVENANCE.md` and
+`unity/three-bosses/THIRD_PARTY_NOTICES.md`; it is not a new legal review. Generated artwork is
+still project content, unlike generated executable/build output. Native
+scaffolding is not automatically third-party code to discard simply because
+it started from a template.
+
+### Subsystem review queue
+
+All areas are inventoried; only the named candidate below has been selected
+for implementation. Later entries remain review scopes, not a commitment to
+refactor everything in them.
+
+| Area | Review boundary | Current decision |
+| --- | --- | --- |
+| Leaderboard UI/data loading | `frontend/ts/pages/leaderboards`, hub page, transport/service boundary and route tests | First slice: isolate the existing detail-state loader, described below. |
+| Shared shell/forms/services/styles | `App`, `Header`, components, context, hooks, layout, auth pages/services and `frontend/sass` | Review after the first slice; preserve accessibility and accepted Safari behavior. Do not start with tiny repeated click handlers. |
+| Games | `frontend/ts/games`, game pages, help/results and bridge modules | Inspect responsibilities and lifecycles, preserving newly accepted gameplay, 1000-point policy, faster diagonal movement and touch/scroll boundaries. No generic release retest. |
+| Animations/audio/math | `frontend/ts/animations`, music controls, shared utilities and public facades | Review ownership of renderer/audio/timing cleanup and pure calculations; retain artistic behavior. |
+| Backend | `backend/ts` configuration, controllers, routers, middleware, repositories, security, migrations and public contracts | Later candidate: duplicated Three Bosses mutation preconditions. Preserve ordering, DTOs, gates, credentials and persistence. Not the first slice because its security-sensitive surface is larger. |
+| Unity | Custom `Assets/Scripts`, `Editor`, `Plugins/WebGL` and `Tests` | Review source responsibilities separately from serialized content. Any later scene/asset mutation uses the established Unity workflow and preserves GUIDs. |
+| Native platforms | Android/iOS entry points, resources and configuration | Inventory complete; substantive review stays aligned with the native/PWA phase and available platform checks. |
+| Tooling/configuration/docs | Root, `.github`, `.githooks`, `.vscode`, `scripts`, `docs-src`, `design`, `resources`, subsystem docs | Preserve deployment boundaries. The old directory listing and outdated backend paths in `.github/copilot-instructions.md` are concrete documentation follow-ups; do not repeat the completed package audit. |
+
+## First slice: isolate the leaderboard detail-state loader
+
+### Existing code and the cost of its placement
+
+`frontend/ts/pages/leaderboards/GameLeaderboard.tsx:13-90` defines the detail
+state and loading decisions alongside the React page. The function already
+accepts injected readers, which is a good foundation. However, its default
+readers come from `leaderboardService`, which imports environment configuration
+and constructs the configured API client.
+
+Current code, abbreviated only to show the dependency boundary:
+
+```ts
+// GameLeaderboard.tsx
+export async function loadGameLeaderboardState(
+    gameId: string | undefined,
+    signal?: AbortSignal,
+    readers: LeaderboardDetailReaders = {
+        readCatalog: getLeaderboardCatalog,
+        readGame: getGameLeaderboard,
+    }
+): Promise<SettledDetailState> {
+    // Existing catalog selection, result validation and error decisions.
+}
+```
+
+`leaderboardRoutes.test.mjs:16-38` starts Vite in middleware mode and loads
+the `.tsx` module even for the injected-reader logic case at line 320. Vite
+is appropriate for its JSX/view tests; it should not be required just to test
+how a catalog/read result becomes `success`, `not-found` or `error`.
+
+### Proposed change — not implemented in this inventory
+
+Move the existing state/types/loader into adjacent
+`frontend/ts/pages/leaderboards/leaderboardDetailState.ts`. Import DTO types
+and `LeaderboardRequestError` directly from `../../services/leaderboardApi.ts`,
+not the environment-configured `leaderboardService`.
+
+Illustrative new signature (the omitted body retains the existing decisions):
+
+```ts
+// leaderboardDetailState.ts
+export async function loadGameLeaderboardState(
+    gameId: string | undefined,
+    signal: AbortSignal | undefined,
+    readers: LeaderboardDetailReaders
+): Promise<SettledDetailState> {
+    // Same loading decisions; no React or environment-configured client.
+}
+```
+
+The page supplies its already-existing real services explicitly:
+
+```ts
+const nextState = await loadGameLeaderboardState(
+    gameId,
+    abortController.signal,
+    { readCatalog: getLeaderboardCatalog, readGame: getGameLeaderboard }
+);
+```
+
+This is **dependency injection** in its simplest form: pass the collaborators
+a function needs as arguments. No container, service hierarchy or generic
+fetch framework is needed. The page owns the effect, retry, cancellation and
+rendering; the loader owns the catalog/result-to-state decisions; the transport
+owns HTTP and payload validation.
+
+The benefit is not moving lines into a shorter file. It is making the
+dependency boundary real and making the loader independently testable. The
+loader is still asynchronous and performs I/O through its supplied readers;
+it is not a mathematically pure function. The trade-off is one extra module
+and explicit arguments at the call site, justified by independent logic tests.
+
+### Behavior to preserve and proportionate verification
+
+- Keep catalog-first loading, no game read for missing/unknown routes, and the
+  same AbortSignal passed to both reads.
+- Preserve the rules-version mismatch error, `UNKNOWN_GAME` recovery links,
+  selected-game context on ordinary errors and cancellation propagation.
+- Keep the React effect's abort guard/cleanup, dependency array, retry callback,
+  rendered markup, focus behavior, labels and table formatting unchanged.
+- Use the same `LeaderboardRequestError` module identity within each test
+  runtime; mixing a Node-loaded class with a Vite-loaded class can break
+  `instanceof` even when their source is identical.
+- Move the relevant existing loader assertions into direct Node tests; add
+  focused signal/cancellation cases if missing. Retain Vite SSR view/hub tests.
+  The full route suite still uses Vite: no claim that the entire suite becomes
+  Vite-free or substantially faster.
+- When implementing, run the complete relevant frontend checks once:
+  `npm --prefix frontend test` and `npm --prefix frontend run build`, plus a
+  bounded browser check of unchanged leaderboard rendering. No real accounts,
+  score writes, database migration, Unity rebuild or device campaign is needed.
+
+Finish that slice with a reviewed diff and commit/sync before choosing another
+subsystem. Do not combine it with new caching, new state libraries, table
+redesigns or backend authorization changes.
+
+## Learning-oriented handoff for each future change
+
+The owner requested on 2026-09-10 that improvements be taught, not merely
+performed. Each implementation handoff should show:
+
+1. The actual before-code and the concrete maintenance problem it creates.
+2. The focused after-code/diff, explaining the principle and how this project
+   uses it; distinguish code movement from a genuine dependency improvement.
+3. Behavior preserved, relevant edge cases, verification actually performed
+   and its limits. Label illustrative/proposed code clearly.
+4. The trade-off, including when the same abstraction would be unnecessary.
+
+For example, identical backend-looking configuration readers were not selected
+for consolidation: runtime strings can trim whitespace, migration passwords
+must preserve it, and cleanup credentials must not silently fall back to
+runtime credentials. Similar syntax does not imply identical policy.
+
+## Inventory closeout
+
+Read-only Git/path enumeration, local reference reading and targeted frontend/
+backend/tooling inspection completed. The classification sum covers all 1,586
+baseline paths; no cleanup tooling or per-file generated manifest was added.
+Only this inventory and roadmap documentation change in this pass. No tests,
+builds, dependency installations or production checks were run because no
+application behavior changed. Validation is limited to inventory consistency,
+documentation links and `git diff --check`.

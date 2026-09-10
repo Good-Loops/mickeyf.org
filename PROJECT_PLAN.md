@@ -2271,6 +2271,26 @@ improving the game incrementally; the owner approved extending completion to 100
 
 ## Phase 16 — Whole-project Clean Code sweep
 
+**2026-09-10 inventory checkpoint:** classified all 1,586 tracked files at
+`3af15ecb` by ownership and purpose; this is not a completed line-by-line code
+review. See [CLEAN_CODE_INVENTORY.md](CLEAN_CODE_INVENTORY.md) for the complete
+category totals, subsystem queue, protected/generated boundaries and teaching
+example. The active branch is `improvement/clean-code-sweep`.
+
+- [x] Inventory tracked first-party, generated, native and third-party areas.
+- [ ] First code slice: extract the existing leaderboard detail-state loader
+  from `GameLeaderboard.tsx` into a React/environment-independent adjacent
+  module with explicit readers; separate its logic tests from JSX/view tests.
+  Keep effect cleanup, rendering, HTTP contracts and behavior unchanged.
+- [ ] Complete subsequent subsystem reviews one at a time; choose actual
+  improvements from evidence, not file length or similar-looking syntax.
+
+**Learning handoff:** show actual before/after code for each implementation,
+explain the project boundary and general coding principle, state trade-offs and
+preserved behavior, and report checks actually run. Proposed examples must be
+clearly distinguished from implemented changes. The inventory's first example
+is proposed only; no application refactor has happened yet.
+
 After Three Bosses and the p4-Vega improvement phase are stable, inspect every
 tracked first-party source, test, configuration, and documentation area using
 Robert C. Martin's *Clean Code: A Handbook of Agile Software Craftsmanship* as
