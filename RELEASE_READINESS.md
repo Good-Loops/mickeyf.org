@@ -19,13 +19,13 @@ history; the publication closeout records the final delivery checks.
 | ID | Status | Evidence and remaining boundary |
 | --- | --- | --- |
 | S1 | Fixed; dated production acceptance | Receipt migration, exact SQL runtime/operator grants, preservation checks, temporary-account removal, 64 enabled HTTP acceptance assertions and 36 promotion assertions are complete. Do not repeat migrations or synthetic-account acceptance. These are not browser-cookie tests. |
-| S2 | Fixed; scoped live readback | On 2026-09-10, Cloud Run generation/observed generation135 serves 100% intended/observed traffic to `mickeyf-org-p4-1000-6c5a8859-0910`, image `6c5a8859…6331`. Complete runtime comparison preserved numeric DB/session secret references1/2, runtime identity, Cloud SQL attachment, flags and resource settings. Earlier scoped IAM/grant findings are carried forward, not re-enumerated by this image/traffic-only rollout. The receipt-compatible prior revision remains the rollback target. |
+| S2 | Fixed; scoped live readback | On 2026-09-10, final Cloud Run generation138 serves 100% traffic to `mickeyf-org-ios-origin-a1f3ea43-0910`, image `90a9bca6…646d1`, with no tags. Runtime/configuration are unchanged; `mickeyf-org-p4-1000-6c5a8859-0910` remains intact for rollback. All six live preflights and the unauthenticated session probe passed. Earlier scoped IAM/grant findings are carried forward, not re-enumerated by this CORS-only rollout. |
 | S3 | Fixed; source and live control checks | Backend build contexts exclude local environment/dependency/generated files; Docker remains pinned, multistage and non-root. All four existing global backend build/deploy triggers are disabled; none are configured in `us-central1`. Reviewed frozen deployment/traffic guards remain. Do not re-enable triggers or route traffic as part of verification. |
 | S4 | Fixed; operational acceptance | Manual cleanup/retry acceptance, hourly activation and exact first natural execution `zjpfg` succeeded. One-off follow-up was deleted. Permanent bests remain independent of receipt deletion. No extra cleanup dispatch is needed. |
 | S5 | Fixed; scoped live readback | At 2026-09-09 02:12:46 UTC, read-only Monitoring API requests verified all three enabled ERROR policies, their exact filters/conditions/alert strategies and sole approved channel against the activation snapshots. The email channel is enabled and its recipient matches the owner's choice. The API resolved the readback blocker without installations or permission changes; browser/CLI repair is not claimed. This is configuration evidence, not a new incident or email-delivery test. |
 | S6 | Fixed; merged | PR #322 brought the reviewed dependency fixes into main. GitHub's post-merge push report lists only the previously accepted moderate alert #287. At the initial reconciliation, 13 of 14 alerts mapped to branch fixes: eight `fast-uri`, two `qs`, and three `xmldom`. This is distinct from the subsequent CI audit findings in S12. |
 | S7 | Accepted; bounded and expiring | Deployment-only `stream-json` 1.9.1, GHSA-528h-pc64-c93x, remains under the owner's static-Hosting-only exception through 2026-10-07 or earlier reassessment triggers. Firebase 15.28.1, locked install, high audit gate and eight-minute deployment timeout remain. No import/framework pipeline expansion or major override is accepted. |
-| S8 | Accepted; bounded and expiring | The owner explicitly approved the exact p4 release image `6c5a8859…6331` on 2026-09-10 through 2026-10-07 with the existing earlier-reassessment triggers retained. The historical receipt-image exception and the new exact-image evidence/approval are recorded below. This is risk acceptance, not an OpenSSL fix or blanket approval for subsequent images. Clean OS/NPM/SECRET scans do not certify the embedded component. |
+| S8 | Accepted; bounded and expiring | On 2026-09-10 the owner renewed the exception through 2026-10-07 for the now-deployed CORS-only image `90a9bca6…646d1`, limited to the matching unchanged-runtime/base/dependency replacement and existing earlier-reassessment triggers. Exact build/rollout evidence and historical receipt/p4-image approvals are below. This is risk acceptance, not an OpenSSL fix or blanket approval for subsequent images. Clean OS/NPM/SECRET scans do not certify the embedded component. |
 | S9 | Fixed; tested CI checkpoint | Authorized non-deploying run `34301221560` passed both jobs on `3ea379fe`: dependency validation/audits, frontend tests/build, WebGL package/tooling checks, backend unit/MySQL integration tests/build, docs watcher tests/docs build and Unity static integrity. All reported test summaries had zero skips. This supersedes failed run `34300667096`; it is not a Unity rebuild or a browser/device test. A PR with required checks/CodeQL on its eventual merge head remains a separate gate. |
 | S10 | Fixed controls; limited scan coverage | Main ruleset requires PR/thread resolution, strict Web/Unity checks and CodeQL errors/high-or-higher protection, with no bypass actors. Zero open code/secret-scanning alerts were observed; main CodeQL evidence covers `2bffc0db`, not this branch. Push protection is enabled; non-provider patterns and validity checks are disabled. Zero alerts is not proof that no secret exists. |
 | S11 | Deferred; local maintenance | Active backend install still has `qs` 6.15.3 versus locked 6.16.0. Isolated locked tests already passed. Refresh only during a deliberate development-stack stop; do not use the stale install as release evidence or modify running dependencies silently. |
@@ -421,16 +421,34 @@ The following release sequence is complete; it is not a fresh checklist to rerun
    **Ready to Test**, replacing the initial `MISSING_EXPORT_COMPLIANCE` state.
    **Ludolume Internal** contains only build `4.1.0` and the existing Account
    Holder as its sole tester, with automatic distribution disabled. The owner
-   installed TestFlight version 1.0/build `4.1.0` on the iPhone and confirms games
-   and controls work. Native authentication is not accepted: password login
-   reports “could not reach server”; live preflight confirms the missing native
-   origin allowance. No roles, public
-   testing, public store submission or website/backend release were enabled.
-   An exact `capacitor://localhost` backend allowance is prepared, not deployed;
+   installed TestFlight version 1.0/build `4.1.0` on the iPhone. Other tested
+   functionality is reported working, but p4-Vega shows “The game could not
+   load. Please refresh to try again.”; its cause remains unproven. After the
+   CORS rollout below, the owner confirms password login works, but fully closing
+   and reopening the app loses the session. Signup has not been rechecked.
+   Native p4-Vega and session persistence are not accepted. No roles, public
+   testing, public store submission or website release were enabled.
+   The exact `capacitor://localhost` backend allowance is now live;
    14 focused configuration/authorization tests and backend TypeScript passed.
-   Deployment approval and iPhone session verification are pending. Native auth
-   acceptance remains scoped to the following provider-login milestone, not
-   the initial signed gameplay-build checkpoint. See `frontend/ios/BUILDING.md`.
+   The owner approved this CORS-only deployment and renewed S8 only for a matching
+   unchanged-runtime/base/dependency replacement through **2026-10-07**. The same
+   earlier-review triggers remain: a patched supported Node release, relevant
+   image/code/runtime dependency/configuration changes, native/FFI/provider/
+   cipher/protocol expansion, or a relevant advisory/incident. This is temporary
+   risk acceptance, not remediation or blanket approval for later images.
+   Cloud Build `c25d3432-10dc-4f23-b795-87cfde6b9300` built source
+   `a1f3ea4331ea28f7477a7addfd21d34ecd13d39e` as
+   `sha256:90a9bca6bbd44f5b7d05c944a6443e3692538089a9e1aafdca8983c80b7646d1`.
+   PR #332 merged as `ff9c79bedb1b3c8ca4e671ed8a9ac00739863f80`. Stage job
+   `67dfa5dc-f380-404f-bf4c-bb872977e5e9`, promotion
+   `8c7dba8f-7b8b-4fb8-92b1-a11cc54d277f` and tag cleanup
+   `502741da-8d94-4375-afdd-c800e22d3264` all succeeded. Final generation138
+   serves 100% on `mickeyf-org-ios-origin-a1f3ea43-0910` with no tags; runtime/
+   configuration and rollback revision `mickeyf-org-p4-1000-6c5a8859-0910` are
+   intact. All six live preflights and the unauthenticated session probe passed.
+   The temporary branch/worktree were removed, leaving only `main` and the
+   active branch. Native session persistence remains under investigation, and
+   signup needs device confirmation. See `frontend/ios/BUILDING.md`.
 
 Accepted operational limits remain: expired receipt IDs lose historical retry
 recognition; failures/backlog can extend retention; expired receipts require a

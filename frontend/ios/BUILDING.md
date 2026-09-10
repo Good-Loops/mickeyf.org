@@ -80,9 +80,12 @@ The **Ludolume Internal** group (`c610a469-a86a-4e0f-9a8b-c83809230442`) now sho
 **1 Tester · 1 Build**, with the existing Account Holder as sole tester and only
 build `4.1.0` assigned. Automatic distribution is disabled; future builds require
 manual assignment. The owner installed TestFlight version 1.0/build `4.1.0`
-on the iPhone and confirms games and controls work. Installation/gameplay is
-accepted; native authentication is not: password login reports “could not reach
-server” and diagnosis is active. No roles or public testing were enabled.
+on the iPhone. Other tested functionality is reported working, but p4-Vega shows
+“The game could not load. Please refresh to try again.” After the CORS rollout
+below, the owner confirms password login works, but fully closing and reopening
+the app loses the session. Signup has not been rechecked. Installation/login
+are accepted, not native p4-Vega or session persistence. The image-loader cause
+remains unproven. No roles or public testing were enabled.
 The workflow did not answer the compliance questionnaire or make a public store
 submission or website/backend release.
 
@@ -200,9 +203,9 @@ API access verified 2026-09-10 after the owner accepted Apple's API-use agreemen
 
 Those initial API checks proved authentication and record reads. The successful
 protected run now verifies runner key consumption, signed compilation and
-TestFlight upload. The owner accepted installation/gameplay on the iPhone;
-native authentication remains unverified and its reported failure is under
-investigation.
+TestFlight upload. The owner installed the app and confirms password login after
+the CORS rollout; native p4-Vega and session persistence remain unresolved, and
+signup has not been rechecked.
 Do not expose the P8 or minted JWTs in logs, source, artifacts or chat.
 
 For subsequent signed uploads and device acceptance:
@@ -220,22 +223,30 @@ For subsequent signed uploads and device acceptance:
 4. Review the exact source commit and approve the protected manual signing job.
    It uses unique build numbers and temporary-keychain cleanup. Uploading to
    TestFlight does not authorize public App Store submission or release.
-5. Build `4.1.0`'s compliance, tester setup and iPhone installation/gameplay check
-   are complete. Future declarations still require the owner's answers when
-   Apple requests them. Resolve the native login failure before claiming
-   auth/session acceptance; installation does not prove authentication readiness.
+5. Build `4.1.0`'s compliance, tester setup and iPhone installation are complete.
+   Future declarations still require the owner's answers when Apple requests
+   them. Login now works; resolve native p4-Vega loading and session persistence,
+   and confirm signup before accepting those paths. Installation does not prove
+   gameplay or full authentication readiness.
    Preserve the PWA and Android tracks.
 
 First native-device acceptance limits identified on 2026-09-10:
 
-- The live production CORS policy still excludes `capacitor://localhost`:
-  its login preflight returned 204 without `Access-Control-Allow-Origin`, while
-  the website origin was allowed and the session endpoint responded normally.
-  A backend-only correction adds that exact iOS origin (not HTTP localhost,
-  wildcard origins, or Android) and retains authentication checks. Deployment
-  approval and iPhone login/session/logout verification remain pending; CORS
-  permission alone does not prove cookie persistence. Native auth belongs to the
-  provider-login milestone; this correction has not been deployed.
+- The live production CORS policy now allows exactly `capacitor://localhost`.
+  Its initial login preflight lacked `Access-Control-Allow-Origin`; the approved
+  backend-only correction adds that exact iOS origin (not HTTP localhost,
+  wildcard origins, or Android) and retains authentication checks. The owner
+  approved its CORS-only deployment and renewed the temporary Node/OpenSSL
+  exception through 2026-10-07 only for the matching unchanged-runtime/base/
+  dependency replacement, with earlier-review conditions unchanged. Source
+  `a1f3ea4331ea28f7477a7addfd21d34ecd13d39e` is deployed at generation138,
+  revision `mickeyf-org-ios-origin-a1f3ea43-0910`, serving 100% with no tags and
+  unchanged runtime/configuration. All six live preflights and the unauthenticated
+  session probe passed; the prior p4 revision remains intact for rollback.
+  See `RELEASE_READINESS.md` for exact build/rollout evidence and exception scope.
+  The owner confirms login now works; persistence across full close/reopen fails
+  and signup has not been rechecked. CORS permission is not cookie-persistence
+  acceptance; that diagnosis remains in the native-auth milestone.
 - Check Three Bosses' packaged asset URLs in WKWebView on the device; a custom
   scheme behaves differently from a normal website origin. Desktop URL parsing
   alone is not proof of a device failure or success.

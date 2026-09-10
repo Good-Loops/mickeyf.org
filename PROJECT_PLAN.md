@@ -2423,11 +2423,14 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   on 2026-09-10; the live App Store Connect UI now confirms **Ready to Test**.
   The **Ludolume Internal** group has one tester (the existing Account Holder)
   and only build `4.1.0`; automatic distribution is disabled. The owner installed
-  TestFlight version 1.0/build `4.1.0` on the iPhone and confirms games and
-  controls work. This accepts installation/gameplay, not native authentication:
-  password login reports “could not reach server” and diagnosis is active.
-  No roles, public testing, public store submission or website/backend release
-  were enabled by this setup.
+  TestFlight version 1.0/build `4.1.0` on the iPhone. The owner reports other
+  tested functionality working, but p4-Vega shows “The game could not load.
+  Please refresh to try again.” After the CORS rollout below, the owner confirms
+  password login works, but the session is lost after fully closing and reopening
+  the app; signup has not been rechecked. Installation/login are accepted, not
+  native p4-Vega or session persistence. An image-loader cause is unproven.
+  No roles, public testing, public store submission or website release were
+  enabled by this setup.
 - [x] Create matching celestial/glass Ludolume native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma
@@ -2439,8 +2442,16 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   before linking an existing account, never match solely on an email string.
   Web and native clients need their own provider configuration and approved
   sign-in flows; do not load Google OAuth inside Capacitor's embedded WebView.
-  The live backend excludes the native Capacitor origin. The exact iOS-origin
-  correction is prepared and locally verified; deployment approval is pending.
+  The owner approved the CORS-only backend deployment for exactly
+  `capacitor://localhost`, and renewed the same temporary Node/OpenSSL exception
+  through 2026-10-07 only for the matching unchanged-runtime/base/dependency
+  replacement, with earlier-review conditions unchanged. PR #332 merged as
+  `ff9c79bedb1b3c8ca4e671ed8a9ac00739863f80`. The reviewed image from source
+  `a1f3ea4331ea28f7477a7addfd21d34ecd13d39e` now serves 100% at generation138,
+  revision `mickeyf-org-ios-origin-a1f3ea43-0910`, with no temporary tags and
+  unchanged runtime/configuration. All six live preflights and the unauthenticated
+  session probe passed; the prior p4 revision remains intact for rollback.
+  Exact build/deployment evidence and scope are in `RELEASE_READINESS.md`.
   Native login/session acceptance and that scoped origin change belong to this
   provider-login milestone, not the initial signed gameplay-build checkpoint.
 - [ ] Configure Apple's primary Sign in with Apple App ID, web Services ID,
@@ -2449,8 +2460,8 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
 - [ ] Review native session persistence, privacy disclosures, account deletion,
   provider disconnect/revocation and current store policies before submission.
 - [ ] Complete Android internal testing and obtain separate approval for each
-  public store release. The iPhone TestFlight installation/gameplay check is
-  accepted above; native authentication remains pending.
+  public store release. iPhone installation/login are accepted; native p4-Vega,
+  session persistence and the unverified signup path remain open as recorded above.
 
 Primary references checked 2026-09-10:
 [Capacitor build requirements](https://capacitorjs.com/docs/getting-started/environment-setup),
