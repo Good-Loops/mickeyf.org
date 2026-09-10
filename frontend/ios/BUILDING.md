@@ -48,6 +48,33 @@ OS launch screen, not an added timed loading overlay.
 
 ## Next stage: signed TestFlight builds
 
+The GitHub `ios-testflight` environment was created and read back on 2026-09-10:
+
+- Only the branch `improvement/clean-code-sweep` is allowed (no tag rule).
+- `Good-Loops` is a required reviewer. Self-review remains available because the
+  owner also starts manual runs; otherwise a sole operator could not approve them.
+  The owner should review the exact source commit in GitHub before approving a
+  signing run. This is a release checkpoint, not two-person separation of duties.
+- No Apple secrets or variables have been stored, and no signed/upload workflow
+  has been enabled. Creating this environment does not start a build or publish.
+- When rolling the active branch, explicitly update its exact branch policy;
+  do not replace it with a broad wildcard to work around a blocked run.
+
+Keep signing credentials in this environment, not repository-wide secrets:
+
+| Planned secret | Purpose |
+| --- | --- |
+| `IOS_DISTRIBUTION_P12_BASE64` | Distribution certificate and its private signing key |
+| `IOS_DISTRIBUTION_P12_PASSWORD` | Password protecting that signing identity |
+| `IOS_PROVISION_PROFILE_BASE64` | Apple profile authorizing this app ID and certificate |
+| `ASC_PRIVATE_KEY_P8` | App Store Connect API authentication key |
+
+Team ID, API key ID, issuer ID and the numeric App Store Connect app ID are
+non-secret identifiers to confirm from Apple. Generate the temporary runner
+keychain password per job; never expose keys through logs or public artifacts.
+App registration and credentials remain prerequisites, not inferred from the
+existing local bundle ID or the owner's Developer Program membership.
+
 Before adding a signing/upload job:
 
 1. Confirm `org.mickeyf.app` is the intended and available Apple bundle ID;

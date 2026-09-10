@@ -2376,6 +2376,10 @@ app ID `org.mickeyf.app`; this is not proof of an App Store/Play registration.
   still unverified; the local Java/Android SDK toolchain is not configured.
   See `frontend/ios/BUILDING.md`; no signing credentials, paid service, TestFlight
   upload or public store release has been activated.
+  Signing preparation (2026-09-10): created and verified the `ios-testflight`
+  GitHub environment, restricted to the current development branch with owner
+  review required. It is empty of secrets; Apple app registration, team identity
+  and credentials must be confirmed before enabling a signing/upload workflow.
 - [x] Create matching celestial/glass BeatCalc native icons and launch artwork.
   Sources and prompts live in `frontend/resources/README.md`. Android adaptive
   icons have a real alpha foreground, extracted using the owner-approved chroma
