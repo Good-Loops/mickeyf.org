@@ -95,23 +95,28 @@ No roles or public testing were enabled.
 The workflow did not answer the compliance questionnaire or make a public store
 submission or website/backend release.
 
-App Store Connect's Add Build view was checked again on 2026-09-10: builds
-`4.1.0` through `9.1.0` display the correct cosmic-controller icon, while the
-app-record header and owner's App Store Connect iPhone app show a placeholder.
-The draft App Store version has no selected build; every current build is
-Internal Only and its selection is disabled. Local icon configuration is valid
-(opaque RGB 1024x1024 asset, correct AppIcon target/resource selection).
-This supports a listing/build-association issue, not missing packaged artwork;
-Apple's placeholder refresh behavior remains unverified. On 2026-09-10 the owner
+App Store Connect's placeholder icon was traced on 2026-09-10 to the draft
+version having no eligible build selected. Builds `4.1.0` through `9.1.0` already
+contained the correct cosmic-controller icon but were Internal Only, making
+them unavailable for draft association. The opaque RGB 1024x1024 AppIcon asset
+and target/resource configuration were valid and remain unchanged. The owner
 approved a store-eligible upload and draft association, explicitly without App
 Review submission or release. The workflow now exposes that eligibility as an
-opt-in choice; internal-only remains the default. Artwork is unchanged.
-The first approved `app-store-draft` upload was dispatched as
+opt-in choice; internal-only remains the default.
+
+The approved `app-store-draft` upload succeeded in
 [run 34542319206](https://github.com/Good-Loops/mickeyf.com/actions/runs/34542319206)
 at exact commit `39fcfd7452d867adff5957e2d64df263b9fd201d` (build `10.1.0`).
-Upload/processing and draft attachment are not yet verified. App Store Connect
-redirected the operator browser to sign-in after the Test Information save;
-the owner must sign back in before draft attachment can continue.
+All 226 frontend tests and four signing-helper tests passed, including signed
+upload and signing-material/output cleanup. Apple reports build
+`75f00fc4-375c-4068-996b-09b4695f7872` as `VALID` and `APP_STORE_ELIGIBLE`.
+After the owner signed back in, draft version `1.0` was associated with this
+build and saved; the API confirms it remains `PREPARE_FOR_SUBMISSION`.
+Returning to the Apps listing now displays the correct controller icon, verified
+visually in Chrome. The owner's iPhone App Store Connect cache was not checked.
+No App Review submission, release, or external tester assignment was performed.
+Build `10.1.0` still needs the owner's export-compliance declaration; its blank
+questionnaire is open in Chrome. No answers were selected on the owner's behalf.
 See Apple's [build selection](https://developer.apple.com/help/app-store-connect/manage-builds/choose-a-build-to-submit)
 and [distribution methods](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases).
 
