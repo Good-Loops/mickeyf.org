@@ -2553,19 +2553,27 @@ the support-message and backup-retention work below.
   provider retention/deletion and consent-withdrawal behavior before integration.
   Adult verification is distinct from guardianship and each consent choice;
   validate results and enforce separate publication permissions on the backend.
-  Public terms/DPA/technical review completed 2026-09-11; no acceptance or
-  activation. KWS Parent Verification alone does not obtain consent. Consent
-  Management integration and required fields need confirmation; service-specific
-  controller/processor roles differ, so do not describe all KWS data as ours to
-  erase. Its DPA's 30-day termination download window is not a deletion deadline.
-  Obtain pending-request cancellation/expiry, live/backup/consent-record deletion
-  terms, CM signed revocation events and missed-event reconciliation, and the
-  applicable Brazil transfer safeguard. Portal-account deletion revokes game
-  permissions but does not delete the game's child accounts; enforce our own
-  approved lifecycle with private defaults. AgeGraph opt-out is separate.
+  Deep public terms/privacy/technical review completed 2026-09-11. The owner
+  approved proceeding with KWS Parent Verification plus Ludolume-managed consent;
+  no agreement accepted or service activated. PV alone does not obtain consent.
+  Full KWS Consent Management is not an immediate integration requirement.
+  Confirm parent-email ownership and bind each verified result to the correct
+  authenticated parent/attempt; AgeGraph recognition alone is not ownership.
+  Service-specific controller/processor roles differ, so do not describe all KWS
+  data as ours to erase. Its DPA's 30-day termination download window is not a
+  deletion deadline. Resolve only the remaining provider evidence: individual
+  request/link expiry, cancellation and data deletion (including backups and
+  independently controlled records); the relevant Brazil processing/transfer
+  safeguards and enabled methods; and the current authenticated API contract,
+  including result binding, duplicate delivery and retry behavior. Enforce our
+  own approved consent/withdrawal/deletion lifecycle with private defaults.
+  AgeGraph opt-out is separate from local consent withdrawal and account deletion.
   The owner must review broad indemnities and the standard GBP 100 liability
-  cap before accepting. A focused enquiry is prepared privately, not sent;
-  public-document review need not be repeated absent a material change.
+  cap before accepting. The narrowed enquiry is prepared privately, not sent;
+  the official route is an Epic support private discussion under Kids Web Services,
+  currently awaiting the owner's sign-in. Do not post it to the public forum or
+  send private policy/contact records. Public-document review need not be
+  repeated absent a material change.
   Check relevant regional game-distribution prerequisites (including mainland
   China and Vietnam) against the actual app; no country exclusion is approved
   merely by listing this work. Review automatic future-storefront expansion
