@@ -2564,8 +2564,8 @@ the support-message and backup-retention work below.
   opt-in for public leaderboards on the server, not only in the UI. Withdrawing
   public-display permission must remove that visibility without forcing loss
   of private results. Do not recreate a permanent history of all game runs.
-- [ ] **Unfinished signup/consent retention (proposed 2026-09-11; owner approval
-  pending):** recommend 24-hour expiry for a future adult email-verification attempt
+- [ ] **Unfinished signup/consent retention (approved 2026-09-11; implementation
+  pending):** use 24-hour expiry for a future adult email-verification attempt
   and seven-day expiry for an adult-initiated parental-consent attempt. Current
   signup creates normal accounts immediately; do not relabel or expire existing
   users under a pending-registration rule. Minimize preliminary data, use the
