@@ -2555,25 +2555,29 @@ the support-message and backup-retention work below.
   validate results and enforce separate publication permissions on the backend.
   Deep public terms/privacy/technical review completed 2026-09-11. The owner
   approved proceeding with KWS Parent Verification plus Ludolume-managed consent;
-  no agreement accepted or service activated. PV alone does not obtain consent.
+  PV alone does not obtain consent.
   Full KWS Consent Management is not an immediate integration requirement.
   Confirm parent-email ownership and bind each verified result to the correct
   authenticated parent/attempt; AgeGraph recognition alone is not ownership.
   Service-specific controller/processor roles differ, so do not describe all KWS
   data as ours to erase. Its DPA's 30-day termination download window is not a
-  deletion deadline. Resolve only the remaining provider evidence: individual
-  request/link expiry, cancellation and data deletion (including backups and
-  independently controlled records); the relevant Brazil processing/transfer
-  safeguards and enabled methods; and the current authenticated API contract,
-  including result binding, duplicate delivery and retry behavior. Enforce our
-  own approved consent/withdrawal/deletion lifecycle with private defaults.
+  deletion deadline. Resolve provider-data handling and relevant Brazil
+  processing/transfer safeguards before real-data activation, including request
+  expiry, cancellation, refusal and deletion of independently controlled records
+  and backups. Confirm the authenticated API contract, result binding, duplicates
+  and retries during implementation, not as a broad enquiry blocker. Enforce our
+  own consent/withdrawal/deletion lifecycle with private defaults; independent
+  development can continue while awaiting provider evidence.
   AgeGraph opt-out is separate from local consent withdrawal and account deletion.
   The owner must review broad indemnities and the standard GBP 100 liability
-  cap before accepting. The narrowed enquiry is prepared privately, not sent;
-  the official route is an Epic support private discussion under Kids Web Services,
-  currently awaiting the owner's sign-in. Do not post it to the public forum or
-  send private policy/contact records. Public-document review need not be
-  repeated absent a material change.
+  cap before accepting. On 2026-09-11, the authorized Individual Ludolume
+  organization (Brazil) and bare Ludolume product record were created; the
+  private support form required a product. The reduced two-question privacy
+  enquiry was submitted under Kids Web Services through
+  `https://eoshelp.epicgames.com/s/eos-case-page?casetype=Private`; the UI confirmed
+  successful case creation. Awaiting response. No KWS terms were accepted and
+  KWS was not activated; no attachments or parent/child data were submitted.
+  Keep case details private; do not repeat the public review absent material change.
   Check relevant regional game-distribution prerequisites (including mainland
   China and Vietnam) against the actual app; no country exclusion is approved
   merely by listing this work. Review automatic future-storefront expansion
