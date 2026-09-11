@@ -2564,6 +2564,18 @@ the support-message and backup-retention work below.
   opt-in for public leaderboards on the server, not only in the UI. Withdrawing
   public-display permission must remove that visibility without forcing loss
   of private results. Do not recreate a permanent history of all game runs.
+- [ ] **Unfinished signup/consent retention (proposed 2026-09-11; owner approval
+  pending):** recommend 24-hour expiry for a future adult email-verification attempt
+  and seven-day expiry for an adult-initiated parental-consent attempt. Current
+  signup creates normal accounts immediately; do not relabel or expire existing
+  users under a pending-registration rule. Minimize preliminary data, use the
+  parent's own initiated setup, and do not store child-supplied contact details
+  under a supposed universal seven-day exception. Resends/callbacks cannot extend
+  original expiry; cancel on refusal, cancellation or permanent delivery failure.
+  Reject stale callbacks and delete live pending data, not only expire links;
+  validate cleanup timing before publishing a retention maximum. Preserve other
+  independently valid profiles. Resolve completed consent-evidence retention and
+  provider cancellation/deletion separately. This draft activates neither flow.
 - [ ] **In-app and web account deletion:** add Account → Manage account → Delete
   account with proportionate reauthentication and explicit permanent-deletion
   confirmation. Delete the live account, personal bests, public entries and
