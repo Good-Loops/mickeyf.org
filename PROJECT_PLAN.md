@@ -2053,6 +2053,9 @@ sessions may use a server-controlled thirty-day JWT and signed HTTP-only cookie
 without storing passwords or preferences in browser-readable storage. The
 stateless token's lack of per-session revocation must be tested and recorded as
 an accepted risk before this item is closed.
+That optional session-lifetime decision does not waive account-deletion
+invalidation: Phase 17's approved privacy backlog requires deleted identities
+to stop authorizing requests regardless of an old token's remaining lifetime.
 
 ## Phase 15 — p4-Vega improvement and mobile polish
 
@@ -2490,8 +2493,10 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
 - [ ] Configure Apple's primary Sign in with Apple App ID, web Services ID,
   return URLs and protected signing key. Check the web-service prerequisites
   separately from native app registration; membership alone does not activate it.
-- [ ] Review native session persistence, privacy disclosures, account deletion,
-  provider disconnect/revocation and current store policies before submission.
+- [ ] Review native session persistence, provider disconnect/revocation and
+  current store policies before submission. Privacy disclosures and account
+  deletion are tracked in the approved implementation backlog below; coordinate
+  them with provider login rather than creating separate competing auth flows.
 - [ ] Complete Android internal testing and obtain separate approval for each
   public store release. iPhone installation/login are accepted; native p4-Vega,
   session persistence and the unverified signup path remain open as recorded above.
@@ -2503,6 +2508,74 @@ Primary references checked 2026-09-10:
 [Apple web sign-in setup](https://developer.apple.com/help/account/capabilities/configure-sign-in-with-apple-for-the-web/),
 [Apple login/account review requirements](https://developer.apple.com/app-store/review/guidelines/).
 Provider login and store publication are planned, not implemented or verified.
+
+### Approved privacy implementation backlog — not implemented
+
+Owner decisions confirmed during the 2026-09-10 privacy-policy review. The
+owner approved the account-deletion flow, including dependent child-profile
+deletion, and explicitly requested these changes be recorded for later
+implementation. Keep this work pending during policy drafting; approval of the
+design is not approval to delete live data, change cloud settings or publish.
+The owner-review policy draft remains private and outside this public repository.
+These are required deliverables for the agreed child-account/store launch,
+coordinated with the existing social-sign-in work before returning to the
+incremental Clean Code sweep. Preserve accepted device/gameplay checks.
+Existing hourly submission-receipt cleanup is complete and is not reopened by
+the support-message and backup-retention work below.
+
+- [ ] **Resolve child-account prerequisites:** confirm intended release markets,
+  applicable age/consent rules and a proportionate parental-verification method.
+  All ages is the audience decision, not automatic Kids Category enrollment or
+  a universal account-age threshold. Provider purchases/activation and extra
+  identity-data collection require their own reviewed scope.
+- [ ] **Parent-managed profiles and private results:** use the parent's contact
+  email, separate child identities and generated nonidentifying nicknames.
+  Implement required consent notices/evidence and parental review/withdrawal
+  controls. Save child results privately by default; enforce separate parental
+  opt-in for public leaderboards on the server, not only in the UI. Withdrawing
+  public-display permission must remove that visibility without forcing loss
+  of private results. Do not recreate a permanent history of all game runs.
+- [ ] **In-app and web account deletion:** add Account → Manage account → Delete
+  account with proportionate reauthentication and explicit permanent-deletion
+  confirmation. Delete the live account, personal bests, public entries and
+  remaining submission receipts. A parent can delete one child independently;
+  deleting the parent deletes all dependent child profiles/results, listed in
+  the warning. Enforce ownership, reject old sessions/run tickets and score
+  retries, handle concurrent submissions transactionally, and report completion
+  only after durable success. Use narrow database privileges. Preserve guest
+  access; handle provider-token revocation when social sign-in is added.
+- [ ] **Retention enforcement:** implement the approved 90-day post-resolution
+  limit for routine support messages and our copies of beta feedback/diagnostics,
+  using the simplest reliable operational process rather than assuming a new
+  service is necessary. Enforce the approved 30-day maximum for ordinary recovery
+  copies under our control, preserving shorter automated-backup rotation and
+  seven-day recovery logs. Cover manual backups/exports and relevant retained
+  copies; verify provider-controlled retention before publishing a broader
+  guarantee. Scope/document legal exceptions. Review exact existing-backup
+  deletions and recovery coverage separately before execution.
+- [ ] **Deletion-aware restore:** keep only the minimal protected identifiers,
+  actions and timestamps needed to prevent deleted data or withdrawn permissions
+  from returning. The record must survive database rollback and expire once no
+  recoverable copy can resurrect the affected data, accounting for lawful holds.
+  Restore in isolation and reapply deletions/withdrawals before public access;
+  do not expose restored data if the current record is unavailable. This is not
+  permission to retain names, email addresses, passwords or gameplay history.
+- [ ] **Finish and publish accurate privacy information:** resolve remaining
+  retention/rights/provider/market decisions; implement the approved safeguards
+  before claiming they exist. Preserve the no-sale/no-targeted-advertising
+  commitment without promising that the app is forever free or ad-free. Add an
+  accessible HTTPS policy page and in-app/registration links, then matching
+  App Store Connect/App Privacy and Google Play data disclosures under the
+  appropriate publication approval. Review actual Google/Apple login data flows
+  when implemented; do not predeclare them. Keep private operator/reviewer
+  records out of this roadmap.
+- [ ] **Focused acceptance and security closeout:** verify account/child isolation,
+  parental visibility choices, deletion with stale credentials and submission
+  races, failure/retry behavior, retention expiry and a deletion-aware restore.
+  Use bounded fixtures/disposable data where authorized, not repeated checks of
+  already-accepted gameplay or generic login. Retain outstanding evidence and
+  implementation gaps explicitly; no public release/compliance claim follows
+  merely from completing the policy wording.
 
 ## Deferred tooling follow-up
 
