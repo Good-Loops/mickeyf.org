@@ -2573,17 +2573,21 @@ the support-message and backup-retention work below.
   retries, handle concurrent submissions transactionally, and report completion
   only after durable success. Use narrow database privileges. Preserve guest
   access; handle provider-token revocation when social sign-in is added.
-- [ ] **Resolve dormant-profile and named-score retention:** the owner wants
-  usernames and achievements preserved after inactivity. Evaluate a real,
-  manageable dormant profile; do not label retained named data as anonymous or
-  fully deleted, or create a permanent named-score archive by default. Specify
-  a justified expiry/renewal rule and lawful public-display basis, including
-  child/parent controls. The suggested 24-month interval plus 30-day response
-  window is not an adopted policy. Explicit account deletion and applicable
-  parental withdrawal still remove associated public entries. Keep ownership
-  verification and removal usable; do not discard credentials before designing
-  that access. Resolve this before publishing retention promises or enabling
-  automatic inactivity cleanup; no account or score deletion is authorized here.
+- [ ] **Renewable dormant profiles (approved 2026-09-11; not implemented):** after
+  24 months without meaningful activity or affirmative renewal, notify the user
+  or managing parent and allow 30 days to renew. Intentional renewal keeps the
+  profile, username and results and restarts the period; no new score is needed.
+  Without renewal or qualifying activity, delete the expired profile and its
+  results, including public entries. Keep management/removal access usable;
+  dormancy is not deletion or anonymization, and no permanent archive is added.
+  Apply child-profile activity separately, preserve an active child's managing
+  account, and never treat renewal as public opt-in or restored consent. Earlier
+  deletion requests and applicable parental withdrawals override the schedule.
+  Before enforcement, establish reliable activity data, notify existing users,
+  handle notice failures and recheck activity/renewal atomically with deletion.
+  Background requests or email previews must not renew profiles. Validate the
+  legal basis and regional requirements before publishing promises. This design
+  approval does not authorize deleting live accounts or enabling cleanup now.
 - [ ] **Retention enforcement:** implement the approved 90-day post-resolution
   limit for routine support messages and our copies of beta feedback/diagnostics,
   using the simplest reliable operational process rather than assuming a new
