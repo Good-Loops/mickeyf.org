@@ -2546,6 +2546,13 @@ the support-message and backup-retention work below.
   All ages is the audience decision, not automatic Kids Category enrollment or
   a universal account-age threshold. Provider purchases/activation and extra
   identity-data collection require their own reviewed scope.
+  The owner approved provider-hosted verification, with Epic Kids Web Services
+  (KWS) as the preferred candidate, subject to agreement/privacy/regional checks.
+  This is not contract acceptance or service activation. Keep raw identity,
+  biometric and payment verification inputs out of Ludolume's servers; confirm
+  provider retention/deletion and consent-withdrawal behavior before integration.
+  Adult verification is distinct from guardianship and each consent choice;
+  validate results and enforce separate publication permissions on the backend.
   Check relevant regional game-distribution prerequisites (including mainland
   China and Vietnam) against the actual app; no country exclusion is approved
   merely by listing this work. Review automatic future-storefront expansion
