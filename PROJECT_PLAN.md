@@ -2573,6 +2573,17 @@ the support-message and backup-retention work below.
   retries, handle concurrent submissions transactionally, and report completion
   only after durable success. Use narrow database privileges. Preserve guest
   access; handle provider-token revocation when social sign-in is added.
+- [ ] **Resolve dormant-profile and named-score retention:** the owner wants
+  usernames and achievements preserved after inactivity. Evaluate a real,
+  manageable dormant profile; do not label retained named data as anonymous or
+  fully deleted, or create a permanent named-score archive by default. Specify
+  a justified expiry/renewal rule and lawful public-display basis, including
+  child/parent controls. The suggested 24-month interval plus 30-day response
+  window is not an adopted policy. Explicit account deletion and applicable
+  parental withdrawal still remove associated public entries. Keep ownership
+  verification and removal usable; do not discard credentials before designing
+  that access. Resolve this before publishing retention promises or enabling
+  automatic inactivity cleanup; no account or score deletion is authorized here.
 - [ ] **Retention enforcement:** implement the approved 90-day post-resolution
   limit for routine support messages and our copies of beta feedback/diagnostics,
   using the simplest reliable operational process rather than assuming a new
