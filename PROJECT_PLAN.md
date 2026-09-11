@@ -2713,6 +2713,15 @@ the support-message and backup-retention work below.
     Keep deletion disabled until these items and the separate rollout are
     approved. Commands and limitations are in
     [Deleted-account recovery](backend/LEADERBOARD_DESIGN.md#deleted-account-recovery).
+    - **Read-only inventory (2026-09-11):** found eight automated backups,
+      four on-demand migration snapshots, and a seven-day PITR configuration.
+      All are treated as pre-identity; no live migration or backup deletion was
+      performed. Project-wide SQL listing found no additional instance/retained
+      backup; bounded local metadata searches found no database dumps. The owner
+      confirmed no exports/backups saved elsewhere. Preserve current
+      recovery until a post-identity backup/restore is verified, then retire
+      exact approved manual copies and let automated/PITR history roll forward.
+      See the [inventory and activation order](backend/LEADERBOARD_DESIGN.md#pre-identity-backup-inventory--2026-09-11-approximately-2343-utc).
 - [ ] **Finish and publish accurate privacy information:** resolve remaining
   retention/rights/provider/market decisions; implement the approved safeguards
   before claiming they exist. Preserve the no-sale/no-targeted-advertising

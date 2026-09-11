@@ -1196,6 +1196,81 @@ and recovery-reader behavior must respect that separation.
 describes allocation state stored with the database. The reuse risk across an
 older restore is inferred from that behavior and our numeric-ID-only identity.
 
+#### Pre-identity backup inventory — 2026-09-11, approximately 23:43 UTC
+
+This was a read-only metadata review, not a restore or deletion. The identity
+migrations are still local-only, so treat every recovery point below as
+pre-identity and unsupported by UUID replay. Backup contents were not restored
+or opened, and no production SQL migration/history query was performed here.
+
+Cloud SQL `cms-mickeyf` in `noted-reef-387021` is RUNNABLE, MySQL 8.0.31, with
+Standard backups enabled. Retention is **eight automated backups by count**,
+not a guaranteed eight-calendar-day expiry. Binary logging and seven-day
+transaction-log retention are enabled; instance deletion protection is on.
+The inventory returned twelve successful backups:
+
+| Kind | Snapshot dates (UTC) | Count | Disposition before deletion activation |
+| --- | --- | ---: | --- |
+| Automated | September 4–11, 2026 | 8 | Preserve now; let successful post-identity backups replace them and recheck the actual list. |
+| On-demand | August 26 and September 8, 2026 | 4 | Preserve until replacement recovery is verified, then obtain exact-target retirement approval. |
+
+The four on-demand retirement candidates are:
+
+| Backup ID | Started (UTC) | Recorded purpose |
+| --- | --- | --- |
+| `1787754667930` | 2026-08-26 14:31:07 | Before additive leaderboard migration |
+| `1787755849821` | 2026-08-26 14:50:49 | Before p4-Vega backfill |
+| `1787787054951` | 2026-08-26 23:30:54 | Before legacy p4_score removal |
+| `1788894880118` | 2026-09-08 19:14:40 | Before receipt migration 0004–0005 |
+
+These IDs document candidates, not authorization or a deletion script. Recheck
+their metadata and replacement recovery evidence before any later removal.
+Standard on-demand backups do not age out automatically; this differs from the
+automated backup count. See Google's
+[backup-retention documentation](https://docs.cloud.google.com/sql/docs/mysql/backup-recovery/backups#backup-retention).
+
+The reported point-in-time recovery window was
+`2026-09-04T21:24:45.390Z` through `2026-09-11T23:43:24.597639300Z`.
+After migration, a successful new backup alone does not retire earlier PITR
+targets. Before activation, query the window again and confirm its earliest
+recoverable time no longer precedes the original identity checkpoint. Do not
+disable/reduce PITR merely to shorten this transition.
+
+Project-wide backup listing (`--instance=-`) returned the same twelve records,
+with no additional final/deleted-instance backups. Instance listing returned
+only `cms-mickeyf`, without replicas. The available operations history returned
+no EXPORT/IMPORT/CLONE/RESTORE matches and no unfinished SQL operation. This is
+not proof that a client never made a manual dump. Project bucket listing returned
+only the approved deletion journal; no separate export bucket was discovered.
+The live backend still routes 100% to `mickeyf-org-ios-origin-a1f3ea43-0910`,
+without the new deletion activation settings; this review did not deploy code.
+
+Local filename/metadata checks found no database dump in the repository,
+documented Mickeyf operator directory, or nine documented `mickeyf-*` temporary
+evidence directories. The repository's eight SQL files are migrations. A small
+`preservation-snapshot.json` is documented operational evidence, not a database
+backup. No payloads, credentials, personal folders or unrelated archives were
+opened. The owner confirmed no database exports/backups saved elsewhere on
+2026-09-11. Other devices, Downloads, external drives and other cloud accounts
+were not independently scanned; that portion relies on the owner's confirmation.
+Provider-internal recovery copies are outside this customer-visible inventory.
+
+Recommended order: keep deletion disabled; obtain approval for the identity
+migration and replacement backup; verify isolated recovery and preserve the
+original epoch externally; retire the specifically approved manual copies;
+allow automated backups/PITR to roll beyond the checkpoint; refresh the inventory
+if any additional copies are made; then separately approve live activation. No legacy identity-mapping
+subsystem, new scheduler or new alert system is proposed. Other development can
+continue while the old recovery window rolls forward.
+
+Read-only evidence commands used `gcloud sql instances describe/list`,
+`gcloud sql backups list` for the instance and project wildcard,
+`gcloud sql instances get-latest-recovery-time`, filtered
+`gcloud sql operations list`, `gcloud storage buckets list`, and
+`gcloud run services describe` with output limited to relevant metadata. This
+documentation-only checkpoint did not rerun application tests or change cloud
+configuration, accounts, scores, grants or backups.
+
 #### Journal storage and IAM checkpoint — 2026-09-11
 
 User-approved provisioning created
