@@ -2574,9 +2574,9 @@ the support-message and backup-retention work below.
   original expiry; cancel on refusal, cancellation or permanent delivery failure.
   Reject stale callbacks and delete live pending data, not only expire links;
   validate cleanup timing before publishing a retention maximum. Preserve other
-  independently valid profiles. Resolve completed consent-evidence retention and
-  provider cancellation/deletion separately. This draft activates neither flow.
-- [ ] **Completed consent evidence (proposed 2026-09-11; owner approval pending):**
+  independently valid profiles. Apply the approved completed-evidence design;
+  validate provider cancellation/deletion separately. Neither flow is activated.
+- [ ] **Completed consent evidence (approved 2026-09-11; not implemented):**
   retain minimal purpose-specific proof while the relevant processing relies on
   it, with retrievable non-personal notice/flow documentation. Remove evidence
   no longer necessary when processing ends; include receipts in account deletion
