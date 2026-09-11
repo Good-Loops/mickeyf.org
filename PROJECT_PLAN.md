@@ -2523,11 +2523,18 @@ incremental Clean Code sweep. Preserve accepted device/gameplay checks.
 Existing hourly submission-receipt cleanup is complete and is not reopened by
 the support-message and backup-retention work below.
 
-- [ ] **Resolve child-account prerequisites:** confirm intended release markets,
+- [ ] **Resolve child-account prerequisites:** the owner approved worldwide
+  availability wherever eligible, with necessary country exceptions presented
+  individually before changing availability. Confirm actual regional eligibility,
   applicable age/consent rules and a proportionate parental-verification method.
+  Include Brazil's LGPD and ECA Digital, not only an under-13 consent check.
   All ages is the audience decision, not automatic Kids Category enrollment or
   a universal account-age threshold. Provider purchases/activation and extra
   identity-data collection require their own reviewed scope.
+  Check relevant regional game-distribution prerequisites (including mainland
+  China and Vietnam) against the actual app; no country exclusion is approved
+  merely by listing this work. Review automatic future-storefront expansion
+  separately at release. Store availability does not restrict the public website.
 - [ ] **Parent-managed profiles and private results:** use the parent's contact
   email, separate child identities and generated nonidentifying nicknames.
   Implement required consent notices/evidence and parental review/withdrawal
@@ -2576,6 +2583,12 @@ the support-message and backup-retention work below.
   already-accepted gameplay or generic login. Retain outstanding evidence and
   implementation gaps explicitly; no public release/compliance claim follows
   merely from completing the policy wording.
+
+Regional scope references checked 2026-09-10:
+[Apple availability and future storefronts](https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/manage-availability-for-your-app-on-the-app-store/),
+[Apple regional game-distribution requirements](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information/),
+[ANPD ECA Digital](https://www.gov.br/anpd/pt-br/assuntos/eca-digital/eca-digital-english).
+These identify review requirements, not completed regional clearance.
 
 ## Deferred tooling follow-up
 
