@@ -1024,8 +1024,9 @@ only serialization mechanism.
 
 ### Deleted-account recovery
 
-**2026-09-11 status: release switch implemented locally; independent journal,
-identity migration and recovery replay are not implemented or provisioned.**
+**2026-09-11 status: release switch implemented locally; approved journal storage
+and IAM provisioned. Journal integration, identity migration and recovery replay
+are not implemented. The bucket is empty; live deletion remains unenabled.**
 `ACCOUNT_DELETION_ENABLED` defaults to false in every environment; only the
 exact value `true` enables the HTTP deletion handler. Missing router wiring also
 defaults off. Valid requests reaching the disabled handler return
@@ -1044,7 +1045,7 @@ addition, `users.user_id` is an auto-increment number, not an account-incarnatio
 identity: a restored allocation state can allow an ID to be reused. Therefore
 an ID-only deletion list is insufficient, even if stored outside MySQL.
 
-Recommended implementation, pending storage/IAM approval:
+Implementation plan (storage/IAM checkpoint below; application work pending):
 
 1. Use one private Cloud Storage journal independent of SQL backups. Restrict
    runtime access to creating new records, with separate recovery-reader and
@@ -1052,8 +1053,9 @@ Recommended implementation, pending storage/IAM approval:
    runtime overwrite/delete access, or introduce a scheduler merely to store
    these records. Record only a schema version, stable opaque account identity,
    deletion action and timestamp; exclude usernames, email, passwords, scores
-   and raw request bodies. Provisioning, IAM and retention configuration require
-   separate review; this recommendation does not create any resources.
+   and raw request bodies. The approved storage/IAM checkpoint below establishes
+   the destination only; it does not implement writing or replaying records.
+   Further permission changes and eventual expiry rules need scoped review.
 2. Establish immutable account-incarnation identities before allowing deletion.
    New accounts need distinct identities even when numeric IDs repeat. Preserve
    identity through recovery. For pre-identity snapshots, either verify a minimal
@@ -1106,6 +1108,55 @@ and recovery-reader behavior must respect that separation.
 [MySQL auto-increment handling](https://dev.mysql.com/doc/refman/8.0/en/innodb-auto-increment-handling.html)
 describes allocation state stored with the database. The reuse risk across an
 older restore is inferred from that behavior and our numeric-ID-only identity.
+
+#### Journal storage and IAM checkpoint — 2026-09-11
+
+User-approved provisioning created
+`gs://ludolume-deletion-journal-1012884798546` in project `noted-reef-387021`,
+using Standard storage in `us-central1` alongside the existing backend region.
+Public-access prevention is **enforced** and uniform bucket-level access is on.
+Seven-day soft delete is explicit (`604800` seconds); object versioning, lifecycle
+expiry and a bucket retention policy are absent. No irreversible Bucket Lock,
+scheduler, recovery job, key file or secret was created.
+
+Bucket-scoped access:
+
+- Existing backend identity
+  `mickeyf-runtime@noted-reef-387021.iam.gserviceaccount.com` has
+  `roles/storage.objectCreator`: new objects, not object read/list/update/delete
+  or overwrite. Its only direct project role remains `roles/cloudsql.client`,
+  which has no storage permissions.
+- New identity
+  `ludolume-deletion-recovery@noted-reef-387021.iam.gserviceaccount.com` has
+  `roles/storage.objectViewer`: object read/list, not create/change/delete.
+  It has no direct project-role grants, user-managed keys or service-account-
+  level impersonation bindings and is not attached to a job or service.
+  Recovery execution remains separate.
+- Preserved the project's owner convenience bindings for bucket/object
+  administration. Removed only this newly created bucket's automatic
+  Editor/Viewer convenience grants. Project IAM was not changed. Other
+  inherited privileged project roles still apply; this is not isolation from
+  project administrators or destruction of the entire project.
+
+Read-back verified the project number, region, private-access settings, soft
+delete duration, absence of lifecycle/versioning/retention policy, exact bucket
+bindings, identity/project roles and live role definitions. Both all-version and
+soft-deleted object listings were empty. No probe object or deletion marker was
+written. IAM was verified from policy/role reads, not impersonated data-plane
+requests; no Token Creator grant was added merely to run a test. The bucket IAM
+update used the observed etag to avoid overwriting concurrent policy changes.
+
+The live backend revision/100% traffic target remained
+`mickeyf-org-ios-origin-a1f3ea43-0910`; no deployment, database grant, account or
+score operation occurred. The deletion release switch was not enabled.
+
+Recovery implementation must account for
+[soft-deleted records](https://docs.cloud.google.com/storage/docs/soft-delete),
+which ordinary listing does not return and which cannot be read until restored.
+An empty ordinary listing must never be accepted as evidence of a complete
+journal. Before eventual marker expiry, include the soft-delete recovery window
+in the retention accounting. The empty bucket is infrastructure readiness, not
+proof that account deletion now survives a database restore.
 
 ## Deferred decisions
 

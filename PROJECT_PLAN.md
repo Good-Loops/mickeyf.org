@@ -2686,13 +2686,22 @@ the support-message and backup-retention work below.
     remain usable. Config and HTTP checks cover the default and enabled paths.
     This is a release switch, not a completed restore safeguard. No live settings,
     database grants, account data or cloud resources changed.
-  - [ ] **Independent journal and replay:** implementation/provisioning still
-    pending. Recommended design and failure boundaries are recorded in
+  - [x] **Journal storage/IAM (2026-09-11, explicitly approved):** provisioned the
+    private `ludolume-deletion-journal-1012884798546` Cloud Storage bucket in
+    `us-central1`, with public-access prevention, uniform access, create-only
+    backend access and a separate read-only recovery identity. Preserved owner
+    access, removed new-bucket Editor/Viewer convenience grants, and left project
+    IAM unchanged. Verified policy/settings and empty current/versioned/soft-
+    deleted listings. Seven-day soft delete; no live-object lifecycle expiry,
+    Bucket Lock, scheduler, user-managed keys or deployment. No live account or
+    score changes.
+  - [ ] **Independent journal and replay:** application implementation still
+    pending. Design, provisioning evidence and failure boundaries are recorded in
     [Deleted-account recovery](backend/LEADERBOARD_DESIGN.md#deleted-account-recovery).
     Use an independent private journal, stable account-incarnation identities,
     a verified strategy for pre-identity backups, and isolated replay with a
-    final write freeze/checkpoint and credential rotation. Obtain approval for
-    the new storage resource and narrowly scoped IAM before provisioning it;
+    final write freeze/checkpoint and credential rotation. The approved bucket
+    is empty and is not yet used by the deletion repository or a recovery tool;
     do not enable deletion merely because the switch or DELETE grants exist.
 - [ ] **Finish and publish accurate privacy information:** resolve remaining
   retention/rights/provider/market decisions; implement the approved safeguards
