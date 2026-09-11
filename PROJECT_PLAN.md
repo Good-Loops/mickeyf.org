@@ -2573,6 +2573,17 @@ the support-message and backup-retention work below.
   retries, handle concurrent submissions transactionally, and report completion
   only after durable success. Use narrow database privileges. Preserve guest
   access; handle provider-token revocation when social sign-in is added.
+- [ ] **Privacy-request handling (drafted 2026-09-11; implementation pending):**
+  use the privacy mailbox and a minimal restricted case record for manual
+  requests; no new helpdesk service is required. Add proportionate ownership
+  recovery and representative/parent checks, secure delivery, relevant provider
+  notifications and truthful completion/refusal notices. Track receipt and the
+  applicable request-specific deadline, not a universal 30-day waiting period;
+  do not add support contact as a prerequisite for normal in-app deletion.
+  Valid erasure and mandatory shorter retention override routine support limits,
+  including prompt removal for COPPA's one-time child-contact exception. Minimize
+  request evidence and document any distinct lawful hold and expiry. Operational
+  readiness and regional requirements remain to be verified before publication.
 - [ ] **Renewable dormant profiles (approved 2026-09-11; not implemented):** after
   24 months without meaningful activity or affirmative renewal, notify the user
   or managing parent and allow 30 days to renew. Intentional renewal keeps the
