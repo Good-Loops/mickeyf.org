@@ -68,7 +68,8 @@ app.use('/api', createMainRouter({
     p4VegaScoreSubmissionsEnabled: runtimeConfig.p4VegaScoreSubmissionsEnabled,
 }));
 app.use('/auth', createAuthRouter(
-    pool, runtimeConfig.sessionSecret, runtimeConfig.isProduction, runtimeConfig.corsOrigins
+    pool, runtimeConfig.sessionSecret, runtimeConfig.isProduction, runtimeConfig.corsOrigins,
+    { accountDeletionEnabled: runtimeConfig.accountDeletionEnabled }
 ));
 
 app.use(notFoundHandler);
@@ -87,6 +88,7 @@ async function startServer(): Promise<void> {
                     runtimeConfig.threeBossesRunSubmissionsEnabled
                         ? 'enabled'
                         : 'disabled',
+                accountDeletion: runtimeConfig.accountDeletionEnabled ? 'enabled' : 'disabled',
             });
         });
     } catch (error: unknown) {

@@ -2679,6 +2679,21 @@ the support-message and backup-retention work below.
   Restore in isolation and reapply deletions/withdrawals before public access;
   do not expose restored data if the current record is unavailable. This is not
   permission to retain names, email addresses, passwords or gameplay history.
+  - [x] **Release safeguard (2026-09-11, local only):** added an exact-opt-in
+    `ACCOUNT_DELETION_ENABLED` runtime switch, disabled by default in every
+    environment. Disabled deletion returns the existing unavailable response
+    without database access or cookie mutation; session verification and logout
+    remain usable. Config and HTTP checks cover the default and enabled paths.
+    This is a release switch, not a completed restore safeguard. No live settings,
+    database grants, account data or cloud resources changed.
+  - [ ] **Independent journal and replay:** implementation/provisioning still
+    pending. Recommended design and failure boundaries are recorded in
+    [Deleted-account recovery](backend/LEADERBOARD_DESIGN.md#deleted-account-recovery).
+    Use an independent private journal, stable account-incarnation identities,
+    a verified strategy for pre-identity backups, and isolated replay with a
+    final write freeze/checkpoint and credential rotation. Obtain approval for
+    the new storage resource and narrowly scoped IAM before provisioning it;
+    do not enable deletion merely because the switch or DELETE grants exist.
 - [ ] **Finish and publish accurate privacy information:** resolve remaining
   retention/rights/provider/market decisions; implement the approved safeguards
   before claiming they exist. Preserve the no-sale/no-targeted-advertising

@@ -19,6 +19,7 @@ test('production runtime configuration allows only the website and packaged iOS 
     assert.equal(config.port, 8080);
     assert.equal(config.p4VegaScoreSubmissionsEnabled, false);
     assert.equal(config.threeBossesRunSubmissionsEnabled, false);
+    assert.equal(config.accountDeletionEnabled, false);
     assert.deepEqual(config.corsOrigins, [
         'https://mickeyf.com',
         'https://www.mickeyf.com',
@@ -34,6 +35,24 @@ test('production runtime configuration allows only the website and packaged iOS 
         'https://mickeyf.com.evil.example',
     ]) {
         assert.equal(config.corsOrigins.includes(origin), false, origin);
+    }
+});
+
+test('account deletion defaults off in every environment and requires exact opt-in', () => {
+    for (const nodeEnv of ['development', 'test', 'production']) {
+        for (const value of [undefined, '', 'false', 'TRUE', '1', ' true ', 'yes']) {
+            const config = loadRuntimeConfig({
+                ...productionEnvironment,
+                NODE_ENV: nodeEnv,
+                ACCOUNT_DELETION_ENABLED: value,
+            });
+            assert.equal(config.accountDeletionEnabled, false, `${nodeEnv}: ${value}`);
+        }
+        assert.equal(loadRuntimeConfig({
+            ...productionEnvironment,
+            NODE_ENV: nodeEnv,
+            ACCOUNT_DELETION_ENABLED: 'true',
+        }).accountDeletionEnabled, true);
     }
 });
 

@@ -27,7 +27,8 @@ export function createAuthRouter(
     database: Pick<Pool, 'query' | 'getConnection'>,
     sessionSecret: string,
     isProduction: boolean,
-    allowedMutationOrigins: readonly string[]
+    allowedMutationOrigins: readonly string[],
+    { accountDeletionEnabled = false }: { accountDeletionEnabled?: boolean } = {}
 ): Router {
     /**
      * Configured Express router for authentication routes.
@@ -46,6 +47,7 @@ export function createAuthRouter(
     router.post('/delete-account', ...createAccountDeletionRateLimiters(sessionSecret),
         asyncHandler(createAccountDeletionController({
             database, sessionSecret, isProduction, allowedMutationOrigins,
+            accountDeletionEnabled,
         })));
 
     /** POST /logout — clears the session cookie, ending the authenticated session. */

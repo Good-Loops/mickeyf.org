@@ -1022,6 +1022,91 @@ only serialization mechanism.
   state into a separate recovery instance first; do not overwrite production
   as the initial response.
 
+### Deleted-account recovery
+
+**2026-09-11 status: release switch implemented locally; independent journal,
+identity migration and recovery replay are not implemented or provisioned.**
+`ACCOUNT_DELETION_ENABLED` defaults to false in every environment; only the
+exact value `true` enables the HTTP deletion handler. Missing router wiring also
+defaults off. Valid requests reaching the disabled handler return
+`503 ACCOUNT_DELETION_UNAVAILABLE` without database access or cookie changes.
+Parsing and rate-limit middleware can still reject requests earlier. Session
+verification and logout remain available. This switch prevents accidental
+activation on ordinary deployment;
+it does not establish recovery safety. Do not enable live self-deletion until
+the work below and the separately approved release/grants are complete. Local
+deletion tests must use disposable data, not a proxy to the live database.
+
+The current deletion transaction safely removes an account and its scores from
+the active database, but restoring an earlier backup would undo that deletion.
+A tombstone or outbox in that same database would be rolled back too. In
+addition, `users.user_id` is an auto-increment number, not an account-incarnation
+identity: a restored allocation state can allow an ID to be reused. Therefore
+an ID-only deletion list is insufficient, even if stored outside MySQL.
+
+Recommended implementation, pending storage/IAM approval:
+
+1. Use one private Cloud Storage journal independent of SQL backups. Restrict
+   runtime access to creating new records, with separate recovery-reader and
+   authorized retention-management permissions. Do not make it public, grant
+   runtime overwrite/delete access, or introduce a scheduler merely to store
+   these records. Record only a schema version, stable opaque account identity,
+   deletion action and timestamp; exclude usernames, email, passwords, scores
+   and raw request bodies. Provisioning, IAM and retention configuration require
+   separate review; this recommendation does not create any resources.
+2. Establish immutable account-incarnation identities before allowing deletion.
+   New accounts need distinct identities even when numeric IDs repeat. Preserve
+   identity through recovery. For pre-identity snapshots, either verify a minimal
+   protected mapping or explicitly retire the affected recovery copies under
+   approval; rerunning a random UUID backfill cannot recover original identities.
+   Until one of those paths is verified, recovery from such copies stays blocked.
+3. After password reauthentication under the shared per-user lock, durably record
+   the deletion intent **before** SQL deletion. Wrong passwords and missing
+   accounts must never create an intent. Success requires both durable intent
+   and confirmed SQL commit. Storage or commit timeouts have uncertain outcomes:
+   settle them idempotently, never claim success early or promise cancellation,
+   and never discard a durable intent just because SQL rolled back. The eventual
+   implementation must complete pending intents against the active database,
+   not only during a future restore, with truthful pending/retry UI semantics.
+4. Restore to a separately identified, non-public recovery instance and migrate
+   it through the supported schema path. Loopback is not proof of isolation:
+   the production Cloud SQL proxy also listens on loopback. Validate the exact
+   recovery target and journal lineage/completeness before replay. Reject
+   unavailable, malformed, incomplete or unverified stale journal snapshots;
+   an empty list is not proof that no deletions occurred.
+5. Drain source mutations and establish a final current journal checkpoint before
+   cutover. Reapply all applicable intents to the restored accounts and owned
+   scores/receipts, verify none remain and preserve unrelated accounts. A replay
+   taken while new deletion requests continue is not a final recovery check.
+   Rotate `SESSION_SECRET` at cutover to revoke pre-restore sessions and Three
+   Bosses run tickets; current tokens rely on numeric IDs. UUID-safe replay alone
+   does not revoke them. Keep public access off if any prerequisite fails.
+6. Expire records only when an actual recovery-copy inventory proves no supported
+   backup, manual export, retained version or lawful hold can resurrect the data.
+   Do not implement a blind 30-day journal lifecycle while older manual backups
+   remain. This is a minimal anti-resurrection record, not permanent user history.
+   Future consent withdrawals/child profiles need their own modeled actions;
+   this account-only design does not implement those features.
+
+Focused acceptance for the later implementation: storage failures and uncertain
+acknowledgements, SQL rollback/commit uncertainty after recorded intent,
+repeated replay, numeric-ID reuse, pre-identity backup rejection, unavailable or
+partial journals, and an isolated restore that removes only marked accounts.
+Keep the release switch off until that evidence exists. Manual operations and
+older binaries can bypass an HTTP switch; the recovery runbook and deployment
+review remain necessary.
+
+Primary technical references checked 2026-09-11:
+[Cloud Storage consistency](https://docs.cloud.google.com/storage/docs/consistency)
+documents consistent object writes/reads/listing, not an atomic multi-page
+recovery snapshot; the final freeze/checkpoint is our design requirement.
+[Cloud Storage IAM roles](https://docs.cloud.google.com/storage/docs/access-control/iam-roles)
+documents the create-only role without read, overwrite or delete access; retry
+and recovery-reader behavior must respect that separation.
+[MySQL auto-increment handling](https://dev.mysql.com/doc/refman/8.0/en/innodb-auto-increment-handling.html)
+describes allocation state stored with the database. The reuse risk across an
+older restore is inferred from that behavior and our numeric-ID-only identity.
+
 ## Deferred decisions
 
 - Recalibrating the provisional rules-version-1 Three Bosses rank bands after

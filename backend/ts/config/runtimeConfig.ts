@@ -10,6 +10,7 @@ export type RuntimeConfig = {
     corsOrigins: readonly string[];
     p4VegaScoreSubmissionsEnabled: boolean;
     threeBossesRunSubmissionsEnabled: boolean;
+    accountDeletionEnabled: boolean;
 };
 
 export type DatabaseConfig = {
@@ -92,6 +93,7 @@ export function loadRuntimeConfig(env: Environment = process.env): RuntimeConfig
         threeBossesRunSubmissionsEnabled: isExplicitlyEnabled(
             env.THREE_BOSSES_RUN_SUBMISSIONS_ENABLED
         ),
+        accountDeletionEnabled: isExplicitlyEnabled(env.ACCOUNT_DELETION_ENABLED),
     });
 }
 

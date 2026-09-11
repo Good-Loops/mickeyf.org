@@ -23,10 +23,16 @@ const cookie = `session=${encodeURIComponent(`s:${token}.${signature}`)}`;
 const deletion = { password, confirmation: 'DELETE' };
 
 // In-memory HTTP boundary fixture only: no dbConfig import, credentials, or real connection.
-async function withServer(run: (base: string, state: { exists: boolean; unavailable: boolean; writes: string[] }) => Promise<void>) {
+type TestState = { exists: boolean; unavailable: boolean; writes: string[]; databaseCalls: number };
+
+async function withServer(
+    run: (base: string, state: TestState) => Promise<void>,
+    options: { accountDeletionEnabled?: boolean } = { accountDeletionEnabled: true }
+) {
     const passwordHash = await bcrypt.hash(password, 4);
-    const state = { exists: true, unavailable: false, writes: [] as string[] };
+    const state: TestState = { exists: true, unavailable: false, writes: [], databaseCalls: 0 };
     async function query(options: { sql: string }, values: unknown[]) {
+        state.databaseCalls++;
         if (state.unavailable) throw new Error('private-database-error');
         const sql = options.sql.replace(/\s+/g, ' ').trim();
         if (sql.includes('GET_LOCK') || sql.includes('RELEASE_LOCK')) return [[{ lockResult: 1 }], []];
@@ -43,12 +49,13 @@ async function withServer(run: (base: string, state: { exists: boolean; unavaila
     const database = {
         query,
         async getConnection() {
+            state.databaseCalls++;
             return { query, async beginTransaction() {}, async commit() {}, async rollback() {}, release() {}, destroy() {} };
         },
     } as unknown as Pick<Pool, 'query' | 'getConnection'>;
     const app = express();
     app.use(cookieParser(secret), express.json());
-    app.use('/auth', createAuthRouter(database, secret, true, origins));
+    app.use('/auth', createAuthRouter(database, secret, true, origins, options));
     app.post('/api/users', asyncHandler(createMainController({ database, sessionSecret: secret, isProduction: true, p4VegaScoreSubmissionsEnabled: true })));
     app.use('/api/leaderboards', createLeaderboardRouter(database, {
         sessionSecret: secret, allowedMutationOrigins: origins, threeBossesRunSubmissionsEnabled: true,
@@ -69,6 +76,33 @@ function post(base: string, body: unknown, headers: Record<string, string> = {},
         body: JSON.stringify(body),
     });
 }
+
+test('disabled or unwired deletion makes no database calls and leaves other auth routes usable', async () => {
+    for (const options of [{}, { accountDeletionEnabled: false }]) {
+        await withServer(async (base, state) => {
+            state.unavailable = true;
+            for (const origin of origins) {
+                const response = await post(base, deletion, { Origin: origin });
+                assert.equal(response.status, 503);
+                assert.deepEqual(await response.json(), { error: 'ACCOUNT_DELETION_UNAVAILABLE' });
+                assert.equal(response.headers.get('set-cookie'), null);
+            }
+            assert.equal(state.databaseCalls, 0);
+            assert.deepEqual(state.writes, []);
+            assert.equal(state.exists, true);
+
+            state.unavailable = false;
+            const session = await fetch(base + '/auth/verify-token', { headers: { Cookie: cookie } });
+            assert.deepEqual(await session.json(), { loggedIn: true, user_name: 'player' });
+            assert.equal(session.headers.get('set-cookie'), null);
+            const logout = await post(base, {}, {}, '/auth/logout');
+            assert.equal(logout.status, 200);
+            assert.match(logout.headers.get('set-cookie')!, /^session=.*Expires=Thu, 01 Jan 1970/);
+            assert.equal(state.exists, true);
+            assert.deepEqual(state.writes, []);
+        }, options);
+    }
+});
 
 test('requires authenticated ownership, trusted Origin and exact confirmation before persistence', async () => {
     for (const scenario of [

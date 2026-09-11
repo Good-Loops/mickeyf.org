@@ -11,12 +11,19 @@ type AccountDeletionDependencies = {
     sessionSecret: string;
     isProduction: boolean;
     allowedMutationOrigins: readonly string[];
+    accountDeletionEnabled?: boolean;
 };
 
 export function createAccountDeletionController({
     database, sessionSecret, isProduction, allowedMutationOrigins,
+    accountDeletionEnabled = false,
 }: AccountDeletionDependencies) {
     return async function deleteCurrentAccount(req: Request, res: Response) {
+        // Keep destructive account operations unavailable until recovery protection
+        // and the separately approved production rollout are ready.
+        if (!accountDeletionEnabled) {
+            return res.status(503).json({ error: 'ACCOUNT_DELETION_UNAVAILABLE' });
+        }
         const authentication = authenticateRequest(req, sessionSecret);
         if (!authentication.authenticated) {
             return res.status(401).json({ error: 'UNAUTHENTICATED' });
