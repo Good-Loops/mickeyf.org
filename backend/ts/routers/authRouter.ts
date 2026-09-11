@@ -14,12 +14,21 @@
  */
 import { Router } from 'express';
 import { createAuthController } from '../controllers/authController';
+import { Pool } from 'mysql2/promise';
+import { createAccountDeletionController } from '../controllers/accountDeletionController';
+import { asyncHandler } from '../middleware/errorHandling';
+import { createAccountDeletionRateLimiters } from '../security/requestRateLimits';
 
 import { createLogoutHandler } from './authRouter.handlers';
 
 export { authRoutesContract } from './authRouter.contract';
 
-export function createAuthRouter(sessionSecret: string, isProduction: boolean): Router {
+export function createAuthRouter(
+    database: Pick<Pool, 'query' | 'getConnection'>,
+    sessionSecret: string,
+    isProduction: boolean,
+    allowedMutationOrigins: readonly string[]
+): Router {
     /**
      * Configured Express router for authentication routes.
      *
@@ -32,7 +41,12 @@ export function createAuthRouter(sessionSecret: string, isProduction: boolean): 
     const router: Router = Router();
 
     /** GET /verify-token — validates auth context for the current request. */
-    router.get('/verify-token', createAuthController(sessionSecret));
+    router.get('/verify-token', asyncHandler(createAuthController(database, sessionSecret)));
+
+    router.post('/delete-account', ...createAccountDeletionRateLimiters(sessionSecret),
+        asyncHandler(createAccountDeletionController({
+            database, sessionSecret, isProduction, allowedMutationOrigins,
+        })));
 
     /** POST /logout — clears the session cookie, ending the authenticated session. */
     router.post('/logout', createLogoutHandler(isProduction));

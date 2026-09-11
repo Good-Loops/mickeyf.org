@@ -55,8 +55,10 @@ function createReplayDatabase() {
     let connectionAcquisitions = 0;
     const events: string[] = [];
     const database = {
-        async query() {
-            throw new Error('submission security tests must not use pool.query');
+        async query(options: { sql: string }, values: unknown[]) {
+            assert.match(options.sql, /SELECT user_name AS userName FROM users WHERE user_id = \?/);
+            assert.deepEqual(values, [42]);
+            return [[{ userName: 'player' }], []];
         },
         async getConnection() {
             connectionAcquisitions += 1;

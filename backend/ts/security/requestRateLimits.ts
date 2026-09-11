@@ -3,6 +3,7 @@ import { Request } from 'express';
 import { ipKeyGenerator, rateLimit } from 'express-rate-limit';
 import { LEADERBOARD_CONTRACT_VERSION } from '../leaderboards/leaderboardContract';
 import { operationType } from './userRequestValidation';
+import { authenticateRequest } from './requestAuthentication';
 
 const RATE_LIMIT_MESSAGE = Object.freeze({ error: 'RATE_LIMITED' });
 const LEADERBOARD_RATE_LIMIT_MESSAGE = Object.freeze({
@@ -96,4 +97,28 @@ export function createLoginAccountRateLimiter() {
         skip: (req) => !isLoginOperation(req),
         keyGenerator: loginAccountRateLimitKey,
     });
+}
+
+/** Password reauthentication is bounded both per IP and per signed-in account. */
+export function createAccountDeletionRateLimiters(sessionSecret: string) {
+    const options = {
+        windowMs: 15 * 60 * 1000,
+        standardHeaders: 'draft-8' as const,
+        legacyHeaders: false,
+        message: RATE_LIMIT_MESSAGE,
+        passOnStoreError: false,
+    };
+    return [
+        rateLimit({ ...options, limit: 20 }),
+        rateLimit({
+            ...options,
+            limit: 5,
+            keyGenerator(req) {
+                const auth = authenticateRequest(req, sessionSecret);
+                return auth.authenticated
+                    ? `account:${auth.identity.userId}`
+                    : `ip:${ipKeyGenerator(req.ip ?? 'unknown')}`;
+            },
+        }),
+    ];
 }

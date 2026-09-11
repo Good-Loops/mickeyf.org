@@ -132,6 +132,9 @@ export function createMainController({
             authorization.score
         );
 
+        if (personalBest === null) {
+            return res.status(401).json({ error: 'UNAUTHORIZED' });
+        }
         return res.json({ success: true, personalBest });
     }
 

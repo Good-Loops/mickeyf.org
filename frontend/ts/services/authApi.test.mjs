@@ -163,3 +163,56 @@ test('logout posts with credentials and preserves its existing ignore-status-and
         assert.equal(bodyRead, false);
     }
 });
+
+test('account deletion sends the current password and explicit confirmation through the session transport', async () => {
+    const calls = [];
+    const api = createAuthApi(apiBase, async (url, init) => {
+        calls.push({ url, init });
+        return Response.json({ deleted: true });
+    });
+
+    assert.deepEqual(await api.deleteAccountRequest(' current password '), { deleted: true });
+    assert.equal(calls.length, 1, 'no login/logout or automatic destructive retry');
+    assert.equal(calls[0].url, `${apiBase}/auth/delete-account`);
+    assert.equal(calls[0].init.method, 'POST');
+    assert.equal(calls[0].init.credentials, 'include');
+    assert.deepEqual(calls[0].init.headers, { 'Content-Type': 'application/json' });
+    assert.deepEqual(JSON.parse(calls[0].init.body), { password: ' current password ', confirmation: 'DELETE' });
+});
+
+test('account deletion distinguishes rejected password, invalid request, expired session and temporary failure', async () => {
+    for (const [status, error] of [
+        [400, 'INVALID_REQUEST'],
+        [403, 'INVALID_PASSWORD'],
+        [401, 'UNAUTHENTICATED'],
+        [503, 'ACCOUNT_DELETION_UNAVAILABLE'],
+        [429, 'RATE_LIMITED'],
+    ]) {
+        const api = createAuthApi(apiBase, async () => Response.json({ error, message: 'Ignored private detail' }, { status }));
+        assert.deepEqual(await api.deleteAccountRequest('test-only'), { error });
+    }
+});
+
+test('account deletion never treats an unexpected or incomplete response as durable success', async () => {
+    for (const [status, body] of [
+        [200, {}], [200, { deleted: false }], [200, { deleted: 1 }],
+        [200, { deleted: true, error: 'INVALID_PASSWORD' }],
+        [200, null], [403, { deleted: true }], [503, { deleted: true }],
+        [400, { error: 'UNAUTHENTICATED' }], [500, { error: 'PRIVATE_DETAIL' }],
+    ]) {
+        const api = createAuthApi(apiBase, async () => Response.json(body, { status }));
+        await assert.rejects(api.deleteAccountRequest('test-only'), { message: 'Could not confirm account deletion.' });
+    }
+    for (const response of [new Response(null, { status: 204 }), new Response('not JSON', { status: 200 })]) {
+        const api = createAuthApi(apiBase, async () => response);
+        await assert.rejects(api.deleteAccountRequest('test-only'), SyntaxError);
+    }
+});
+
+test('account deletion propagates uncertain network failure without retrying', async () => {
+    let calls = 0;
+    const failure = new TypeError('Network unavailable');
+    const api = createAuthApi(apiBase, async () => { calls++; throw failure; });
+    await assert.rejects(api.deleteAccountRequest('test-only'), (error) => error === failure);
+    assert.equal(calls, 1);
+});

@@ -13,6 +13,12 @@ export type RuntimeColumnGrant = Readonly<{
 export type RuntimeTableGrant = Readonly<{
     table: 'users' | 'game_submission_receipts' | 'game_personal_bests';
     grants: readonly RuntimeColumnGrant[];
+    tablePrivileges: readonly 'DELETE'[];
+}>;
+
+export type RuntimeTablePrivilege = Readonly<{
+    tableName: RuntimeTableGrant['table'];
+    privilegeType: 'DELETE';
 }>;
 
 export type RuntimeColumnPrivilege = Readonly<{
@@ -40,6 +46,7 @@ export const PRODUCTION_RUNTIME_DATABASE_ROLE: RuntimeDatabaseAccount =
 export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freeze([
     Object.freeze({
         table: 'users' as const,
+        tablePrivileges: Object.freeze(['DELETE' as const]),
         grants: Object.freeze([
             Object.freeze({
                 privilege: 'SELECT' as const,
@@ -62,6 +69,7 @@ export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freez
     }),
     Object.freeze({
         table: 'game_submission_receipts' as const,
+        tablePrivileges: Object.freeze(['DELETE' as const]),
         grants: Object.freeze([
             Object.freeze({
                 privilege: 'SELECT' as const,
@@ -95,6 +103,7 @@ export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freez
     }),
     Object.freeze({
         table: 'game_personal_bests' as const,
+        tablePrivileges: Object.freeze(['DELETE' as const]),
         grants: Object.freeze([
             Object.freeze({
                 privilege: 'SELECT' as const,
@@ -173,6 +182,17 @@ export function runtimeColumnPrivilegeInventory(): readonly RuntimeColumnPrivile
     ));
 }
 
+export function runtimeTablePrivilegeInventory(): readonly RuntimeTablePrivilege[] {
+    // MySQL cannot restrict DELETE by column. Only the account and its two
+    // dependent data tables need this privilege for transactional self-deletion.
+    return Object.freeze(RUNTIME_GRANT_MANIFEST.flatMap(({ table, tablePrivileges }) =>
+        tablePrivileges.map((privilegeType) => Object.freeze({
+            tableName: table,
+            privilegeType,
+        }))
+    ));
+}
+
 /**
  * Renders reviewable statements but never opens a database connection or
  * changes privileges by itself.
@@ -184,13 +204,14 @@ export function renderRuntimeGrantStatements(
     const database = quoteIdentifier(databaseName, 'Database name');
     const principal = renderRuntimeDatabaseAccount(account);
 
-    return Object.freeze(RUNTIME_GRANT_MANIFEST.map(({ table, grants }) => {
-        const privileges = grants.map(({ privilege, columns }) => {
+    return Object.freeze(RUNTIME_GRANT_MANIFEST.map(({ table, grants, tablePrivileges }) => {
+        const columnPrivileges = grants.map(({ privilege, columns }) => {
             const columnList = columns
                 .map((column) => quoteIdentifier(column, 'Column name'))
                 .join(', ');
             return `${privilege} (${columnList})`;
-        }).join(', ');
+        });
+        const privileges = [...columnPrivileges, ...tablePrivileges].join(', ');
 
         return `GRANT ${privileges} ON ${database}.${quoteIdentifier(
             table,

@@ -38,6 +38,7 @@ import {
     verifyThreeBossesRunTicket,
 } from '../leaderboards/threeBossesRunTicket';
 import { authorizeThreeBossesMutation } from '../security/threeBossesMutationAuthorization';
+import { readActiveAccount } from '../security/activeAccount';
 
 type LeaderboardControllerDependencies = {
     database: Pick<Pool, 'getConnection' | 'query'>;
@@ -270,6 +271,13 @@ export function createLeaderboardController({
             });
         }
 
+        if (!await readActiveAccount(database, authorization.identity.userId)) {
+            return res.status(401).json({
+                success: false,
+                contractVersion: LEADERBOARD_CONTRACT_VERSION,
+                error: 'UNAUTHORIZED',
+            });
+        }
         const ticket = issueThreeBossesRunTicket(
             sessionSecret,
             authorization.identity.userId,

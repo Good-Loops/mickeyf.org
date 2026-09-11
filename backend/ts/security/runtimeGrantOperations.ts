@@ -3,6 +3,7 @@ import {
     renderRuntimeDatabaseAccount,
     renderRuntimeGrantStatements,
     runtimeColumnPrivilegeInventory,
+    runtimeTablePrivilegeInventory,
     runtimeDatabaseAccountName,
     type RuntimeDatabaseAccount,
 } from './runtimeGrantManifest';
@@ -134,7 +135,7 @@ export type RuntimeGrantOperationPhases = Readonly<{
 }>;
 
 type RuntimeGrantPlanPayload = Readonly<{
-    formatVersion: 3;
+    formatVersion: 4;
     database: string;
     runtimeAccount: string;
     approvedRole: string;
@@ -148,6 +149,7 @@ type RuntimeGrantPlanPayload = Readonly<{
         partialRevokes: boolean;
     }>;
     expectedColumnPrivileges: readonly ColumnPrivilege[];
+    expectedTablePrivileges: readonly TablePrivilege[];
     observed: RuntimeGrantSnapshot;
     blockers: readonly string[];
     compliant: boolean;
@@ -280,6 +282,18 @@ function expectedColumnPrivileges(database: string): ColumnPrivilege[] {
         privilegeType: privilege.privilegeType,
         isGrantable: 'NO' as const,
     })));
+}
+
+function expectedTablePrivileges(database: string): TablePrivilege[] {
+    return sorted(runtimeTablePrivilegeInventory().map((privilege) => ({
+        schemaName: database,
+        ...privilege,
+        isGrantable: 'NO' as const,
+    })));
+}
+
+function tablePrivilegeKey(privilege: TablePrivilege): string {
+    return [privilege.schemaName, privilege.tableName, privilege.privilegeType].join('\u0000');
 }
 
 function columnPrivilegeKey(
@@ -684,6 +698,16 @@ function unexpectedColumnPrivileges(
         || !expectedKeys.has(columnPrivilegeKey(privilege)));
 }
 
+function unexpectedTablePrivileges(
+    snapshot: RuntimeGrantSnapshot,
+    expected: readonly TablePrivilege[]
+): TablePrivilege[] {
+    const expectedKeys = new Set(expected.map(tablePrivilegeKey));
+    return snapshot.tablePrivileges.filter((privilege) =>
+        privilege.isGrantable === 'YES'
+        || !expectedKeys.has(tablePrivilegeKey(privilege)));
+}
+
 function validateObservedSqlValues(snapshot: RuntimeGrantSnapshot): void {
     for (const privilege of [
         ...snapshot.globalPrivileges,
@@ -720,7 +744,8 @@ function blockersFor(
     snapshot: RuntimeGrantSnapshot,
     settings: RuntimeGrantSettings,
     account: RuntimeDatabaseAccount,
-    expected: readonly ColumnPrivilege[]
+    expected: readonly ColumnPrivilege[],
+    expectedTables: readonly TablePrivilege[]
 ): string[] {
     const blockers: string[] = [];
     if (snapshot.databaseName !== settings.database) {
@@ -790,8 +815,8 @@ function blockersFor(
     if (snapshot.schemaPrivileges.length > 0) {
         blockers.push('runtime account has unexpected schema privileges');
     }
-    if (snapshot.tablePrivileges.length > 0) {
-        blockers.push('runtime account has unexpected table privileges');
+    if (unexpectedTablePrivileges(snapshot, expectedTables).length > 0) {
+        blockers.push('runtime account has unexpected or grantable table privileges');
     }
     if (snapshot.routinePrivileges.length > 0) {
         blockers.push('runtime account has unexpected routine privileges');
@@ -824,17 +849,23 @@ function blockersFor(
 
 function hasRequiredPrivilegeSubset(
     snapshot: RuntimeGrantSnapshot,
-    expected: readonly ColumnPrivilege[]
+    expected: readonly ColumnPrivilege[],
+    expectedTables: readonly TablePrivilege[]
 ): boolean {
     const observed = new Set(snapshot.columnPrivileges
         .filter(({ isGrantable }) => isGrantable === 'NO')
         .map(columnPrivilegeKey));
-    return expected.every((privilege) => observed.has(columnPrivilegeKey(privilege)));
+    const observedTables = new Set(snapshot.tablePrivileges
+        .filter(({ isGrantable }) => isGrantable === 'NO')
+        .map(tablePrivilegeKey));
+    return expected.every((privilege) => observed.has(columnPrivilegeKey(privilege)))
+        && expectedTables.every((privilege) => observedTables.has(tablePrivilegeKey(privilege)));
 }
 
 function hasExactDirectPrivileges(
     snapshot: RuntimeGrantSnapshot,
-    expected: readonly ColumnPrivilege[]
+    expected: readonly ColumnPrivilege[],
+    expectedTables: readonly TablePrivilege[]
 ): boolean {
     return sameRecords(snapshot.globalPrivileges, [{
         privilegeType: 'USAGE',
@@ -843,7 +874,7 @@ function hasExactDirectPrivileges(
         && snapshot.staticGlobalPrivileges.length === 0
         && snapshot.dynamicGlobalPrivileges.length === 0
         && snapshot.schemaPrivileges.length === 0
-        && snapshot.tablePrivileges.length === 0
+        && sameRecords(snapshot.tablePrivileges, expectedTables)
         && sameRecords(snapshot.columnPrivileges, expected)
         && snapshot.routinePrivileges.length === 0
         && snapshot.proxyPrivileges.length === 0
@@ -853,11 +884,12 @@ function hasExactDirectPrivileges(
 function classifyState(
     snapshot: RuntimeGrantSnapshot,
     expected: readonly ColumnPrivilege[],
+    expectedTables: readonly TablePrivilege[],
     blockers: readonly string[]
 ): RuntimeGrantState {
     if (blockers.length > 0) return 'blocked';
     const hasRole = snapshot.assignedRoles.length === 1;
-    const exactDirect = hasExactDirectPrivileges(snapshot, expected);
+    const exactDirect = hasExactDirectPrivileges(snapshot, expected, expectedTables);
     if (exactDirect && !hasRole && snapshot.defaultRoles.length === 0) return 'reduced';
     if (exactDirect && hasRole) return 'prepared';
     return hasRole ? 'broad' : 'repair';
@@ -869,7 +901,8 @@ function buildOperationPhases(
     database: string,
     account: RuntimeDatabaseAccount,
     settings: RuntimeGrantSettings,
-    expected: readonly ColumnPrivilege[]
+    expected: readonly ColumnPrivilege[],
+    expectedTables: readonly TablePrivilege[]
 ): RuntimeGrantOperationPhases {
     const empty = Object.freeze([]) as readonly string[];
     if (state === 'blocked' || state === 'reduced') {
@@ -881,7 +914,7 @@ function buildOperationPhases(
     }
     const target = renderRuntimeDatabaseAccount(account);
     return {
-        ensureRequiredPrivileges: hasRequiredPrivilegeSubset(snapshot, expected)
+        ensureRequiredPrivileges: hasRequiredPrivilegeSubset(snapshot, expected, expectedTables)
             ? empty
             : renderRuntimeGrantStatements(database, account)
                 .map((statement) => statement.replace(/;$/u, '')),
@@ -947,15 +980,17 @@ export function createRuntimeGrantPlan(
     account: RuntimeDatabaseAccount
 ): RuntimeGrantPlan {
     const expected = expectedColumnPrivileges(settings.database);
+    const expectedTables = expectedTablePrivileges(settings.database);
     const blockers = blockersFor(
         snapshot,
         settings,
         account,
-        expected
+        expected,
+        expectedTables
     );
-    const state = classifyState(snapshot, expected, blockers);
+    const state = classifyState(snapshot, expected, expectedTables, blockers);
     const payload: RuntimeGrantPlanPayload = {
-        formatVersion: 3,
+        formatVersion: 4,
         database: settings.database,
         runtimeAccount: runtimeDatabaseAccountName(account),
         approvedRole: runtimeDatabaseAccountName(settings.approvedRole),
@@ -969,6 +1004,7 @@ export function createRuntimeGrantPlan(
             partialRevokes: snapshot.partialRevokes,
         },
         expectedColumnPrivileges: expected,
+        expectedTablePrivileges: expectedTables,
         observed: snapshot,
         blockers,
         compliant: state === 'reduced',
@@ -978,7 +1014,8 @@ export function createRuntimeGrantPlan(
             settings.database,
             account,
             settings,
-            expected
+            expected,
+            expectedTables
         ),
     };
     const digestPayload = {
@@ -989,6 +1026,7 @@ export function createRuntimeGrantPlan(
         state: payload.state,
         server: payload.server,
         expectedColumnPrivileges: payload.expectedColumnPrivileges,
+        expectedTablePrivileges: payload.expectedTablePrivileges,
         observed: runtimeGrantDigestSnapshot(payload.observed),
         blockers: payload.blockers,
         compliant: payload.compliant,
@@ -1184,13 +1222,15 @@ export async function applyRuntimeGrants(
             preparedSnapshot,
             settings,
             account,
-            approvedPlan.expectedColumnPrivileges
+            approvedPlan.expectedColumnPrivileges,
+            approvedPlan.expectedTablePrivileges
         );
         if (
             preparedBlockers.length > 0
             || !hasExactDirectPrivileges(
                 preparedSnapshot,
-                approvedPlan.expectedColumnPrivileges
+                approvedPlan.expectedColumnPrivileges,
+                approvedPlan.expectedTablePrivileges
             )
         ) {
             throw new Error('Exact direct runtime grants could not be proved before role removal');
@@ -1207,7 +1247,8 @@ export async function applyRuntimeGrants(
             defaultClearedSnapshot,
             settings,
             account,
-            approvedPlan.expectedColumnPrivileges
+            approvedPlan.expectedColumnPrivileges,
+            approvedPlan.expectedTablePrivileges
         );
         if (
             defaultClearedBlockers.length > 0
@@ -1218,7 +1259,8 @@ export async function applyRuntimeGrants(
             || defaultClearedSnapshot.defaultRoles.length > 0
             || !hasExactDirectPrivileges(
                 defaultClearedSnapshot,
-                approvedPlan.expectedColumnPrivileges
+                approvedPlan.expectedColumnPrivileges,
+                approvedPlan.expectedTablePrivileges
             )
         ) throw new Error('Runtime role preparation did not reach the reviewed state');
 

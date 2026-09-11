@@ -329,8 +329,9 @@ test('active runtime sessions block role removal, then a drained rerun converges
         >>('SELECT CURRENT_ROLE() AS currentRole');
         assert.equal(freshRoleRows[0].currentRole, 'NONE');
         await freshRuntimeConnection.query('SELECT user_id FROM users LIMIT 1');
+        await freshRuntimeConnection.query('DELETE FROM users WHERE 1 = 0');
         await assert.rejects(
-            () => freshRuntimeConnection.query('DELETE FROM users WHERE 1 = 0'),
+            () => freshRuntimeConnection.query('DELETE FROM schema_migrations WHERE 1 = 0'),
             (error: unknown) => (error as { code?: string }).code === 'ER_TABLEACCESS_DENIED_ERROR'
         );
         const reducedWhileActive = await planRuntimeGrants(
@@ -523,7 +524,7 @@ test('stale plans and unsupported privilege state refuse before mutation', async
     );
     assert.equal(cleanPlan.compliant, true);
     await root.query(
-        'GRANT DELETE ON `mickeyf_migration_test`.`users` TO ' + RUNTIME_PRINCIPAL
+        'GRANT ALTER ON `mickeyf_migration_test`.`users` TO ' + RUNTIME_PRINCIPAL
     );
     try {
         await assert.rejects(
@@ -560,7 +561,7 @@ test('stale plans and unsupported privilege state refuse before mutation', async
         );
     } finally {
         await root.query(
-            'REVOKE DELETE ON `mickeyf_migration_test`.`users` FROM '
+            'REVOKE ALTER ON `mickeyf_migration_test`.`users` FROM '
             + RUNTIME_PRINCIPAL
         );
     }

@@ -2620,6 +2620,23 @@ the support-message and backup-retention work below.
   retries, handle concurrent submissions transactionally, and report completion
   only after durable success. Use narrow database privileges. Preserve guest
   access; handle provider-token revocation when social sign-in is added.
+  - [x] **Existing password-account implementation (2026-09-11, local only):**
+    `/account` exposes a responsive themed confirmation, current-password
+    reauthentication and typed DELETE. The server derives ownership from the
+    signed session, checks trusted Origin/JSON, and limits password attempts.
+    Deletion shares the games' per-user lock and removes all owned bests,
+    receipts and the account in one transaction. Session verification and new
+    run tickets check account existence; stale p4-Vega/Three Bosses submissions
+    cannot recreate records. Success alone clears auth; uncertain responses do
+    not imply deletion. The native endpoint allowlist/cookie cleanup is updated.
+    Focused HTTP, transaction/race and isolated MySQL restricted-role checks
+    cover this path. No live account/data/privilege changes or deployment.
+  - [ ] **Release and future-profile work:** apply the reviewed table-scoped
+    DELETE grants through the existing approval workflow, coordinate backend,
+    web and signed iOS rollout, and verify on-device cookie cleanup. Complete
+    deletion-aware restore before enabling live self-deletion. Parent/child
+    cascades, consent evidence and provider-token revocation remain pending
+    their corresponding models/integrations; do not mark all deletion work done.
 - [ ] **Privacy-request handling (drafted 2026-09-11; implementation pending):**
   use the privacy mailbox and a minimal restricted case record for manual
   requests; no new helpdesk service is required. Add proportionate ownership

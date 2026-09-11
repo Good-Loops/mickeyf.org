@@ -75,14 +75,14 @@ export async function readP4VegaLeaderboard(
  * Stores a strict p4-Vega personal-best improvement in generic storage.
  *
  * An application-scoped user lock serializes submissions before the current
- * generic best is compared. This preserves the established missing-user result
- * without requiring write privilege on the `users` table.
+ * generic best is compared. A deleted account returns null rather than an
+ * accepted non-improvement, so its old session cannot report a successful write.
  */
 export async function submitP4VegaScore(
     database: P4VegaScoreDatabase,
     userId: number,
     score: number
-): Promise<boolean> {
+): Promise<boolean | null> {
     if (!Number.isSafeInteger(userId) || userId <= 0) {
         throw new TypeError('p4-Vega score writes require a valid user ID.');
     }
@@ -153,7 +153,7 @@ export async function submitP4VegaScore(
 
                 await connection.commit();
                 transactionStarted = false;
-                return personalBest;
+                return currentBest === undefined ? null : personalBest;
             } catch (error) {
                 if (transactionStarted) {
                     try {

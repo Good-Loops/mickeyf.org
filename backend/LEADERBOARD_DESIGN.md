@@ -643,23 +643,28 @@ Credential changes and privilege revocation require
 their own reviewed approval. The preflight made no database, configuration, or
 repository change and returned the local proxy to its original stopped state.
 
-The exact generic-only column-level runtime manifest now lives in
+The exact generic-only runtime manifest now lives in
 `ts/security/runtimeGrantManifest.ts`. It grants `users` only the auth columns
 required for `SELECT` and signup `INSERT`, with no `p4_score` access and no
-`UPDATE` privilege. `game_runs` and `game_personal_bests` retain only their
-required narrow `SELECT`, `INSERT`, and personal-best `UPDATE` columns. It
-grants no access to `schema_migrations`, no `DELETE`, DDL, role, administrative
-privilege, or grant option. A redundant `game_runs SELECT ... FOR UPDATE` was
-removed because the shared application lock already serializes every
-submission for that user; the immutable ledger therefore needs only `SELECT`
-and `INSERT`.
+`UPDATE` privilege. `game_submission_receipts` and `game_personal_bests` retain
+their required narrow `SELECT`, `INSERT`, and personal-best `UPDATE` columns.
+The existing-account deletion implementation additionally requires
+non-grantable table `DELETE` on exactly those three tables; MySQL has no
+column-level `DELETE`. Ownership checks and the transaction constrain deletion
+to the authenticated account, with receipts and bests removed before the user.
+There is still no access to `schema_migrations`, DDL, roles, administrative
+privileges, grant options, or schema/global DML. **These additional deletion
+grants are local preparation, not an applied production change.** A separately
+approved grant plan/apply/verify is required before deploying self-deletion.
 
 The pinned MySQL 8.0.31 integration suite installs the manifest on a separate
 disposable runtime identity and a physical `users` table without `p4_score`. It
-exercises every current auth and leaderboard SQL path, compares the exact column
-inventory, and proves that user-row `FOR UPDATE`, migration history, ledger
-mutation, destructive DML, DDL, account creation, and grant operations are
-denied. This test evidence did not itself change live grants; the earlier
+exercises auth, leaderboard and transactional account-deletion SQL paths and
+compares both exact column and table inventories. User-row `FOR UPDATE` is now
+permitted by `SELECT` plus `DELETE`; user-column updates, receipt updates,
+migration-history access/deletion, DDL, account creation and grant operations
+remain denied. The deletion assertions must pass in the disposable suite before
+the new grant deployment; local tests do not themselves change live grants. The earlier
 approved production reduction used the previous transitional manifest.
 Do not improvise replacement grants. After maintenance,
 drop and verify removal of an ephemeral account; if the account is deliberately

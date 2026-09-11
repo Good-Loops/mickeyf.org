@@ -4,6 +4,7 @@ import {
     applyRuntimeGrants,
     createRuntimeGrantPlan,
     planRuntimeGrants,
+    verifyRuntimeGrants,
     RuntimeGrantIndeterminateError,
     runtimeGrantLockName,
     type RuntimeGrantConnection,
@@ -12,6 +13,7 @@ import {
 } from './runtimeGrantOperations';
 import {
     runtimeColumnPrivilegeInventory,
+    runtimeTablePrivilegeInventory,
     type RuntimeDatabaseAccount,
 } from './runtimeGrantManifest';
 
@@ -61,7 +63,11 @@ function exactSnapshot(): RuntimeGrantSnapshot {
         globalPrivileges: [{ privilegeType: 'USAGE', isGrantable: 'NO' }],
         dynamicGlobalPrivileges: [],
         schemaPrivileges: [],
-        tablePrivileges: [],
+        tablePrivileges: runtimeTablePrivilegeInventory().map((privilege) => ({
+            schemaName: DATABASE,
+            ...privilege,
+            isGrantable: 'NO',
+        })),
         columnPrivileges: inventory.map((privilege) => ({
             schemaName: DATABASE,
             tableName: privilege.tableName,
@@ -84,6 +90,9 @@ test('exact runtime grants produce a stable reduced no-op plan', () => {
     const second = createRuntimeGrantPlan(snapshot, SETTINGS, RUNTIME_ACCOUNT);
 
     assert.equal(first.state, 'reduced');
+    assert.equal(first.formatVersion, 4);
+    assert.deepEqual(first.expectedTablePrivileges, [...snapshot.tablePrivileges].sort((left, right) =>
+        left.tableName.localeCompare(right.tableName)));
     assert.equal(first.compliant, true);
     assert.deepEqual(first.blockers, []);
     assert.equal(first.sha256, second.sha256);
@@ -93,6 +102,50 @@ test('exact runtime grants produce a stable reduced no-op plan', () => {
         clearDefaultRoles: [],
         removeApprovedRole: null,
     });
+});
+
+test('missing account deletion grants produce an additive repair plan, not compliance', () => {
+    const current = exactSnapshot();
+    for (const tablePrivileges of [[], current.tablePrivileges.slice(1)]) {
+        const plan = createRuntimeGrantPlan({ ...current, tablePrivileges }, SETTINGS, RUNTIME_ACCOUNT);
+        assert.equal(plan.state, 'repair');
+        assert.equal(plan.compliant, false);
+        assert.deepEqual(plan.blockers, []);
+        assert.equal(plan.operations.ensureRequiredPrivileges.length, 3);
+        assert.ok(plan.operations.ensureRequiredPrivileges.every((sql) => /, DELETE ON /u.test(sql)));
+        assert.equal(plan.operations.removeApprovedRole, null);
+    }
+});
+
+test('table privileges accept only non-grantable DELETE on the three manifest tables', () => {
+    const current = exactSnapshot();
+    for (const unexpected of [
+        { schemaName: DATABASE, tableName: 'users', privilegeType: 'SELECT', isGrantable: 'NO' as const },
+        { schemaName: DATABASE, tableName: 'users', privilegeType: 'UPDATE', isGrantable: 'NO' as const },
+        { schemaName: DATABASE, tableName: 'users', privilegeType: 'DELETE', isGrantable: 'YES' as const },
+        { schemaName: DATABASE, tableName: 'schema_migrations', privilegeType: 'DELETE', isGrantable: 'NO' as const },
+        { schemaName: 'other_schema', tableName: 'users', privilegeType: 'DELETE', isGrantable: 'NO' as const },
+    ]) {
+        const plan = createRuntimeGrantPlan({
+            ...current,
+            tablePrivileges: [...current.tablePrivileges, unexpected],
+        }, SETTINGS, RUNTIME_ACCOUNT);
+        assert.equal(plan.state, 'blocked');
+        assert.match(plan.blockers.join(' '), /unexpected or grantable table privileges/u);
+        assert.deepEqual(plan.operations.ensureRequiredPrivileges, []);
+    }
+});
+
+test('DELETE remains forbidden at schema and global scope', () => {
+    const current = exactSnapshot();
+    for (const extra of [
+        { schemaPrivileges: [{ schemaName: DATABASE, privilegeType: 'DELETE', isGrantable: 'NO' as const }] },
+        { globalPrivileges: [...current.globalPrivileges, { privilegeType: 'DELETE', isGrantable: 'NO' as const }] },
+    ]) {
+        const plan = createRuntimeGrantPlan({ ...current, ...extra }, SETTINGS, RUNTIME_ACCOUNT);
+        assert.equal(plan.state, 'blocked');
+        assert.deepEqual(plan.operations.ensureRequiredPrivileges, []);
+    }
 });
 
 test('the plan digest binds the non-secret account credential-expiry state', () => {
@@ -186,7 +239,7 @@ test('unexpected direct privileges and privilege relationships block every mutat
         tablePrivileges: [{
             schemaName: DATABASE,
             tableName: 'users',
-            privilegeType: 'DELETE',
+            privilegeType: 'ALTER',
             isGrantable: 'NO',
         }],
         proxyPrivileges: [{
@@ -332,6 +385,12 @@ class SnapshotConnection implements RuntimeGrantConnection {
         if (sql.includes('runtime-grants:column')) {
             return [exactSnapshot().columnPrivileges, []];
         }
+        if (sql.includes('runtime-grants:table')) {
+            return [exactSnapshot().tablePrivileges, []];
+        }
+        if (sql.includes('runtime-grants:active-sessions')) {
+            return [[{ sessionCount: 0, processPrivilegeProof: 1 }], []];
+        }
         return [[], []];
     }
 
@@ -339,6 +398,40 @@ class SnapshotConnection implements RuntimeGrantConnection {
         this.destroyed = true;
     }
 }
+
+class MissingDeleteConnection extends SnapshotConnection {
+    grantsInstalled = false;
+
+    override async query(sql: string): Promise<[unknown, unknown]> {
+        if (/^GRANT /u.test(sql)) {
+            this.calls.push(sql);
+            this.grantsInstalled = true;
+            return [[], []];
+        }
+        if (sql.includes('runtime-grants:table') && !this.grantsInstalled) {
+            this.calls.push(sql);
+            return [[], []];
+        }
+        return super.query(sql);
+    }
+}
+
+test('verification fails without DELETE and an approved fake apply installs the exact manifest', async () => {
+    const connection = new MissingDeleteConnection();
+    await assert.rejects(
+        () => verifyRuntimeGrants(connection, SETTINGS, RUNTIME_ACCOUNT),
+        /do not exactly match/u
+    );
+    const approved = await planRuntimeGrants(connection, SETTINGS, RUNTIME_ACCOUNT);
+    const applied = await applyRuntimeGrants(
+        connection, SETTINGS, RUNTIME_ACCOUNT, approved.sha256, SERVER_UUID
+    );
+    assert.equal(applied.compliant, true);
+    assert.equal(connection.calls.filter((sql) => /^GRANT /u.test(sql)).length, 3);
+    const verified = await verifyRuntimeGrants(connection, SETTINGS, RUNTIME_ACCOUNT);
+    assert.equal(verified.compliant, true);
+    assert.equal(connection.calls.some((sql) => /^REVOKE|^SET DEFAULT ROLE/u.test(sql)), false);
+});
 
 class PostProviderVerificationFailureConnection extends SnapshotConnection {
     roleRemovalInvoked = false;

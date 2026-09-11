@@ -68,6 +68,7 @@ private enum LudolumeApiPolicy {
         "POST /api/users",
         "GET /auth/verify-token",
         "POST /auth/logout",
+        "POST /auth/delete-account",
         "GET /api/leaderboards",
         "GET /api/leaderboards/p4-vega",
         "GET /api/leaderboards/three-bosses",
@@ -207,11 +208,22 @@ private final class LudolumeApiRequest: NSObject, URLSessionDataDelegate, @unche
             return
         }
         finished = true
-        // Never pass response headers or cookie values through the Capacitor bridge.
-        call.resolve(["status": response.statusCode, "body": text])
         session.finishTasksAndInvalidate()
         self.session = nil
-        onComplete()
+        let finish = {
+            // Never pass response headers or cookie values through the Capacitor bridge.
+            self.call.resolve(["status": response.statusCode, "body": text])
+            self.onComplete()
+        }
+        // Deletion differs from local-first logout: retain the cookie until the
+        // server confirms durable deletion, then also remove stale WebView copies.
+        if request.url?.path == "/auth/delete-account", response.statusCode == 200,
+           let result = try? JSONDecoder().decode([String: Bool].self, from: body),
+           result == ["deleted": true] {
+            LudolumeApiPolicy.clearSessionCookie(completion: finish)
+        } else {
+            finish()
+        }
     }
 
     private func reject(_ message: String, code: String) {

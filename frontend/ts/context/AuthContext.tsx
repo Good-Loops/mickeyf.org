@@ -12,7 +12,8 @@
  * - The service layer (`services/authService.ts`) owns network/provider calls.
  */
 import { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { loginRequest, logoutRequest, verifyRequest } from '@/services/authService';
+import { loginRequest, logoutRequest, verifyRequest, deleteAccountRequest } from '@/services/authService';
+import type { DeleteAccountResponse } from '@/services/authApi';
 import Swal from '@/components/siteAlert';
 
 type LoginOptions = { showFeedback?: boolean };
@@ -24,6 +25,7 @@ type AuthContextType = {
     loading: boolean;
     login: (user: string, pass: string, options?: LoginOptions) => Promise<boolean>;
     logout: () => void;
+    deleteAccount: (password: string) => Promise<DeleteAccountResponse>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -145,9 +147,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const deleteAccount = async (password: string): Promise<DeleteAccountResponse> => {
+        const actionVersion = ++authActionVersion.current;
+        const result = await deleteAccountRequest(password);
+        // Unlike logout, deletion is server-first: a rejected/uncertain request
+        // must not hide the account or imply that its data has been removed.
+        if (actionVersion === authActionVersion.current
+            && ('deleted' in result || result.error === 'UNAUTHENTICATED')) {
+            setIsAuthenticated(false);
+            setUserName(null);
+            setLoading(false);
+        }
+        return result;
+    };
+
     return (
         <AuthContext.Provider
-            value={{ userName, isAuthenticated, loading, login, logout }}
+            value={{ userName, isAuthenticated, loading, login, logout, deleteAccount }}
         >
             {children}
         </AuthContext.Provider>

@@ -67,7 +67,9 @@ app.use('/api', createMainRouter({
     isProduction: runtimeConfig.isProduction,
     p4VegaScoreSubmissionsEnabled: runtimeConfig.p4VegaScoreSubmissionsEnabled,
 }));
-app.use('/auth', createAuthRouter(runtimeConfig.sessionSecret, runtimeConfig.isProduction));
+app.use('/auth', createAuthRouter(
+    pool, runtimeConfig.sessionSecret, runtimeConfig.isProduction, runtimeConfig.corsOrigins
+));
 
 app.use(notFoundHandler);
 app.use(requestErrorHandler);

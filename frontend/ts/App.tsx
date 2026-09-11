@@ -29,6 +29,7 @@ import GameLeaderboard from "@/pages/leaderboards/GameLeaderboard";
 import Connect from "@/pages/Connect";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
+import ManageAccount from "@/pages/ManageAccount";
 import NotFound from "@/pages/NotFound";
 
 const App: React.FC = () => {
@@ -79,6 +80,7 @@ const App: React.FC = () => {
 				<Route path="/connect" element={<Connect />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/signup" element={<SignUp />} />
+				<Route path="/account" element={<ManageAccount />} />
 				<Route path="*" element={<NotFound />} />
 			</Routes>
 		</main>

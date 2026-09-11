@@ -8,6 +8,9 @@ export type SignupPayload = LoginPayload & { email: string };
 type AccountError = { error: string; message?: string; status?: number };
 type LoginResponse = { success: true; user_name: string } | AccountError;
 export type SignupResponse = { success: true; error?: never } | AccountError;
+export type DeleteAccountResponse =
+    | { deleted: true }
+    | { error: 'INVALID_REQUEST' | 'INVALID_PASSWORD' | 'UNAUTHENTICATED' | 'ACCOUNT_DELETION_UNAVAILABLE' | 'RATE_LIMITED' };
 type VerificationResponse =
     | { loggedIn: true; user_name: string }
     | { loggedIn: false };
@@ -84,5 +87,30 @@ export function createAuthApi(apiBase: string, fetchRequest: typeof fetch = fetc
         });
     }
 
-    return { loginRequest, signupRequest, verifyRequest, logoutRequest };
+    async function deleteAccountRequest(password: string): Promise<DeleteAccountResponse> {
+        const response = await fetchRequest(`${apiBase}/auth/delete-account`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ password, confirmation: 'DELETE' }),
+        });
+        if (response.status === 401) return { error: 'UNAUTHENTICATED' };
+
+        const result: unknown = await response.json();
+        if (result && typeof result === 'object') {
+            if (response.status === 200 && 'deleted' in result && result.deleted === true && !('error' in result)) {
+                return { deleted: true };
+            }
+            if ('error' in result) {
+                if (response.status === 400 && result.error === 'INVALID_REQUEST') return { error: result.error };
+                if (response.status === 403 && result.error === 'INVALID_PASSWORD') return { error: result.error };
+                if (response.status === 503 && result.error === 'ACCOUNT_DELETION_UNAVAILABLE') return { error: result.error };
+                if (response.status === 429 && result.error === 'RATE_LIMITED') return { error: result.error };
+            }
+        }
+        // An empty, malformed or unexpected response is not proof of deletion.
+        throw new Error('Could not confirm account deletion.');
+    }
+
+    return { loginRequest, signupRequest, verifyRequest, logoutRequest, deleteAccountRequest };
 }

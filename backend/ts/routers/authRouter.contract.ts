@@ -53,17 +53,33 @@ export type LogoutResponse = {
     loggedOut: true;
 };
 
+/** Password reauthentication and explicit confirmation; account identity comes from the session. */
+export type DeleteAccountRequest = { password: string; confirmation: 'DELETE' };
+export type DeleteAccountResponse = { deleted: true } | {
+    error: 'UNAUTHENTICATED' | 'INVALID_REQUEST' | 'INVALID_PASSWORD'
+        | 'RATE_LIMITED' | 'ACCOUNT_DELETION_UNAVAILABLE';
+};
+
 /** @category Backend — Contracts */
 export type AuthRoutesContract = {
     readonly routes: readonly (
         | RouteContract<VerifyTokenRequest, VerifyTokenResponse>
         | RouteContract<LogoutRequest, LogoutResponse>
+        | RouteContract<DeleteAccountRequest, DeleteAccountResponse>
     )[];
 };
 
 /** @category Backend — Contracts */
 export const authRoutesContract: AuthRoutesContract = {
     routes: [
+        {
+            id: 'auth.deleteAccount',
+            method: 'POST',
+            path: '/delete-account',
+            auth: 'user',
+            request: {} as DeleteAccountRequest,
+            response: { deleted: true } as DeleteAccountResponse,
+        },
         {
             id: 'auth.verifyToken',
             method: 'GET',

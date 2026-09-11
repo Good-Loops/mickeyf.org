@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { after, before, beforeEach, test } from 'node:test';
+import bcrypt from 'bcryptjs';
 import mysql, {
     Connection,
     Pool,
     RowDataPacket,
 } from 'mysql2/promise';
 import { loadMigrationConfig } from '../config/migrationConfig';
+import { deleteAccount } from '../accounts/accountDeletionRepository';
 import {
     readP4VegaLeaderboard,
     submitP4VegaScore,
@@ -22,6 +24,7 @@ import { applyMigrations } from '../migrations/migrationRunner';
 import {
     renderRuntimeGrantStatements,
     runtimeColumnPrivilegeInventory,
+    runtimeTablePrivilegeInventory,
     type RuntimeColumnPrivilege,
     type RuntimeDatabaseAccount,
 } from './runtimeGrantManifest';
@@ -243,7 +246,7 @@ after(async () => {
     if (administrator) await administrator.end();
 });
 
-test('installs only the exact column-level manifest with no active role', async () => {
+test('installs exact column grants and account-deletion table grants with no active role', async () => {
     const [columnRows] = await root.query<Array<RowDataPacket & {
         tableName: RuntimeColumnPrivilege['tableName'];
         columnName: string;
@@ -271,7 +274,6 @@ test('installs only the exact column-level manifest with no active role', async 
 
     for (const scope of [
         'SCHEMA_PRIVILEGES',
-        'TABLE_PRIVILEGES',
     ] as const) {
         const [rows] = await root.query<Array<RowDataPacket & { privilegeCount: number }>>(
             `SELECT COUNT(*) AS privilegeCount
@@ -281,6 +283,17 @@ test('installs only the exact column-level manifest with no active role', async 
         );
         assert.equal(Number(rows[0].privilegeCount), 0, `${scope} must be empty`);
     }
+
+    const [tableRows] = await root.query<RowDataPacket[]>(
+        `SELECT TABLE_SCHEMA AS schemaName, TABLE_NAME AS tableName,
+                PRIVILEGE_TYPE AS privilegeType, IS_GRANTABLE AS isGrantable
+         FROM information_schema.TABLE_PRIVILEGES
+         WHERE GRANTEE = ? ORDER BY TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE`,
+        [TEST_RUNTIME_GRANTEE]
+    );
+    assert.deepEqual(tableRows, runtimeTablePrivilegeInventory()
+        .map((privilege) => ({ schemaName: config.database, ...privilege, isGrantable: 'NO' }))
+        .sort((left, right) => left.tableName.localeCompare(right.tableName)));
 
     const [userPrivilegeRows] = await root.query<Array<RowDataPacket & {
         privilegeType: string;
@@ -355,7 +368,44 @@ test('supports every current auth and leaderboard SQL path', async () => {
     }]);
 });
 
-test('denies migration history, receipt mutation, destructive DML, and DDL', async () => {
+test('deletes an account and its dependent results transactionally using only runtime grants', async () => {
+    const password = 'account-deletion-test-only';
+    await administrator.query('UPDATE users SET user_password = ? WHERE user_id = ?', [
+        await bcrypt.hash(password, 4), 1,
+    ]);
+    await administrator.query(
+        'INSERT INTO users (user_name, email, user_password) VALUES (?, ?, ?)',
+        ['unrelated-player', 'unrelated@example.test', 'test-only-hash']
+    );
+    await submitP4VegaScore(runtimePool, 1, 900);
+    await submitThreeBossesRun(runtimePool, 1, randomUUID(), 60_000);
+    await submitP4VegaScore(runtimePool, 2, 500);
+    await submitThreeBossesRun(runtimePool, 2, randomUUID(), 70_000);
+    const tables = ['users', 'game_submission_receipts', 'game_personal_bests'];
+    const rowsBefore = new Map<string, RowDataPacket[]>();
+    for (const table of tables) {
+        const [rows] = await administrator.query<RowDataPacket[]>(`SELECT * FROM ${table}`);
+        rowsBefore.set(table, rows);
+    }
+
+    assert.equal(await deleteAccount(runtimePool, 1, 'wrong-test-password'), 'invalid-password');
+    for (const table of tables) {
+        const [unchanged] = await administrator.query<RowDataPacket[]>(`SELECT * FROM ${table}`);
+        assert.deepEqual(unchanged, rowsBefore.get(table), `${table} unchanged after failed reauthentication`);
+    }
+
+    assert.equal(await deleteAccount(runtimePool, 1, password), 'deleted');
+    assert.equal(await deleteAccount(runtimePool, 1, password), 'not-found');
+    for (const table of tables) {
+        const [remaining] = await administrator.query<RowDataPacket[]>(
+            `SELECT * FROM ${table}`
+        );
+        assert.deepEqual(remaining, rowsBefore.get(table)?.filter((row) => row.user_id === 2),
+            `${table} preserves all unrelated data and removes all deleted-account data`);
+    }
+});
+
+test('denies migration history, receipt updates, unrelated deletion, and DDL', async () => {
     await assertPrivilegeDenied(() =>
         runtimePool.query('SELECT version FROM schema_migrations LIMIT 1'));
     await assertPrivilegeDenied(() =>
@@ -363,13 +413,9 @@ test('denies migration history, receipt mutation, destructive DML, and DDL', asy
     await assertPrivilegeDenied(() =>
         runtimePool.query('UPDATE users SET email = email WHERE user_id = 1'));
     await assertPrivilegeDenied(() =>
-        runtimePool.query('SELECT user_id FROM users WHERE user_id = 1 FOR UPDATE'));
-    await assertPrivilegeDenied(() =>
         runtimePool.query('UPDATE game_submission_receipts SET score = score WHERE 1 = 0'));
     await assertPrivilegeDenied(() =>
-        runtimePool.query('DELETE FROM game_submission_receipts WHERE 1 = 0'));
-    await assertPrivilegeDenied(() =>
-        runtimePool.query('DELETE FROM game_personal_bests WHERE 1 = 0'));
+        runtimePool.query('DELETE FROM schema_migrations WHERE 1 = 0'));
     await assertPrivilegeDenied(() =>
         runtimePool.query('ALTER TABLE users ADD COLUMN forbidden INT NULL'));
     await assertPrivilegeDenied(() =>

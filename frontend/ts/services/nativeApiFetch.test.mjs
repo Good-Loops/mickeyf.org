@@ -107,3 +107,29 @@ test('the native origin matches both build jobs and the plugin is included in th
     assert.match(scene, /rootViewController = LudolumeBridgeViewController\(\)/);
     assert.match(project, /LudolumeApiPlugin\.swift in Sources/);
 });
+
+test('account deletion uses the native JSON transport without clearing the session before the response', async () => {
+    const requests = [];
+    const native = createNativeApiFetch(async (request) => {
+        requests.push(request);
+        return { status: 403, body: '{"error":"INVALID_PASSWORD"}' };
+    });
+    const api = createAuthApi(base, native);
+    assert.deepEqual(await api.deleteAccountRequest('test-only'), { error: 'INVALID_PASSWORD' });
+    assert.deepEqual(requests, [{
+        url: `${base}/auth/delete-account`,
+        method: 'POST',
+        body: JSON.stringify({ password: 'test-only', confirmation: 'DELETE' }),
+    }]);
+});
+
+test('native deletion is allowlisted and post-success cleanup remains distinct from local-first logout', async () => {
+    // Structural safeguard only: compiled/device cookie behavior is checked on iOS.
+    const native = await readFile(new URL('../../ios/App/App/LudolumeApiPlugin.swift', import.meta.url), 'utf8');
+    assert.match(native, /"POST \/auth\/delete-account"/);
+    assert.match(native, /if request\.url\?\.path == "\/auth\/logout" \{\s*LudolumeApiPolicy\.clearSessionCookie\(completion: operation\.start\)/);
+    assert.match(native, /request\.url\?\.path == "\/auth\/delete-account", response\.statusCode == 200/);
+    assert.match(native, /JSONDecoder\(\)\.decode\(\[String: Bool\]\.self, from: body\)/);
+    assert.match(native, /result == \["deleted": true\]/);
+    assert.match(native, /LudolumeApiPolicy\.clearSessionCookie\(completion: finish\)/);
+});

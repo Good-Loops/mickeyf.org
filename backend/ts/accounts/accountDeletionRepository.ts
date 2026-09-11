@@ -1,0 +1,99 @@
+import bcrypt from 'bcryptjs';
+import { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
+import { withUserSubmissionLock } from '../leaderboards/userSubmissionLock';
+
+type AccountPasswordRow = RowDataPacket & { passwordHash: string };
+
+export type AccountDeletionResult = 'deleted' | 'not-found' | 'invalid-password';
+
+const DATABASE_QUERY_TIMEOUT_MS = 10_000;
+
+export class AccountDeletionRollbackError extends Error {
+    constructor(
+        readonly transactionError: unknown,
+        readonly rollbackError: unknown
+    ) {
+        super('The account deletion transaction and its rollback both failed.');
+        this.name = 'AccountDeletionRollbackError';
+    }
+}
+
+async function deleteAuthenticatedAccount(
+    connection: PoolConnection,
+    userId: number,
+    password: string
+): Promise<AccountDeletionResult> {
+    const [accounts] = await connection.query<AccountPasswordRow[]>(
+        {
+            sql: `SELECT user_password AS passwordHash
+                FROM users WHERE user_id = ? LIMIT 1 FOR UPDATE`,
+            timeout: DATABASE_QUERY_TIMEOUT_MS,
+        },
+        [userId]
+    );
+    if (!accounts[0]) return 'not-found';
+    if (!await bcrypt.compare(password, accounts[0].passwordHash)) {
+        return 'invalid-password';
+    }
+
+    // Both child tables restrict parent deletion. Explicit, scoped deletes
+    // remove every game's data without weakening those foreign keys.
+    for (const sql of [
+        'DELETE FROM game_personal_bests WHERE user_id = ?',
+        'DELETE FROM game_submission_receipts WHERE user_id = ?',
+    ]) {
+        await connection.query<ResultSetHeader>(
+            { sql, timeout: DATABASE_QUERY_TIMEOUT_MS },
+            [userId]
+        );
+    }
+    const [deleted] = await connection.query<ResultSetHeader>(
+        {
+            sql: 'DELETE FROM users WHERE user_id = ?',
+            timeout: DATABASE_QUERY_TIMEOUT_MS,
+        },
+        [userId]
+    );
+    if (deleted.affectedRows !== 1) {
+        throw new Error('Account deletion did not remove exactly one account.');
+    }
+    return 'deleted';
+}
+
+/** Serializes deletion with score submissions, retries, and receipt cleanup. */
+export async function deleteAccount(
+    database: Pick<Pool, 'getConnection'>,
+    userId: number,
+    password: string
+): Promise<AccountDeletionResult> {
+    if (typeof password !== 'string') {
+        throw new TypeError('Account deletion requires a password string.');
+    }
+    return withUserSubmissionLock(
+        database,
+        userId,
+        async ({ connection, invalidateConnection }) => {
+            let phase: 'begin' | 'active' | 'commit' = 'begin';
+            try {
+                await connection.beginTransaction();
+                phase = 'active';
+                const result = await deleteAuthenticatedAccount(connection, userId, password);
+                phase = 'commit';
+                await connection.commit();
+                return result;
+            } catch (error) {
+                // A failed begin/commit may have reached MySQL without its
+                // acknowledgement reaching us. Never reuse that session or
+                // report deletion as successful on an uncertain commit.
+                if (phase !== 'active') invalidateConnection();
+                try {
+                    await connection.rollback();
+                } catch (rollbackError) {
+                    invalidateConnection();
+                    throw new AccountDeletionRollbackError(error, rollbackError);
+                }
+                throw error;
+            }
+        }
+    );
+}

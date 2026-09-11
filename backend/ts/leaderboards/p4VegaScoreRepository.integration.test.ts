@@ -257,8 +257,8 @@ test('strict improvements update generic storage', async () => {
     assert.equal(Number(runs[0].count), 0);
 });
 
-test('a missing authenticated user preserves the legacy false result', async () => {
-    assert.equal(await submitP4VegaScore(applicationPool, 999, 900), false);
+test('a deleted authenticated user is distinguished from a non-improving score', async () => {
+    assert.equal(await submitP4VegaScore(applicationPool, 999, 900), null);
 
     const [rows] = await observer.query<Array<RowDataPacket & { count: number }>>(`
         SELECT COUNT(*) AS count

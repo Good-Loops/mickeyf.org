@@ -217,12 +217,12 @@ test('commits equal and lower scores without writing generic history', async () 
     }
 });
 
-test('preserves the missing-user false result without attempting a generic insert', async () => {
+test('distinguishes a deleted account from a non-improvement without inserting anything', async () => {
     const fake = createFakeDatabase({ userExists: false });
 
     const personalBest = await submitP4VegaScore(fake.database, 42, 900);
 
-    assert.equal(personalBest, false);
+    assert.equal(personalBest, null);
     assert.deepEqual(fake.events, [
         'query:1',
         'begin',
