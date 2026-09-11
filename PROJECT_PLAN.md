@@ -2576,6 +2576,16 @@ the support-message and backup-retention work below.
   validate cleanup timing before publishing a retention maximum. Preserve other
   independently valid profiles. Resolve completed consent-evidence retention and
   provider cancellation/deletion separately. This draft activates neither flow.
+- [ ] **Completed consent evidence (proposed 2026-09-11; owner approval pending):**
+  retain minimal purpose-specific proof while the relevant processing relies on
+  it, with retrievable non-personal notice/flow documentation. Remove evidence
+  no longer necessary when processing ends; include receipts in account deletion
+  unless a specific legal retention requirement applies. No automatic support-
+  period or multi-year archive. Preserve separate valid permissions and only
+  necessary denied-state/restore markers; missing proof cannot grant permission.
+  Exclude raw verification inputs and full provider payloads. Validate KWS fields,
+  contractual obligations and deletion interfaces separately; local deletion is
+  not a promise to erase provider-held AgeGraph data. Implementation is pending.
 - [ ] **In-app and web account deletion:** add Account → Manage account → Delete
   account with proportionate reauthentication and explicit permanent-deletion
   confirmation. Delete the live account, personal bests, public entries and
