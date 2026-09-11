@@ -2373,6 +2373,16 @@ milestone. Public store publication still requires separate release approval.
 Do not let App Store Connect's stale bundle-description label expand this work
 into repeated refreshes, a replacement app/identifier or broader CI permissions.
 
+Owner reaffirmed on 2026-09-10: finish the scoped Clean Code pass and its security
+closeout before public store publication, together with the privacy/release
+deliverables below. TestFlight builds are not a public store release. Google
+sign-in and native iOS Sign in with Apple can be implemented and tested before
+publication; do not treat public release as their shared prerequisite. Apple's
+web/other-platform service has a separate documented prerequisite for an
+existing App Store app using Sign in with Apple. Keep that activation separate;
+do not accelerate publication solely to enable it. This clarification does not
+itself activate, implement or defer both providers.
+
 - [x] Register the Apple bundle ID and create the App Store Connect record.
   Apple Developer registration verified 2026-09-10: explicit `com.mickeyf.app`
   under team `AX4Z7T24C9`, description Ludolume. After the original listing name
@@ -2491,8 +2501,10 @@ into repeated refreshes, a replacement app/identifier or broader CI permissions.
   Native login/session acceptance and that scoped origin change belong to this
   provider-login milestone, not the initial signed gameplay-build checkpoint.
 - [ ] Configure Apple's primary Sign in with Apple App ID, web Services ID,
-  return URLs and protected signing key. Check the web-service prerequisites
-  separately from native app registration; membership alone does not activate it.
+  return URLs and protected signing key. Configure/test native iOS authentication
+  separately from web/other-platform Services ID activation. Apple's documented
+  web-service prerequisite is an existing App Store app using Sign in with Apple;
+  do not assume a developer membership or TestFlight build alone satisfies it.
 - [ ] Review native session persistence, provider disconnect/revocation and
   current store policies before submission. Privacy disclosures and account
   deletion are tracked in the approved implementation backlog below; coordinate
@@ -2505,6 +2517,9 @@ Primary references checked 2026-09-10:
 [Capacitor build requirements](https://capacitorjs.com/docs/getting-started/environment-setup),
 [Codemagic Capacitor signing and distribution](https://docs.codemagic.io/yaml-quick-start/building-an-ionic-app/),
 [Google native sign-in restrictions](https://developers.google.com/identity/protocols/oauth2/native-app),
+[Google OAuth client setup](https://support.google.com/cloud/answer/15549257?hl=en),
+[Apple native sign-in sample and development setup](https://developer.apple.com/documentation/authenticationservices/implementing-user-authentication-with-sign-in-with-apple),
+[Apple web/other-platform prerequisites](https://developer.apple.com/documentation/signinwithapple/configuring-your-environment-for-sign-in-with-apple),
 [Apple web sign-in setup](https://developer.apple.com/help/account/capabilities/configure-sign-in-with-apple-for-the-web/),
 [Apple login/account review requirements](https://developer.apple.com/app-store/review/guidelines/).
 Provider login and store publication are planned, not implemented or verified.
