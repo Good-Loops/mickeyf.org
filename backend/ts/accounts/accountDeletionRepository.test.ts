@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import bcrypt from 'bcryptjs';
 import { Pool, PoolConnection } from 'mysql2/promise';
-import { AccountDeletionRollbackError, deleteAccount } from './accountDeletionRepository';
+import { AccountDeletionPendingError, AccountDeletionRollbackError, deleteAccount } from './accountDeletionRepository';
+import type { AccountDeletionJournal } from './deletionJournal';
 
 const PASSWORD = 'correct-test-password';
 const PASSWORD_HASH = bcrypt.hashSync(PASSWORD, 4);
+const ACCOUNT_ID = '123e4567-e89b-42d3-a456-426614174000';
 
 type FakeOptions = {
     userExists?: boolean;
@@ -14,6 +16,8 @@ type FakeOptions = {
     rollbackFails?: boolean;
     acquire?: () => Promise<void>;
     commit?: () => Promise<void>;
+    journal?: () => Promise<void>;
+    accountId?: string;
 };
 
 function fakeDatabase(options: FakeOptions = {}) {
@@ -41,7 +45,7 @@ function fakeDatabase(options: FakeOptions = {}) {
             }
             if (sql.startsWith('SELECT user_password')) {
                 record('read-password');
-                return [options.userExists === false ? [] : [{ passwordHash: PASSWORD_HASH }], []];
+                return [options.userExists === false ? [] : [{ passwordHash: PASSWORD_HASH, accountId: options.accountId ?? ACCOUNT_ID }], []];
             }
             record(sql);
             return [{ affectedRows: sql === 'DELETE FROM users WHERE user_id = ?'
@@ -64,14 +68,21 @@ function fakeDatabase(options: FakeOptions = {}) {
             return connection;
         },
     } as Pick<Pool, 'getConnection'>;
-    return { database, events, queries, failure, rollbackFailure };
+    const journal: AccountDeletionJournal = {
+        async recordAccountDeletion(accountId) {
+            assert.equal(accountId, ACCOUNT_ID);
+            record('journal');
+            await options.journal?.();
+        },
+    };
+    return { database, events, queries, failure, rollbackFailure, journal };
 }
 
 test('reauthenticates and deletes only this user and all their scores/receipts under the shared lock', async () => {
     const fake = fakeDatabase();
-    assert.equal(await deleteAccount(fake.database, 42, PASSWORD), 'deleted');
+    assert.equal(await deleteAccount(fake.database, 42, PASSWORD, fake.journal), 'deleted');
     assert.deepEqual(fake.events, [
-        'connect', 'acquire', 'begin', 'read-password',
+        'connect', 'acquire', 'begin', 'read-password', 'journal',
         'DELETE FROM game_personal_bests WHERE user_id = ?',
         'DELETE FROM game_submission_receipts WHERE user_id = ?',
         'DELETE FROM users WHERE user_id = ?',
@@ -90,7 +101,7 @@ test('missing users and incorrect passwords never issue a deletion', async () =>
         [true, 'wrong-password', 'invalid-password'],
     ] as const) {
         const fake = fakeDatabase({ userExists });
-        assert.equal(await deleteAccount(fake.database, 42, password), expected);
+        assert.equal(await deleteAccount(fake.database, 42, password, fake.journal), expected);
         assert.deepEqual(fake.events, ['connect', 'acquire', 'begin', 'read-password', 'commit', 'unlock', 'release']);
     }
 });
@@ -110,7 +121,7 @@ test('does not start until it owns the user lock or resolve before commit comple
         },
     });
     let resolved = false;
-    const deletion = deleteAccount(fake.database, 42, PASSWORD).then((result) => {
+    const deletion = deleteAccount(fake.database, 42, PASSWORD, fake.journal).then((result) => {
         resolved = true;
         return result;
     });
@@ -126,7 +137,11 @@ test('does not start until it owns the user lock or resolve before commit comple
 
 test('rolls back a partial deletion before releasing the user lock', async () => {
     const fake = fakeDatabase({ failAt: 'DELETE FROM game_submission_receipts WHERE user_id = ?' });
-    await assert.rejects(deleteAccount(fake.database, 42, PASSWORD), fake.failure);
+    await assert.rejects(deleteAccount(fake.database, 42, PASSWORD, fake.journal), (error: unknown) => {
+        assert.ok(error instanceof AccountDeletionPendingError);
+        assert.equal(error.cause, fake.failure);
+        return true;
+    });
     assert.deepEqual(fake.events.slice(-3), ['rollback', 'unlock', 'release']);
     assert.equal(fake.events.includes('commit'), false);
     assert.equal(fake.events.includes('DELETE FROM users WHERE user_id = ?'), false);
@@ -134,7 +149,11 @@ test('rolls back a partial deletion before releasing the user lock', async () =>
 
 test('does not commit if the parent deletion count is unexpected', async () => {
     const fake = fakeDatabase({ deletedAccounts: 0 });
-    await assert.rejects(deleteAccount(fake.database, 42, PASSWORD), /exactly one account/);
+    await assert.rejects(deleteAccount(fake.database, 42, PASSWORD, fake.journal), (error: unknown) => {
+        assert.ok(error instanceof AccountDeletionPendingError);
+        assert.match(String(error.cause), /exactly one account/);
+        return true;
+    });
     assert.deepEqual(fake.events.slice(-3), ['rollback', 'unlock', 'release']);
     assert.equal(fake.events.includes('commit'), false);
 });
@@ -142,7 +161,11 @@ test('does not commit if the parent deletion count is unexpected', async () => {
 test('destroys uncertain begin and commit sessions even when rollback acknowledges', async () => {
     for (const failAt of ['begin', 'commit']) {
         const fake = fakeDatabase({ failAt });
-        await assert.rejects(deleteAccount(fake.database, 42, PASSWORD), fake.failure);
+        await assert.rejects(deleteAccount(fake.database, 42, PASSWORD, fake.journal), (error: unknown) => {
+            assert.equal(error instanceof AccountDeletionPendingError ? error.cause : error, fake.failure);
+            assert.equal(error instanceof AccountDeletionPendingError, failAt === 'commit');
+            return true;
+        });
         assert.deepEqual(fake.events.slice(-2), ['rollback', 'destroy']);
         assert.equal(fake.events.includes('release'), false);
     }
@@ -150,10 +173,11 @@ test('destroys uncertain begin and commit sessions even when rollback acknowledg
 
 test('preserves both errors and destroys the connection if rollback fails', async () => {
     const fake = fakeDatabase({ failAt: 'DELETE FROM users WHERE user_id = ?', rollbackFails: true });
-    await assert.rejects(deleteAccount(fake.database, 42, PASSWORD), (error: unknown) => {
-        assert.ok(error instanceof AccountDeletionRollbackError);
-        assert.equal(error.transactionError, fake.failure);
-        assert.equal(error.rollbackError, fake.rollbackFailure);
+    await assert.rejects(deleteAccount(fake.database, 42, PASSWORD, fake.journal), (error: unknown) => {
+        assert.ok(error instanceof AccountDeletionPendingError);
+        assert.ok(error.cause instanceof AccountDeletionRollbackError);
+        assert.equal(error.cause.transactionError, fake.failure);
+        assert.equal(error.cause.rollbackError, fake.rollbackFailure);
         return true;
     });
     assert.deepEqual(fake.events.slice(-2), ['rollback', 'destroy']);
@@ -161,7 +185,31 @@ test('preserves both errors and destroys the connection if rollback fails', asyn
 
 test('rejects invalid user IDs and non-string passwords without acquiring a connection', async () => {
     const fake = fakeDatabase();
-    await assert.rejects(deleteAccount(fake.database, 0, PASSWORD), TypeError);
-    await assert.rejects(deleteAccount(fake.database, 42, null as unknown as string), TypeError);
+    await assert.rejects(deleteAccount(fake.database, 0, PASSWORD, fake.journal), TypeError);
+    await assert.rejects(deleteAccount(fake.database, 42, null as unknown as string, fake.journal), TypeError);
+    await assert.rejects(deleteAccount(fake.database, 42, PASSWORD, undefined as unknown as AccountDeletionJournal), TypeError);
     assert.deepEqual(fake.events, []);
+});
+
+test('journal failure or an invalid identity cannot reach a SQL deletion', async () => {
+    for (const options of [{ failAt: 'journal' }, { accountId: '42' }]) {
+        const fake = fakeDatabase(options);
+        await assert.rejects(deleteAccount(fake.database, 42, PASSWORD, fake.journal));
+        assert.equal(fake.queries.some(({ sql }) => sql.startsWith('DELETE')), false);
+        assert.equal(fake.events.includes('commit'), false);
+        assert.ok(fake.events.includes('rollback'));
+    }
+});
+
+test('SQL deletion waits for durable journal acknowledgement', async () => {
+    let acknowledge!: () => void;
+    let recording!: () => void;
+    const started = new Promise<void>(resolve => { recording = resolve; });
+    const durable = new Promise<void>(resolve => { acknowledge = resolve; });
+    const fake = fakeDatabase({ journal: async () => { recording(); await durable; } });
+    const deletion = deleteAccount(fake.database, 42, PASSWORD, fake.journal);
+    await started;
+    assert.equal(fake.queries.some(({ sql }) => sql.startsWith('DELETE')), false);
+    acknowledge();
+    assert.equal(await deletion, 'deleted');
 });

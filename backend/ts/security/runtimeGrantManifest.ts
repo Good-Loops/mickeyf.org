@@ -11,7 +11,7 @@ export type RuntimeColumnGrant = Readonly<{
 }>;
 
 export type RuntimeTableGrant = Readonly<{
-    table: 'users' | 'game_submission_receipts' | 'game_personal_bests';
+    table: 'users' | 'game_submission_receipts' | 'game_personal_bests' | 'schema_migrations';
     grants: readonly RuntimeColumnGrant[];
     tablePrivileges: readonly 'DELETE'[];
 }>;
@@ -40,10 +40,18 @@ export const PRODUCTION_RUNTIME_DATABASE_ROLE: RuntimeDatabaseAccount =
     });
 
 /**
- * Exact application-runtime DML. Migration history and schema changes belong
- * to a separate maintenance identity and are deliberately absent here.
+ * Exact runtime DML plus two read-only migration fields for identity-epoch
+ * verification. Migration writes and schema changes remain maintenance-only.
  */
 export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freeze([
+    Object.freeze({
+        table: 'schema_migrations' as const,
+        tablePrivileges: Object.freeze([]),
+        grants: Object.freeze([
+            Object.freeze({ privilege: 'SELECT' as const,
+                columns: Object.freeze(['version', 'applied_at']) }),
+        ]),
+    }),
     Object.freeze({
         table: 'users' as const,
         tablePrivileges: Object.freeze(['DELETE' as const]),
@@ -52,6 +60,7 @@ export const RUNTIME_GRANT_MANIFEST: readonly RuntimeTableGrant[] = Object.freez
                 privilege: 'SELECT' as const,
                 columns: Object.freeze([
                     'user_id',
+                    'account_uuid',
                     'user_name',
                     'email',
                     'user_password',

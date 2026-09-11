@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Pool } from 'mysql2/promise';
-import { deleteAccount } from '../accounts/accountDeletionRepository';
+import { AccountDeletionPendingError, deleteAccount } from '../accounts/accountDeletionRepository';
+import type { AccountDeletionJournal } from '../accounts/deletionJournal';
 import { hasAllowedMutationOrigin, isJsonMutationRequest } from '../security/mutationRequest';
 import { authenticateRequest } from '../security/requestAuthentication';
 import { sessionCookieOptions } from '../security/sessionCookie';
@@ -12,16 +13,18 @@ type AccountDeletionDependencies = {
     isProduction: boolean;
     allowedMutationOrigins: readonly string[];
     accountDeletionEnabled?: boolean;
+    deletionJournal?: AccountDeletionJournal;
 };
 
 export function createAccountDeletionController({
     database, sessionSecret, isProduction, allowedMutationOrigins,
     accountDeletionEnabled = false,
+    deletionJournal,
 }: AccountDeletionDependencies) {
     return async function deleteCurrentAccount(req: Request, res: Response) {
         // Keep destructive account operations unavailable until recovery protection
         // and the separately approved production rollout are ready.
-        if (!accountDeletionEnabled) {
+        if (!accountDeletionEnabled || !deletionJournal) {
             return res.status(503).json({ error: 'ACCOUNT_DELETION_UNAVAILABLE' });
         }
         const authentication = authenticateRequest(req, sessionSecret);
@@ -48,7 +51,7 @@ export function createAccountDeletionController({
         try {
             // Ownership comes exclusively from the verified token, never the request body.
             const result = await deleteAccount(
-                database, authentication.identity.userId, validation.input.password
+                database, authentication.identity.userId, validation.input.password, deletionJournal
             );
             if (result === 'invalid-password') {
                 return res.status(403).json({ error: 'INVALID_PASSWORD' });
@@ -58,7 +61,11 @@ export function createAccountDeletionController({
                 return res.status(401).json({ error: 'UNAUTHENTICATED' });
             }
             return res.json({ deleted: true });
-        } catch {
+        } catch (error) {
+            if (error instanceof AccountDeletionPendingError) {
+                console.error('Account deletion pending reconciliation');
+                return res.status(503).json({ error: 'ACCOUNT_DELETION_PENDING' });
+            }
             // A lost commit acknowledgement is uncertain, not proof of success or rollback.
             // Never log credentials or raw SQL errors.
             console.error('Account deletion unavailable');

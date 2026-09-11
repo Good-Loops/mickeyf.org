@@ -57,7 +57,7 @@ export type LogoutResponse = {
 export type DeleteAccountRequest = { password: string; confirmation: 'DELETE' };
 export type DeleteAccountResponse = { deleted: true } | {
     error: 'UNAUTHENTICATED' | 'INVALID_REQUEST' | 'INVALID_PASSWORD'
-        | 'RATE_LIMITED' | 'ACCOUNT_DELETION_UNAVAILABLE';
+        | 'RATE_LIMITED' | 'ACCOUNT_DELETION_UNAVAILABLE' | 'ACCOUNT_DELETION_PENDING';
 };
 
 /** @category Backend — Contracts */

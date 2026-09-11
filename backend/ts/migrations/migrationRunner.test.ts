@@ -58,6 +58,7 @@ function migrationResults(state: FakeMigrationState): QueryResultFactory {
     return (sql, values) => {
         if (sql.includes('GET_LOCK')) return [{ acquired: 1 }];
         if (sql.includes('RELEASE_LOCK')) return [{ released: 1 }];
+        if (sql.includes("COLUMN_NAME = 'account_uuid'")) return [];
 
         if (sql.includes('COUNT(*)') && sql.includes('information_schema.TABLES')) {
             const tableName = values[0];
@@ -187,6 +188,9 @@ test('plan is read-only, configures short waits, and releases its advisory lock'
             '0003_drop_users_p4_score',
             '0004_detach_personal_best_sources',
             '0005_retain_submission_receipts',
+            '0006_add_account_identity',
+            '0007_backfill_account_identity',
+            '0008_finalize_account_identity',
         ],
         recoverable: [],
     });

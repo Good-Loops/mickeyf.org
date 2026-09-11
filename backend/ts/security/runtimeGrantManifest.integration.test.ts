@@ -20,6 +20,7 @@ import {
 import type { MigrationConnection } from '../migrations/leaderboardSchema';
 import { cleanupSubmissionReceipts } from '../leaderboards/submissionReceiptCleanup';
 import { loadMigrationManifest } from '../migrations/migrationManifest';
+import { ACCOUNT_IDENTITY_MIGRATION_VERSION, assertAccountIdentityEpoch, verifyAccountIdentitySchema } from '../migrations/accountIdentitySchema';
 import { applyMigrations } from '../migrations/migrationRunner';
 import {
     renderRuntimeGrantStatements,
@@ -136,6 +137,9 @@ async function createSchema(): Promise<void> {
     });
     await applyMigrations(asMigrationConnection(administrator), migrations, config, {
         allowedEffectKinds: ['detach-best-source', 'retain-receipts'],
+    });
+    await applyMigrations(asMigrationConnection(administrator), migrations, config, {
+        allowedEffectKinds: ['add-account-identity'],
     });
 }
 
@@ -318,6 +322,12 @@ test('installs exact column grants and account-deletion table grants with no act
 });
 
 test('supports every current auth and leaderboard SQL path', async () => {
+    const [epochs] = await root.query<Array<RowDataPacket & { epoch: string }>>(
+        "SELECT DATE_FORMAT(applied_at, '%Y-%m-%d %H:%i:%s.%f') AS epoch FROM schema_migrations WHERE version = ?",
+        [ACCOUNT_IDENTITY_MIGRATION_VERSION]
+    );
+    await assertAccountIdentityEpoch(runtimePool as unknown as MigrationConnection, epochs[0].epoch);
+    await verifyAccountIdentitySchema(runtimePool as unknown as MigrationConnection);
     const [duplicates] = await runtimePool.query<RowDataPacket[]>(
         'SELECT 1 FROM users WHERE user_name = ? OR email = ? LIMIT 1',
         ['player-1', 'unused@example.test']
@@ -329,13 +339,14 @@ test('supports every current auth and leaderboard SQL path', async () => {
         ['player-2', 'player-2@example.test', 'test-only-hash']
     );
     const [loginRows] = await runtimePool.query<RowDataPacket[]>(
-        `SELECT user_id, user_name, user_password
+        `SELECT user_id, account_uuid, user_name, user_password
          FROM users
          WHERE user_name = ?
          LIMIT 1`,
         ['player-2']
     );
     assert.equal(loginRows.length, 1);
+    assert.match(String(loginRows[0].account_uuid), /^[a-f0-9-]{36}$/u);
 
     assert.equal(await submitP4VegaScore(runtimePool, 1, 900), true);
     assert.equal(await submitP4VegaScore(runtimePool, 1, 990), true);
@@ -388,14 +399,22 @@ test('deletes an account and its dependent results transactionally using only ru
         rowsBefore.set(table, rows);
     }
 
-    assert.equal(await deleteAccount(runtimePool, 1, 'wrong-test-password'), 'invalid-password');
+    const recordedAccountIds: string[] = [];
+    const journal = {
+        recordAccountDeletion: async (accountId: string) => { recordedAccountIds.push(accountId); },
+    };
+    assert.equal(await deleteAccount(runtimePool, 1, 'wrong-test-password', journal), 'invalid-password');
+    assert.deepEqual(recordedAccountIds, []);
     for (const table of tables) {
         const [unchanged] = await administrator.query<RowDataPacket[]>(`SELECT * FROM ${table}`);
         assert.deepEqual(unchanged, rowsBefore.get(table), `${table} unchanged after failed reauthentication`);
     }
 
-    assert.equal(await deleteAccount(runtimePool, 1, password), 'deleted');
-    assert.equal(await deleteAccount(runtimePool, 1, password), 'not-found');
+    assert.equal(await deleteAccount(runtimePool, 1, password, journal), 'deleted');
+    assert.equal(await deleteAccount(runtimePool, 1, password, journal), 'not-found');
+    const deletedAccount = rowsBefore.get('users')?.find((row) => row.user_id === 1);
+    assert.deepEqual(recordedAccountIds, [deletedAccount?.account_uuid]);
+    assert.match(recordedAccountIds[0], /^[a-f0-9-]{36}$/u);
     for (const table of tables) {
         const [remaining] = await administrator.query<RowDataPacket[]>(
             `SELECT * FROM ${table}`
@@ -407,11 +426,18 @@ test('deletes an account and its dependent results transactionally using only ru
 
 test('denies migration history, receipt updates, unrelated deletion, and DDL', async () => {
     await assertPrivilegeDenied(() =>
-        runtimePool.query('SELECT version FROM schema_migrations LIMIT 1'));
+        runtimePool.query('SELECT checksum FROM schema_migrations LIMIT 1'));
     await assertPrivilegeDenied(() =>
         runtimePool.query('SELECT game_run_id FROM game_submission_receipts LIMIT 1'));
     await assertPrivilegeDenied(() =>
         runtimePool.query('UPDATE users SET email = email WHERE user_id = 1'));
+    await assertPrivilegeDenied(() =>
+        runtimePool.query('UPDATE users SET account_uuid = UUID() WHERE user_id = 1'));
+    await assertPrivilegeDenied(() =>
+        runtimePool.query(
+            'INSERT INTO users (account_uuid, user_name, email, user_password) VALUES (?, ?, ?, ?)',
+            [randomUUID(), 'forbidden-identity', 'forbidden@example.test', 'test-only-hash']
+        ));
     await assertPrivilegeDenied(() =>
         runtimePool.query('UPDATE game_submission_receipts SET score = score WHERE 1 = 0'));
     await assertPrivilegeDenied(() =>

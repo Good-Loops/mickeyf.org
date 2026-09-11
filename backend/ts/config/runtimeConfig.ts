@@ -1,3 +1,5 @@
+import { DELETION_JOURNAL_BUCKET } from '../accounts/gcsDeletionJournal';
+
 export type RuntimeEnvironment = 'development' | 'test' | 'production';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -11,6 +13,8 @@ export type RuntimeConfig = {
     p4VegaScoreSubmissionsEnabled: boolean;
     threeBossesRunSubmissionsEnabled: boolean;
     accountDeletionEnabled: boolean;
+    accountIdentityEpoch: string | undefined;
+    journalBucket: string | undefined;
 };
 
 export type DatabaseConfig = {
@@ -76,6 +80,21 @@ export function loadRuntimeConfig(env: Environment = process.env): RuntimeConfig
     if (sessionSecret.length < minimumSecretLength) {
         throw new Error(`SESSION_SECRET must contain at least ${minimumSecretLength} characters`);
     }
+    const accountDeletionEnabled = isExplicitlyEnabled(env.ACCOUNT_DELETION_ENABLED);
+    if (accountDeletionEnabled && nodeEnv !== 'production') {
+        throw new Error('ACCOUNT_DELETION_ENABLED requires production; local tests must inject a fake journal');
+    }
+    const journalBucket = accountDeletionEnabled
+        ? requiredValue(env, 'ACCOUNT_DELETION_JOURNAL_BUCKET') : undefined;
+    if (accountDeletionEnabled && env.ACCOUNT_DELETION_JOURNAL_BUCKET !== DELETION_JOURNAL_BUCKET) {
+        throw new Error('ACCOUNT_DELETION_JOURNAL_BUCKET must explicitly name the approved production bucket');
+    }
+    const accountIdentityEpoch = accountDeletionEnabled
+        ? requiredValue(env, 'ACCOUNT_IDENTITY_EPOCH') : undefined;
+    if (accountIdentityEpoch !== undefined
+        && !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}$/.test(accountIdentityEpoch)) {
+        throw new Error('ACCOUNT_IDENTITY_EPOCH must be the original identity migration UTC timestamp');
+    }
 
     return Object.freeze({
         nodeEnv,
@@ -93,7 +112,9 @@ export function loadRuntimeConfig(env: Environment = process.env): RuntimeConfig
         threeBossesRunSubmissionsEnabled: isExplicitlyEnabled(
             env.THREE_BOSSES_RUN_SUBMISSIONS_ENABLED
         ),
-        accountDeletionEnabled: isExplicitlyEnabled(env.ACCOUNT_DELETION_ENABLED),
+        accountDeletionEnabled,
+        accountIdentityEpoch,
+        journalBucket,
     });
 }
 

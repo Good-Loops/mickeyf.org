@@ -1,4 +1,9 @@
 import { createHash } from 'node:crypto';
+import {
+    inspectAccountIdentityStage,
+    accountIdentityBackfillComplete,
+    verifyAccountIdentityPrecondition,
+} from './accountIdentitySchema';
 import type { MigrationConfig } from '../config/migrationConfig';
 import {
     legacyP4ScoreColumnExists,
@@ -222,6 +227,12 @@ async function inspectMigrationState(
         }
 
         pending.push(migration.version);
+        if (migration.effect === 'add-account-identity') {
+            if (await accountIdentityEffectComplete(connection, migration.stage)) {
+                recoverable.push(migration.version);
+            }
+            continue;
+        }
         if (migration.effect === 'detach-best-source' || migration.effect === 'retain-receipts') {
             const completed = migration.effect === 'detach-best-source'
                 ? stage !== 'original' : stage === 'receipts';
@@ -254,10 +265,29 @@ async function inspectMigrationState(
     });
 }
 
+async function accountIdentityEffectComplete(
+    connection: MigrationConnection, stage: 'column' | 'backfill' | 'finalize'
+): Promise<boolean> {
+    if (stage === 'backfill') return accountIdentityBackfillComplete(connection);
+    const schemaStage = await inspectAccountIdentityStage(connection);
+    return stage === 'column' ? schemaStage !== 'absent' : schemaStage === 'complete';
+}
+
 async function verifyMigrationPrecondition(
     connection: MigrationConnection,
     migration: MigrationDefinition
 ): Promise<void> {
+    if (migration.effect === 'add-account-identity') {
+        await verifyAccountIdentityPrecondition(connection);
+        const stage = await inspectAccountIdentityStage(connection);
+        if (migration.stage === 'column' ? stage !== 'absent' : stage === 'absent') {
+            throw new Error('Account identity migration requires the preceding reviewed schema stage');
+        }
+        if (migration.stage === 'finalize' && !(await accountIdentityBackfillComplete(connection))) {
+            throw new Error('Account identity finalization requires a complete UUID backfill');
+        }
+        return;
+    }
     if (migration.effect === 'detach-best-source') {
         await verifyLeaderboardTable(connection, 'game_personal_bests');
         return;
@@ -287,6 +317,12 @@ async function verifyMigrationPostcondition(
     migration: MigrationDefinition,
     stage: LeaderboardSchemaStage = 'original'
 ): Promise<void> {
+    if (migration.effect === 'add-account-identity') {
+        if (!(await accountIdentityEffectComplete(connection, migration.stage))) {
+            throw new Error(`Account identity ${migration.stage} postcondition is incomplete`);
+        }
+        return;
+    }
     if (migration.effect === 'detach-best-source') {
         await verifyLeaderboardStage(connection, 'game_personal_bests', 'detached');
         return;

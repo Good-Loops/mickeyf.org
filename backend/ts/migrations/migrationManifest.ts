@@ -4,7 +4,7 @@ import path from 'node:path';
 
 export type LeaderboardTableName = 'game_runs' | 'game_personal_bests';
 
-export type MigrationEffectKind = 'create-table' | 'drop-column' | 'detach-best-source' | 'retain-receipts';
+export type MigrationEffectKind = 'create-table' | 'drop-column' | 'detach-best-source' | 'retain-receipts' | 'add-account-identity';
 
 type MigrationMetadata = Readonly<{
     version: string;
@@ -25,6 +25,7 @@ export type MigrationDefinition = MigrationMetadata & Readonly<
     }
     | { effect: 'detach-best-source'; tableName: 'game_personal_bests' }
     | { effect: 'retain-receipts'; tableName: 'game_runs' }
+    | { effect: 'add-account-identity'; tableName: 'users'; stage: 'column' | 'backfill' | 'finalize' }
 >;
 
 const MIGRATION_SPECS = Object.freeze([
@@ -53,6 +54,24 @@ const MIGRATION_SPECS = Object.freeze([
         fileName: '0005_retain_submission_receipts.sql',
         effect: 'retain-receipts' as const,
         tableName: 'game_runs' as const,
+    }),
+    Object.freeze({
+        fileName: '0006_add_account_identity.sql',
+        effect: 'add-account-identity' as const,
+        tableName: 'users' as const,
+        stage: 'column' as const,
+    }),
+    Object.freeze({
+        fileName: '0007_backfill_account_identity.sql',
+        effect: 'add-account-identity' as const,
+        tableName: 'users' as const,
+        stage: 'backfill' as const,
+    }),
+    Object.freeze({
+        fileName: '0008_finalize_account_identity.sql',
+        effect: 'add-account-identity' as const,
+        tableName: 'users' as const,
+        stage: 'finalize' as const,
     }),
 ]);
 

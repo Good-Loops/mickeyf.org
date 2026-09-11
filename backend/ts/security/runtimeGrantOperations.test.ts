@@ -111,10 +111,34 @@ test('missing account deletion grants produce an additive repair plan, not compl
         assert.equal(plan.state, 'repair');
         assert.equal(plan.compliant, false);
         assert.deepEqual(plan.blockers, []);
-        assert.equal(plan.operations.ensureRequiredPrivileges.length, 3);
-        assert.ok(plan.operations.ensureRequiredPrivileges.every((sql) => /, DELETE ON /u.test(sql)));
+        assert.equal(plan.operations.ensureRequiredPrivileges.length, 4);
+        assert.equal(plan.operations.ensureRequiredPrivileges.filter((sql) => /, DELETE ON /u.test(sql)).length, 3);
         assert.equal(plan.operations.removeApprovedRole, null);
     }
+});
+
+test('account identity grants require its schema migration and fresh approval', () => {
+    const current = exactSnapshot();
+    const withoutIdentity = (column: { columnName: string }) => column.columnName !== 'account_uuid';
+    const oldGrants = current.columnPrivileges.filter(withoutIdentity);
+    const repair = createRuntimeGrantPlan({ ...current, columnPrivileges: oldGrants }, SETTINGS, RUNTIME_ACCOUNT);
+    const complete = createRuntimeGrantPlan(current, SETTINGS, RUNTIME_ACCOUNT);
+
+    assert.equal(repair.state, 'repair');
+    assert.equal(repair.compliant, false);
+    assert.deepEqual(repair.blockers, []);
+    assert.notEqual(repair.sha256, complete.sha256);
+    const userGrant = repair.operations.ensureRequiredPrivileges.find(sql => sql.includes('.`users`'))!;
+    assert.match(userGrant, /SELECT \([^)]*`account_uuid`/u);
+    assert.doesNotMatch(userGrant, /(?:INSERT|UPDATE) \([^)]*`account_uuid`/u);
+
+    const unmigrated = createRuntimeGrantPlan({
+        ...current,
+        availableColumns: current.availableColumns.filter(withoutIdentity),
+        columnPrivileges: oldGrants,
+    }, SETTINGS, RUNTIME_ACCOUNT);
+    assert.equal(unmigrated.state, 'blocked');
+    assert.deepEqual(unmigrated.operations.ensureRequiredPrivileges, []);
 });
 
 test('table privileges accept only non-grantable DELETE on the three manifest tables', () => {
@@ -209,7 +233,7 @@ test('the exact broad role produces only additive grants and one reviewed remova
     assert.equal(plan.state, 'broad');
     assert.equal(plan.compliant, false);
     assert.deepEqual(plan.blockers, []);
-    assert.equal(plan.operations.ensureRequiredPrivileges.length, 3);
+    assert.equal(plan.operations.ensureRequiredPrivileges.length, 4);
     assert.deepEqual(plan.operations.clearDefaultRoles, [
         "SET DEFAULT ROLE NONE TO 'runtime_test'@'%'",
     ]);
@@ -427,7 +451,7 @@ test('verification fails without DELETE and an approved fake apply installs the 
         connection, SETTINGS, RUNTIME_ACCOUNT, approved.sha256, SERVER_UUID
     );
     assert.equal(applied.compliant, true);
-    assert.equal(connection.calls.filter((sql) => /^GRANT /u.test(sql)).length, 3);
+    assert.equal(connection.calls.filter((sql) => /^GRANT /u.test(sql)).length, 4);
     const verified = await verifyRuntimeGrants(connection, SETTINGS, RUNTIME_ACCOUNT);
     assert.equal(verified.compliant, true);
     assert.equal(connection.calls.some((sql) => /^REVOKE|^SET DEFAULT ROLE/u.test(sql)), false);

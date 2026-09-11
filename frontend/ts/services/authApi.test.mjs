@@ -186,6 +186,7 @@ test('account deletion distinguishes rejected password, invalid request, expired
         [403, 'INVALID_PASSWORD'],
         [401, 'UNAUTHENTICATED'],
         [503, 'ACCOUNT_DELETION_UNAVAILABLE'],
+        [503, 'ACCOUNT_DELETION_PENDING'],
         [429, 'RATE_LIMITED'],
     ]) {
         const api = createAuthApi(apiBase, async () => Response.json({ error, message: 'Ignored private detail' }, { status }));

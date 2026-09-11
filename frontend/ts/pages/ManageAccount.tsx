@@ -58,12 +58,14 @@ export default function ManageAccount() {
                     ? 'Please check the confirmation and enter your current password again.'
                     : result.error === 'RATE_LIMITED'
                         ? 'Too many attempts. Please wait 15 minutes before trying again.'
-                    : 'Account deletion is temporarily unavailable. Please try again later.');
+                    : result.error === 'ACCOUNT_DELETION_PENDING'
+                        ? 'Your deletion request was recorded, but completion has not been confirmed. Retrying will not cancel the request. If it remains pending, contact mickeyf.plays@gmail.com.'
+                    : 'We could not confirm account deletion. A request may already be recorded; retrying later will not cancel it.');
         } catch {
             // A lost response could follow a successful deletion. Do not claim
             // either outcome, retry automatically, or log password-bearing errors.
             setPassword('');
-            setError('We could not confirm account deletion. Check your connection and try again. If your session has ended, log in to check whether the account still exists.');
+            setError('We could not confirm account deletion. Your request may already be recorded. Check your connection and try again; this will not cancel a recorded request.');
         } finally {
             submitting.current = false;
             setBusy(false);

@@ -16,6 +16,7 @@ import { Router } from 'express';
 import { createAuthController } from '../controllers/authController';
 import { Pool } from 'mysql2/promise';
 import { createAccountDeletionController } from '../controllers/accountDeletionController';
+import type { AccountDeletionJournal } from '../accounts/deletionJournal';
 import { asyncHandler } from '../middleware/errorHandling';
 import { createAccountDeletionRateLimiters } from '../security/requestRateLimits';
 
@@ -28,7 +29,10 @@ export function createAuthRouter(
     sessionSecret: string,
     isProduction: boolean,
     allowedMutationOrigins: readonly string[],
-    { accountDeletionEnabled = false }: { accountDeletionEnabled?: boolean } = {}
+    { accountDeletionEnabled = false, deletionJournal }: {
+        accountDeletionEnabled?: boolean;
+        deletionJournal?: AccountDeletionJournal;
+    } = {}
 ): Router {
     /**
      * Configured Express router for authentication routes.
@@ -48,6 +52,7 @@ export function createAuthRouter(
         asyncHandler(createAccountDeletionController({
             database, sessionSecret, isProduction, allowedMutationOrigins,
             accountDeletionEnabled,
+            deletionJournal,
         })));
 
     /** POST /logout — clears the session cookie, ending the authenticated session. */

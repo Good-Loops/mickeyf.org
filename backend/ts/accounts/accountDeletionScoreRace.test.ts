@@ -10,6 +10,7 @@ const USER_ID = 42;
 const PASSWORD = 'test-only-password';
 const PASSWORD_HASH = bcrypt.hashSync(PASSWORD, 4);
 const RUN_ID = 'e99d42ad-860d-4b15-b145-8519eb5b73b4';
+const journal = { async recordAccountDeletion() {} };
 type Database = Pick<Pool, 'getConnection'>;
 
 // A successful-transaction fixture, not a SQL implementation. Real repository
@@ -42,7 +43,7 @@ function createConcurrentDatabase() {
                     }
                     if (sql.startsWith('SELECT user_password')) {
                         operations.push('delete');
-                        return [state.userExists ? [{ passwordHash: PASSWORD_HASH }] : [], []];
+                        return [state.userExists ? [{ passwordHash: PASSWORD_HASH, accountId: RUN_ID }] : [], []];
                     }
                     if (sql.startsWith('SELECT users.user_id AS userId') || sql.startsWith('SELECT user_id FROM users')) {
                         operations.push('submit');
@@ -95,7 +96,7 @@ for (const game of games) {
         const fake = createConcurrentDatabase();
         const results = await Promise.all([
             game.submit(fake.database),
-            deleteAccount(fake.database, USER_ID, PASSWORD),
+            deleteAccount(fake.database, USER_ID, PASSWORD, journal),
         ]);
         assert.deepEqual(results, ['accepted', 'deleted']);
         assert.deepEqual(fake.operations, ['submit', 'delete']);
@@ -109,7 +110,7 @@ for (const game of games) {
     test(`${game.name}: deletion completes before a waiting submission and no score data is recreated`, async () => {
         const fake = createConcurrentDatabase();
         const results = await Promise.all([
-            deleteAccount(fake.database, USER_ID, PASSWORD),
+            deleteAccount(fake.database, USER_ID, PASSWORD, journal),
             game.submit(fake.database),
         ]);
         assert.deepEqual(results, ['deleted', 'user-not-found']);

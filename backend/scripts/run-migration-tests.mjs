@@ -75,6 +75,13 @@ const INTEGRATION_TEST_COMMANDS = Object.freeze([
   P4_VEGA_RECONCILIATION_INTEGRATION_TEST_COMMAND,
   RUNTIME_GRANT_INTEGRATION_TEST_COMMAND,
   RUNTIME_GRANT_OPERATIONS_INTEGRATION_TEST_COMMAND,
+  Object.freeze({
+    executable: process.execPath,
+    args: Object.freeze([
+      "--test", "-r", "ts-node/register",
+      "ts/accounts/deletionReplay.integration.test.ts",
+    ]),
+  }),
 ]);
 
 const MYSQL_SERVICE = "mysql";

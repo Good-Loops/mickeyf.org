@@ -23,14 +23,18 @@ const cookie = `session=${encodeURIComponent(`s:${token}.${signature}`)}`;
 const deletion = { password, confirmation: 'DELETE' };
 
 // In-memory HTTP boundary fixture only: no dbConfig import, credentials, or real connection.
-type TestState = { exists: boolean; unavailable: boolean; writes: string[]; databaseCalls: number };
+type TestState = {
+    exists: boolean; unavailable: boolean; writes: string[]; databaseCalls: number;
+    journalCalls: number; journalUnavailable: boolean; commitUnavailable: boolean;
+};
 
 async function withServer(
     run: (base: string, state: TestState) => Promise<void>,
-    options: { accountDeletionEnabled?: boolean } = { accountDeletionEnabled: true }
+    options: { accountDeletionEnabled?: boolean; withoutJournal?: boolean } = { accountDeletionEnabled: true }
 ) {
     const passwordHash = await bcrypt.hash(password, 4);
-    const state: TestState = { exists: true, unavailable: false, writes: [], databaseCalls: 0 };
+    const state: TestState = { exists: true, unavailable: false, writes: [], databaseCalls: 0,
+        journalCalls: 0, journalUnavailable: false, commitUnavailable: false };
     async function query(options: { sql: string }, values: unknown[]) {
         state.databaseCalls++;
         if (state.unavailable) throw new Error('private-database-error');
@@ -38,7 +42,8 @@ async function withServer(
         if (sql.includes('GET_LOCK') || sql.includes('RELEASE_LOCK')) return [[{ lockResult: 1 }], []];
         if (sql.startsWith('SELECT')) {
             assert.equal(values.at(-1), 42);
-            return [state.exists ? [{ passwordHash, userName: 'player', user_id: 42 }] : [], []];
+            return [state.exists ? [{ passwordHash, userName: 'player', user_id: 42,
+                accountId: '123e4567-e89b-42d3-a456-426614174000' }] : [], []];
         }
         assert.match(sql, /^DELETE FROM (game_personal_bests|game_submission_receipts|users) WHERE user_id = \?$/);
         assert.deepEqual(values, [42]);
@@ -50,12 +55,22 @@ async function withServer(
         query,
         async getConnection() {
             state.databaseCalls++;
-            return { query, async beginTransaction() {}, async commit() {}, async rollback() {}, release() {}, destroy() {} };
+            return { query, async beginTransaction() {},
+                async commit() { if (state.commitUnavailable) throw new Error('commit acknowledgement lost'); },
+                async rollback() {}, release() {}, destroy() {} };
         },
     } as unknown as Pick<Pool, 'query' | 'getConnection'>;
     const app = express();
     app.use(cookieParser(secret), express.json());
-    app.use('/auth', createAuthRouter(database, secret, true, origins, options));
+    app.use('/auth', createAuthRouter(database, secret, true, origins, {
+        accountDeletionEnabled: options.accountDeletionEnabled,
+        deletionJournal: options.withoutJournal ? undefined : {
+            async recordAccountDeletion() {
+                state.journalCalls++;
+                if (state.journalUnavailable) throw new Error('journal acknowledgement unavailable');
+            },
+        },
+    }));
     app.post('/api/users', asyncHandler(createMainController({ database, sessionSecret: secret, isProduction: true, p4VegaScoreSubmissionsEnabled: true })));
     app.use('/api/leaderboards', createLeaderboardRouter(database, {
         sessionSecret: secret, allowedMutationOrigins: origins, threeBossesRunSubmissionsEnabled: true,
@@ -78,7 +93,7 @@ function post(base: string, body: unknown, headers: Record<string, string> = {},
 }
 
 test('disabled or unwired deletion makes no database calls and leaves other auth routes usable', async () => {
-    for (const options of [{}, { accountDeletionEnabled: false }]) {
+    for (const options of [{}, { accountDeletionEnabled: false }, { accountDeletionEnabled: true, withoutJournal: true }]) {
         await withServer(async (base, state) => {
             state.unavailable = true;
             for (const origin of origins) {
@@ -88,6 +103,7 @@ test('disabled or unwired deletion makes no database calls and leaves other auth
                 assert.equal(response.headers.get('set-cookie'), null);
             }
             assert.equal(state.databaseCalls, 0);
+            assert.equal(state.journalCalls, 0);
             assert.deepEqual(state.writes, []);
             assert.equal(state.exists, true);
 
@@ -182,4 +198,22 @@ test('database unavailability never reports successful deletion or discards cred
         assert.equal(response.headers.get('set-cookie'), null);
         assert.equal(state.exists, true);
     });
+});
+
+test('journal uncertainty prevents SQL deletion; recorded intent with uncertain commit returns pending', async () => {
+    for (const failure of ['journalUnavailable', 'commitUnavailable'] as const) {
+        await withServer(async (base, state) => {
+            state[failure] = true;
+            const response = await post(base, deletion);
+            assert.equal(response.status, 503);
+            assert.deepEqual(await response.json(), { error: failure === 'journalUnavailable'
+                ? 'ACCOUNT_DELETION_UNAVAILABLE' : 'ACCOUNT_DELETION_PENDING' });
+            assert.equal(response.headers.get('set-cookie'), null);
+            assert.equal(state.journalCalls, 1);
+            if (failure === 'journalUnavailable') {
+                assert.deepEqual(state.writes, []);
+                assert.equal(state.exists, true);
+            }
+        });
+    }
 });

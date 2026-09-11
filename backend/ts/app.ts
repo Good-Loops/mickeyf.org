@@ -16,8 +16,12 @@ import { createAuthRouter } from './routers/authRouter';
 import { createLeaderboardRouter } from './routers/leaderboardRouter';
 import { createMainRouter } from './routers/mainRouter';
 import { createGeneralApiRateLimiter } from './security/requestRateLimits';
+import { createGcsDeletionJournal } from './accounts/gcsDeletionJournal';
+import { verifyAccountDeletionReadiness } from './accounts/accountDeletionReadiness';
 
 const runtimeConfig = loadRuntimeConfig();
+const deletionJournal = runtimeConfig.accountDeletionEnabled
+    ? createGcsDeletionJournal({ bucket: runtimeConfig.journalBucket }) : undefined;
 const app = express();
 
 // Cloud Run supplies one trusted proxy hop. This must be configured before any
@@ -69,7 +73,7 @@ app.use('/api', createMainRouter({
 }));
 app.use('/auth', createAuthRouter(
     pool, runtimeConfig.sessionSecret, runtimeConfig.isProduction, runtimeConfig.corsOrigins,
-    { accountDeletionEnabled: runtimeConfig.accountDeletionEnabled }
+    { accountDeletionEnabled: runtimeConfig.accountDeletionEnabled, deletionJournal }
 ));
 
 app.use(notFoundHandler);
@@ -78,6 +82,9 @@ app.use(requestErrorHandler);
 async function startServer(): Promise<void> {
     try {
         await verifyDatabaseConnection();
+        if (runtimeConfig.accountDeletionEnabled) {
+            await verifyAccountDeletionReadiness(pool, runtimeConfig.accountIdentityEpoch!);
+        }
         app.listen(runtimeConfig.port, () => {
             console.log('Backend listening', {
                 port: runtimeConfig.port,

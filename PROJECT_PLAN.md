@@ -2695,14 +2695,24 @@ the support-message and backup-retention work below.
     deleted listings. Seven-day soft delete; no live-object lifecycle expiry,
     Bucket Lock, scheduler, user-managed keys or deployment. No live account or
     score changes.
-  - [ ] **Independent journal and replay:** application implementation still
-    pending. Design, provisioning evidence and failure boundaries are recorded in
+  - [x] **Independent journal and replay implementation (2026-09-11, local):**
+    added three explicit identity migrations, create-only write-ahead intents,
+    truthful pending responses, startup schema/original-epoch checks, and a
+    bounded plan/apply recovery tool. UUIDs prevent reused numeric IDs from
+    targeting another account. Runtime grants add only UUID and migration-epoch
+    reads, never identity writes. The tool also finishes pending requests on an
+    explicitly frozen active database. No production migration, grant change,
+    journal object, replay or deployment was performed in this implementation.
+  - [ ] **Recovery activation and evidence:** review/apply identity migrations
+    and fresh runtime grants under a write freeze, preserve the original epoch
+    outside SQL, verify the authorized journal writer/reader, and resolve all
+    pre-identity backups by approved retirement or independently verified
+    mapping. Establish the pending-request response procedure and perform an
+    approved isolated recovery exercise with a final drained-writer checkpoint
+    and session-secret rotation. Code tests are not production recovery proof.
+    Keep deletion disabled until these items and the separate rollout are
+    approved. Commands and limitations are in
     [Deleted-account recovery](backend/LEADERBOARD_DESIGN.md#deleted-account-recovery).
-    Use an independent private journal, stable account-incarnation identities,
-    a verified strategy for pre-identity backups, and isolated replay with a
-    final write freeze/checkpoint and credential rotation. The approved bucket
-    is empty and is not yet used by the deletion repository or a recovery tool;
-    do not enable deletion merely because the switch or DELETE grants exist.
 - [ ] **Finish and publish accurate privacy information:** resolve remaining
   retention/rights/provider/market decisions; implement the approved safeguards
   before claiming they exist. Preserve the no-sale/no-targeted-advertising

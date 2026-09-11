@@ -1,12 +1,20 @@
 import bcrypt from 'bcryptjs';
 import { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import { withUserSubmissionLock } from '../leaderboards/userSubmissionLock';
+import { assertAccountId, type AccountDeletionJournal } from './deletionJournal';
 
-type AccountPasswordRow = RowDataPacket & { passwordHash: string };
+type AccountPasswordRow = RowDataPacket & { passwordHash: string; accountId: string };
 
 export type AccountDeletionResult = 'deleted' | 'not-found' | 'invalid-password';
 
 const DATABASE_QUERY_TIMEOUT_MS = 10_000;
+
+export class AccountDeletionPendingError extends Error {
+    constructor(readonly cause: unknown) {
+        super('The deletion request was recorded but database completion is unconfirmed.');
+        this.name = 'AccountDeletionPendingError';
+    }
+}
 
 export class AccountDeletionRollbackError extends Error {
     constructor(
@@ -21,11 +29,12 @@ export class AccountDeletionRollbackError extends Error {
 async function deleteAuthenticatedAccount(
     connection: PoolConnection,
     userId: number,
-    password: string
+    password: string,
+    recordDeletion: (accountId: string) => Promise<void>
 ): Promise<AccountDeletionResult> {
     const [accounts] = await connection.query<AccountPasswordRow[]>(
         {
-            sql: `SELECT user_password AS passwordHash
+            sql: `SELECT user_password AS passwordHash, account_uuid AS accountId
                 FROM users WHERE user_id = ? LIMIT 1 FOR UPDATE`,
             timeout: DATABASE_QUERY_TIMEOUT_MS,
         },
@@ -35,7 +44,16 @@ async function deleteAuthenticatedAccount(
     if (!await bcrypt.compare(password, accounts[0].passwordHash)) {
         return 'invalid-password';
     }
+    assertAccountId(accounts[0].accountId);
+    // This intent must survive SQL rollback. Never delete if persistence of
+    // the independently stored intent has not been acknowledged.
+    await recordDeletion(accounts[0].accountId);
+    await deleteOwnedAccountRows(connection, userId);
+    return 'deleted';
+}
 
+/** Caller must hold the account row lock inside a transaction. */
+export async function deleteOwnedAccountRows(connection: PoolConnection, userId: number): Promise<void> {
     // Both child tables restrict parent deletion. Explicit, scoped deletes
     // remove every game's data without weakening those foreign keys.
     for (const sql of [
@@ -57,43 +75,55 @@ async function deleteAuthenticatedAccount(
     if (deleted.affectedRows !== 1) {
         throw new Error('Account deletion did not remove exactly one account.');
     }
-    return 'deleted';
 }
 
 /** Serializes deletion with score submissions, retries, and receipt cleanup. */
 export async function deleteAccount(
     database: Pick<Pool, 'getConnection'>,
     userId: number,
-    password: string
+    password: string,
+    journal: AccountDeletionJournal
 ): Promise<AccountDeletionResult> {
     if (typeof password !== 'string') {
         throw new TypeError('Account deletion requires a password string.');
     }
-    return withUserSubmissionLock(
-        database,
-        userId,
-        async ({ connection, invalidateConnection }) => {
-            let phase: 'begin' | 'active' | 'commit' = 'begin';
-            try {
-                await connection.beginTransaction();
-                phase = 'active';
-                const result = await deleteAuthenticatedAccount(connection, userId, password);
-                phase = 'commit';
-                await connection.commit();
-                return result;
-            } catch (error) {
-                // A failed begin/commit may have reached MySQL without its
-                // acknowledgement reaching us. Never reuse that session or
-                // report deletion as successful on an uncertain commit.
-                if (phase !== 'active') invalidateConnection();
+    if (!journal || typeof journal.recordAccountDeletion !== 'function') {
+        throw new TypeError('Account deletion requires an independent journal.');
+    }
+    let recorded = false;
+    try {
+        return await withUserSubmissionLock(
+            database,
+            userId,
+            async ({ connection, invalidateConnection }) => {
+                let phase: 'begin' | 'active' | 'commit' = 'begin';
                 try {
-                    await connection.rollback();
-                } catch (rollbackError) {
-                    invalidateConnection();
-                    throw new AccountDeletionRollbackError(error, rollbackError);
+                    await connection.beginTransaction();
+                    phase = 'active';
+                    const result = await deleteAuthenticatedAccount(connection, userId, password, async accountId => {
+                        await journal.recordAccountDeletion(accountId);
+                        recorded = true;
+                    });
+                    phase = 'commit';
+                    await connection.commit();
+                    return result;
+                } catch (error) {
+                    // A failed begin/commit may have reached MySQL without its
+                    // acknowledgement reaching us. Never reuse that session or
+                    // report deletion as successful on an uncertain commit.
+                    if (phase !== 'active') invalidateConnection();
+                    try {
+                        await connection.rollback();
+                    } catch (rollbackError) {
+                        invalidateConnection();
+                        throw new AccountDeletionRollbackError(error, rollbackError);
+                    }
+                    throw error;
                 }
-                throw error;
             }
-        }
-    );
+        );
+    } catch (error) {
+        if (recorded) throw new AccountDeletionPendingError(error);
+        throw error;
+    }
 }

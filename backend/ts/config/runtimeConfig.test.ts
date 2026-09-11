@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { loadDatabaseConfig, loadRuntimeConfig } from './runtimeConfig';
+import { DELETION_JOURNAL_BUCKET } from '../accounts/gcsDeletionJournal';
 
 const productionEnvironment = {
     NODE_ENV: 'production',
@@ -48,12 +49,41 @@ test('account deletion defaults off in every environment and requires exact opt-
             });
             assert.equal(config.accountDeletionEnabled, false, `${nodeEnv}: ${value}`);
         }
-        assert.equal(loadRuntimeConfig({
-            ...productionEnvironment,
-            NODE_ENV: nodeEnv,
-            ACCOUNT_DELETION_ENABLED: 'true',
-        }).accountDeletionEnabled, true);
     }
+    const enabled = loadRuntimeConfig({
+        ...productionEnvironment,
+        ACCOUNT_DELETION_ENABLED: 'true',
+        ACCOUNT_DELETION_JOURNAL_BUCKET: DELETION_JOURNAL_BUCKET,
+        ACCOUNT_IDENTITY_EPOCH: '2026-09-11 23:00:00.123456',
+    });
+    assert.equal(enabled.accountDeletionEnabled, true);
+    assert.equal(enabled.journalBucket, DELETION_JOURNAL_BUCKET);
+});
+
+test('enabled deletion requires an independently captured identity epoch', () => {
+    for (const epoch of [undefined, '', 'now', '2026-09-11 23:00:00']) {
+        assert.throws(() => loadRuntimeConfig({ ...productionEnvironment,
+            ACCOUNT_DELETION_JOURNAL_BUCKET: DELETION_JOURNAL_BUCKET,
+            ACCOUNT_DELETION_ENABLED: 'true', ACCOUNT_IDENTITY_EPOCH: epoch }), /ACCOUNT_IDENTITY_EPOCH/);
+    }
+    assert.equal(loadRuntimeConfig(productionEnvironment).accountIdentityEpoch, undefined);
+});
+
+test('enabled deletion refuses development or implicit production-journal access', () => {
+    const enabledEnvironment = {
+        ...productionEnvironment,
+        ACCOUNT_DELETION_ENABLED: 'true',
+        ACCOUNT_IDENTITY_EPOCH: '2026-09-11 23:00:00.123456',
+        ACCOUNT_DELETION_JOURNAL_BUCKET: DELETION_JOURNAL_BUCKET,
+    };
+    for (const nodeEnv of ['development', 'test']) {
+        assert.throws(() => loadRuntimeConfig({ ...enabledEnvironment, NODE_ENV: nodeEnv }), /requires production/);
+    }
+    for (const bucket of [undefined, '', 'other-bucket', ` ${DELETION_JOURNAL_BUCKET}`]) {
+        assert.throws(() => loadRuntimeConfig({ ...enabledEnvironment, ACCOUNT_DELETION_JOURNAL_BUCKET: bucket }),
+            /ACCOUNT_DELETION_JOURNAL_BUCKET/);
+    }
+    assert.equal(loadRuntimeConfig(productionEnvironment).journalBucket, undefined);
 });
 
 test('Three Bosses run submissions require the exact positive runtime opt-in', () => {

@@ -10,7 +10,7 @@ type LoginResponse = { success: true; user_name: string } | AccountError;
 export type SignupResponse = { success: true; error?: never } | AccountError;
 export type DeleteAccountResponse =
     | { deleted: true }
-    | { error: 'INVALID_REQUEST' | 'INVALID_PASSWORD' | 'UNAUTHENTICATED' | 'ACCOUNT_DELETION_UNAVAILABLE' | 'RATE_LIMITED' };
+    | { error: 'INVALID_REQUEST' | 'INVALID_PASSWORD' | 'UNAUTHENTICATED' | 'ACCOUNT_DELETION_UNAVAILABLE' | 'ACCOUNT_DELETION_PENDING' | 'RATE_LIMITED' };
 type VerificationResponse =
     | { loggedIn: true; user_name: string }
     | { loggedIn: false };
@@ -105,6 +105,7 @@ export function createAuthApi(apiBase: string, fetchRequest: typeof fetch = fetc
                 if (response.status === 400 && result.error === 'INVALID_REQUEST') return { error: result.error };
                 if (response.status === 403 && result.error === 'INVALID_PASSWORD') return { error: result.error };
                 if (response.status === 503 && result.error === 'ACCOUNT_DELETION_UNAVAILABLE') return { error: result.error };
+                if (response.status === 503 && result.error === 'ACCOUNT_DELETION_PENDING') return { error: result.error };
                 if (response.status === 429 && result.error === 'RATE_LIMITED') return { error: result.error };
             }
         }

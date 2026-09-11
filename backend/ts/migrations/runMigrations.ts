@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { assertAccountIdentityCommandConfirmed } from '../config/accountIdentityMigrationConfig';
+import { applyAccountIdentityMigration, planAccountIdentityMigration } from './accountIdentityMigration';
 import mysql, { type Connection, type RowDataPacket } from 'mysql2/promise';
 import {
     assertP4ScoreDropCommandConfirmed,
@@ -34,6 +36,9 @@ import {
 type MigrationCommand =
     | 'plan'
     | 'apply'
+    | 'account-identity-plan'
+    | 'account-identity-apply'
+    | 'account-identity-verify'
     | 'receipts-plan'
     | 'receipts-apply'
     | 'receipts-verify'
@@ -69,6 +74,7 @@ function parseCommand(args: readonly string[]): MigrationCommand {
         throw new Error(
             'Usage: runMigrations.ts '
             + '<plan|apply|'
+            + 'account-identity-plan|account-identity-apply|account-identity-verify|'
             + 'receipts-plan|receipts-apply|receipts-verify|'
             + 'p4-score-drop-plan|p4-score-drop-apply|p4-score-drop-verify>'
         );
@@ -77,6 +83,9 @@ function parseCommand(args: readonly string[]): MigrationCommand {
     if (
         command !== 'plan'
         && command !== 'apply'
+        && command !== 'account-identity-plan'
+        && command !== 'account-identity-apply'
+        && command !== 'account-identity-verify'
         && command !== 'receipts-plan'
         && command !== 'receipts-apply'
         && command !== 'receipts-verify'
@@ -337,6 +346,17 @@ async function executeCommand(
         return;
     }
 
+    if (command.startsWith('account-identity-')) {
+        const plan = command === 'account-identity-apply'
+            ? await applyAccountIdentityMigration(migrationConnection, migrations, config, identity, confirmation)
+            : await planAccountIdentityMigration(migrationConnection, migrations, config, identity);
+        console.log(JSON.stringify(plan, null, 2));
+        if (command !== 'account-identity-plan' && plan.state !== 'applied') {
+            throw new Error('Account identity verification requires migrations 0006 through 0008 applied');
+        }
+        return;
+    }
+
     if (command === 'p4-score-drop-plan') {
         printP4ScoreDropPlan(
             await createP4ScoreDropPlan(connection, migrations, config, identity)
@@ -402,6 +422,10 @@ async function main(): Promise<void> {
     if (command === 'apply') {
         // Refuse before opening a socket, not merely before the first DDL.
         assertMutationAuthorized(config);
+    } else if (command.startsWith('account-identity-')) {
+        confirmation = assertAccountIdentityCommandConfirmed(
+            command.slice('account-identity-'.length) as 'plan' | 'apply' | 'verify', config
+        );
     } else if (command.startsWith('receipts-')) {
         confirmation = assertReceiptMigrationCommandConfirmed(
             command.slice('receipts-'.length) as 'plan' | 'apply' | 'verify', config

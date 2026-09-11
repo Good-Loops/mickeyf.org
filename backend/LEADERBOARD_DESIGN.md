@@ -1024,19 +1024,23 @@ only serialization mechanism.
 
 ### Deleted-account recovery
 
-**2026-09-11 status: release switch implemented locally; approved journal storage
-and IAM provisioned. Journal integration, identity migration and recovery replay
-are not implemented. The bucket is empty; live deletion remains unenabled.**
+**2026-09-11 status: release switch, journal integration, identity migrations and
+replay tooling implemented locally; approved storage/IAM provisioned earlier.
+No live identity migration, grant change, journal write, replay or deployment
+was performed for this implementation. Live deletion remains disabled.**
 `ACCOUNT_DELETION_ENABLED` defaults to false in every environment; only the
-exact value `true` enables the HTTP deletion handler. Missing router wiring also
-defaults off. Valid requests reaching the disabled handler return
+exact value `true`, production mode, explicit approved journal bucket, and an
+independently captured original identity epoch permit runtime activation.
+Startup verifies the schema and epoch before listening. Missing router or
+journal wiring also fails closed. Valid requests reaching the disabled handler return
 `503 ACCOUNT_DELETION_UNAVAILABLE` without database access or cookie changes.
 Parsing and rate-limit middleware can still reject requests earlier. Session
 verification and logout remain available. This switch prevents accidental
 activation on ordinary deployment;
 it does not establish recovery safety. Do not enable live self-deletion until
-the work below and the separately approved release/grants are complete. Local
-deletion tests must use disposable data, not a proxy to the live database.
+the operational work below and separately approved release/grants are complete.
+Local tests inject a fake journal and disposable SQL data; they do not point a
+developer's ADC credentials at the production journal.
 
 The current deletion transaction safely removes an account and its scores from
 the active database, but restoring an earlier backup would undo that deletion.
@@ -1045,7 +1049,7 @@ addition, `users.user_id` is an auto-increment number, not an account-incarnatio
 identity: a restored allocation state can allow an ID to be reused. Therefore
 an ID-only deletion list is insufficient, even if stored outside MySQL.
 
-Implementation plan (storage/IAM checkpoint below; application work pending):
+Recovery design and remaining operational requirements:
 
 1. Use one private Cloud Storage journal independent of SQL backups. Restrict
    runtime access to creating new records, with separate recovery-reader and
@@ -1053,8 +1057,8 @@ Implementation plan (storage/IAM checkpoint below; application work pending):
    runtime overwrite/delete access, or introduce a scheduler merely to store
    these records. Record only a schema version, stable opaque account identity,
    deletion action and timestamp; exclude usernames, email, passwords, scores
-   and raw request bodies. The approved storage/IAM checkpoint below establishes
-   the destination only; it does not implement writing or replaying records.
+   and raw request bodies. The adapter writes create-only objects to the approved
+   destination using ADC, without an extra service-account key.
    Further permission changes and eventual expiry rules need scoped review.
 2. Establish immutable account-incarnation identities before allowing deletion.
    New accounts need distinct identities even when numeric IDs repeat. Preserve
@@ -1067,9 +1071,13 @@ Implementation plan (storage/IAM checkpoint below; application work pending):
    accounts must never create an intent. Success requires both durable intent
    and confirmed SQL commit. Storage or commit timeouts have uncertain outcomes:
    settle them idempotently, never claim success early or promise cancellation,
-   and never discard a durable intent just because SQL rolled back. The eventual
-   implementation must complete pending intents against the active database,
-   not only during a future restore, with truthful pending/retry UI semantics.
+   and never discard a durable intent just because SQL rolled back. A confirmed
+   intent followed by SQL failure returns `ACCOUNT_DELETION_PENDING`; an uncertain
+   upload never permits SQL deletion. The UI also explains that an unconfirmed
+   request may already be recorded and retrying does not cancel it. Active-mode
+   replay can finish pending intents; it is not scheduled or automatic. Assign
+   an operator response procedure before activation so pending requests are not
+   left until a future restore.
 4. Restore to a separately identified, non-public recovery instance and migrate
    it through the supported schema path. Loopback is not proof of isolation:
    the production Cloud SQL proxy also listens on loopback. Validate the exact
@@ -1090,13 +1098,92 @@ Implementation plan (storage/IAM checkpoint below; application work pending):
    Future consent withdrawals/child profiles need their own modeled actions;
    this account-only design does not implement those features.
 
-Focused acceptance for the later implementation: storage failures and uncertain
+Focused local acceptance covers storage failures and uncertain
 acknowledgements, SQL rollback/commit uncertainty after recorded intent,
 repeated replay, numeric-ID reuse, pre-identity backup rejection, unavailable or
 partial journals, and an isolated restore that removes only marked accounts.
-Keep the release switch off until that evidence exists. Manual operations and
+Production identity/grant rollout and an authorized cloud recovery exercise are
+still pending. Keep the release switch off. Manual operations and
 older binaries can bypass an HTTP switch; the recovery runbook and deployment
 review remain necessary.
+
+#### Identity and replay operations (implemented, not executed in production)
+
+The three checksummed migrations are deliberately separate: `0006` adds a
+nullable unique `account_uuid`, `0007` fills only missing IDs, and `0008` enforces
+NOT NULL with a database `UUID()` default. This avoids MySQL's rejection of
+adding a nondeterministic default to a populated table with binary logging.
+ROW or MIXED logging is required; logging is never disabled. Existing signup SQL
+remains unchanged, and the runtime cannot insert or update UUIDs. Generic
+`migrations:apply` does not opt into these identity effects.
+
+From `backend`, use `npm run migrations:identity:plan`, then separately approved
+`migrations:identity:apply`, then `migrations:identity:verify`. These use dedicated
+`MIGRATION_DB_*` credentials and the existing exact database/account/target
+confirmations. Apply additionally requires `MIGRATION_ALLOW_APPLY=1`,
+`MIGRATION_ALLOW_ACCOUNT_IDENTITY=1`, `MIGRATION_CONFIRM_WRITERS_DRAINED=1`,
+`MIGRATION_CONFIRM_SERVER_UUID`, and the reviewed
+`MIGRATION_CONFIRM_ACCOUNT_IDENTITY_PLAN_SHA256`. The writer-drain flag is an
+operator attestation: the command cannot prove that all clients are stopped.
+
+Capture the original `0008_finalize_account_identity` `applied_at` once as UTC
+`YYYY-MM-DD HH:mm:ss.ffffff`, in protected configuration outside SQL. Runtime
+uses `ACCOUNT_IDENTITY_EPOCH`; replay uses `DELETION_REPLAY_IDENTITY_EPOCH`.
+Never obtain the expected value from the restored target. A pre-identity restore
+is rejected even if someone reruns the UUID migrations, because the original
+epoch differs. It needs approved backup retirement or a separately verified
+identity mapping; this tool does not invent that mapping. Preserve original
+UUIDs and migration history in supported backups.
+
+Generate a **new** runtime-grant plan after migration. It includes SELECT on
+`users.account_uuid` and only `schema_migrations.version, applied_at`, not schema
+history writes or DDL. Changed SQL/privileges change the approval hash, so an
+older grant approval is not reusable. Activation also requires
+`ACCOUNT_DELETION_JOURNAL_BUCKET=ludolume-deletion-journal-1012884798546` and the
+production runtime identity's already-approved create-only access.
+
+`npm run deletion-replay:plan` is read-only; `npm run deletion-replay:apply`
+requires its exact `DELETION_REPLAY_APPROVED_PLAN_SHA256`. Both require dedicated
+`DELETION_REPLAY_DB_HOST=127.0.0.1`, explicit `DB_PORT`, `DB_NAME`, `DB_USER`,
+`DB_PASSWORD`, `DB_CURRENT_USER` and `DB_SERVER_UUID` under the same
+`DELETION_REPLAY_` prefix. They never fall back to application DB credentials.
+The loopback connection must use an authenticated Cloud SQL proxy/tunnel to the
+reviewed target. Google ADC must independently have the authorized recovery
+reader's permissions; the CLI creates no keys or impersonation grants.
+
+Set `DELETION_REPLAY_MODE=active` for pending requests against the frozen active
+database, or `recovery` for an isolated restore. Both require
+`DELETION_REPLAY_FREEZE_ACK=public-traffic-and-account-writes-stopped` after
+actually stopping and draining writers. Recovery additionally requires the
+independently recorded `DELETION_REPLAY_SOURCE_SERVER_UUID` (different from the
+target) and `DELETION_REPLAY_RECOVERY_ACK=isolated-restore-and-session-rotation-required`.
+These attestations do not technically enforce isolation or rotate credentials.
+
+The reader checks all pages and generations, rejects deleted/unexpected objects,
+pins downloads to generations and verifies content checksums. Replay validates
+every intent before mutation, compares exact target/epoch pins, rechecks each
+UUID under the shared submission lock, and commits scoped account deletions.
+Missing UUIDs are repeatable no-ops. A fresh journal digest must match afterward;
+failure never authorizes cutover even if some valid deletions already committed.
+Drained writers and protected journal retention are essential: pagination and
+digest comparisons alone are not an atomic snapshot or proof of absent history.
+
+Default limits are 1,000 intents and a 60-second work budget; explicit
+`DELETION_REPLAY_MAX_INTENTS` and `DELETION_REPLAY_MAX_DURATION_MS` are capped at
+10,000 and 300,000 respectively. Queries are bounded to ten seconds. The work
+budget stops new work; finishing or rolling back an in-flight transaction can
+extend it. Exceeding a limit fails closed, never silently truncates the journal.
+Review/retry with the documented bounded settings rather than bypassing checks.
+No live-object expiry is enabled until the recovery-copy inventory justifies it.
+
+Local validation for this checkpoint: backend `npm test` (TypeScript),
+`npm run test:unit` (275 passed), and `npm run test:migrations` (58 passed across
+the disposable MySQL suites, including simulated restoration/replay). Frontend
+`node --experimental-strip-types --test ts/services/authApi.test.mjs` (16 passed)
+and `npx tsc -p tsconfig.json --noEmit` passed. Backend
+`npm audit --omit=dev --audit-level=moderate` reported zero vulnerabilities after
+using Node's system CA option; TLS verification was not disabled. Temporary
+MySQL containers/networks were removed. No cloud journal object was created.
 
 Primary technical references checked 2026-09-11:
 [Cloud Storage consistency](https://docs.cloud.google.com/storage/docs/consistency)
