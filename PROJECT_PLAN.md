@@ -2703,9 +2703,9 @@ the support-message and backup-retention work below.
     reads, never identity writes. The tool also finishes pending requests on an
     explicitly frozen active database. No production migration, grant change,
     journal object, replay or deployment was performed in this implementation.
-  - [ ] **Recovery activation and evidence:** review/apply identity migrations
-    and fresh runtime grants under a write freeze, preserve the original epoch
-    outside SQL, verify the authorized journal writer/reader, and resolve all
+  - [ ] **Recovery activation and evidence:** the identity schema is applied;
+    review and apply fresh runtime grants under separate approval, verify the
+    authorized journal writer/reader, and resolve all
     pre-identity backups by approved retirement or independently verified
     mapping. Establish the pending-request response procedure and perform an
     approved isolated recovery exercise with a final drained-writer checkpoint
@@ -2722,6 +2722,17 @@ the support-message and backup-retention work below.
       recovery until a post-identity backup/restore is verified, then retire
       exact approved manual copies and let automated/PITR history roll forward.
       See the [inventory and activation order](backend/LEADERBOARD_DESIGN.md#pre-identity-backup-inventory--2026-09-11-approximately-2343-utc).
+    - **Live identity checkpoint (2026-09-11 local / September 12 UTC):**
+      approved migrations 0006–0008 applied and verified for all 12 accounts;
+      every existing account field and all nine personal bests were preserved.
+      Captured the original epoch outside SQL. Pre-change backup `1789171137743`
+      and clean post-change backup `1789172213271` succeeded; all twelve older
+      backups remain. Original grants, sign-in lock states, public ingress,
+      cleanup schedule and local backend were restored; temporary SQL accounts
+      removed. No new runtime grants, deletion activation, journal write, replay
+      or deployment. Next is one approved isolated restore/replay exercise and
+      the remaining old-backup/PITR transition, not another generic login test.
+      See the [production checkpoint](backend/LEADERBOARD_DESIGN.md#production-identity-checkpoint--2026-09-12-utc).
 - [ ] **Finish and publish accurate privacy information:** resolve remaining
   retention/rights/provider/market decisions; implement the approved safeguards
   before claiming they exist. Preserve the no-sale/no-targeted-advertising

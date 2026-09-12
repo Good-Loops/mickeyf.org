@@ -1024,10 +1024,11 @@ only serialization mechanism.
 
 ### Deleted-account recovery
 
-**2026-09-11 status: release switch, journal integration, identity migrations and
-replay tooling implemented locally; approved storage/IAM provisioned earlier.
-No live identity migration, grant change, journal write, replay or deployment
-was performed for this implementation. Live deletion remains disabled.**
+**2026-09-11 local / 2026-09-12 UTC status: identity migrations 0006–0008 are
+applied in production, with all existing account/score data and grants preserved.
+The release switch, journal integration and replay tooling remain unreleased;
+approved storage/IAM was provisioned earlier. No live journal write, replay,
+new runtime grants or application deployment occurred. Deletion remains disabled.**
 `ACCOUNT_DELETION_ENABLED` defaults to false in every environment; only the
 exact value `true`, production mode, explicit approved journal bucket, and an
 independently captured original identity epoch permit runtime activation.
@@ -1102,12 +1103,12 @@ Focused local acceptance covers storage failures and uncertain
 acknowledgements, SQL rollback/commit uncertainty after recorded intent,
 repeated replay, numeric-ID reuse, pre-identity backup rejection, unavailable or
 partial journals, and an isolated restore that removes only marked accounts.
-Production identity/grant rollout and an authorized cloud recovery exercise are
-still pending. Keep the release switch off. Manual operations and
-older binaries can bypass an HTTP switch; the recovery runbook and deployment
+The identity schema is now applied. Runtime-grant rollout and an authorized
+cloud recovery exercise are still pending. Keep the release switch off. Manual
+operations and older binaries can bypass an HTTP switch; the recovery runbook and deployment
 review remain necessary.
 
-#### Identity and replay operations (implemented, not executed in production)
+#### Identity and replay operations (identity applied; replay not activated)
 
 The three checksummed migrations are deliberately separate: `0006` adds a
 nullable unique `account_uuid`, `0007` fills only missing IDs, and `0008` enforces
@@ -1125,6 +1126,24 @@ confirmations. Apply additionally requires `MIGRATION_ALLOW_APPLY=1`,
 `MIGRATION_CONFIRM_SERVER_UUID`, and the reviewed
 `MIGRATION_CONFIRM_ACCOUNT_IDENTITY_PLAN_SHA256`. The writer-drain flag is an
 operator attestation: the command cannot prove that all clients are stopped.
+
+For an approved live identity migration, take the pre-change backup before
+creating temporary maintenance users. Pause the local backend and receipt
+Scheduler, restrict public ingress, then temporarily lock the existing customer
+database accounts and drain their sessions. Record and restore each account's
+original lock state; never modify Cloud SQL's internal system accounts. Ingress
+and a request timeout alone do not prevent a running handler from reconnecting.
+Distinguish customer `root@%` from Google's managed loopback `root` sessions;
+verify the internal accounts and session source, and do not terminate them.
+Compare all existing account, score and receipt fields before/after the change,
+excluding only the newly added UUID. After schema verification, restore access
+and remove temporary users before taking the post-change backup, so neither
+named snapshot contains the temporary accounts or maintenance lock state.
+PITR points inside the maintenance interval may still contain that temporary
+state; inspect and reconcile database accounts before reopening any such restore.
+Google documents that a [Cloud Run request timeout](https://docs.cloud.google.com/run/docs/configuring/request-timeout)
+does not terminate the handler, and [Cloud SQL restore](https://docs.cloud.google.com/sql/docs/mysql/backup-recovery/restore)
+also restores database users. These are separate from application-level checks.
 
 Capture the original `0008_finalize_account_identity` `applied_at` once as UTC
 `YYYY-MM-DD HH:mm:ss.ffffff`, in protected configuration outside SQL. Runtime
@@ -1198,8 +1217,8 @@ older restore is inferred from that behavior and our numeric-ID-only identity.
 
 #### Pre-identity backup inventory — 2026-09-11, approximately 23:43 UTC
 
-This was a read-only metadata review, not a restore or deletion. The identity
-migrations are still local-only, so treat every recovery point below as
+This was a read-only metadata review, not a restore or deletion. At that time the
+identity migrations were local-only, so treat every recovery point below as
 pre-identity and unsupported by UUID replay. Backup contents were not restored
 or opened, and no production SQL migration/history query was performed here.
 
@@ -1270,6 +1289,61 @@ Read-only evidence commands used `gcloud sql instances describe/list`,
 `gcloud run services describe` with output limited to relevant metadata. This
 documentation-only checkpoint did not rerun application tests or change cloud
 configuration, accounts, scores, grants or backups.
+
+#### Production identity checkpoint — 2026-09-12 UTC
+
+Under the owner's approved maintenance window (September 11 local time),
+`0006_add_account_identity`, `0007_backfill_account_identity` and
+`0008_finalize_account_identity` were applied to `cms-mickeyf`, database `cms`,
+on pinned server UUID `d1e6865c-ecad-11ee-a6b0-42010a400002`. The final reviewed
+plan SHA-256 was `95530d311f8f18155042965e2224bb51ddd5b0047719c3f658e3a5d8c6bb0ba1`.
+All eight migration versions/checksums verified afterward; none were pending
+or recoverable. The final UUID column/default/unique index verified, covering
+all **12 accounts**. Full before/after fingerprints of the existing account
+columns, **nine personal bests** and **zero receipts** matched exactly.
+
+Original identity epoch: **`2026-09-12 00:15:39.954172` UTC**. A copy is retained
+outside SQL in the owner-restricted Windows directory
+`%LOCALAPPDATA%\Ludolume\Recovery\identity-20260911`, alongside non-secret
+operation evidence and recovery notes. Use the independently recorded epoch,
+not a value obtained from a restored target.
+
+| Snapshot | Backup ID | Completed (UTC) | Recovery significance |
+| --- | --- | --- | --- |
+| Before identity migration | `1789171137743` | 2026-09-12 00:00:29 | Additional pre-identity retirement candidate; preserve for now. |
+| After identity migration and access cleanup | `1789172213271` | 2026-09-12 00:17:44 | Successful post-identity backup; isolated restore/replay is not yet verified. |
+
+Both backups were successful. All twelve previously inventoried backups remain,
+for fourteen total; backup/PITR retention was not shortened. The new pre-identity
+snapshot raises the on-demand pre-identity retirement candidates from four to
+five. Existing automated/PITR recovery points still need to roll past the
+identity checkpoint before deletion activation.
+
+The initial maintenance attempt was aborted before DDL when an unclassified
+session was found. Read-only diagnosis identified Google's internal loopback
+`root` sessions; they were neither locked nor terminated. A JSON object-key
+ordering mismatch in the temporary helper's configuration comparison was also
+corrected before production pause. The successful attempt verified locked
+customer accounts, no customer sessions or open transactions, no metadata-lock
+waiters, and completed cleanup executions before the final plan/apply.
+
+Customer lock states, existing grant fingerprints, receipt Scheduler and public
+ingress were restored. Final Cloud Run generation **142** still serves exactly
+100% of `mickeyf-org-ios-origin-a1f3ea43-0910`, with no template, image or traffic
+change. The four original SQL users remain; every temporary maintenance user
+was removed before the final backup. The local backend was restarted with
+`npm run backend:dev:local`; frontend/WebGL/proxy processes were preserved.
+Public session, catalog, p4-Vega and Three Bosses read endpoints returned HTTP
+200 with JSON and `no-store`. No authenticated login/submission retest, account
+deletion, journal write, replay, runtime-grant rollout or application deployment
+was performed. The existing deletion activation settings remain absent.
+
+The operation used a temporary interactive Node helper calling the repository's
+guarded `planAccountIdentityMigration`, `applyAccountIdentityMigration` and
+`verifyAccountIdentitySchema` functions, with exact plan/server confirmation.
+Google Cloud API backup/ingress/Scheduler operations and read-only `gcloud`
+inventory checks supplied the infrastructure evidence. This operations-only
+checkpoint did not rerun the already-passing application test suites.
 
 #### Journal storage and IAM checkpoint — 2026-09-11
 
