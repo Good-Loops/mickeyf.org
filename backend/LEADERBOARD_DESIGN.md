@@ -1103,10 +1103,40 @@ Focused local acceptance covers storage failures and uncertain
 acknowledgements, SQL rollback/commit uncertainty after recorded intent,
 repeated replay, numeric-ID reuse, pre-identity backup rejection, unavailable or
 partial journals, and an isolated restore that removes only marked accounts.
-The identity schema is now applied. Runtime-grant rollout and an authorized
-cloud recovery exercise are still pending. Keep the release switch off. Manual
+The identity schema and isolated backup/SQL replay exercise are now verified.
+Runtime-grant rollout, service-identity verification, old-backup transition and
+the operational response below remain pending. Keep the release switch off. Manual
 operations and older binaries can bypass an HTTP switch; the recovery runbook and deployment
 review remain necessary.
+
+#### Pending or unconfirmed deletion response
+
+Before activation, designate the owner or an explicitly delegated operator and
+agree how they are notified and how routine journal reconciliation is reviewed.
+No notification route, cadence or automatic reconciler is established by this
+document. Existing controller logs are `Account deletion pending reconciliation`
+and `Account deletion unavailable`. Both need attention: an unavailable upload
+may already have persisted. A process crash can precede either message, so
+error-only alerts cannot guarantee eventual completion. Keep activation blocked
+until the owner accepts a reliable response/reconciliation arrangement.
+
+For a reported or discovered unresolved request:
+
+1. Do not promise completion or cancellation, remove an intent, log account
+   payloads, or request the user's password. A retry does not cancel a durable
+   deletion request. Investigate sanitized logs and the protected journal.
+2. Arrange an approved maintenance window and freeze/drain actual writers using
+   the existing procedure. Merely turning the HTTP deletion switch off does not
+   stop in-flight work, signup, score writers or the receipt-cleanup job.
+3. With dedicated credentials and independently checked target/epoch pins, run
+   `deletion-replay:plan` in **active** mode against the current database. Review
+   the complete plan; run `deletion-replay:apply` only with its approved digest.
+   Do not declare a recovery source UUID in active mode or use a stale export.
+4. Require confirmed reconciliation and an unchanged fresh journal digest before
+   restoring the previous access state. On failure, investigate and review a new
+   plan; never improvise account deletion by numeric ID. Report only aggregate
+   outcomes. Session-secret rotation is required for a restore cutover, not this
+   active-database reconciliation.
 
 #### Identity and replay operations (identity applied; replay not activated)
 
@@ -1407,6 +1437,35 @@ disposable copy. The filesystem tool refused removal of the external temporary
 helper folder. Its credential-free helper and duplicate aggregate result remain
 outside the repository; the exact path and matching evidence hash are recorded
 in the protected recovery notes. This local cleanup item is not complete.
+
+#### Backup retirement approval set — 2026-09-12 UTC
+
+Fresh project-wide metadata still showed 14 successful backups for `cms-mickeyf`
+and no backup for the removed test instance. The five **manual pre-identity**
+snapshots proposed for permanent removal are:
+
+| Backup ID | Started (UTC) | Purpose |
+| --- | --- | --- |
+| `1787754667930` | 2026-08-26 14:31:07 | Before additive leaderboard migration |
+| `1787755849821` | 2026-08-26 14:50:49 | Before p4-Vega backfill |
+| `1787787054951` | 2026-08-26 23:30:54 | Before legacy score-column removal |
+| `1788894880118` | 2026-09-08 19:14:40 | Before receipt migration |
+| `1789171137743` | 2026-09-11 23:58:57 | Before account identity migration |
+
+**Awaiting exact-target approval; none were deleted.** Preserve verified backup
+`1789172213271`, all eight automated backups, and the existing eight-backup COUNT/
+seven-day transaction-log settings. This proposal removes old snapshot restore
+points, not the live database or the newer verified snapshot. Standard manual
+backups remain until explicitly deleted; do not manually remove automated
+backups to accelerate the transition ([Google backup retention](https://docs.cloud.google.com/sql/docs/mysql/backup-recovery/backups#backup-retention)).
+
+The current recovery window still began at `2026-09-04T21:24:45.390Z`, before the
+original identity epoch; its reported latest point was
+`2026-09-12T00:45:00.216848195Z`. Retirement of the five manual snapshots alone
+therefore does not permit activation. Allow automatic history to roll forward
+and verify the actual inventory/window once it is eligible; do not rerun the
+completed restore test or shorten recovery retention. No new monitor, scheduler,
+IAM grant, probe object or deployment was created in this review.
 
 #### Journal storage and IAM checkpoint — 2026-09-11
 

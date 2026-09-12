@@ -65,7 +65,7 @@ export function loadDeletionReplayConfig(
         throw new Error('Invalid deletion replay database or maintenance user');
     }
     const expectedCurrentUser = required(env, 'DELETION_REPLAY_DB_CURRENT_USER');
-    if (!expectedCurrentUser.startsWith(`${user}@`) || !/^[A-Za-z0-9_.%-]+@[A-Za-z0-9_.:%/-]+$/u.test(expectedCurrentUser)) {
+    if (!expectedCurrentUser.startsWith(`${user}@`) || !/^[A-Za-z0-9_.%-]+@[A-Za-z0-9_.:%/~\-]+$/u.test(expectedCurrentUser)) {
         throw new Error('Deletion replay requires the exact maintenance CURRENT_USER');
     }
     const expectedServerUuid = uuid(required(env, 'DELETION_REPLAY_DB_SERVER_UUID'), 'target server UUID');

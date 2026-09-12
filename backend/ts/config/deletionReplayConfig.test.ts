@@ -31,6 +31,24 @@ test('requires only dedicated explicit connection pins and preserves the secret 
     }), /Missing/u);
 });
 
+test('accepts exact Cloud SQL proxy account hosts without relaxing the maintenance username', () => {
+    for (const host of ['cloudsqlproxy~%', 'cloudsqlproxy~198.51.100.23']) {
+        const currentUser = `${ENV.DELETION_REPLAY_DB_USER}@${host}`;
+        const config = loadDeletionReplayConfig(['plan'], {
+            ...ENV, DELETION_REPLAY_DB_CURRENT_USER: currentUser,
+        });
+        assert.equal(config.settings.expectedCurrentUser, currentUser);
+    }
+    assert.throws(() => loadDeletionReplayConfig(['plan'], {
+        ...ENV,
+        DELETION_REPLAY_DB_USER: 'recovery~operator',
+        DELETION_REPLAY_DB_CURRENT_USER: 'recovery~operator@cloudsqlproxy~%',
+    }), /maintenance user/u);
+    assert.throws(() => loadDeletionReplayConfig(['plan'], {
+        ...ENV, DELETION_REPLAY_DB_CURRENT_USER: 'recovery_operator@cloudsqlproxy~%;',
+    }), /CURRENT_USER/u);
+});
+
 test('rejects missing pins, aliases, same-source recovery, invalid epoch and missing attestations', () => {
     for (const change of [
         { DELETION_REPLAY_DB_HOST: 'localhost' },

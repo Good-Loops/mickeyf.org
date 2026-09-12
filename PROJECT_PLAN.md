@@ -2749,6 +2749,16 @@ the support-message and backup-retention work below.
       helper was added to the repository. Production remained online with
       deletion disabled. See the
       [exercise evidence](backend/LEADERBOARD_DESIGN.md#isolated-recovery-exercise--2026-09-12-utc).
+    - **Activation preparation (2026-09-12 UTC):** fixed the replay CLI's rejection
+      of exact Cloud SQL `cloudsqlproxy~%` account hosts; the focused config suite
+      passed (four tests). Recorded the five exact manual-backup retirement
+      candidates, preserving the verified replacement and automatic/PITR history;
+      deletion approval is still required. Prepared pending/unconfirmed-request
+      handling, including crash-before-log outcomes; an accepted operator and
+      reliable notification/reconciliation arrangement remain prerequisites, not
+      an implicitly created service. Runtime SQL grants, keyless service-identity
+      access/probe disposition and eventual rollout still require scoped approval.
+      No production or backup mutation occurred. See the [retirement set](backend/LEADERBOARD_DESIGN.md#backup-retirement-approval-set--2026-09-12-utc).
 - [ ] **Finish and publish accurate privacy information:** resolve remaining
   retention/rights/provider/market decisions; implement the approved safeguards
   before claiming they exist. Preserve the no-sale/no-targeted-advertising
