@@ -2753,12 +2753,20 @@ the support-message and backup-retention work below.
       of exact Cloud SQL `cloudsqlproxy~%` account hosts; the focused config suite
       passed (four tests). Recorded the five exact manual-backup retirement
       candidates, preserving the verified replacement and automatic/PITR history;
-      deletion approval is still required. Prepared pending/unconfirmed-request
+      exact retirement approval was subsequently obtained and completed below.
+      Prepared pending/unconfirmed-request
       handling, including crash-before-log outcomes; an accepted operator and
       reliable notification/reconciliation arrangement remain prerequisites, not
       an implicitly created service. Runtime SQL grants, keyless service-identity
       access/probe disposition and eventual rollout still require scoped approval.
-      No production or backup mutation occurred. See the [retirement set](backend/LEADERBOARD_DESIGN.md#backup-retirement-approval-set--2026-09-12-utc).
+      That preparation changed no cloud resources; the approved retirement is
+      recorded below. See the [retirement set](backend/LEADERBOARD_DESIGN.md#backup-retirement-approval-set--2026-09-12-utc).
+    - **Manual backup retirement completed (2026-09-12 UTC):** deleted only the
+      five specifically approved pre-identity manual snapshots. Verified exactly
+      nine successful backups remain: the restored-and-verified replacement and
+      all eight automatic backups. The live database and recovery settings were
+      preserved. Older automatic/PITR history still precedes the identity epoch,
+      so deletion remains disabled; no repeat restore or new deployment occurred.
 - [ ] **Finish and publish accurate privacy information:** resolve remaining
   retention/rights/provider/market decisions; implement the approved safeguards
   before claiming they exist. Preserve the no-sale/no-targeted-advertising

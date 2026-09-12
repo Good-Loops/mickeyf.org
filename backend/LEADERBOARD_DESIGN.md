@@ -591,15 +591,14 @@ were retired after migration `0003`. The aggregate reconciliation logic remains
 only as a pre-DDL safety check when planning or replaying the drop against the
 fresh pre-drop backup.
 
-Retention check (2026-09-07): the live Cloud SQL backup inventory still includes
-successful on-demand pre-drop backup `1787787054951` (2026-08-26), plus the
-pre-backfill/additive snapshots. Newer automated backups and seven-day PITR do
-not by themselves retire that documented historical restore path. The current
-drop-plan/apply workflow still depends on reconciliation; it is not application
-runtime code. Retiring it requires retiring or replacing the whole supported
-legacy replay workflow, not deleting its safety check alone. No backup or
-migration tooling was deleted in this inspection. Keep immutable migrations and
-checksums even when that operational workflow is eventually retired.
+The 2026-09-07 retention check found the manual pre-drop backup
+`1787787054951` and pre-backfill/additive snapshots still available, so their
+guarded legacy replay path remained necessary then. On 2026-09-12 the owner
+approved their permanent retirement after verifying a current-schema replacement
+restore. Those named historical restore paths are now retired; see the
+[completed retirement set](#backup-retirement-approval-set--2026-09-12-utc).
+Keep immutable migrations and checksums. Any removal of obsolete operational
+commands belongs in the focused code-cleanup review, not this backup operation.
 
 ## Completed live metadata preflight
 
@@ -1340,11 +1339,12 @@ not a value obtained from a restored target.
 
 | Snapshot | Backup ID | Completed (UTC) | Recovery significance |
 | --- | --- | --- | --- |
-| Before identity migration | `1789171137743` | 2026-09-12 00:00:29 | Additional pre-identity retirement candidate; preserve for now. |
+| Before identity migration | `1789171137743` | 2026-09-12 00:00:29 | Permanently retired under exact-target approval on September 12; see completed retirement set below. |
 | After identity migration and access cleanup | `1789172213271` | 2026-09-12 00:17:44 | Successful post-identity backup; isolated restoration and synthetic SQL replay verified below. |
 
-Both backups were successful. All twelve previously inventoried backups remain,
-for fourteen total; backup/PITR retention was not shortened. The new pre-identity
+Both backups were successful. At that migration checkpoint all twelve previously
+inventoried backups remained, for fourteen total; backup/PITR retention was not
+shortened. The new pre-identity
 snapshot raises the on-demand pre-identity retirement candidates from four to
 five. Existing automated/PITR recovery points still need to roll past the
 identity checkpoint before deletion activation.
@@ -1440,9 +1440,9 @@ in the protected recovery notes. This local cleanup item is not complete.
 
 #### Backup retirement approval set — 2026-09-12 UTC
 
-Fresh project-wide metadata still showed 14 successful backups for `cms-mickeyf`
-and no backup for the removed test instance. The five **manual pre-identity**
-snapshots proposed for permanent removal are:
+Pre-deletion project-wide metadata showed 14 successful backups for `cms-mickeyf`
+and no backup for the removed test instance. The owner explicitly approved
+permanent removal of these five **manual pre-identity** snapshots:
 
 | Backup ID | Started (UTC) | Purpose |
 | --- | --- | --- |
@@ -1452,20 +1452,31 @@ snapshots proposed for permanent removal are:
 | `1788894880118` | 2026-09-08 19:14:40 | Before receipt migration |
 | `1789171137743` | 2026-09-11 23:58:57 | Before account identity migration |
 
-**Awaiting exact-target approval; none were deleted.** Preserve verified backup
-`1789172213271`, all eight automated backups, and the existing eight-backup COUNT/
-seven-day transaction-log settings. This proposal removes old snapshot restore
-points, not the live database or the newer verified snapshot. Standard manual
+**Completed 2026-09-12 at 01:01:35.536 UTC.** All five exact deletions completed
+successfully, in sequence. Fresh project-wide read-back matched exactly the nine
+protected backups: verified replacement `1789172213271` and all eight automated
+backups, each still successful. The database remained RUNNABLE; automated backup,
+binary logging, eight-backup COUNT retention and seven-day transaction-log
+settings were preserved. These old named snapshot restore points are permanently
+removed; no live SQL account or score data was changed. Standard manual
 backups remain until explicitly deleted; do not manually remove automated
 backups to accelerate the transition ([Google backup retention](https://docs.cloud.google.com/sql/docs/mysql/backup-recovery/backups#backup-retention)).
 
-The current recovery window still began at `2026-09-04T21:24:45.390Z`, before the
+The post-deletion recovery window still began at `2026-09-04T21:24:45.390Z`, before the
 original identity epoch; its reported latest point was
-`2026-09-12T00:45:00.216848195Z`. Retirement of the five manual snapshots alone
+`2026-09-12T01:01:54.602501768Z`. Retirement of the five manual snapshots alone
 therefore does not permit activation. Allow automatic history to roll forward
 and verify the actual inventory/window once it is eligible; do not rerun the
 completed restore test or shorten recovery retention. No new monitor, scheduler,
-IAM grant, probe object or deployment was created in this review.
+IAM grant, probe object or deployment was created. Deletion remains disabled.
+
+Operations used guarded `gcloud sql backups delete <approved ID>` calls and
+confirmed each returned operation completed without error. The final backup
+inventory, instance settings and recovery window were read back. Non-secret
+operation IDs/timestamps and the protected backup list are recorded in
+`backup-retirement-20260912-0101.json` beside the original epoch in the restricted
+recovery directory. Repository changes were documentation-only and passed `git diff --check`;
+no application test suite or restore exercise was rerun.
 
 #### Journal storage and IAM checkpoint — 2026-09-11
 
