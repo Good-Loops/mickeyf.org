@@ -1311,7 +1311,7 @@ not a value obtained from a restored target.
 | Snapshot | Backup ID | Completed (UTC) | Recovery significance |
 | --- | --- | --- | --- |
 | Before identity migration | `1789171137743` | 2026-09-12 00:00:29 | Additional pre-identity retirement candidate; preserve for now. |
-| After identity migration and access cleanup | `1789172213271` | 2026-09-12 00:17:44 | Successful post-identity backup; isolated restore/replay is not yet verified. |
+| After identity migration and access cleanup | `1789172213271` | 2026-09-12 00:17:44 | Successful post-identity backup; isolated restoration and synthetic SQL replay verified below. |
 
 Both backups were successful. All twelve previously inventoried backups remain,
 for fourteen total; backup/PITR retention was not shortened. The new pre-identity
@@ -1344,6 +1344,69 @@ guarded `planAccountIdentityMigration`, `applyAccountIdentityMigration` and
 Google Cloud API backup/ingress/Scheduler operations and read-only `gcloud`
 inventory checks supplied the infrastructure evidence. This operations-only
 checkpoint did not rerun the already-passing application test suites.
+
+#### Isolated recovery exercise — 2026-09-12 UTC
+
+The owner approved restoring backup `1789172213271` into temporary instance
+`ludolume-restore-check-20260912`, never over `cms-mickeyf`. Creation operation
+`01ef3cec-150c-49a1-8138-767400000032` and restore operation
+`8e1f705c-72d4-49d0-85c7-f39a00000032` completed successfully. The restored
+MySQL version was `8.0.31-google`; target server UUID
+`37431f47-ae41-11f1-a32f-42010a40001c` differed from the pinned production UUID.
+
+Connector enforcement and encrypted connections were required, with no public
+network allowlist. The temporary proxy listened only on `127.0.0.1:3307`, not
+production's port 3306. No application, cleanup job or public route was pointed
+at the restored instance. Its four inherited customer SQL accounts were locked
+before replay; Google's internal system users were left untouched. This was
+isolation from application traffic, not from privileged project administrators.
+
+Verified against the independent checkpoint: **12 accounts, nine personal bests,
+zero receipts**, all eight migration checksums, UUID/default/index integrity,
+and the original epoch `2026-09-12 00:15:39.954172`. Existing-column fingerprints
+matched the pre/post-migration evidence. Administrator metadata inspection found
+exactly the four expected InnoDB tables and no schema triggers or events.
+
+The helper called the existing `planDeletionReplay`/`applyDeletionReplay`
+functions with a target-only SQL account: SELECT/DELETE on the three account
+tables and SELECT on migration history, without INSERT, UPDATE, DDL or grant
+authority. Separate setup credentials created the dummy data.
+
+- The real GCS reader checked the live journal using existing operator
+  credentials and a GET-only transport. Zero intents were present; the reviewed
+  empty plan reconciled without deletions. No production marker was written.
+- A separate, frozen **in-memory** intent targeted one new dummy account in the
+  restored copy, with two game bests and one receipt. Replay removed that account
+  and its related rows. Repeating the same plan returned zero deletions and one
+  absent account. A replacement with the same numeric ID but a new UUID survived
+  another replay. Its fixture was then removed; all original copied rows,
+  including account UUIDs, matched their pre-exercise fingerprints exactly.
+
+This verifies actual backup restoration and SQL replay on the restored schema.
+It does **not** prove a production marker's persistence, runtime-writer or recovery-
+service-account authentication, replay of a fixture present in the original
+backup, or session invalidation at cutover. The instance never became live, so
+production writers were not paused and production session secrets were not
+rotated. Existing local servers remained running. Production instance settings,
+the source backup and Cloud Run generation 142/100% revision routing remained
+unchanged; deletion activation settings were still absent.
+
+The one-time helper was syntax-checked with `node --check` and executed using
+`node --use-system-ca`; this was an operational check of existing implementation,
+not a new application-code change or a rerun of the broad test suites. Non-secret
+results are retained as `restore-exercise-20260912.json` beside the independently
+saved epoch in the owner-restricted recovery directory. No row exports, dummy
+passwords or cloud access tokens are retained.
+
+Cleanup: the temporary SQL credentials and proxy container were removed.
+Instance deletion `6cd482d2-f4e6-4615-9853-db6800000032` completed at
+`2026-09-12T00:36:37.483Z`. Project-wide read-back showed only `cms-mickeyf`, all
+14 original successful backups and no backup belonging to the temporary
+instance; port 3307 was closed. No final/retained backup was requested for the
+disposable copy. The filesystem tool refused removal of the external temporary
+helper folder. Its credential-free helper and duplicate aggregate result remain
+outside the repository; the exact path and matching evidence hash are recorded
+in the protected recovery notes. This local cleanup item is not complete.
 
 #### Journal storage and IAM checkpoint — 2026-09-11
 

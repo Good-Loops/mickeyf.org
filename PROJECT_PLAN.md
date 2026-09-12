@@ -2707,9 +2707,10 @@ the support-message and backup-retention work below.
     review and apply fresh runtime grants under separate approval, verify the
     authorized journal writer/reader, and resolve all
     pre-identity backups by approved retirement or independently verified
-    mapping. Establish the pending-request response procedure and perform an
-    approved isolated recovery exercise with a final drained-writer checkpoint
-    and session-secret rotation. Code tests are not production recovery proof.
+    mapping. Establish the pending-request response procedure. The isolated
+    backup/SQL replay exercise is verified below; any actual recovery cutover
+    still requires a final drained-writer checkpoint and session-secret rotation.
+    The exercise does not replace those cutover safeguards.
     Keep deletion disabled until these items and the separate rollout are
     approved. Commands and limitations are in
     [Deleted-account recovery](backend/LEADERBOARD_DESIGN.md#deleted-account-recovery).
@@ -2733,6 +2734,21 @@ the support-message and backup-retention work below.
       or deployment. Next is one approved isolated restore/replay exercise and
       the remaining old-backup/PITR transition, not another generic login test.
       See the [production checkpoint](backend/LEADERBOARD_DESIGN.md#production-identity-checkpoint--2026-09-12-utc).
+    - **Isolated restore/replay verified (2026-09-12 UTC):** restored the clean
+      post-identity backup into a temporary, separately addressed Cloud SQL
+      instance. All 12 accounts, nine bests, eight migration checksums and the
+      independently saved identity epoch matched. The actual journal was empty
+      and readable with the existing operator credentials. A separate in-memory
+      dummy intent exercised restricted SQL replay, repeat safety and numeric-ID
+      reuse without changing the original copied rows or writing a live marker.
+      This proves backup restoration and SQL replay, not live journal-writer/
+      recovery-service authentication, session invalidation or a public cutover.
+      Temporary Cloud SQL instance, SQL credentials and proxy were removed;
+      all 14 source backups remain. External helper-folder removal was refused
+      by the filesystem tool and remains a small explicit cleanup item; no
+      helper was added to the repository. Production remained online with
+      deletion disabled. See the
+      [exercise evidence](backend/LEADERBOARD_DESIGN.md#isolated-recovery-exercise--2026-09-12-utc).
 - [ ] **Finish and publish accurate privacy information:** resolve remaining
   retention/rights/provider/market decisions; implement the approved safeguards
   before claiming they exist. Preserve the no-sale/no-targeted-advertising
